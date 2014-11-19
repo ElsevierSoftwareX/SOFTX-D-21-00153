@@ -1,0 +1,975 @@
+/**
+ * Translator to the Time Game Automata (TIGA) model.
+ */
+package it.univr.di.cstnu;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.logging.Logger;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionHandlerFilter;
+import org.w3c.dom.DOMConfiguration;
+import org.w3c.dom.Document;
+import org.w3c.dom.DocumentType;
+import org.w3c.dom.Element;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
+
+import com.bpodgursky.jbool_expressions.Expression;
+import com.bpodgursky.jbool_expressions.parsers.ExprParser;
+import com.bpodgursky.jbool_expressions.rules.RuleSet;
+
+import edu.uci.ics.jung.io.GraphIOException;
+import edu.uci.ics.jung.io.graphml.GraphMLReader2;
+
+/**
+ * @author posenato
+ */
+public class CSTNU2UppaalTiga {
+	/**
+	 * Version
+	 */
+	static final String VERSIONandDATE = "1.6.1, April, 30 2014";
+
+	/**
+	 * Utility class to represent a contingent link parameters.
+	 */
+	@SuppressWarnings("javadoc")
+	private static class Contingent {
+		Integer lower, upper;
+		Node source, dest;
+
+		Contingent(Node s, Integer l, Integer u, Node d) {
+			source = s;
+			dest = d;
+			lower = l;
+			upper = u;
+		}
+	}
+
+	/**
+	 * Utility class to represent a contingent link parameters.
+	 */
+	@SuppressWarnings("javadoc")
+	private static class Constraint implements Comparable<Constraint> {
+		Integer value;
+		Node source, dest;
+
+		Constraint(Node d, Node s, Integer l) {
+			source = s;
+			dest = d;
+			value = l;
+		}
+
+		@Override
+		public int compareTo(Constraint o) {
+			if (o == null) return 1;
+			if (this.equals(o)) return 0;
+			int b = 0;
+			if ((b = this.dest.compareTo(o.dest)) != 0) return b;
+			if ((b = this.source.compareTo(o.source)) != 0) return b;
+			return this.value.compareTo(o.value);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (!(obj instanceof Constraint)) return false;
+			Constraint cons = (Constraint) obj;
+			return cons.source != null && cons.source.equalsByName(source)
+					&& cons.dest != null && cons.dest.equalsByName(dest)
+					&& cons.value != null && cons.value.equals(value);
+		}
+
+		@Override
+		public String toString() {
+			return "(" + getClockName(dest) + " - " + getClockName(source) + " <= " + value + ")";
+		}
+
+		@Override
+		public int hashCode() {
+			return (dest != null ? dest.hashCode() : 0) + (source != null ? source.hashCode() : 0) + (value != null ? value.hashCode() : 0);
+		}
+	}
+
+	/**
+	 * class logger
+	 */
+	static Logger LOG = Logger.getLogger(CSTNU2UppaalTiga.class.getName());
+
+	/**
+	 * Token to represent logic AND in Tiga expression.
+	 */
+	static final String AND = " && ";
+
+	/**
+	 * Token to represent logic NOT in Tiga expression.
+	 */
+	static final String NOT = "!";
+
+	/**
+	 * Token to represent logic OR in Tiga expression.
+	 */
+	static final String OR = " || ";
+
+	/**
+	 * Jbool_expression represents Expression using identifiers escaped by `, logical NOT as '!', logical AND as ' & ' and logical OR as ' | '.
+	 * For example, "!`a` & `(D-A <=)` | `a`"
+	 * 
+	 * @param expr jbool_expression
+	 * @param not string representing not. If null, it is assumed {@link #NOT}
+	 * @param and representing not. If null, it is assumed {@link #AND}
+	 * @param or representing not. If null, it is assumed {@link #OR} @return Tiga representation of orbitalFormulaText.
+	 * @return Jbool_expression represents Expression using identifiers escaped by `, not as '!', and as '&' and or as '!'.
+	 */
+	private static String jbool2TigaExpr(String expr, String not, String and, String or) {
+		if (expr == null || expr.isEmpty()) return "";
+
+		if (not == null) not = NOT;
+		if (and == null) and = AND;
+		if (or == null) or = OR;
+
+		expr = expr.replaceAll("!", not);
+		expr = expr.replaceAll(" & ", and);
+		expr = expr.replaceAll(" \\| ", or);
+		expr = expr.replaceAll("`", "");
+
+		return expr;
+		// String allowedTokenRE = "-\\w\\s\\.";
+		// =<\\(([" + allowedTokenRE + "]+),([" + allowedTokenRE + "]+)\\)", "( ($1) <= ($2) )");
+	}
+
+	/**
+	 * Build a clock name: "t" followed by node name cleaned off not allowed chars.
+	 * 
+	 * @param n
+	 * @return clock name associated to the node
+	 */
+	static String getClockName(Node n) {
+		return "t" + removeCharNotAllowed(n.getName());
+	}
+
+	/**
+	 * Build a executed boolean variable name: "x" followed by node name cleaned off not allowed chars.
+	 * 
+	 * @param n
+	 * @return executed var name associated to the node
+	 */
+	private static String getExecutedName(Node n) {
+		return "x" + removeCharNotAllowed(n.getName());
+	}
+
+	/**
+	 * Build a proposition name.
+	 * 
+	 * @param n node
+	 * @return the proposition associated to the l.
+	 */
+	private static String getPropositionName(Node n) {
+		if (n == null || n.getObservable() == null) return "";
+		return "" + n.getObservable();
+	}
+
+	// /**
+	// * Build a obs node name for a proposition.
+	// *
+	// * @param n node
+	// * @return the obs node name associated to the l.
+	// */
+	// private static String getObsNodeName(Node n) {
+	// if (n == null || n.getObservable() == null) return "";
+	// return "n" + n.getObservable();
+	// }
+
+	/**
+	 * Return an id for the template id using the name of the graph.
+	 * 
+	 * @param g the graph
+	 * @return a cleaned Tga name
+	 */
+	private static String getTgaName(Graph g) {
+		String name = removeCharNotAllowed(g.getName());
+		if (name.matches("[0-9]+.+")) {
+			name = "g" + name;
+		}
+		return name;
+	}
+
+	/**
+	 * Reads a CSTNU file and converts it into <a href="http://people.cs.aau.dk/~adavid/tiga/index.html">UPPAAL TIGA</a> format.
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		LOG.finest("Start...");
+		CSTNU2UppaalTiga translator = new CSTNU2UppaalTiga();
+
+		if (!translator.manageParameters(args))
+			return;
+		LOG.finest("Parameters ok!");
+		if (translator.versionReq) {
+			System.out.print(CSTNU2UppaalTiga.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
+					+ "Copyright © 2014, Roberto Posenato");
+			return;
+		}
+
+		LOG.finest("Loading graph...");
+		if (!translator.loadCSTNU(translator.fInput))
+			return;
+		LOG.finest("Graph loaded!");
+
+		LOG.finest("Translating graph...");
+		translator.translate();
+		LOG.finest("Graph translated and saved!");
+	}
+
+	/**
+	 * Remove all character that cannot be part of a TIGA identifier.
+	 * 
+	 * @param s
+	 * @return a cleaned string
+	 */
+	private static String removeCharNotAllowed(String s) {
+		return s.replaceAll("[-?. ]", "_");
+	}
+
+	/**
+	 * Name of controller state/node
+	 */
+	@Option(required = false, name = "--controller", usage = "Name of controller node", metaVar = "agnes")
+	private String AGNES = "agnes";
+
+	@SuppressWarnings("javadoc")
+	private Set<Contingent> contingentEdge = null;
+
+	/**
+	 * Contains all CSTNU contingent nodes: a CSTNU node is contingent if it is destination of a contingent constraint.
+	 */
+	private Set<Node> contingentNode = null;
+
+	/**
+	 * CSTNU graph to translate
+	 */
+	private Graph cstnu = null;
+
+	/**
+	 * Document representing DOM of TIGA
+	 */
+	private Document doc = null;
+
+	/**
+	 * The input file containing the CSTNU graph in GraphML format.
+	 */
+	@Argument(required = true, index = 0, usage = "input file. Input file has to be a CSTNU graph in GraphML format.", metaVar = "CSTNU_file_name")
+	private File fInput;
+
+	/**
+	 * Output file where to write the XML representing UPPAAL TIGA automata.
+	 */
+	@Option(required = false, name = "-o", aliases = "--output"
+			, usage = "output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output."
+			, metaVar = "UPPAALTIGA_file_name")
+	private File fOutput = null;
+
+	/**
+	 * Contains all CSTNU free nodes: a CSTNU node is free if it does not observe a proposition and it is source of any edge or it is destination of a
+	 * non-contingent constraint.
+	 */
+	private Set<Node> freeNode = null;
+
+	/**
+	 * Name of goal state/node.
+	 */
+	@Option(required = false, name = "--goal", usage = "Name of Goal node", metaVar = "GOAL")
+	private String GOAL = "goal";
+
+	/**
+	 * Name of go state/node.
+	 */
+	@Option(required = false, name = "--go", usage = "Name of Go node", metaVar = "GO")
+	private String GO = "go";
+
+	/**
+	 * Contains all CSTNU observation nodes: a CSTNU node is an observation if its execution determines the value of a boolean proposition associated to the
+	 * node.
+	 */
+	private Set<Node> obsNode = null;
+
+	/**
+	 * Contains all labeled constraint present into CSTNU constraints organized by label.
+	 */
+	private TreeMap<Label, HashSet<Constraint>> allConstraintsByLabel = null;
+
+	/**
+	 * Output stream to fOutput
+	 */
+	private PrintStream output = null;
+
+	/**
+	 * Name of loop clock.
+	 */
+	@Option(required = false, name = "--loop", usage = "Name of loop clock", metaVar = "tDelta")
+	private String tDelta = "tDelta";
+
+	/**
+	 * Name of global clock.
+	 */
+	@Option(required = false, name = "--global", usage = "Name of global clock", metaVar = "tG")
+	private String tG = "tG";
+
+	/**
+	 * Name of environment state/node
+	 */
+	@Option(required = false, name = "--environment", usage = "Name of environment node", metaVar = "vera")
+	private String VERA = "vera";
+
+	/**
+	 * Software Version.
+	 */
+	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
+	private boolean versionReq = false;
+
+	/**
+	 * Parameter for asking to determine a compact version (with less state) of the automata.
+	 */
+	@Option(required = false, name = "-compact", usage = "Translate using the minimal number of states")
+	private boolean compact = false;
+
+	/**
+	 * parameter ignore
+	 */
+	@Option(required = false, name = "-ignore", usage = "")
+	private String ignore = "";
+
+	/**
+	 * In a TGA, a location element contains the declaration of a node.
+	 * In the CSTNU translation, there are three constants location: controller (id={@link #VERA}), environment (id={@link #AGNES}) and goal (id={@link #GOAL}).
+	 * Then, there are one location for each CSTNU observation node, (id=nodeName without?
+	 * 
+	 * @param template
+	 */
+	private void addLocationElements(Element template) {
+		Document doc = template.getOwnerDocument();
+
+		template.appendChild(buildLocationElement(AGNES, true));
+		template.appendChild(buildLocationElement(VERA, false));
+		template.appendChild(buildLocationElement(GOAL, false));
+		template.appendChild(buildLocationElement(GO, true));
+
+		// Add a urgent location for each proposition
+		// 13/06/2014: No more!!!!
+		// for (final Node node : obsNode) {
+		// template.appendChild(buildLocationElement(getObsNodeName(node), true));
+		// }
+
+		if (!compact) {
+			// we add as many intermediate node GO_i as the number of significant label is.
+			int n = allConstraintsByLabel.size() - 1;// the empty label does not count!
+			if (n > 0) {
+				for (int i = 1; i < n; i++) {
+					template.appendChild(buildLocationElement(GO + i, true));
+				}
+			}
+		}
+		// The declaration of the initial node
+		Element init = doc.createElement("init");
+		init.setAttribute("ref", AGNES);
+		template.appendChild(init);
+	}
+
+	/**
+	 * In a TGA, a transition element contains the declaration of a transition between two nodes of the automaton.
+	 * In the CSTNU translation, there are 8 kinds of transition.
+	 * 
+	 * @param template
+	 */
+	private void addTransitionElements(Element template) {
+		// first of all, the always present transitions
+		template.appendChild(doc.createComment("GAIN transition"));
+		// c1) The transition to guarantee to Agnes to gain the control (GAIN)
+		// It is only one: (vera, tDelta > 0, gain, "", agnes)
+		template.appendChild(buildTransitionElement(VERA, tDelta + " > 0", "gain", "", AGNES, false));
+
+		template.appendChild(doc.createComment("PASS transition"));
+		// c2) The transition to return the control to Vera
+		// It is only one: (vera, tDelta > 0, pass, "", agnes)
+		template.appendChild(buildTransitionElement(AGNES, "", "pass", tDelta + " := 0", VERA, false));
+
+		template.appendChild(doc.createComment("Transitions for clock setting"));
+		// 1) Set of transaction
+		// For each free time-point X there is a non controllable transaction (agnes, !xX, set_X, xX:=true, tX:=0, agnes)
+		for (final Node n : freeNode) {
+			String exec = getExecutedName(n);
+			template.appendChild(buildTransitionElement(AGNES, "!" + exec, "set_" + exec, exec + " := true," + getClockName(n) + " := 0", AGNES, false));
+		}
+
+		template.appendChild(doc.createComment("Transitions for proposition setting"));
+		// 2) Set of transaction
+		// For each Observation node P, there are four transactions
+		// 2.1) (agnes, !xP, set_P, xP:=true, tP:=0, agnes) not controllable, for the clock
+		// 2.2) (vera, xP && P == 0, set_P_false, P := -1, vera) controllable, to allow ENV to decide the value
+		// 2.3) (vera, xP && P == 0, set_P_true, P := 1, agnes) controllable, to allow ENV to decide the value
+		// 2.4) (agnes, xP && P == 0 && tDelta > 0, P_not_set, "", goal) not controllable, to force ENV to decide the value
+		for (final Node n : obsNode) {
+			String exec = getExecutedName(n);
+			String prop = getPropositionName(n);
+			template.appendChild(buildTransitionElement(AGNES, "!" + exec + AND + prop + " == 0", "set_" + prop, exec + " := true, " + getClockName(n)
+					+ " := 0", AGNES, false));
+			template.appendChild(buildTransitionElement(VERA, exec + AND + prop + " == 0", "set_" + prop + "_false", prop + " := -1, " + tDelta + " := 0", VERA,
+					true));
+			template.appendChild(buildTransitionElement(VERA, exec + AND + prop + " == 0", "set_" + prop + "_true", prop + " := 1, " + tDelta + " := 0", VERA,
+					true));
+			template.appendChild(buildTransitionElement(AGNES, exec + AND + prop + " == 0" + AND + tDelta + " > 0", prop + "not_set", "", GOAL, false));
+		}
+
+		template.appendChild(doc.createComment("Transitions for contingent-constraint setting"));
+		// 3) Set of transaction
+		// For each contingent link (A,l,u,C) there is
+		// 3.1) a transaction (vera, Sigma(tC,tA,tG), set_C, "xC:=true, tC:=0, tDelta:=0", vera) where Sigma(tC,tA,tG) := xA && !xC && (tA >= l) && (tA <=
+		// u)//assign a right value to contingent point.
+		// 3.2) a transition (agnes, Phi(tA,tC,tG), cvC, "", goal) where Phi(tA,tC,tG) := xA && !xC && tA>u //the contingent has violated its upper bound!
+		// Remember that in TGA contingent point are chosen by a controllable transaction that can be 'blocked' by tDelta. So, if a controllable transaction for
+		// tC cannot be executed, then
+		// the system verifies later with 3.2 the violation.
+		for (final Contingent c : contingentEdge) {
+			String tA = getClockName(c.source);
+			String tC = getClockName(c.dest);
+			String xA = getExecutedName(c.source);
+			String xC = getExecutedName(c.dest);
+
+			String sigma = xA + AND + "!" + xC + AND + "(" + tA + " >= " + c.lower + ")" + AND + "(" + tA + " <= " + c.upper + ")";
+			template.appendChild(buildTransitionElement(VERA, sigma, "set_" + xC, xC + " := true, " + tC + " := 0, " + tDelta + " := 0", VERA, true));
+
+			String phi = xA + AND + "!" + xC + AND + "(" + tA + " > " + c.upper.toString() + ")";
+			template.appendChild(buildTransitionElement(AGNES, phi, "cv_" + tC, "", GOAL, false));
+		}
+
+		template.appendChild(doc.createComment("WIN transitions"));
+		/**
+		 * 4) The transition for the end of the game.
+		 * We split the win transition into two sets:
+		 * 1) one set is made of only one uncontrollable transition (VERA, Psi(t, tB), win_unlabelled, "", go)
+		 * where Psi1 = AND_{X timepoint} xX && AND_{unlabeled non-contingent constraint Y-X<k} (tY-tX <= k)
+		 * It represents the event that all timepoints are executed and all unlabeled constraints are satisfied.
+		 * Such constraint is always present.
+		 * 
+		 * 2) other set is made considering all labeled constraints.
+		 * There are two possible set constructions according to the value of useStatesForScenario.
+		 * Before showing how to build them, remember that allLabeledConstraint is a Map that, for each label, returns all constraints with the given label.
+		 * 
+		 * If useStatesForScenario is true, then for each label l (assume l is the i-th one in the lexicographical order),
+		 * we put a transition for each of its literal with guard the negated literal and one with guard the conjunction of all associated constraints
+		 * between state GO_i and GO_{i+1}, where GO_0 = GO and GO_{m} = GOAL (m=#labels)
+		 * 
+		 * If useStatesForScenario is false, for each label l, the implicant (l => Conjunction of all associated constraints) is built.
+		 * Then, we define \Psi2 = conjunction of all obtained implicants.
+		 * Then, we determine \Psi2DNF := the DNF of \Psi2
+		 * Then, for each disjunct d_i of \Phi2DNF, we add the following controllable transition (go, d_i, win_labelled, "", goal)
+		 * If there is no labeled constraints, we add only (go, "", win_labelled, "", goal)
+		 */
+
+		// First set
+		StringBuffer psi1dirty = new StringBuffer();
+		for (final Node n : freeNode) {
+			String exec = getExecutedName(n);
+			psi1dirty.append(exec + AND);
+		}
+		for (final Node n : contingentNode) {
+			String exec = getExecutedName(n);
+			psi1dirty.append(exec + AND);
+		}
+		for (final Node n : obsNode) {
+			String exec = getExecutedName(n);
+			psi1dirty.append(exec + AND);
+		}
+
+		StringBuffer psi2dirty = new StringBuffer();
+		final String jboolAnd = " & ";
+		final String jboolOr = " | ";
+		final String jboolNot = " !";
+
+		int labelOrdinal = 0;
+		String sourceState = null;
+		String destState = null;
+		for (Entry<Label, HashSet<Constraint>> entry : allConstraintsByLabel.entrySet()) {
+			Label label = entry.getKey();
+			HashSet<Constraint> constSet = entry.getValue();
+
+			if (!compact && !label.isEmpty()) {
+				sourceState = (labelOrdinal == 0) ? GO : GO + labelOrdinal;
+				labelOrdinal++;
+				destState = (labelOrdinal == allConstraintsByLabel.size() - 1) ? GOAL : GO + labelOrdinal;
+				for (Literal lit : label.negation()) {
+					template.appendChild(buildTransitionElement(sourceState, "(" + lit.getName() + " == " + ((lit.isNegative()) ? "-1" : "1") + ")",
+							"win_labelled" + labelOrdinal + lit.getName(), "", destState, true));
+					LOG.finest("Transition added= (" + sourceState + ", (" + lit.getName() + " == " + ((lit.isNegative()) ? "-1" : "1") + "), "
+							+ "win_labelled" + labelOrdinal + lit.getName() + ", '', " + destState + ")");
+				}
+				psi2dirty.delete(0, psi2dirty.length());
+			}
+			for (Constraint constr : constSet) {
+				String sourceClock = getClockName(constr.source);
+				String destClock = getClockName(constr.dest);
+				Integer value = constr.value;
+				if (label.isEmpty()) {
+					// First set
+					psi1dirty.append("(" + destClock + " - " + sourceClock + " <= " + value + ")" + AND);
+				} else {
+					if (!compact) {
+						psi2dirty.append("(" + destClock + " - " + sourceClock + " <= " + value + ")" + AND);
+					} else {
+						// psi2 will be transformed into DNF.
+						// To convert into DNF I will use an external library: com.bpodgursky.jbool_expressions
+						// Therefore it is convenient to write the expression into jbool_expressions format
+						// and = &
+						// or = |
+						// not = !
+						// identificator name = `name`
+						// true = true
+						// false = false
+						// no other operator.
+						// So, (a¬b => (A-B <= t)) has to be represented as (!`a` | 'b' | `(A-B <= t)`)
+						String labelNegatedandEscaped = label.toLogicalExpr(true, jboolNot, jboolAnd, jboolOr);
+
+						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("([a-zA-Z])", "`$1`");// tutto a 1
+						// LOG.finest("labelNegatedandEscaped= " + labelNegatedandEscaped);
+						psi2dirty.append("(" + labelNegatedandEscaped + jboolOr + "`((" + destClock + " - " + sourceClock + ") <= " + value + ")`)" + jboolAnd);
+					}
+				}
+			}
+			if (!compact && !label.isEmpty()) {
+				final String psi2clean = psi2dirty.substring(0, psi2dirty.length() - AND.length());
+				// LOG.finest("psi2" + labelOrdinal + "= " + psi2clean);
+				template.appendChild(buildTransitionElement(sourceState, psi2clean, "win_labelled" + labelOrdinal, "", destState, true));
+				LOG.finest("Transition added= (" + sourceState + ", " + psi2clean + ", win_labelled" + labelOrdinal + ", '', " + destState + ")");
+
+			}
+		}
+
+		// First set
+		String psi1 = psi1dirty.substring(0, psi1dirty.length() - AND.length());
+		template.appendChild(buildTransitionElement(VERA, psi1, "win_unlabelled", "", GO, false));
+
+		// Second set when !useStatesForScenarios
+		LOG.finest("psi2dirty= " + psi2dirty);
+		if (allConstraintsByLabel.size() == 1) {
+			// there are no labeled constraints!
+			template.appendChild(buildTransitionElement(GO, "", "win_labelled", "", GOAL, true));
+		} else {
+			if (compact) {
+				String psi2 = psi2dirty.substring(0, psi2dirty.length() - jboolAnd.length());
+				String psi2DNF = "";
+				LOG.finest("psi2= " + psi2);
+
+				// I use jbool_expression to obtain the DNF of psi2
+				Expression<String> psi2Jbool = ExprParser.parse(psi2);
+
+				String psi2DnfJbool = RuleSet.toSop(psi2Jbool).toString();
+				psi2DnfJbool = psi2DnfJbool.substring(1, psi2DnfJbool.length() - 1);// there are an initial and a final () !
+				LOG.finest("psi2DnfJbool= " + psi2DnfJbool);
+
+				// A literal "`l`" has to be transformed to "(l == 1)"
+				// while "!`l`" to "(l == -1)"
+				psi2DnfJbool = psi2DnfJbool.replaceAll("`([a-zA-Z])`", "\\($1 == 1\\)");// tutto a 1
+				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\(([a-zA-Z]) == 1", "\\($1 == -1");// mentre si mette a -1 chi è negato!
+
+				psi2DNF = jbool2TigaExpr(psi2DnfJbool, null, null, " | ");
+				LOG.finest("psi2DNF= " + psi2DNF);
+
+				int i = 0;
+				for (String psi2Disjunct : psi2DNF.split(" \\| ")) {
+					template.appendChild(buildTransitionElement(GO, psi2Disjunct, "win_labelled_" + i++, "", GOAL, true));
+				}
+			}
+		}
+	}
+
+	/**
+	 * In a TGA, declaration element contains the declaration of all clocks and variables.
+	 * There are:
+	 * <ol>
+	 * <li>For each CSTNU node X, one clock 'tX'; a global clock and a loop clock, called delta clock.
+	 * <li>For each CSTNU node X, one bool var 'xX' that says if X has been executed or not.
+	 * <li>For each observed proposition P, one integer var 'pP' assuming only value 0, for no set, -1, for false and 1 for true. .
+	 * 
+	 * @return the element representing the clock declaration.
+	 */
+	private Element buildDeclarationElement() {
+		Element declaration = doc.createElement("declaration");
+
+		StringBuffer clocks = new StringBuffer("clock " + tG + ", " + tDelta);
+		StringBuffer executed = new StringBuffer();
+		StringBuffer obs = new StringBuffer();
+		for (Node node : freeNode) {
+			clocks.append(", " + getClockName(node));
+			executed.append(", " + getExecutedName(node));
+		}
+		for (Node node : contingentNode) {
+			clocks.append(", " + getClockName(node));
+			executed.append(", " + getExecutedName(node));
+		}
+		for (Node node : obsNode) {
+			clocks.append(", " + getClockName(node));
+			executed.append(", " + getExecutedName(node));
+			obs.append(", " + getPropositionName(node) + " = 0");
+		}
+		clocks.append(';');
+		if (executed.length() > 0) {
+			executed.replace(0, 1, "bool"); // remove first , and put "bool " declaration
+			executed.append(';');
+		}
+		if (obs.length() > 0) {
+			obs.replace(0, 1, "int [-1,1]"); // remove first , and put "int [-1,1]  " declaration
+			obs.append(';');
+		}
+
+		declaration.appendChild(doc.createTextNode(clocks + "\n" + executed + "\n" + obs));
+		return declaration;
+	}
+
+	/**
+	 * Build a location element with id and name = id and urgent child if urgent is true.
+	 * 
+	 * @param id
+	 * @param urgent
+	 * @return the location element
+	 */
+	private Element buildLocationElement(String id, Boolean urgent) {
+		Element location = doc.createElement("location");
+		location.setAttribute("id", id);
+		Element name = doc.createElement("name");
+		name.appendChild(doc.createTextNode(id));
+		location.appendChild(name);
+		if (urgent) {
+			location.appendChild(doc.createElement("urgent"));
+		}
+		return location;
+	}
+
+	/**
+	 * In a TGA, template element contains the declaration of all nodes and transitions.
+	 * 
+	 * @return the element representing the clock declaration.
+	 */
+	private Element buildTemplateElement() {
+		Element template = doc.createElement("template");
+
+		// name
+		Element name = doc.createElement("name");
+		name.appendChild(doc.createTextNode(getTgaName(cstnu)));
+		template.appendChild(name);
+
+		// local declaration
+		template.appendChild(doc.createComment("Clock and proposition declarations"));
+		template.appendChild(buildDeclarationElement());
+
+		template.appendChild(doc.createComment("Node declarations"));
+		addLocationElements(template);
+		template.appendChild(doc.createComment("Transition declarations"));
+		addTransitionElements(template);
+
+		Element system = doc.createElement("system");
+		system.appendChild(doc.createTextNode("_processMain = " + getTgaName(cstnu) + "();\n\t\tsystem _processMain;"));
+		template.appendChild(system);
+		return template;
+	}
+
+	/**
+	 * Build a transition element with source, target, guard, assignment, controllable attributes.
+	 * 
+	 * @param source
+	 * @param guard
+	 * @param action
+	 * @param assignment
+	 * @param target
+	 * @param controllable
+	 * @return the location element
+	 */
+	private Element buildTransitionElement(String source, String guard, String action, String assignment, String target, boolean controllable) {
+		Element transition = doc.createElement("transition");
+		transition.setAttribute("controllable", controllable ? "true" : "false");
+		transition.setAttribute("action", action);
+
+		Element sourceE = doc.createElement("source");
+		sourceE.setAttribute("ref", source);
+		transition.appendChild(sourceE);
+
+		Element targetE = doc.createElement("target");
+		targetE.setAttribute("ref", target);
+		transition.appendChild(targetE);
+
+		Element label = doc.createElement("label");
+		label.setAttribute("kind", "guard");
+		label.appendChild(doc.createTextNode(guard));
+		transition.appendChild(label);
+
+		label = doc.createElement("label");
+		label.setAttribute("kind", "assignment");
+		label.appendChild(doc.createTextNode(assignment));
+		transition.appendChild(label);
+
+		return transition;
+	};
+
+	/**
+	 * Default constructor not accessible
+	 */
+	private CSTNU2UppaalTiga() {}
+
+	@SuppressWarnings("javadoc")
+	public CSTNU2UppaalTiga(Graph g, PrintStream o) {
+		if (o == null || g == null) throw new IllegalArgumentException("One parameter is null!");
+		output = o;
+		cstnu = g;
+		if (!checkCSTNUSyntax()) throw new IllegalArgumentException("CSTNU is not well formed!");
+	}
+
+	/**
+	 * Load CSTNU file and create a graph g.
+	 * 
+	 * @param fileName
+	 * @return graph if the file was load successfully; null otherwise.
+	 */
+	@SuppressWarnings("resource")
+	private boolean loadCSTNU(File fileName) {
+		FileReader fileReader = null;
+		try {
+			fileReader = new FileReader(fileName);
+			final GraphMLReader2<Graph, Node, Edge> graphReader = new GraphMLReader(fileReader);
+			cstnu = graphReader.readGraph();
+		}
+		catch (final FileNotFoundException e1) {
+			// not possible because the parameter has been already checked!
+		}
+		catch (final GraphIOException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				if (fileReader != null) fileReader.close();
+			}
+			catch (Exception ee) {}
+		}
+
+		return checkCSTNUSyntax();
+	}
+
+	/**
+	 * @return true if the CSTNU is well written, false otherwise.
+	 */
+	private boolean checkCSTNUSyntax() {
+		LOG.finest("Checking graph...");
+		try {
+			boolean allOk = CSTNU.initUpperLowerLabelDataStructure(cstnu);
+			if (!allOk) return false;
+		}
+		catch (IllegalArgumentException e) {
+			System.err.println(e.getMessage());
+			return false;
+		}
+		prepareAxuliaryCSTNUData();
+		LOG.finest("Graph checked!");
+		return true;
+	}
+
+	/**
+	 * Simple method to manage command line parameters using args4j library.
+	 * 
+	 * @param args
+	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
+	 */
+	private boolean manageParameters(String[] args) {
+		CmdLineParser parser = new CmdLineParser(this);
+		try {
+			// parse the arguments.
+			parser.parseArgument(args);
+
+			if (!fInput.exists()) throw new CmdLineException(parser, "Input file does not exist.");
+
+			if (fOutput != null) {
+				if (fOutput.isDirectory()) throw new CmdLineException(parser, "Output file is a directory.");
+				if (!fOutput.getName().endsWith(".xml"))
+					fOutput.renameTo(new File(fOutput.getAbsolutePath() + ".xml"));
+				if (fOutput.exists()) {
+					fOutput.delete();
+				}
+				try {
+					fOutput.createNewFile();
+					output = new PrintStream(fOutput);
+				}
+				catch (IOException e) {
+					throw new CmdLineException(parser, "Output file cannot be created.");
+				}
+			} else {
+				output = System.out;
+			}
+		}
+		catch (CmdLineException e) {
+			// if there's a problem in the command line, you'll get this exception. this will reportan error message.
+			System.err.println(e.getMessage());
+			System.err.println("java CSTNU2UppaalTiga [options...] arguments...");
+			// print the list of available options
+			parser.printUsage(System.err);
+			System.err.println();
+
+			// print option sample. This is useful some time
+			System.err.println("Example: java -jar CSTNU2UppaalTiga.jar" + parser.printExample(OptionHandlerFilter.REQUIRED) + " <CSTNU_file_name>");
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Classifies nodes of the cstnu graph
+	 */
+	private void prepareAxuliaryCSTNUData() {
+
+		freeNode = new HashSet<>();
+		contingentNode = new HashSet<>();
+		contingentEdge = new HashSet<>();
+		obsNode = new HashSet<>();
+		allConstraintsByLabel = new TreeMap<>();
+		// I put the entry for all constraints not labeled
+		HashSet<Constraint> constr = new HashSet<>();
+		allConstraintsByLabel.put(Label.emptyLabel, constr);
+
+		// This cycle is redundant, but to avoid to consider an already considered node is more expensive that consider it more times
+		for (Edge e : cstnu.getEdges()) {
+			Node s = cstnu.getSource(e);
+			Node d = cstnu.getDest(e);
+			if (e.isContingentEdge()) {
+				Integer upper = null, lower = null;
+				if ((upper = e.getInitialValue()) != null && upper > 0) {
+					contingentNode.add(d);
+					lower = -cstnu.findEdge(d, s).getInitialValue();
+					contingentEdge.add(new Contingent(s, lower, upper, d));
+				}
+			} else {
+				// normal or constraint edge
+				if (s.getObservable() != null)
+					obsNode.add(s);
+				else
+					freeNode.add(s);
+
+				if (d.getObservable() != null)
+					obsNode.add(d);
+				else
+					freeNode.add(d);
+				for (Entry<Label, Integer> entry : e.getLabeledValueMap().labeledValueSet()) {
+					// Since CSTNU has been initialize, the default value is represented as labeled value with ⊡ label.
+					Label label = entry.getKey();
+					Integer value = entry.getValue();
+					constr = allConstraintsByLabel.get(label);
+					if (constr == null) {
+						constr = new HashSet<>();
+						allConstraintsByLabel.put(label, constr);
+					}
+					constr.add(new Constraint(d, s, value));
+				}
+			}
+		}
+		// Free node contains contingent nodes if these last ones are destination of normal edge.
+		// It is necessary to remove them.
+		freeNode.removeAll(contingentNode);
+		LOG.finest("freeNode set: " + freeNode.toString());
+		LOG.finest("contingentNode set: " + contingentNode.toString());
+		LOG.finest("obsNode set: " + obsNode.toString());
+		LOG.finest("all Label set: " + allConstraintsByLabel.toString());
+	}
+
+	/**
+	 * Convert a CSTNU graph g into a Timed Game Automata in the UPPAAL TIGA format.
+	 * 
+	 * @return true if the translation has been done and saved.
+	 */
+	public boolean translate() {
+
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			docFactory.setNamespaceAware(true);
+			docFactory.setValidating(true);
+			docFactory.setExpandEntityReferences(false);
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+			DocumentType docType = docBuilder.getDOMImplementation().createDocumentType(
+					"nta",
+					"-//Uppaal Team//DTD Flat System 1.1//EN",
+					"http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd");
+			doc = docBuilder.getDOMImplementation().createDocument(null, "nta", docType);
+
+			Element rootElement = doc.getDocumentElement();
+
+			// global declaration element
+			// rootElement.appendChild(buildDeclarationElement(doc, g));
+
+			// template
+			rootElement.appendChild(buildTemplateElement());
+
+			// Get the implementations
+			DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+			;
+			DOMImplementationLS implLS = (DOMImplementationLS) registry.getDOMImplementation("LS");
+			// Prepare the output
+			LSOutput domOutput = implLS.createLSOutput();
+			domOutput.setEncoding(StandardCharsets.UTF_8.name());
+			domOutput.setByteStream(output);
+			// Prepare the serializer
+			LSSerializer domWriter = implLS.createLSSerializer();
+			domWriter.setNewLine("\r\n");
+			DOMConfiguration domConfig = domWriter.getDomConfig();
+			domConfig.setParameter("format-pretty-print", true);
+			domConfig.setParameter("element-content-whitespace", true);
+			domConfig.setParameter("cdata-sections", Boolean.TRUE);
+			// And finaly, write
+			domWriter.write(doc, domOutput);
+
+			if (fOutput != null) {
+				output.close();
+				output = new PrintStream(fOutput.getAbsolutePath().replace(".xml", ".q"));
+			}
+			output.println("control: A[] not _processMain." + GOAL);
+		}
+		catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+			return false;
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
+		catch (InstantiationException e) {
+			e.printStackTrace();
+			return false;
+		}
+		catch (IllegalAccessException e) {
+			e.printStackTrace();
+			return false;
+		}
+		catch (ClassCastException e) {
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+}

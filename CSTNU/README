@@ -1,0 +1,19 @@
+Note varie sul progetto
+=======================
+
+Package it.univr.di.cstnu
+-------------------------
+La versione 314 è la versione con future merge funzionante ma senza
+controllabilità funzionante perché basata sul Morris 2001 che non sono
+riuscito a implementare per bene e a testare.
+
+La versione 317 è con la controllabilità CSTNU funzionante, tutto basato 
+sulle regole di Morris 2005 e sulle regole scritte per ICAART 2013.
+
+versione 318
+------------
+Versione con CSTNU check funzionante e con bug circa update di value
+sistemato.
+Le R1-R3 rule NON fanno il check se c'è un -w sui upper case label.
+Tale bug sarà sistemato release successiva.
+
