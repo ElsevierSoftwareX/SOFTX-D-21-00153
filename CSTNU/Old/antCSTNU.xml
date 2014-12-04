@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project WorkFlowAlgoritms">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <target name="create_run_jar">
+        <jar destfile="CSTNUNonOpt.jar" filesetmanifest="mergewithoutmain"
+        	basedir="/Users/posenato/Documents/workspace/WorkFlowAlgoritms/binaries/"
+        	excludes="it/univr/di/wf/*"
+        	>
+            <manifest>
+                <attribute name="Main-Class" value="it.univr.di.cstnu.CSTNUEditor"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+<!--            <fileset dir="/Users/posenato/Documents/workspace/WorkFlowAlgoritms/bin/"
+        	excludes="it/univr/di/wf/* **/*Test.class"
+        	-->
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/collections-generic-4.01/collections-generic-4.01.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/colt/lib/colt.jar"/>
+            <!--<zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/colt/lib/concurrent.jar"/>--><!--ok-->
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Jung/jung-algorithms-2.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Jung/jung-api-2.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Jung/jung-graph-impl-2.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Jung/jung-io-2.0.1.jar"/>
+            <!--<zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Jung/jung-jai-2.0.1.jar"--><!--ok-->
+        	<zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Jung/jung-visualization-2.0.1.jar"/> <!--ok-->
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/stax-api-1.0.1.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/vecmath-1.3.1.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/validationAPI/ValidationAPI.jar"/> <!--ok-->
+            <!--<zipfileset excludes="META-INF/*.SF" src="/Applications/eclipse/plugins/org.hamcrest.core_1.3.0.v201303031735.jar"/-->
+            <zipfileset excludes="META-INF/*.SF" src="/Users/posenato/Documents/workspace/Args4j/args4j-2.0.21.jar"/>
+        </jar>
+		<taskdef name="JarOpt" classname="org.cmc.jaroptimizer.JarOptTask" classpath="/Users/posenato/Documents/workspace/JarOpt/jaropt.jar" />
+		<JarOpt src="CSTNUNonOpt.jar" dst="CSTNU.jar" 
+			stripNonClassFiles="false" verbose="true" 
+			printDependencies="false	" >
+		<includePattern>it.univr.di.cstnu.CSTNU2UppaalTiga</includePattern>
+		<includePattern>it.univr.di.cstnu.CSTNUEditor</includePattern>
+			<includePattern>it.univr.di.cstnu.CSTNU</includePattern>
+		<!--<includePattern>ch.randelshofer.quaqua.*</includePattern>-->
+		</JarOpt  >
+		<!-- Now replace the original jar -->
+		<!--<copy file="${tempfile}" tofile="${jarfile}" /-->
+	</target>
+</project>
