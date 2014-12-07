@@ -1,6 +1,6 @@
 package it.univr.di.labeledvalue;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.ObjectIterator;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -85,8 +86,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 	 * @return a LabeledValueTreeMap object if <code>inputMap<code> represents a valid map, null otherwise.
 	 */
 	static public LabeledIntTreeMap parse(final String inputMap, final boolean withOptimization) {
-		if (inputMap == null) // LabeledIntTreeMap.LOG.finest("inputMap not valid: " + inputMap);
-			return null;
+		if (inputMap == null) return null;
 		final String labelCharsRE = "a-zA-Z0-9, \\-" + Constants.NOT + Constants.UNKNOWN + Constants.EMPTY_LABEL;
 		if (!Pattern.matches("\\{[\\(" + labelCharsRE + "\\) ]*\\}", inputMap)) // LabeledIntTreeMap.LOG.finest("Arg not valid: " + inputMap);
 			return null;
@@ -153,7 +153,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 	 * The efficiency has been proved comparing this implementation with one in which the map has been realized with a standard map and the minimization task
 	 * determines the same length labels every time it needs it.
 	 */
-	private Int2ObjectArrayMap<Object2IntRBTreeMap<Label>> mainInt2SetMap;
+	private Int2ObjectAVLTreeMap<Object2IntRBTreeMap<Label>> mainInt2SetMap;
 
 	/**
 	 * To activate all optimization code in order to remove the redundant label in the set.
@@ -167,7 +167,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 	 * @param withOptimization true if the redundant labeled values must be always removed. It checks the redundancy at every operation.
 	 */
 	public LabeledIntTreeMap(final boolean withOptimization) {
-		this.mainInt2SetMap = new Int2ObjectArrayMap<>();
+		this.mainInt2SetMap = new Int2ObjectAVLTreeMap<>();
 		this.base = new Label();
 		this.optimize = withOptimization;
 	}
@@ -329,6 +329,9 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 				v1 = entry.getIntValue();
 				if ((newValueSize >= (l1Size = l1.size())) && newLabel.subsumes(l1) && (newValue >= v1)) return false;
 				if ((newValueSize <= l1Size) && l1.subsumes(newLabel) && (newValue < v1)) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + v1 + ") removed by (" + newLabel + ", " + newValue + ").");
+					}
 					ite.remove();
 					this.checkValidityOfTheBaseAfterRemoving(l1);
 				}
@@ -532,7 +535,6 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 		final Object2IntRBTreeMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(n);
 		final Object2IntRBTreeMap<Label> toAdd = new Object2IntRBTreeMap<>();
 		toAdd.defaultReturnValue(LabeledIntMap.INT_NULL);
-		// toRemove = new TreeMap(),
 
 		if (currentMapLimitedToLabelOfNSize != null) {
 			for (final ObjectIterator<Entry<Label>> ite = inputMap.object2IntEntrySet().iterator(); ite.hasNext();) {
@@ -547,9 +549,10 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 					Literal lit = null;
 					if ((newValue == v1) && ((lit = l1.getUniqueDifferentLiteral(newLabel)) != null)) {
 						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
-						// toRemove.put(newLabel, newValue);
-						// toRemove.put(l1, v1);
 						if (!iteRemoved) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LOG.log(Level.FINER, "Labeled value (" + newLabel + ", " + newValue + ") removed by (" + l1 + ", " + v1 + ").");
+							}
 							ite.remove();
 							iteRemoved = true;
 						}
@@ -568,6 +571,9 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 			if (this.isBaseAbleToRepresent(l1, v1)) {
 				continue;
 			}
+//			if (LOG.isLoggable(Level.FINER)) {
+//				LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + v1 + ") added.");
+//			}
 			this.putForcibly(new Label(l1), v1);
 			add = true;
 			if (this.makeABetterBase(l1, v1)) {
@@ -648,15 +654,15 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 
 		final int n = l.size();
 		boolean removed = false;
-		for (final int j : this.mainInt2SetMap.keySet()) {
-			if (j < n) {
-				continue;
-			}
-			for (final ObjectIterator<Entry<Label>> currentMapIte = this.mainInt2SetMap.get(j).object2IntEntrySet().iterator(); currentMapIte.hasNext();) {
+		for (Object2IntRBTreeMap<Label> map1 : this.mainInt2SetMap.tailMap(n).values()) {
+			for (final ObjectIterator<Entry<Label>> currentMapIte = map1.object2IntEntrySet().iterator(); currentMapIte.hasNext();) {
 				final Entry<Label> entry = currentMapIte.next();
 				final Label l1 = entry.getKey();
 				final int value = entry.getIntValue();
 				if (l1.subsumes(l) && (value >= i)) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + value + ") removed by (" + l + ", " + i + ").");
+					}
 					currentMapIte.remove();
 					this.checkValidityOfTheBaseAfterRemoving(l1);
 					removed = true;
@@ -694,9 +700,6 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 						toInsert = true; // a base component has to be always insert!
 						break;
 					}
-					// if (l1 == null || lb == null || v1 == null || vb == null) {
-					// System.out.println("Trovato");
-					// }
 					if (l1.isConsistentWith(lb) && (v1 < vb)) {
 						toInsert = true;
 						break;
@@ -707,7 +710,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 				}
 			}
 		}
-		if (!newMap.equals(this.mainInt2SetMap)) {
+		if (!newMap.equals(this)) {
 			this.mainInt2SetMap = newMap.mainInt2SetMap;
 			return true;
 		}

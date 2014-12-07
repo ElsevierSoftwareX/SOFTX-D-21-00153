@@ -6,21 +6,22 @@ package it.univr.di.cstnu.graph;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
-import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
-import it.univr.di.labeledvalue.ValueNodeSetPair;
+import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 import java.awt.BasicStroke;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -276,7 +277,7 @@ public class LabeledIntEdge extends Component {
 	/**
 	 * Labeled value.
 	 */
-	private LabeledIntNodeSetMap labeledValue;
+	private LabeledIntMap labeledValue;
 
 	/**
 	 * Upper case Morris Labels
@@ -284,12 +285,18 @@ public class LabeledIntEdge extends Component {
 	private LabeledContingentIntTreeMap lowerLabel;
 
 	/**
+	 * The node set associated to a label. It contains internal nodes of any negative qPath (path formed considering ¿literals) from Z.
+	 * This set is not null only for edges outgoing from Z.
+	 */
+	private Map<Label, SortedSet<String>> nodeSetOfLabel;
+
+	/**
 	 * Removed Labeled value.<br>
 	 * The CSTNU controllability check algorithm needs to know if a labeled value has been removed in the past in order
 	 * to avoid to add it a
 	 * second time.
 	 */
-	private LabeledIntNodeSetMap removedLabeledValue;
+	private LabeledIntMap removedLabeledValue;
 
 	/**
 	 * Removed Upper Case Labeled value.<br>
@@ -318,10 +325,11 @@ public class LabeledIntEdge extends Component {
 		super("e" + LabeledIntEdge.idSeq++);// if you change this default, change also in GraphMLReader
 		this.setType(Type.normal);
 		this.optimize = optimized;
-		this.labeledValue = new LabeledIntNodeSetTreeMap(this.optimize);
+		this.labeledValue = new LabeledIntTreeMap(this.optimize);
+		this.nodeSetOfLabel = new Object2ObjectAVLTreeMap<>();
 		this.upperLabel = new LabeledContingentIntTreeMap(this.optimize);
 		this.lowerLabel = new LabeledContingentIntTreeMap(this.optimize);
-		this.removedLabeledValue = new LabeledIntNodeSetTreeMap(false);
+		this.removedLabeledValue = new LabeledIntTreeMap(false);
 		this.removedUpperLabel = new LabeledContingentIntTreeMap(false);
 	}
 
@@ -336,18 +344,20 @@ public class LabeledIntEdge extends Component {
 		if (e == null) {
 			this.setType(Type.normal);
 			this.optimize = forceOptimization;
-			this.labeledValue = new LabeledIntNodeSetTreeMap(this.optimize);
+			this.labeledValue = new LabeledIntTreeMap(this.optimize);
+			this.nodeSetOfLabel = new Object2ObjectAVLTreeMap<>();
 			this.upperLabel = new LabeledContingentIntTreeMap(this.optimize);
 			this.lowerLabel = new LabeledContingentIntTreeMap(this.optimize);
-			this.removedLabeledValue = new LabeledIntNodeSetTreeMap(false);
+			this.removedLabeledValue = new LabeledIntTreeMap(false);
 			this.removedUpperLabel = new LabeledContingentIntTreeMap(false);
 		} else {
 			this.type = e.type;
 			this.optimize = forceOptimization;
-			this.labeledValue = new LabeledIntNodeSetTreeMap(e.labeledValue, this.optimize);
+			this.labeledValue = new LabeledIntTreeMap(e.labeledValue, this.optimize);
+			this.nodeSetOfLabel = new Object2ObjectAVLTreeMap<>(e.nodeSetOfLabel);
 			this.upperLabel = new LabeledContingentIntTreeMap(e.upperLabel, this.optimize);
 			this.lowerLabel = new LabeledContingentIntTreeMap(e.lowerLabel, this.optimize);
-			this.removedLabeledValue = new LabeledIntNodeSetTreeMap(e.removedLabeledValue, false);
+			this.removedLabeledValue = new LabeledIntTreeMap(e.removedLabeledValue, false);
 			this.removedUpperLabel = new LabeledContingentIntTreeMap(e.removedUpperLabel, false);
 		}
 	}
@@ -360,10 +370,11 @@ public class LabeledIntEdge extends Component {
 		super(n);
 		this.setType(Type.normal);
 		this.optimize = optimized;
-		this.labeledValue = new LabeledIntNodeSetTreeMap(this.optimize);
+		this.labeledValue = new LabeledIntTreeMap(this.optimize);
+		this.nodeSetOfLabel = new Object2ObjectAVLTreeMap<>();
 		this.upperLabel = new LabeledContingentIntTreeMap(this.optimize);
 		this.lowerLabel = new LabeledContingentIntTreeMap(this.optimize);
-		this.removedLabeledValue = new LabeledIntNodeSetTreeMap(false);
+		this.removedLabeledValue = new LabeledIntTreeMap(false);
 		this.removedUpperLabel = new LabeledContingentIntTreeMap(false);
 	}
 
@@ -394,11 +405,32 @@ public class LabeledIntEdge extends Component {
 	}
 
 	/**
+	 * Add node name set to the set of node associated to label 'label'.
+	 * 
+	 * @param label label
+	 * @param nodeNameSet 
+	 */
+	public void add2NodeSet(final Label label, SortedSet<String> nodeNameSet) {
+		if (label == null) return;
+		if (nodeNameSet==null) {
+			this.nodeSetOfLabel.remove(label);
+			return;
+		}
+		SortedSet<String> set = this.nodeSetOfLabel.get(label);
+		if (set == null) {
+			set = new ObjectRBTreeSet<>();
+			nodeSetOfLabel.put(label, set);
+		}
+		set.addAll(nodeNameSet);
+	}
+
+	/**
 	 * Clear (remove) all labeled values associated to this edge.
 	 */
 	public void clear() {
 		this.labeledValue.clear();
 		this.upperLabel.clear();
+		this.nodeSetOfLabel.clear();
 		this.lowerLabel.clear();
 		this.removedLabeledValue.clear();
 		this.removedUpperLabel.clear();
@@ -424,20 +456,6 @@ public class LabeledIntEdge extends Component {
 	public void clearUpperLabels() {
 		this.upperLabel.clear();
 	}
-
-	/**
-	 * @return the initialCaseLabel
-	 *         public String getInitialCaseLabel() {
-	 *         return initialCaseLabel;
-	 *         }
-	 */
-
-	/**
-	 * @param initialCaseLabel the initialCaseLabel to set
-	 *            public void setInitialCaseLabel(String initialCaseLabel) {
-	 *            this.initialCaseLabel = initialCaseLabel;
-	 *            }
-	 */
 
 	/**
 	 * A different kind of equals. It allows one to compare two edges with respect to their labeled values.
@@ -470,7 +488,7 @@ public class LabeledIntEdge extends Component {
 	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */
-	public LabeledIntNodeSetMap getLabeledValueMap() {
+	public LabeledIntMap getLabeledValueMap() {
 		return this.labeledValue;
 	}
 
@@ -549,18 +567,17 @@ public class LabeledIntEdge extends Component {
 
 	/**
 	 * @param label label
-	 * @return the node set associated to label it it exists, {@link LabeledIntMap#INT_NULL} otherwise.
+	 * @return the node set associated to label it it exists, null otherwise.
 	 */
-	public Set<String> getNodeSet(final Label label) {
-		ValueNodeSetPair vnsp = this.labeledValue.get(label);
-		if (vnsp != null) return vnsp.getNodeSet();
-		return null;
+	public SortedSet<String> getNodeSet(final Label label) {
+		SortedSet<String> set = this.nodeSetOfLabel.get(label);
+		return set;
 	}
 
 	/**
 	 * @return the labeled values that cannot be further added to the labeled value set of this edge
 	 */
-	public LabeledIntNodeSetMap getRemovedLabeledValuesMap() {
+	public LabeledIntMap getRemovedLabeledValuesMap() {
 		return this.removedLabeledValue;
 	}
 
@@ -635,13 +652,6 @@ public class LabeledIntEdge extends Component {
 	/**
 	 * @return the labeled values as a set
 	 */
-	public Set<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> labeledValueAndNodeSet() {
-		return this.labeledValue.object2ObjectEntrySet();
-	}
-
-	/**
-	 * @return the labeled values as a set
-	 */
 	public Set<Object2IntMap.Entry<Label>> labeledValueSet() {
 		return this.labeledValue.entrySet();
 	}
@@ -671,18 +681,14 @@ public class LabeledIntEdge extends Component {
 	@SuppressWarnings("javadoc")
 	public boolean mergeLabeledValue(final Label l, final int i) {
 		if ((l == null) || (i == LabeledIntMap.INT_NULL)) return false;
-		final ValueNodeSetPair pairValueNodeSet = this.removedLabeledValue.get(l);
-		if (pairValueNodeSet != null) {
-			final int oldValue = pairValueNodeSet.getValue();
-
-			if ((oldValue != LabeledIntMap.INT_NULL) && ((i >= oldValue) && pairValueNodeSet.isNodeSetNullOrEmpty())) {
-				// The new value is greater or equal the old one and there is not node set associated, the new value can be ignored.
-				// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
-				if (LOG.isLoggable(Level.FINEST))
-					LabeledIntEdge.LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
-							+ oldValue + ") is in the removed list");
-				return false;
-			}
+		final int oldValue = this.removedLabeledValue.getValue(l);
+		if ((oldValue != LabeledIntMap.INT_NULL) && (i >= oldValue)) {
+			// The new value is greater or equal the old one, the new value can be ignored.
+			// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
+			if (LOG.isLoggable(Level.FINEST))
+				LabeledIntEdge.LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
+						+ oldValue + ") is in the removed list");
+			return false;
 		}
 		boolean exit = this.labeledValue.put(l, i);
 		return exit;
@@ -697,25 +703,10 @@ public class LabeledIntEdge extends Component {
 	 * @see LabeledValueTreeMap#put(Label, int)
 	 */
 	@SuppressWarnings("javadoc")
-	public boolean mergeLabeledValue(final Label l, final int i, Set<String> ns) {
+	public boolean mergeLabeledValue(final Label l, final int i, SortedSet<String> ns) {
 		if ((l == null) || (i == LabeledIntMap.INT_NULL)) return false;
-		if (ns == null || ns.isEmpty()) return mergeLabeledValue(l, i);
-		final ValueNodeSetPair pairValueNodeSet = this.removedLabeledValue.get(l);
-		if (pairValueNodeSet != null) {
-			final int oldValue = pairValueNodeSet.getValue();
-			final Set<String> nodeSet = pairValueNodeSet.getNodeSet();
-
-			if ((oldValue != LabeledIntMap.INT_NULL) && ((i >= oldValue) && (nodeSet != null && nodeSet.containsAll(ns)))) {
-				// The new value is greater or equal the old one and their node set are equals, the new value can be ignored.
-				// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
-				if (LOG.isLoggable(Level.FINEST))
-					LabeledIntEdge.LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ", " + ns + ") will be not stored because the labeled value ("
-							+ l	+ ", " + oldValue + ", " + ns + ") is in the removed list");
-				return false;
-			}
-		}
-		boolean exit = this.labeledValue.put(l, i, ns);
-		return exit;
+		this.add2NodeSet(l, ns);
+		return mergeLabeledValue(l, i);
 	}
 
 	/**
@@ -724,14 +715,6 @@ public class LabeledIntEdge extends Component {
 	public void mergeLabeledValue(final LabeledIntMap map) {
 		for (Object2IntMap.Entry<Label> entry : map.entrySet())
 			this.labeledValue.put(entry.getKey(), entry.getIntValue());
-	}
-
-	/**
-	 */
-	@SuppressWarnings("javadoc")
-	public void mergeLabeledValue(final LabeledIntNodeSetMap map) {
-		for (it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : map.object2ObjectEntrySet())
-			this.labeledValue.put(entry.getKey(), entry.getValue().getValue(), entry.getValue().getNodeSet());
 	}
 
 	/**
@@ -839,19 +822,6 @@ public class LabeledIntEdge extends Component {
 	}
 
 	/**
-	 * Put the labeled value (l, i, node set) to the list of removed labeled values in order to avoid possible future put/merge of
-	 * the same pair.
-	 *
-	 * @param l
-	 * @param i
-	 * @param nodeNameSet
-	 * @return the previous value if there exists one, null otherwise.
-	 */
-	public int putLabeledValueToRemovedList(final Label l, final int i, final Set<String> nodeNameSet) {
-		return this.removedLabeledValue.putForcibly(l, i, nodeNameSet);
-	}
-
-	/**
 	 * Put the labeled value (l, n, i) to the list of removed labeled values in order to avoid possible future put/merge
 	 * of the same pair.
 	 *
@@ -939,18 +909,11 @@ public class LabeledIntEdge extends Component {
 	 * @param labeledValue the labeledValue to set
 	 */
 	public void setLabeledValue(final LabeledIntMap labeledValue) {
-		LabeledIntNodeSetMap map = new LabeledIntNodeSetTreeMap(this.optimize);
+		LabeledIntMap map = new LabeledIntTreeMap(this.optimize);
 		for (Object2IntMap.Entry<Label> entry : labeledValue.entrySet()) {
-			map.put(entry.getKey(), entry.getIntValue(), null);
+			map.put(entry.getKey(), entry.getIntValue());
 		}
 		this.labeledValue = map;
-	}
-
-	/**
-	 * @param labeledValue the labeledValue to set
-	 */
-	public void setLabeledValue(final LabeledIntNodeSetMap labeledValue) {
-		this.labeledValue = ((labeledValue == null) ? new LabeledIntNodeSetTreeMap(this.optimize) : labeledValue);
 	}
 
 	/**

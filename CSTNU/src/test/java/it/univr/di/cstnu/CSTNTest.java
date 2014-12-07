@@ -5,7 +5,7 @@ package it.univr.di.cstnu;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.univr.di.cstnu.CSTN.CheckStatus;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
@@ -276,7 +276,7 @@ public class CSTNTest {
 		g1.removeEdge(g1.findEdge(g1.getNode("X"), g1.getNode("Y")));
 		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, Y, g1, new CheckStatus());//Y is Z!!!
 		xyOK.clearLabels();
-		ObjectArraySet<String> ns = new ObjectArraySet<>();
+		ObjectAVLTreeSet<String> ns = new ObjectAVLTreeSet<>();
 		ns.add(P.getName());
 		xyOK.mergeLabeledValue(Label.parse("¬B"), 10);
 		xyOK.mergeLabeledValue(Label.parse("B"), -11, ns);

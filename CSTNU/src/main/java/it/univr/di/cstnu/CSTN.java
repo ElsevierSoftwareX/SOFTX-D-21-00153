@@ -1,7 +1,7 @@
 package it.univr.di.cstnu;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.univr.di.cstnu.WellDefinitionException.Type;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
@@ -12,11 +12,11 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
-import it.univr.di.labeledvalue.ValueNodeSetPair;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -337,11 +337,10 @@ public class CSTN {
 			return false;
 		}
 		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R0: start.");
-		for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> obsXLabeledValue : PX.labeledValueAndNodeSet()) {
-			final int w = obsXLabeledValue.getValue().getValue();
-			final Set<String> nodeSet = obsXLabeledValue.getValue().getNodeSet();
-			if ((w > 0) || (instantaneousReaction && (w == 0))) continue;
+		for (final Object2IntMap.Entry<Label> obsXLabeledValue : PX.labeledValueSet()) {
+			final int w = obsXLabeledValue.getIntValue();
 			final Label l = obsXLabeledValue.getKey();
+			if ((w > 0) || (instantaneousReaction && (w == 0))) continue;
 			if (l.getLiteralWithSameName(p) == null) continue;
 			if (PX.getValue(l) == LabeledIntMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
 
@@ -357,11 +356,11 @@ public class CSTN {
 						+ "\nresult: " + P.getName() + " ---(" + alphaPrime + ", " + formatInt(w) + ")--- " + X.getName();
 			}
 
-			PXinNextGraph.putLabeledValueToRemovedList(l, w, nodeSet);
+			PXinNextGraph.putLabeledValueToRemovedList(l, w);
 			// PXinNextGraph.removeLabel(l); It is not necessary, the introduction of new label remove it!
 			status.r0calls++;
 			ruleApplied = true;
-			mergeStatus = PXinNextGraph.mergeLabeledValue(alphaPrime, w, null);
+			mergeStatus = PXinNextGraph.mergeLabeledValue(alphaPrime, w);
 			if (mergeStatus && CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, logMessage);
 			if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(alphaPrime, w, PXinNextGraph))) return ruleApplied;
 		}
@@ -402,25 +401,21 @@ public class CSTN {
 		boolean ruleApplied = false;
 		final Literal p = nObs.getPropositionObserved();
 		final LabeledNode Z = currentGraph.getZ();
-		for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entryObsX : eObsX.labeledValueAndNodeSet()) {
-			final int w = entryObsX.getValue().getValue();
+		for (final Object2IntMap.Entry<Label> entryObsX : eObsX.labeledValueSet()) {
+			final int w = entryObsX.getIntValue();
 			final Label labelObsX = entryObsX.getKey();
-
 			if ((w > 0) || (labelObsX.getLiteralWithSameName(p) != null)) continue; // R1 works with negative w associated to a label without 'p'.
 
-			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entryXY : eXY.labeledValueAndNodeSet()) {
-				final int v = entryXY.getValue().getValue();
-				final Set<String> nodeSetXY = entryXY.getValue().getNodeSet();
+			for (final Object2IntMap.Entry<Label> entryXY : eXY.labeledValueSet()) {
+				final int v = entryXY.getIntValue();
 				// condition on v value and its relation with w.
 				// w is surely <=0; v can be any value. R1 has to applied when v<=-w (in case of instantaneous, v<-w).
 				if ((v > -w) || (instantaneousReaction && (v == -w))) continue; // R1 cannot be applied
-
 				final Label labelXY = entryXY.getKey();
 				if (labelXY.getLiteralWithSameName(p) == null) continue; // R1 is applied when edge X-->Y contains a label having 'p'
 				if ((nY != Z) && (!labelObsX.isConsistentWith(labelXY) || labelObsX.containsUnknown())) continue; // and it is consistent with label P?-->X (if
 																													// Y is Z, the rule can be applied using ¿
 																													// literals!)
-
 				final Label labelXYWithoutP = new Label(labelXY);
 				labelXYWithoutP.removeAllLiteralsWithSameName(p);
 
@@ -438,8 +433,8 @@ public class CSTN {
 					throw new IllegalStateException("Rule R1 cannot determine label that does not subsume node labels!");
 				}
 
-				eXYnew.putLabeledValueToRemovedList(labelXY, v, nodeSetXY);
-				ruleApplied = eXYnew.mergeLabeledValue(abg1, v, null);
+				eXYnew.putLabeledValueToRemovedList(labelXY, v);
+				ruleApplied = eXYnew.mergeLabeledValue(abg1, v);
 				if (ruleApplied) {
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R1 adds a label to edge " + eXY
 							+ ":\npartic: "
@@ -575,9 +570,8 @@ public class CSTN {
 
 			if ((w > 0) || (labelObsX.getLiteralWithSameName(p) != null)) continue; // R3 and R5 work with negative w.
 
-			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entryYX : eYX.labeledValueAndNodeSet()) {
-				final int v = entryYX.getValue().getValue();
-				final Set<String> nodeSetYX = entryYX.getValue().getNodeSet();
+			for (final Object2IntMap.Entry<Label> entryYX : eYX.labeledValueSet()) {
+				final int v = entryYX.getIntValue();
 				final int max = Math.max(w, v);
 
 				final Label labelYX = entryYX.getKey();
@@ -598,8 +592,8 @@ public class CSTN {
 					continue;
 				}
 
-				eYXnew.putLabeledValueToRemovedList(labelYX, v, nodeSetYX);
-				ruleApplied = eYXnew.mergeLabeledValue(abg1, max, null);
+				eYXnew.putLabeledValueToRemovedList(labelYX, v);
+				ruleApplied = eYXnew.mergeLabeledValue(abg1, max);
 				if (ruleApplied) {
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R3R5 adds a labeled value to edge " + eYX.getName() + ":\n"
 							+ "partic: " + nObs.getName() + " ---(" + labelObsX + ", " + formatInt(w) + ")---> " + nX.getName()
@@ -648,14 +642,13 @@ public class CSTN {
 		}
 
 		boolean ruleApplied = false;
-		for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> ABEntry : AB.labeledValueAndNodeSet()) {
+		for (final Object2IntMap.Entry<Label> ABEntry : AB.labeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
-			final int x = ABEntry.getValue().getValue();
-			for (final Object2ObjectMap.Entry<Label, it.univr.di.labeledvalue.ValueNodeSetPair> BCEntry : BC.labeledValueAndNodeSet()) {
+			final int x = ABEntry.getIntValue();
+			for (final Object2IntMap.Entry<Label> BCEntry : BC.labeledValueSet()) {
 				final Label labelBC = BCEntry.getKey();
-				final ValueNodeSetPair vnsPair = BCEntry.getValue();
-				final int y = vnsPair.getValue();
-				final Set<String> nodeSetBC = vnsPair.getNodeSet();
+				final int y = BCEntry.getIntValue();
+				final SortedSet<String> nodeSetBC = BC.getNodeSet(labelBC);
 
 				final boolean isQPath = (C == Z) && ((x <= 0) && (y < 0));
 				final Label newLabelAC = (isQPath) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
@@ -664,9 +657,9 @@ public class CSTN {
 				int sum = LabeledIntTreeMap.sumWithOverflowCheck(x, y);
 				final int oldZ = (AC != null) ? AC.getValue(newLabelAC) : LabeledIntMap.INT_NULL;
 
-				Set<String> sigma = null;
+				SortedSet<String> sigma = null;
 				if (C == Z) {
-					final boolean isAInNodeSet = vnsPair.containsInNodeSet(A.getName());
+					final boolean isAInNodeSet = (nodeSetBC == null) ? false : nodeSetBC.contains(A.getName());
 					if (isAInNodeSet && sum < 0) { // the only other possibility is that sum==0
 						sum = Constants.INT_NEG_INFINITE;
 						if (CSTN.LOG.isLoggable(Level.FINER))
@@ -678,7 +671,7 @@ public class CSTN {
 					}
 					if (((x <= 0) && (y < 0)) && (sum != Constants.INT_NEG_INFINITE)) {
 						// when z == Constants.INT_NEG_INFINITE, the value can propagate without node set.
-						sigma = ValueNodeSetPair.newSetInstance();
+						sigma = new ObjectAVLTreeSet<>();
 						sigma.add(B.getName());
 						if (nodeSetBC != null) {
 							sigma.addAll(nodeSetBC);
@@ -1031,7 +1024,6 @@ public class CSTN {
 		if (n == Constants.INT_NULL) return "null";
 		return String.valueOf(n);
 	}
-	
 
 	/**
 	 * logger
@@ -1080,7 +1072,7 @@ public class CSTN {
 		nextGraph = new LabeledIntGraph(currentGraph, this.labelOptimization);
 
 		final int n = currentGraph.getVertexCount();
-		final int maxCycles =  n * n * n / 2;// FIXME after the proof of completeness
+		final int maxCycles = n * n * n / 2;// FIXME after the proof of completeness
 		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 
 		int i;
@@ -1112,6 +1104,7 @@ public class CSTN {
 		// Put all data structures of currentGraph in g
 		nextGraph.cloneCleaningRedundantLabels(currentGraph);
 		g.takeIn(nextGraph);
+//		g.takeIn(currentGraph);
 		return status;
 	}
 

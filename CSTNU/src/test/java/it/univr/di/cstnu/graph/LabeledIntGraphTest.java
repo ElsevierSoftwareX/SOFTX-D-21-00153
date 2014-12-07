@@ -1,16 +1,17 @@
 package it.univr.di.cstnu.graph;
 
-import static org.junit.Assert.*;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.univr.di.cstnu.CSTN;
 import it.univr.di.cstnu.WellDefinitionException;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
-import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
-import java.util.Set;
+import java.util.SortedSet;
 
 import org.junit.Test;
 
@@ -90,29 +91,27 @@ public class LabeledIntGraphTest {
 		g.addVertex(U);
 		g.setZ(Z);
 		
-		Set<String> XU = new ObjectArraySet<>();
+		SortedSet<String> XU = new ObjectAVLTreeSet<>();
 		XU.add("X");
 		XU.add("U");
-		Set<String> XUY = new ObjectArraySet<>();
+		SortedSet<String> XUY = new ObjectAVLTreeSet<>();
 		XUY.add("X");
 		XUY.add("U");
 		XUY.add("Y");
 		
-		Set<String> YXW = new ObjectArraySet<>();
+		SortedSet<String> YXW = new ObjectAVLTreeSet<>();
 		YXW.add("Y");
 		YXW.add("X");
 		YXW.add("W");
 
-		LabeledIntNodeSetMap map = new LabeledIntNodeSetTreeMap(true);
-		map.put(Label.parse("¬p¿q"), -13, XU);
-		map.put(Label.parse("¬p¬q"), -13, XU);
-		map.put(Label.parse("¿p"), -15, null);
-		map.put(Label.parse("¿p¬q"), -22, XUY);
-		map.put(Label.emptyLabel, -10, null);
-		map.put(Label.parse("¿p¿q"), Constants.INT_NEG_INFINITE, YXW);
-		
 		LabeledIntEdge eUZ = new LabeledIntEdge("eUZ", LabeledIntEdge.Type.derived, true);
-		eUZ.setLabeledValue(map);
+		eUZ.mergeLabeledValue(Label.parse("¬p¿q"), -13, XU);
+		eUZ.mergeLabeledValue(Label.parse("¬p¬q"), -13, XU);
+		eUZ.mergeLabeledValue(Label.parse("¿p"), -15, null);
+		eUZ.mergeLabeledValue(Label.parse("¿p¬q"), -22, XUY);
+		eUZ.mergeLabeledValue(Label.emptyLabel, -10, null);
+		eUZ.mergeLabeledValue(Label.parse("¿p¿q"), Constants.INT_NEG_INFINITE, YXW);
+		
 		
 		g.addEdge(eUZ, U, Z);
 		

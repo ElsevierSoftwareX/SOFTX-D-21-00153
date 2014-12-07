@@ -9,8 +9,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.cstnu.CSTNUEditor;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
-import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMap;
+import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 import java.awt.Cursor;
@@ -290,7 +290,7 @@ MouseListener {
 				modified = true;
 			}
 
-			final LabeledIntNodeSetMap comp = new LabeledIntNodeSetTreeMap(e.optimize);
+			final LabeledIntMap comp = new LabeledIntTreeMap(e.optimize);
 			Label l;
 			String s, is;
 			// It is more safe to build a new Label set and put substitute the old one with the present.
