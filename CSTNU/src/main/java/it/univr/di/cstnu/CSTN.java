@@ -653,40 +653,44 @@ public class CSTN {
 			final int x = ABEntry.getValue().getValue();
 			for (final Object2ObjectMap.Entry<Label, it.univr.di.labeledvalue.ValueNodeSetPair> BCEntry : BC.labeledValueAndNodeSet()) {
 				final Label labelBC = BCEntry.getKey();
-				final int y = BCEntry.getValue().getValue();
-				final Set<String> nodeSetBC = BCEntry.getValue().getNodeSet();
+				final ValueNodeSetPair vnsPair = BCEntry.getValue();
+				final int y = vnsPair.getValue();
+				final Set<String> nodeSetBC = vnsPair.getNodeSet();
 
 				final boolean isQPath = (C == Z) && ((x <= 0) && (y < 0));
 				final Label newLabelAC = (isQPath) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
 				if (newLabelAC == null) continue;
 
-				int z = LabeledIntTreeMap.sumWithOverflowCheck(x, y);
+				int sum = LabeledIntTreeMap.sumWithOverflowCheck(x, y);
 				final int oldZ = (AC != null) ? AC.getValue(newLabelAC) : LabeledIntMap.INT_NULL;
 
 				Set<String> sigma = null;
 				if (C == Z) {
-					final boolean isAInNodeSet = BCEntry.getValue().containsInNodeSet(A.getName());
-					if (isAInNodeSet && z < 0) { // the only other possibility is that z==0
-						z = Constants.INT_NEG_INFINITE;
+					final boolean isAInNodeSet = vnsPair.containsInNodeSet(A.getName());
+					if (isAInNodeSet && sum < 0) { // the only other possibility is that sum==0
+						sum = Constants.INT_NEG_INFINITE;
 						if (CSTN.LOG.isLoggable(Level.FINER))
 							CSTN.LOG.log(Level.FINER, "QLoop detected during the updated of " + ACinNextGraph.getName() + ": "
-//									+ "partic: " + A.getName() + " --(" + labelAB + ", " + formatInt(x) + ")--> " + B.getName() + " --(" + labelBC + ", "
+									// + "partic: " + A.getName() + " --(" + labelAB + ", " + formatInt(x) + ")--> " + B.getName() + " --(" + labelBC + ", "
 //									+ formatInt(y) + ")--> " + C.getName()
 									+ "\nNode " + A.getName() + " is in the node set of label '" + labelBC + "' of the edge " + BC.getName()
 									+ ". New labeled = (" + newLabelAC + ", -" + Constants.INFINITY_SYMBOLstring + ").");
 					}
-					if (((x <= 0) && (y < 0)) && (z != Constants.INT_NEG_INFINITE)) {
+					if (((x <= 0) && (y < 0)) && (sum != Constants.INT_NEG_INFINITE)) {
 						// when z == Constants.INT_NEG_INFINITE, the value can propagate without node set.
-						sigma = (nodeSetBC == null) ? new ObjectArraySet<String>() : new ObjectArraySet<>(nodeSetBC);
-						// I add only B because the endpoints are specified by the edge.
+						sigma = ValueNodeSetPair.newSetInstance();
 						sigma.add(B.getName());
+						if (nodeSetBC != null) {
+							sigma.addAll(nodeSetBC);
+						}
+						// I add only B because the endpoints are specified by the edge.
 						if (CSTN.LOG.isLoggable(Level.FINEST))
 							CSTN.LOG.log(Level.FINEST, "The new node set to add to label '" + newLabelAC + "' on edge " + ACinNextGraph.getName() + " is "
 									+ sigma);
 					}
 				}
 
-				if (ACinNextGraph.mergeLabeledValue(newLabelAC, z, sigma)) {
+				if (ACinNextGraph.mergeLabeledValue(newLabelAC, sum, sigma)) {
 					ruleApplied = true;
 					status.labeledValuePropagationcalls++;
 					if (CSTN.LOG.isLoggable(Level.FINER)) {
@@ -695,13 +699,13 @@ public class CSTN {
 								+ ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
 								+ ")--> " + B.getName() + " --(" + labelBC + ", " + formatInt(y) + ")--> " + C.getName()
 								+ "\nresult: " + A.getName() + " --(" + newLabelAC + ", "
-								+ formatInt(z)
+								+ formatInt(sum)
 								+ ((sigma != null && !sigma.isEmpty()) ? ", " + sigma.toString() : "")
 								+ ")--> " + C.getName() + "; old value: "
 								+ formatInt(oldZ) + ", " + ((AC != null) ? AC.getNodeSet(newLabelAC) : ""));
 					}
 				}
-				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(newLabelAC, z, ACinNextGraph))) return ruleApplied;
+				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(newLabelAC, sum, ACinNextGraph))) return ruleApplied;
 			}
 		}
 		if (A == C) { // self loop, check if there is a negative loop!
@@ -812,8 +816,8 @@ public class CSTN {
 		if (CSTN.LOG.isLoggable(Level.FINER))
 			CSTN.LOG.log(Level.FINER, "End application labeled propagation rule.\n\nSituation after the labeled propagation rule.");
 		final boolean noChanged = nextGraph.hasSameEdgesOf(currentGraph);
-		currentGraph.clone(nextGraph);
 
+		currentGraph.clone(nextGraph);
 		node = currentGraph.getVerticesArray();
 		Z = currentGraph.getZ();
 		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Start application rule R0--R5.");
@@ -1027,6 +1031,7 @@ public class CSTN {
 		if (n == Constants.INT_NULL) return "null";
 		return String.valueOf(n);
 	}
+	
 
 	/**
 	 * logger
@@ -1075,7 +1080,7 @@ public class CSTN {
 		nextGraph = new LabeledIntGraph(currentGraph, this.labelOptimization);
 
 		final int n = currentGraph.getVertexCount();
-		final int maxCycles = 100;// n * n * n / 2;// FIXME after the proof of completeness
+		final int maxCycles =  n * n * n / 2;// FIXME after the proof of completeness
 		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 
 		int i;
@@ -1090,7 +1095,7 @@ public class CSTN {
 				return status;
 			}
 			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "*** End Cycle " + i + "/" + maxCycles + " ***\n\n");
-			currentGraph.clone(nextGraph);
+			currentGraph = new LabeledIntGraph(nextGraph, this.labelOptimization);
 		}
 
 		if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, status.toString());
@@ -1105,7 +1110,8 @@ public class CSTN {
 		if (CSTN.LOG.isLoggable(Level.INFO))
 			CSTN.LOG.log(Level.INFO, "Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles);
 		// Put all data structures of currentGraph in g
-		g.takeIn(currentGraph);
+		nextGraph.cloneCleaningRedundantLabels(currentGraph);
+		g.takeIn(nextGraph);
 		return status;
 	}
 

@@ -285,17 +285,18 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 		// VERTEX setting
 		// vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+		vv1.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		vv1.getRenderContext().setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
 		vv1.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
-		vv1.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+
+		vv2.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 		vv2.getRenderContext().setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
 		vv2.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
-		vv2.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
 
 		// EDGE setting
 		vv1.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
-		vv1.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
 		vv1.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
+		vv1.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
 		vv1.getRenderContext().setEdgeDrawPaintTransformer(
 				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
 		vv1.getRenderContext().setArrowDrawPaintTransformer(
@@ -304,10 +305,10 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
 
 		vv2.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
-		vv2.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
-		vv2.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
 		vv2.getRenderContext().setEdgeDrawPaintTransformer(
 				LabeledIntEdge.edgeDrawPaintTransformer(vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		vv2.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
+		vv2.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
 		vv2.getRenderContext().setArrowDrawPaintTransformer(
 				LabeledIntEdge.edgeDrawPaintTransformer(vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
 		vv2.getRenderContext().setArrowFillPaintTransformer(
@@ -1042,4 +1043,3 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	}
 
 }
-

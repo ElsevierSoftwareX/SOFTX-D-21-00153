@@ -121,6 +121,7 @@ public class LabeledIntGraphTest {
 		LabeledIntGraph g1 = new LabeledIntGraph(true);
 		g1.clone(g);
 		 
+		
 		assertEquals(g.toString(), g1.toString());
 		assertTrue(g1.hasSameEdgesOf(g));
 		

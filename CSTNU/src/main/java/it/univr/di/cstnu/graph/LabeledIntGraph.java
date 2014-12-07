@@ -3,10 +3,12 @@
  */
 package it.univr.di.cstnu.graph;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
 
@@ -196,6 +198,46 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 		}
 	}
 
+	
+	/**
+	 * @param g
+	 */
+	public void cloneCleaningRedundantLabels(LabeledIntGraph g) {
+		this.name = g.name;
+		this.optimize = g.optimize;
+		this.edges.clear();
+		this.vertices.clear();
+		this.clearCache();
+		// clone all nodes
+		LabeledNode vNew;
+		for (final LabeledNode v : g.getVerticesArray()) {
+			vNew = new LabeledNode(v);
+			this.addVertex(vNew);
+			if (v.equalsByName(g.Z)) {
+				this.Z = vNew;
+			}
+		}
+
+		// clone all edges giving the right new endpoints corresponding the old ones.
+		LabeledIntEdge eNew;
+		int value;
+		Label label;
+		for (final LabeledIntEdge e : g.getEdges()) {
+			eNew = new LabeledIntEdge(e.getName(), e.getType(), this.optimize);
+			for( Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
+				value = entry.getIntValue();
+				if (value == Constants.INT_NEG_INFINITE) continue;
+				label = entry.getKey();
+				if (label.containsUnknown()) continue;
+				eNew.mergeLabeledValue(entry.getKey(), value);
+			}
+			for( Object2IntMap.Entry<Entry<Label, String>> entry : e.getUpperLabelSet()) {
+				eNew.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
+			}
+			this.addEdge(eNew, this.getNode(g.getSource(e).getName()), this.getNode(g.getDest(e).getName()));
+		}
+	}
+	
 	/**
 	 * Equals based on equals of edges and vertices.
 	 *

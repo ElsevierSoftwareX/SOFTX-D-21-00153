@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
  *
  */
 @RunWith(Suite.class)
-@SuiteClasses({ LabeledIntEdgeTest.class, LabeledNodeTest.class })
+@SuiteClasses({ LabeledIntEdgeTest.class, LabeledNodeTest.class, LabeledIntGraphTest.class })
 public class AllTests {
 
 }

@@ -70,78 +70,6 @@ public class LabeledIntEdge extends Component {
 	}
 
 	/**
-	 * Returns a transformer to select the color that is used to draw the edge. This transformer uses the type and the
-	 * state of the edge to
-	 * select the color.
-	 *
-	 * @param pi
-	 * @param pickedPaint
-	 * @param normalPaint
-	 * @param contingentPaint
-	 * @param derivedPaint
-	 * @return a transformer object to draw an edge with a different color when it is picked.
-	 */
-	public static final Transformer<LabeledIntEdge, Paint> edgeDrawPaintTransformer(final PickedInfo<LabeledIntEdge> pi, final Paint pickedPaint,
-			final Paint normalPaint,
-			final Paint contingentPaint, final Paint derivedPaint) {
-
-		final Paint[] paintMap = new Paint[] { normalPaint, contingentPaint, derivedPaint, derivedPaint, normalPaint };
-
-		return new Transformer<LabeledIntEdge, Paint>() {
-			@Override
-			public Paint transform(final LabeledIntEdge e) {
-				if (e == null) return normalPaint;
-				// LabeledIntEdge.LOG.finer("LabeledIntEdge: " + e + ", picked: " + pi.isPicked(e));
-				if (pi.isPicked(e)) return pickedPaint;
-				return paintMap[e.getType().ordinal()];
-			}
-		};
-	}
-
-	/**
-	 * @return a simple factory!
-	 */
-	public static Factory<LabeledIntEdge> getFactory() {
-		return new Factory<LabeledIntEdge>() {
-			@Override
-			public LabeledIntEdge create() {
-				return this.create(true);
-			}
-
-			public LabeledIntEdge create(final boolean optimized) {
-				final LabeledIntEdge e = new LabeledIntEdge(optimized);
-				return e;
-			}
-		};
-	}
-
-	/**
-	 * An edge is usually draw as an arc between two points. The area delimited by the arc and the straight line
-	 * connecting the two edge
-	 * points can be filled by a color.
-	 *
-	 * @param normalPaint
-	 * @param contingentPaint
-	 * @param derivedPaint
-	 * @return a transformer object to fill an edge 'area' with a color depending on edge type.
-	 */
-	static final Transformer<LabeledIntEdge, Paint> edgeFillPaintTransformer(final Paint normalPaint,
-			final Paint contingentPaint, final Paint derivedPaint) {
-		return new Transformer<LabeledIntEdge, Paint>() {
-			/**
-			 * logger
-			 */
-			final Paint[] paintMap = { normalPaint, contingentPaint, derivedPaint };
-
-			@Override
-			public Paint transform(final LabeledIntEdge e) {
-				if (e == null) return normalPaint;
-				return this.paintMap[e.getType().ordinal()];
-			}
-		};
-	}
-
-	/**
 	 * A transformer to return a label for the edge
 	 */
 	public static final ToStringLabeller<LabeledIntEdge> edgeLabelTransformer = new ToStringLabeller<LabeledIntEdge>() {
@@ -225,6 +153,78 @@ public class LabeledIntEdge extends Component {
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Returns a transformer to select the color that is used to draw the edge. This transformer uses the type and the
+	 * state of the edge to
+	 * select the color.
+	 *
+	 * @param pi
+	 * @param pickedPaint
+	 * @param normalPaint
+	 * @param contingentPaint
+	 * @param derivedPaint
+	 * @return a transformer object to draw an edge with a different color when it is picked.
+	 */
+	public static final Transformer<LabeledIntEdge, Paint> edgeDrawPaintTransformer(final PickedInfo<LabeledIntEdge> pi, final Paint pickedPaint,
+			final Paint normalPaint,
+			final Paint contingentPaint, final Paint derivedPaint) {
+
+		final Paint[] paintMap = new Paint[] { normalPaint, contingentPaint, derivedPaint, derivedPaint, normalPaint };
+
+		return new Transformer<LabeledIntEdge, Paint>() {
+			@Override
+			public Paint transform(final LabeledIntEdge e) {
+				if (e == null) return normalPaint;
+				// LabeledIntEdge.LOG.finer("LabeledIntEdge: " + e + ", picked: " + pi.isPicked(e));
+				if (pi.isPicked(e)) return pickedPaint;
+				return paintMap[e.getType().ordinal()];
+			}
+		};
+	}
+
+	/**
+	 * @return a simple factory!
+	 */
+	public static Factory<LabeledIntEdge> getFactory() {
+		return new Factory<LabeledIntEdge>() {
+			@Override
+			public LabeledIntEdge create() {
+				return this.create(true);
+			}
+
+			public LabeledIntEdge create(final boolean optimized) {
+				final LabeledIntEdge e = new LabeledIntEdge(optimized);
+				return e;
+			}
+		};
+	}
+
+	/**
+	 * An edge is usually draw as an arc between two points. The area delimited by the arc and the straight line
+	 * connecting the two edge
+	 * points can be filled by a color.
+	 *
+	 * @param normalPaint
+	 * @param contingentPaint
+	 * @param derivedPaint
+	 * @return a transformer object to fill an edge 'area' with a color depending on edge type.
+	 */
+	static final Transformer<LabeledIntEdge, Paint> edgeFillPaintTransformer(final Paint normalPaint,
+			final Paint contingentPaint, final Paint derivedPaint) {
+		return new Transformer<LabeledIntEdge, Paint>() {
+			/**
+			 * logger
+			 */
+			final Paint[] paintMap = { normalPaint, contingentPaint, derivedPaint };
+
+			@Override
+			public Paint transform(final LabeledIntEdge e) {
+				if (e == null) return normalPaint;
+				return this.paintMap[e.getType().ordinal()];
+			}
+		};
+	}
 
 	/**
 	 * To activate all optimization code in order to remove the redundant label in the set.
@@ -548,6 +548,16 @@ public class LabeledIntEdge extends Component {
 	}
 
 	/**
+	 * @param label label
+	 * @return the node set associated to label it it exists, {@link LabeledIntMap#INT_NULL} otherwise.
+	 */
+	public Set<String> getNodeSet(final Label label) {
+		ValueNodeSetPair vnsp = this.labeledValue.get(label);
+		if (vnsp != null) return vnsp.getNodeSet();
+		return null;
+	}
+
+	/**
 	 * @return the labeled values that cannot be further added to the labeled value set of this edge
 	 */
 	public LabeledIntNodeSetMap getRemovedLabeledValuesMap() {
@@ -602,16 +612,6 @@ public class LabeledIntEdge extends Component {
 	}
 
 	/**
-	 * @param label label
-	 * @return the node set associated to label it it exists, {@link LabeledIntMap#INT_NULL} otherwise.
-	 */
-	public Set<String> getNodeSet(final Label label) {
-		ValueNodeSetPair vnsp = this.labeledValue.get(label);
-		if (vnsp != null) return vnsp.getNodeSet();
-		return null;
-	}
-
-	/**
 	 * @return true if the edge represent a contingent edge.
 	 */
 	public boolean isContingentEdge() {
@@ -635,15 +635,15 @@ public class LabeledIntEdge extends Component {
 	/**
 	 * @return the labeled values as a set
 	 */
-	public Set<Object2IntMap.Entry<Label>> labeledValueSet() {
-		return this.labeledValue.entrySet();
+	public Set<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> labeledValueAndNodeSet() {
+		return this.labeledValue.object2ObjectEntrySet();
 	}
 
 	/**
 	 * @return the labeled values as a set
 	 */
-	public Set<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> labeledValueAndNodeSet() {
-		return this.labeledValue.object2ObjectEntrySet();
+	public Set<Object2IntMap.Entry<Label>> labeledValueSet() {
+		return this.labeledValue.entrySet();
 	}
 
 	/**
@@ -710,8 +710,7 @@ public class LabeledIntEdge extends Component {
 				// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
 				if (LOG.isLoggable(Level.FINEST))
 					LabeledIntEdge.LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ", " + ns + ") will be not stored because the labeled value ("
-							+ l
-							+ ", " + oldValue + ", " + ns + ") is in the removed list");
+							+ l	+ ", " + oldValue + ", " + ns + ") is in the removed list");
 				return false;
 			}
 		}
@@ -722,17 +721,17 @@ public class LabeledIntEdge extends Component {
 	/**
 	 */
 	@SuppressWarnings("javadoc")
-	public void mergeLabeledValue(final LabeledIntNodeSetMap map) {
-		for (it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : map.object2ObjectEntrySet())
-			this.labeledValue.put(entry.getKey(), entry.getValue().getValue(), entry.getValue().getNodeSet());
+	public void mergeLabeledValue(final LabeledIntMap map) {
+		for (Object2IntMap.Entry<Label> entry : map.entrySet())
+			this.labeledValue.put(entry.getKey(), entry.getIntValue());
 	}
 
 	/**
 	 */
 	@SuppressWarnings("javadoc")
-	public void mergeLabeledValue(final LabeledIntMap map) {
-		for (Object2IntMap.Entry<Label> entry : map.entrySet())
-			this.labeledValue.put(entry.getKey(), entry.getIntValue());
+	public void mergeLabeledValue(final LabeledIntNodeSetMap map) {
+		for (it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : map.object2ObjectEntrySet())
+			this.labeledValue.put(entry.getKey(), entry.getValue().getValue(), entry.getValue().getNodeSet());
 	}
 
 	/**

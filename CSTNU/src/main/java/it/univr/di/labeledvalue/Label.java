@@ -307,7 +307,7 @@ public class Label implements Comparable<Label>, Serializable {
 	 * The label info
 	 */
 	// private final TreeSet<Literal> label = new TreeSet<>();
-	protected ObjectSortedSet<Literal> label = new ObjectRBTreeSet<>();
+	private ObjectSortedSet<Literal> label = new ObjectRBTreeSet<>();
 
 	/**
 	 * Default constructor.
@@ -392,7 +392,7 @@ public class Label implements Comparable<Label>, Serializable {
 		if (inLabel.equals(l)) return false;
 
 		this.label.remove(inLabel);
-		return this.label.add(new Literal(l, State.unknown));
+		return this.label.add(l.getUnknown());
 	}
 
 	/**
@@ -405,7 +405,7 @@ public class Label implements Comparable<Label>, Serializable {
 		final Label newLabel = new Label();
 		newLabel.label.addAll(this.label);
 		for (Literal l1 : l.label) {
-			if (newLabel.label.contains(l1)) continue; //it is necessary otherwise the conjunct return false adding one already present element.
+			if (newLabel.label.contains(l1)) continue; // it is necessary otherwise the conjunct return false adding one already present element.
 			if (!newLabel.conjunct(l1)) return null;
 		}
 		return newLabel;
@@ -476,7 +476,7 @@ public class Label implements Comparable<Label>, Serializable {
 		Literal l;
 		while (n-- != 0) {
 			l = orig[n];
-			result[n] = ((l.isStraight()) ? l : new Literal(l, State.straight));
+			result[n] = ((l.isStraight()) ? l : l.getStraight());
 		}
 		return result;
 	}
@@ -535,7 +535,7 @@ public class Label implements Comparable<Label>, Serializable {
 					continue;
 				}
 				if (!strict && (l.isUnknown() || found.isUnknown() || (l.equals(found.getComplement())))) {
-					sub.label.add(new Literal(l, State.unknown));
+					sub.label.add(l.getUnknown());
 				}
 			} else {
 				if (found == null) sub.label.add(l);
@@ -729,15 +729,9 @@ public class Label implements Comparable<Label>, Serializable {
 	 */
 	public String toLogicalExpr(final boolean negate, String not, String and, String or) {
 		if (this.isEmpty()) return "";
-		if (not == null) {
-			not = "!";
-		}
-		if (and == null) {
-			and = " & ";
-		}
-		if (or == null) {
-			or = " | ";
-		}
+		if (not == null) not = "!";
+		if (and == null) and = " & ";
+		if (or == null) or = " | ";
 		final Literal[] lit = (negate) ? this.negation() : this.toArray();
 		final StringBuffer s = new StringBuffer();
 
@@ -752,9 +746,8 @@ public class Label implements Comparable<Label>, Serializable {
 	public String toString() {
 		if (this.isEmpty()) return String.valueOf(Constants.EMPTY_LABEL);
 		final StringBuffer s = new StringBuffer();
-		for (final Literal l : this.label) {
+		for (final Literal l : this.label)
 			s.append(l);
-		}
 		return s.toString();
 	}
 }

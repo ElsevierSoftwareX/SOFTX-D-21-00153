@@ -1,6 +1,6 @@
 package it.univr.di.labeledvalue;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -26,6 +27,16 @@ import java.util.regex.Pattern;
  * @see LabeledIntNodeSetMap
  */
 public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializable {
+
+	/**
+	 * logger
+	 */
+	static private Logger LOG = Logger.getLogger(LabeledIntNodeSetTreeMap.class.getName());
+
+	/**
+	 *
+	 */
+	static private final long serialVersionUID = 1L;
 
 	/**
 	 * @param args
@@ -131,15 +142,10 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return (int) sum;
 	}
 
-	/**
-	 * logger
-	 */
-	static private Logger LOG = Logger.getLogger(LabeledIntNodeSetTreeMap.class.getName());
-
-	/**
-	 *
-	 */
-	static private final long serialVersionUID = 1L;
+	@SuppressWarnings("javadoc")
+	private static final boolean isNullOrEmpty(Set<String> nodeSet) {
+		return nodeSet == null || nodeSet.isEmpty();
+	}
 
 	/**
 	 * Label forming a base for the labels of the map.
@@ -153,7 +159,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 * The efficiency has been proved comparing this implementation with one in which the map has been realized with a standard map and the minimization task
 	 * determines the same length labels every time it needs it.
 	 */
-	private Int2ObjectArrayMap<Object2ObjectRBTreeMap<Label, ValueNodeSetPair>> mainInt2SetMap;
+	private Int2ObjectAVLTreeMap<Object2ObjectRBTreeMap<Label, ValueNodeSetPair>> mainInt2SetMap;
 
 	/**
 	 * To activate all optimization code in order to remove the redundant label in the set.
@@ -167,7 +173,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 * @param withOptimization true if the redundant labeled values must be always removed. It checks the redundancy at every operation.
 	 */
 	public LabeledIntNodeSetTreeMap(final boolean withOptimization) {
-		this.mainInt2SetMap = new Int2ObjectArrayMap<>();
+		this.mainInt2SetMap = new Int2ObjectAVLTreeMap<>();
 		this.base = new Label();
 		this.optimize = withOptimization;
 	}
@@ -181,13 +187,26 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	public LabeledIntNodeSetTreeMap(final LabeledIntNodeSetMap lvm, final boolean withOptimization) {
 		this(withOptimization);
 		if (lvm == null) return;
+		Set<String> s, inputS;
 		if (withOptimization) {
 			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : lvm.object2ObjectEntrySet()) {
-				this.put(entry.getKey(), entry.getValue().getValue(), entry.getValue().getNodeSet());
+				if ((inputS = entry.getValue().getNodeSet()) != null) {
+					s = ValueNodeSetPair.newSetInstance();
+					s.addAll(inputS);
+				} else {
+					s = null;
+				}
+				this.put(new Label(entry.getKey()), entry.getValue().getValue(), s);
 			}
 		} else {
 			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : lvm.object2ObjectEntrySet()) {
-				this.putForcibly(entry.getKey(), entry.getValue().getValue(), entry.getValue().getNodeSet());
+				if ((inputS = entry.getValue().getNodeSet()) != null) {
+					s = ValueNodeSetPair.newSetInstance();
+					s.addAll(inputS);
+				} else {
+					s = null;
+				}
+				this.putForcibly(new Label(entry.getKey()), entry.getValue().getValue(), s);
 			}
 		}
 	}
@@ -209,15 +228,6 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return coll.object2IntEntrySet();
 	}
 
-	@Override
-	public Set<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> object2ObjectEntrySet() {
-		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> coll = new Object2ObjectRBTreeMap<>();
-		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> mapI : this.mainInt2SetMap.values()) {
-			coll.putAll(mapI);
-		}
-		return coll.object2ObjectEntrySet();
-	}
-
 	/**
 	 *
 	 * @return true if the input is a {@link LabeledIntNodeSetMap} and it has an equal set of labeled values.
@@ -228,8 +238,18 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		final LabeledIntNodeSetMap lvm = ((LabeledIntNodeSetMap) o);
 		if (this.size() != lvm.size()) return false;
 		return this.object2ObjectEntrySet().equals(lvm.object2ObjectEntrySet());// Two maps are equals if they contain the same set of values. The internal
-																				// representation of
-		// optimization is not important!.
+																				// representation of optimization is not important!.
+	}
+
+	/**
+	 * @param l
+	 * @return the pair value e node set associate to label if it exists, null otherwise.
+	 */
+	public ValueNodeSetPair get(final Label l) {
+		if (l == null) return null;
+		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map1 = this.mainInt2SetMap.get(l.size());
+		if (map1 == null) return null;
+		return map1.get(l);
 	}
 
 	@Override
@@ -291,29 +311,23 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return e.getValue();
 	}
 
-	/**
-	 * @param l
-	 * @return the pair value e node set associate to label if it exists, null otherwise.
-	 */
-	public ValueNodeSetPair get(final Label l) {
-		if (l == null) return null;
-		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map1 = this.mainInt2SetMap.get(l.size());
-		if (map1 == null) return null;
-		return map1.get(l);
-	}
-
 	@Override
 	public int hashCode() {
 		return this.mainInt2SetMap.hashCode();
 	}
 
-	/**
-	 * @return true if this map contains a negative value at least.
-	 */
-	public boolean isThereNegativeValues() {
-		for (final int i : this.values())
-			if (i < 0) return true;
-		return false;
+	@Override
+	public Set<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> object2ObjectEntrySet() {
+		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> coll = new Object2ObjectRBTreeMap<>();
+		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> mapI : this.mainInt2SetMap.values()) {
+			coll.putAll(mapI);
+		}
+		return coll.object2ObjectEntrySet();
+	}
+
+	@Override
+	public boolean put(Label l, int i) {
+		return this.put(l, i, null);
 	}
 
 	/**
@@ -326,12 +340,10 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 */
 	@Override
 	public boolean put(final Label newLabel, int newValue, Set<String> newNodeSet) {
+		/*
+		 * This version of the method is very redundant but simple to check!
+		 */
 		if ((newLabel == null) || (newValue == LabeledIntMap.INT_NULL)) return false;
-		if (!this.optimize) {
-			this.putForcibly(newLabel, newValue, newNodeSet);
-			return true;
-		}
-		// First version: very redundant but simple to check!
 		/*
 		 * 1. Check if there is already a value in the map that represents the new value and the node set (in this case, return false)
 		 * or if one or more value in the map can be removed by the insertion of the new value (in this case remove such values).
@@ -342,53 +354,87 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 
 		final int newValueSize = newLabel.size();
 		int l1Size = 0;
+		ValueNodeSetPair vnspair;
+		Set<Label> labelToRemove = new ObjectArraySet<>();
+		Set<Label> labelToAdjust = new ObjectArraySet<>();
+		boolean hasNewLabelToBeInserted = true;
 		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> mapAllSameLenghLabels : this.mainInt2SetMap.values()) {
-			for (final ObjectIterator<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> ite = mapAllSameLenghLabels.object2ObjectEntrySet().iterator(); ite
-					.hasNext();) {
-				final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry = ite.next();
+			for (Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : mapAllSameLenghLabels.object2ObjectEntrySet()) {
 				l1 = entry.getKey();
-				v1 = entry.getValue().getValue();
-				nodeSet1 = entry.getValue().getNodeSet();
+				vnspair = entry.getValue();
+				v1 = vnspair.getValue();
+				nodeSet1 = vnspair.getNodeSet();
 				if ((newValueSize >= (l1Size = l1.size())) && newLabel.subsumes(l1) && newValue >= v1) {
-					if (isNullOrEmpty(newNodeSet) || v1 == Constants.INT_NEG_INFINITE) return false; // case 5, 7
-					newValue = v1;// case 6, 8
+					if (isNullOrEmpty(newNodeSet)) {
+						// the input value is simple (no associated node set) and it is already contained in the set.
+						return false;
+					}
+					if (v1 == Constants.INT_NEG_INFINITE) {
+						// the input value is not simple because has a node set but the subsume an -infinity labeled value, we can continue to
+						// check with other but making it simple. It will then not insert. (we continue in order to make a sanity check in the rest of the set)
+						newNodeSet = null;
+						hasNewLabelToBeInserted = false;
+					}
+					newValue = v1;// the subsumed value is better than the new one but, since the new one has a node set, it has to be inserted.
+					// we insert it but with the value v1 that it is more negative.
 				}
 				if ((newValueSize <= l1Size) && l1.subsumes(newLabel) && (newValue <= v1)) {
+					if (newValue == v1 && newLabel.equals(l1) && newValue == Constants.INT_NEG_INFINITE) {
+						// the value is already in the set
+						hasNewLabelToBeInserted = false;
+						continue;
+					}
 					if (isNullOrEmpty(nodeSet1)) {
-						ite.remove();// case 1, 2
-						this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l1, nodeSet1);
+						labelToRemove.add(l1);// ite.remove();// case 1, 2
+						// l1 is more generic and simple, we remove it
+						// this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l1, nodeSet1);
 					} else {
 						if (newLabel.equals(l1)) {
 							// The case of the same label when one of two labels has a node set is managed here
-							// conservo la nuova entry e butto via quella interna
-							if (LOG.isLoggable(Level.FINEST))
-								LOG.log(Level.FINEST, "Put method when label are equals: newLabel: " + newLabel + ", newValue: " + newValue + ", newNodeSet: "
-										+ newNodeSet);
-							if (LOG.isLoggable(Level.FINEST))
-								LOG.log(Level.FINEST, "Put method before: entryLabel: " + l1 + ", entryValue: " + v1 + ", entryNodeSet: " + nodeSet1);
-							// newValue is already the min
-							if (newValue == Constants.INT_NEG_INFINITE) {
+							if (newValue == v1 && nodeSet1.equals(newNodeSet)) {
+								hasNewLabelToBeInserted = false;
+								continue;
+							}
+							if (newValue != Constants.INT_NEG_INFINITE) {
 								// Negative Infinity can be propagated without node set
-								entry.getValue().setNodeSet(null);
-							} else {
-								if (newNodeSet == null) newNodeSet = new ObjectArraySet<>();
+								if (newNodeSet == null) newNodeSet = ValueNodeSetPair.newSetInstance();
 								newNodeSet.addAll(nodeSet1);
 							}
-							ite.remove();
-							checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l1, newNodeSet);
-							if (LOG.isLoggable(Level.FINEST))
-								LOG.log(Level.FINEST, "Put method after: newLabel: " + newLabel + ", newValue: " + newValue + ", newNodeSet: " + newNodeSet);
+							labelToRemove.add(l1);
 						} else {
-							entry.getValue().setValue(newValue);
+							// The already labeled value (that it is not simple) has to be adjusted if it has a greater value.
+							if (newValue < v1) labelToAdjust.add(l1);
 						}
 					}
 				}
 			}
 		}
 
+		// The label to remove and to adjust are now ready to be managed.
+		for (Label lr : labelToRemove) {
+			Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map = this.mainInt2SetMap.get(lr.size());
+			if (LOG.isLoggable(Level.FINEST)) LOG.log(Level.FINEST,
+					"The new value (" + newLabel + ", " + newValue + ", " + newNodeSet + ") forces the removal of (" + lr + ", " + map.get(lr) + ").");
+			map.remove(lr);
+			this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(lr);
+		}
+		for (Label lr : labelToAdjust) {
+			Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map = this.mainInt2SetMap.get(lr.size());
+			ValueNodeSetPair vnspair1 = map.get(lr);
+			if (LOG.isLoggable(Level.FINEST)) LOG.log(Level.FINEST,
+					"The new value (" + newLabel + ", " + newValue + ", " + newNodeSet + ") forces the modification of (" + lr + ", " + vnspair1 + ") to ("
+							+ lr + ", " + newValue + ", " + ((newValue == Constants.INT_NEG_INFINITE) ? "null" : vnspair1.getNodeSet()));
+			vnspair1.setValue(newValue);
+			if (newValue == Constants.INT_NEG_INFINITE) vnspair1.setNodeSet(null);
+		}
+
+		if (!hasNewLabelToBeInserted) {
+			if (LOG.isLoggable(Level.FINEST))
+				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ", " + newNodeSet + ") has not to be inserted.");
+			return false;
+		}
 		/*
 		 * 2. If optimization is request,
-		 * IT DOES NOT WORK WITH NODE SET!!!
 		 * Insert the new value and check if it possible to simplify with some other label with same value and only one different literals.
 		 */
 		if (this.optimize) {
@@ -405,6 +451,13 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	}
 
 	@Override
+	public void putAll(LabeledIntMap inputMap) {
+		if (inputMap == null) return;
+		for (final Entry<Label> entry : inputMap.entrySet())
+			this.put(entry.getKey(), entry.getIntValue(), null);
+	}
+
+	@Override
 	public void putAll(final LabeledIntNodeSetMap inputMap) {
 		if (inputMap == null) return;
 		for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : inputMap.object2ObjectEntrySet()) {
@@ -412,18 +465,9 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		}
 	}
 
-	/**
-	 * A class specific version of {@link #putAll(LabeledIntNodeSetMap)}
-	 *
-	 * @param inputMap
-	 */
-	public void putAll(final LabeledIntNodeSetTreeMap inputMap) {
-		if (inputMap == null) return;
-		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map1 : inputMap.mainInt2SetMap.values()) {
-			for (final it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : map1.object2ObjectEntrySet()) {
-				this.put(entry.getKey(), entry.getValue().getValue(), entry.getValue().getNodeSet());
-			}
-		}
+	@Override
+	public int putForcibly(Label l, int i) {
+		return this.putForcibly(l, i, null);
 	}
 
 	@Override
@@ -434,7 +478,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 			map1 = new Object2ObjectRBTreeMap<>();
 			this.mainInt2SetMap.put(l.size(), map1);
 		}
-		ValueNodeSetPair old = map1.put(new Label(l), new ValueNodeSetPair(i, nodeSet));
+		ValueNodeSetPair old = map1.put(l, new ValueNodeSetPair(i, nodeSet));
 		return (old == null) ? INT_NULL : old.getValue();
 	}
 
@@ -448,7 +492,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		if ((oldValue != null && oldValue.getValue() != LabeledIntMap.INT_NULL) && this.optimize) {
 			// The base could have been changed. To keep things simple, for now it is better to rebuild all instead of to try to rebuild a possible damaged
 			// base.
-			if (this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l, oldValue.getNodeSet())) {
+			if (this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l)) {
 				final LabeledIntNodeSetTreeMap newMap = new LabeledIntNodeSetTreeMap(this, this.optimize);
 				this.mainInt2SetMap = newMap.mainInt2SetMap;
 				this.base = newMap.base;
@@ -460,9 +504,8 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	@Override
 	public int size() {
 		int n = 0;
-		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map1 : this.mainInt2SetMap.values()) {
+		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map1 : this.mainInt2SetMap.values())
 			n += map1.size();
-		}
 		return n;
 	}
 
@@ -475,9 +518,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 			sb.append(", ");
 			final int value = e.getValue().getValue();
 			if ((value == Constants.INT_NEG_INFINITE) || (value == Constants.INT_POS_INFINITE)) {
-				if (value < 0) {
-					sb.append('-');
-				}
+				if (value < 0) sb.append('-');
 				sb.append(Constants.INFINITY_SYMBOL);
 			} else {
 				sb.append(value);
@@ -497,9 +538,8 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	public IntSet values() {
 		final IntArraySet coll = new IntArraySet(this.size());
 		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> mapI : this.mainInt2SetMap.values()) {
-			for (ValueNodeSetPair vnsp : mapI.values()) {
+			for (ValueNodeSetPair vnsp : mapI.values())
 				coll.add(vnsp.getValue());
-			}
 		}
 		return coll;
 	}
@@ -508,10 +548,9 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 * If the removed label <code>l</code> is a component of the base, then reset the base.
 	 *
 	 * @param l
-	 * @param nodeSet
 	 * @return true if <code>l</code> is a component of the base, false otherwise.
 	 */
-	private boolean checkValidityOfTheBaseAfterRemovingOrAddANodeSet(final Label l, Set<String> nodeSet) {
+	private boolean checkValidityOfTheBaseAfterRemovingOrAddANodeSet(final Label l) {
 		int bn, ln;
 		if ((l == null) || ((ln = l.size()) == 0) || ((bn = this.base.size()) == 0) || (ln != bn)) return false;
 
@@ -524,7 +563,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	/**
 	 * Tries to add all given labeled values into the current map.<br>
 	 * Recursive procedure:
-	 * 0. Given a set of labeled values to insert (all label have the same lenght)
+	 * 0. Given a set of labeled values to insert (all labels have the same length)
 	 * 1. For each of them, compares all same-length labels already in the map with the current one looking for if there is one with same value and only one
 	 * opposite literal
 	 * (this allows the simplification of the two labels with a shorter one). In case of a positive search, shorten the current label to insert.
@@ -543,17 +582,15 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		// currentMapLimitedToLabelOfNSize contains all the labeled values with label size = n;
 		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(n);
 		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> toAdd = new Object2ObjectRBTreeMap<>();
-		// toRemove = new TreeMap(),
+		ObjectArraySet<Label> toRemove = new ObjectArraySet<>();
 
 		if (currentMapLimitedToLabelOfNSize != null) {
-			for (final ObjectIterator<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> ite = inputMap.object2ObjectEntrySet().iterator(); ite.hasNext();) {
-				final Object2ObjectMap.Entry<Label, ValueNodeSetPair> inputEntry = ite.next();
-				boolean iteRemoved = false;
-				final Label newLabel = inputEntry.getKey();
-				final int newValue = inputEntry.getValue().getValue();
-				Set<String> newNodeSet = inputEntry.getValue().getNodeSet();
+			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> inputEntry : inputMap.object2ObjectEntrySet()) {
+				final Label inputLabel = inputEntry.getKey();
+				final int inputValue = inputEntry.getValue().getValue();
+				Set<String> inputNodeSet = inputEntry.getValue().getNodeSet();
 
-				if (!isNullOrEmpty(newNodeSet)) continue; // we simplify only with labeled value not containing node set.
+				if (!isNullOrEmpty(inputNodeSet)) continue; // we simplify only with labeled value not containing node set.
 				// check is there is any labeled value with same value and only one opposite literal
 				for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : currentMapLimitedToLabelOfNSize.object2ObjectEntrySet()) {
 					final Label l1 = new Label(entry.getKey());
@@ -562,27 +599,36 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 
 					if (!isNullOrEmpty(newNodeSet1)) continue; // we simplify only with labeled value not containing node set.
 					Literal lit = null;
-					if ((newValue == v1) && ((lit = l1.getUniqueDifferentLiteral(newLabel)) != null)) {
+					if ((inputValue == v1) && ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null)) {
 						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
-						// toRemove.put(newLabel, newValue);
-						// toRemove.put(l1, v1);
-						if (!iteRemoved) {
-							ite.remove();
-							iteRemoved = true;
+						toRemove.add(inputLabel);
+						toRemove.add(entry.getKey());
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
+									+ "Firstly, it removes (" + inputLabel + ", " + inputValue + ", "+inputNodeSet+")");
 						}
 						l1.removeAllLiteralsWithSameName(lit);
 						if (l1.size() < 0) throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
-						toAdd.put(l1, new ValueNodeSetPair(v1, null));
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.log(Level.FINEST, "Then, it adds toAdd (" + l1 + ", " + v1 + ", "+newNodeSet1+")");
+						}
+						toAdd.put(l1, new ValueNodeSetPair(v1, inputNodeSet));
 					}
 				}
 			}
+		}
+		for (Label l : toRemove) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label " + l + " is removed from inputMap.");
+			}
+			inputMap.remove(l);
 		}
 		// inputMap has been updated. Now it contains all the elements that have to be insert.
 		for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : inputMap.object2ObjectEntrySet()) {
 			final Label l1 = entry.getKey();
 			this.removeAllValuesGreaterThan(l1, entry.getValue());
 			if (this.isBaseAbleToRepresent(l1, entry.getValue())) continue;
-			this.putForcibly(new Label(l1), entry.getValue().getValue(), entry.getValue().getNodeSet());
+			this.putForcibly(l1, entry.getValue().getValue(), entry.getValue().getNodeSet());
 			add = true;
 			if (this.makeABetterBase(l1, entry.getValue())) this.removeAllValuesGreaterThanBase();
 		}
@@ -655,30 +701,41 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	/**
 	 * Remove all labeled values that subsume <code>l</code> and have values greater or equal to <code>i</code>.
 	 *
-	 * @param l
+	 * @param inputLabel
 	 * @param inputEntry
 	 * @return true if one element at least has been removed, false otherwise.
 	 */
-	private boolean removeAllValuesGreaterThan(final Label l, ValueNodeSetPair inputEntry) {
-		if ((l == null) || (inputEntry.getValue() == LabeledIntMap.INT_NULL)) return false;
+	private boolean removeAllValuesGreaterThan(final Label inputLabel, ValueNodeSetPair inputEntry) {
+		if ((inputLabel == null) || (inputEntry.getValue() == LabeledIntMap.INT_NULL)) return false;
 
-		final int n = l.size();
+		int inputValue = inputEntry.getValue();
+
+		final int n = inputLabel.size();
 		boolean removed = false;
-		for (final int j : this.mainInt2SetMap.keySet()) {
-			if (j < n) continue;
-			for (final ObjectIterator<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> currentMapIte = this.mainInt2SetMap.get(j).object2ObjectEntrySet()
-					.iterator(); currentMapIte.hasNext();) {
-				final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry = currentMapIte.next();
-				final Label l1 = entry.getKey();
-				final int value = entry.getValue().getValue();
-				Set<String> nodeSet1 = entry.getValue().getNodeSet();
-				if (l1.subsumes(l) && (value >= inputEntry.getValue())) {
-					if (isNullOrEmpty(nodeSet1)) {
-						currentMapIte.remove();// case 1, 2
-						this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l1, nodeSet1);
+		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> internalMap : this.mainInt2SetMap.tailMap(n).values()) {
+			for (final ObjectIterator<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> currentMapIte = internalMap.object2ObjectEntrySet().iterator(); currentMapIte
+					.hasNext();) {
+				final Object2ObjectMap.Entry<Label, ValueNodeSetPair> currentEntry = currentMapIte.next();
+				final Label currentLabel = currentEntry.getKey();
+				final int currentValue = currentEntry.getValue().getValue();
+				Set<String> currentSet = currentEntry.getValue().getNodeSet();
+				if (currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
+					if (isNullOrEmpty(currentSet)) {
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentEntry.getValue() + ")");
+						}
+						currentMapIte.remove();
+						this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(currentLabel);
 						removed = true;
 					} else {
-						// it should never enter here!
+						// Maybe a shorten of an inputLabel in insertAndSimplify requires to adjust further the value.
+						if (currentValue > inputValue) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LOG.log(Level.FINEST, "Label (" + inputLabel + ", " + inputEntry + ") requires to adjust label (" + currentLabel + ", "
+										+ currentEntry.getValue() + ").");
+								currentEntry.getValue().setValue(inputValue);
+							}
+						}
 					}
 				}
 			}
@@ -701,7 +758,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		}
 		Label l1, lb;
 		int v1, vb;
-		Set<String> ns1;
+		Set<String> ns1, ns2;
 		boolean toInsert = true;
 		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> map1 : this.mainInt2SetMap.values()) {
 			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : map1.object2ObjectEntrySet()) {
@@ -716,65 +773,30 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 						toInsert = true; // a base component has to be always insert!
 						break;
 					}
-					// if (l1 == null || lb == null || v1 == null || vb == null) {
-					// System.out.println("Trovato");
-					// }
 					if (l1.isConsistentWith(lb) && ((v1 < vb) || ((v1 == vb) && !isNullOrEmpty(ns1)))) {
 						toInsert = true;
 						break;
 					}
 				}
 				if (toInsert) {
-					newMap.putForcibly(l1, v1, ns1);
+					if (ns1 == null) {
+						ns2 = null;
+					} else {
+						ns2 = ValueNodeSetPair.newSetInstance();
+						ns2.addAll(ns1);
+					}
+					newMap.putForcibly(new Label(l1), v1, ns2);
 				}
 			}
 		}
-		if (!newMap.equals(this.mainInt2SetMap)) {
+		if (!newMap.equals(this)) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Base changed: the old map " + this.toString() + " is subsituted by " + newMap.toString());
+			}
 			this.mainInt2SetMap = newMap.mainInt2SetMap;
 			return true;
 		}
 		return false;
 	}
-
-	@Override
-	public boolean put(Label l, int i) {
-		return this.put(l, i, null);
-	}
-
-	@Override
-	public void putAll(LabeledIntMap inputMap) {
-		this.putAll(inputMap);
-	}
-
-	@Override
-	public int putForcibly(Label l, int i) {
-		return this.putForcibly(l, i, null);
-	}
-
-	/**
-	 * @param label
-	 * @return the node set associated to the label. Null if such node set does not exists or it is empty.
-	 */
-	public Set<String> getNodeSet(Label label) {
-		if (label == null) return null;
-		ValueNodeSetPair valueNodeSet = this.get(label);
-		if (valueNodeSet == null) return null;
-		return valueNodeSet.getNodeSet();
-	}
-
-	@SuppressWarnings("javadoc")
-	private static final boolean isNullOrEmpty(Set<String> nodeSet) {
-		return nodeSet == null || nodeSet.isEmpty();
-	}
-
-//	public ObjectSortedSet<Object2ObjectMap.Entry<Label, ObjectRBTreeSet<String>>> getNodesInAQPathEntry() {
-//		return this.nodesInQPath.object2ObjectEntrySet();
-//	}
-//
-//	public void cleanNodesInQPath() {
-//		for (Label l : this.nodesInQPath.keySet()) {
-//			if (this.labeledValue.getValue(l) == LabeledIntMap.INT_NULL) this.nodesInQPath.remove(l);
-//		}
-//	}
 
 }

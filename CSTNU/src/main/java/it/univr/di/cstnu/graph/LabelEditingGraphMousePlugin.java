@@ -580,8 +580,7 @@ MouseListener {
 				if (this.vertex != null) {
 					if (LabelEditingGraphMousePlugin.nodeAttributesEditor(this.vertex, viewerName, g)) {
 						jp2.setVisible(false);
-						LabelEditingGraphMousePlugin.LOG
-						.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
 						g.clearCache();
 					}
 					vv.repaint();

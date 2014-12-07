@@ -179,7 +179,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 
 	/**
 	 *
-	 * @return a new literal with the same name and state unknown.
+	 * @return a new literal with the same name and state straight.
 	 */
 	public final Literal getStraight() {
 		return new Literal(this, State.straight);
@@ -187,7 +187,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 
 	/**
 	 *
-	 * @return a new literal with the same name and state unknown.
+	 * @return a new literal with the same name and state negated.
 	 */
 	public final Literal getNegated() {
 		return new Literal(this, State.negated);

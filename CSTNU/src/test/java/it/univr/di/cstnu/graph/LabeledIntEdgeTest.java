@@ -3,7 +3,7 @@
  */
 package it.univr.di.cstnu.graph;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -128,5 +128,38 @@ public class LabeledIntEdgeTest {
 
 	}
 
-	
+
+	@SuppressWarnings({ "static-method", "javadoc" })
+	@Test
+	public final void testEqualEdgeWithNodeSet() {
+		Set<String> XU = new ObjectArraySet<>();
+		XU.add("X");
+		XU.add("U");
+		Set<String> XUY = new ObjectArraySet<>();
+		XUY.add("X");
+		XUY.add("U");
+		XUY.add("Y");
+		
+		Set<String> YXW = new ObjectArraySet<>();
+		YXW.add("Y");
+		YXW.add("X");
+		YXW.add("W");
+
+		LabeledIntNodeSetMap map = new LabeledIntNodeSetTreeMap(true);
+		map.put(Label.parse("¬p¿q"), -13, XU);
+		map.put(Label.parse("¬p¬q"), -13, XU);
+		map.put(Label.parse("¿p"), -15, null);
+		map.put(Label.parse("¿p¬q"), -22, XUY);
+		map.put(Label.emptyLabel, -10, null);
+		map.put(Label.parse("¿p¿q"), Constants.INT_NEG_INFINITE, YXW);
+		
+		LabeledIntEdge e = new LabeledIntEdge("eUZ", LabeledIntEdge.Type.derived, true);
+		e.setLabeledValue(map);
+
+		LabeledIntEdge e1 = new LabeledIntEdge(e, true);
+		assertNotEquals(e1, e);//equals is necessarily based on address because internal structure of graphs requires an equals that does not change for the internal 
+		//edge changes
+
+	}
+
 }
