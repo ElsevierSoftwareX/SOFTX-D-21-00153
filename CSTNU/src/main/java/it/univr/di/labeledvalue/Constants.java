@@ -94,4 +94,16 @@ public final class Constants implements Serializable {
 	 * Regular expression representing an Upper case label
 	 */
 	public static final String upperCaseLabel = "[0-9A-Z_]+";
+	
+	/**
+	 * @param n
+	 * @return the value of n as String using ∞ for infinitive number and null for not valid int.
+	 */
+	static public String formatInt(int n) {
+		if (n == Constants.INT_NEG_INFINITE) return "-" + Constants.INFINITY_SYMBOLstring;
+		if (n == Constants.INT_POS_INFINITE) return Constants.INFINITY_SYMBOLstring;
+		if (n == Constants.INT_NULL) return "null";
+		return String.valueOf(n);
+	}
+
 }

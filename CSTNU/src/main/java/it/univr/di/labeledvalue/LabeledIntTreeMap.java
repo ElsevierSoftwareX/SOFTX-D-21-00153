@@ -330,7 +330,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 				if ((newValueSize >= (l1Size = l1.size())) && newLabel.subsumes(l1) && (newValue >= v1)) return false;
 				if ((newValueSize <= l1Size) && l1.subsumes(newLabel) && (newValue < v1)) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + v1 + ") removed by (" + newLabel + ", " + newValue + ").");
+						LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + Constants.formatInt(v1) + ") removed by (" + newLabel + ", " + Constants.formatInt(newValue) + ").");
 					}
 					ite.remove();
 					this.checkValidityOfTheBaseAfterRemoving(l1);
@@ -551,7 +551,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
 						if (!iteRemoved) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LOG.log(Level.FINER, "Labeled value (" + newLabel + ", " + newValue + ") removed by (" + l1 + ", " + v1 + ").");
+								LOG.log(Level.FINER, "Labeled value (" + newLabel + ", " + Constants.formatInt(newValue) + ") removed by (" + l1 + ", " + Constants.formatInt(v1) + ").");
 							}
 							ite.remove();
 							iteRemoved = true;
@@ -568,21 +568,13 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 			final Label l1 = entry.getKey();
 			final int v1 = entry.getIntValue();
 			this.removeAllValuesGreaterThan(l1, v1);
-			if (this.isBaseAbleToRepresent(l1, v1)) {
-				continue;
-			}
-//			if (LOG.isLoggable(Level.FINER)) {
-//				LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + v1 + ") added.");
-//			}
+			if (this.isBaseAbleToRepresent(l1, v1)) continue;
+			if (LOG.isLoggable(Level.FINER)) LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + Constants.formatInt(v1) + ") added by insertAndSimplify.");
 			this.putForcibly(new Label(l1), v1);
 			add = true;
-			if (this.makeABetterBase(l1, v1)) {
-				this.removeAllValuesGreaterThanBase();
-			}
+			if (this.makeABetterBase(l1, v1)) this.removeAllValuesGreaterThanBase();
 		}
-		if (toAdd.size() > 0) {
-			add = this.insertAndSimplify(toAdd) || add;
-		}
+		if (toAdd.size() > 0) add = this.insertAndSimplify(toAdd) || add;
 		return add;
 	}
 
@@ -661,7 +653,7 @@ public class LabeledIntTreeMap implements LabeledIntMap, Serializable {
 				final int value = entry.getIntValue();
 				if (l1.subsumes(l) && (value >= i)) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + value + ") removed by (" + l + ", " + i + ").");
+						LOG.log(Level.FINER, "Labeled value (" + l1 + ", " + Constants.formatInt(value) + ") removed by (" + l + ", " + Constants.formatInt(i) + ").");
 					}
 					currentMapIte.remove();
 					this.checkValidityOfTheBaseAfterRemoving(l1);
