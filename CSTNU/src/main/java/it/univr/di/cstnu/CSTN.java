@@ -341,9 +341,11 @@ public class CSTN {
 			final int w = obsXLabeledValue.getIntValue();
 			final Label l = obsXLabeledValue.getKey();
 			if ((w > 0) || (instantaneousReaction && (w == 0))) continue;
-			if (l.getLiteralWithSameName(p) == null) continue;
+			Literal pInL = l.getLiteralWithSameName(p);
+			if (pInL == null || pInL.isUnknown()) continue;
 			if (PX.getValue(l) == LabeledIntMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
 
+			
 			final Label alphaPrime = new Label(l);
 			alphaPrime.removeAllLiteralsWithSameName(p);
 			alphaPrime.removeAllLiteralsWithSameName(currentGraph.getChildrenOf(P));
@@ -352,8 +354,8 @@ public class CSTN {
 			String logMessage = null;
 			if (CSTN.LOG.isLoggable(Level.FINER)) {
 				logMessage = "R0 simplifies a label of edge " + PX
-						+ ":\npartic: " + P.getName() + " ---(" + l + ", " + formatInt(w) + ")---> " + X.getName()
-						+ "\nresult: " + P.getName() + " ---(" + alphaPrime + ", " + formatInt(w) + ")--- " + X.getName();
+						+ ":\npartic: " + P.getName() + " ---(" + l + ", " + Constants.formatInt(w) + ")---> " + X.getName()
+						+ "\nresult: " + P.getName() + " ---(" + alphaPrime + ", " + Constants.formatInt(w) + ")--- " + X.getName();
 			}
 
 			PXinNextGraph.putLabeledValueToRemovedList(l, w);
@@ -427,9 +429,9 @@ public class CSTN {
 					// It should not necessary, but I put here as a guard!
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Detail about the error of application R1 to edge " + eXY
 							+ ":\npartic: "
-							+ nObs.getName() + " ---(" + labelObsX + ", " + formatInt(w) + ")---> " + nX.getName() + " ---(" + labelXY + ", "
-							+ formatInt(v) + ")---> " + nY.getName()
-							+ "\nresult: " + nX.getName() + " ---(" + abg1 + ", " + formatInt(v) + ")---> " + nY.getName());
+							+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName() + " ---(" + labelXY + ", "
+							+ Constants.formatInt(v) + ")---> " + nY.getName()
+							+ "\nresult: " + nX.getName() + " ---(" + abg1 + ", " + Constants.formatInt(v) + ")---> " + nY.getName());
 					throw new IllegalStateException("Rule R1 cannot determine label that does not subsume node labels!");
 				}
 
@@ -438,10 +440,10 @@ public class CSTN {
 				if (ruleApplied) {
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R1 adds a label to edge " + eXY
 							+ ":\npartic: "
-							+ nObs.getName() + " ---(" + labelObsX + ", " + formatInt(w) + ")---> " + nX.getName() + " ---(" + labelXY + ", "
-							+ formatInt(v) + ")---> "
+							+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName() + " ---(" + labelXY + ", "
+							+ Constants.formatInt(v) + ")---> "
 							+ nY.getName()
-							+ "\nresult: add " + nX.getName() + " ---(" + abg1 + ", " + formatInt(v) + ")---> " + nY.getName());
+							+ "\nresult: add " + nX.getName() + " ---(" + abg1 + ", " + Constants.formatInt(v) + ")---> " + nY.getName());
 					status.r1calls++;
 				}
 				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(abg1, v, eXYnew))) return ruleApplied;
@@ -505,21 +507,21 @@ public class CSTN {
 					if (CSTN.LOG.isLoggable(Level.FINER))
 						CSTN.LOG.log(Level.FINER, "Since after R2, the label does not subsumes the conjection of node labes, it means that " + X.getName()
 								+ " has 'p' in its label. It has to be after " + P.getName() + ". Edge: " + XP
-								+ ":\npartic: " + P + " <---(" + l + ", " + formatInt(w) + ")--- " + X
+								+ ":\npartic: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X
 								+ "\nresult: " + P.getName() + " <---(" + X.getLabel().conjunction(P.getLabel()) + ", 0)--- " + X.getName());
 					XPinNextGraph.mergeLabeledValue(X.getLabel().conjunction(P.getLabel()), 0);
 				} else {
 					if (CSTN.LOG.isLoggable(Level.FINER))
 						CSTN.LOG.log(Level.FINER, "R4 CANNOT be applied because subsumption check of R4 applied to edge " + XP
-								+ ":\npartic: " + P + " <---(" + l + ", " + formatInt(w) + ")--- " + X);
+								+ ":\npartic: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X);
 				}
 				continue;
 			}
 
 			// Prepare the log message now with old values of the edge. If it modifies, then we can log it correctly.
 			final String logMessage = "R2R4 simplifies a label of edge " + XP
-					+ ":\npartic: " + P.getName() + " <--(" + l + ", " + formatInt(w) + ")--- " + X.getName()
-					+ "\nresult: " + P.getName() + " <--(" + alphaPrime + ", " + formatInt(max) + ")--- " + X.getName();
+					+ ":\npartic: " + P.getName() + " <--(" + l + ", " + Constants.formatInt(w) + ")--- " + X.getName()
+					+ "\nresult: " + P.getName() + " <--(" + alphaPrime + ", " + Constants.formatInt(max) + ")--- " + X.getName();
 
 			XPinNextGraph.putLabeledValueToRemovedList(l, w);
 			// XPinNextGraph.removeLabel(l); If w>0, then the label is removed my optimization. Otherwise the label has to be preserved.
@@ -587,8 +589,8 @@ public class CSTN {
 				if (!CSTN.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3R5")) {
 					if (CSTN.LOG.isLoggable(Level.FINER))
 						CSTN.LOG.log(Level.FINER, "R3R5 cannot be applied to edge " + eYX + " because the label not subsume node labels:\n"
-								+ nObs.getName() + " ---(" + labelObsX + ", " + formatInt(w) + ")---> " + nX.getName()
-								+ " <---(" + labelYX + ", " + formatInt(v) + ")--- " + nY.getName());
+								+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
+								+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName());
 					continue;
 				}
 
@@ -596,9 +598,9 @@ public class CSTN {
 				ruleApplied = eYXnew.mergeLabeledValue(abg1, max);
 				if (ruleApplied) {
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R3R5 adds a labeled value to edge " + eYX.getName() + ":\n"
-							+ "partic: " + nObs.getName() + " ---(" + labelObsX + ", " + formatInt(w) + ")---> " + nX.getName()
-							+ " <---(" + labelYX + ", " + formatInt(v) + ")--- " + nY.getName()
-							+ "\nresult: add " + nX.getName() + " <---(" + abg1 + ", " + formatInt(max) + ")--- " + nY.getName());
+							+ "partic: " + nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
+							+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName()
+							+ "\nresult: add " + nX.getName() + " <---(" + abg1 + ", " + Constants.formatInt(max) + ")--- " + nY.getName());
 					status.r3R5calls++;
 				}
 				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(abg1, max, eYXnew))) return ruleApplied;
@@ -650,32 +652,42 @@ public class CSTN {
 				final int y = BCEntry.getIntValue();
 				final SortedSet<String> nodeSetBC = BC.getNodeSet(labelBC);
 
-				final boolean isQPath = (C == Z) && ((x <= 0) && (y < 0));
-				final Label newLabelAC = (isQPath) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
+				final boolean isNegativePathToZ = (C == Z) && ((x < 0) && (y < 0));
+				final Label newLabelAC = (isNegativePathToZ) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
 				if (newLabelAC == null) continue;
 
 				int sum = LabeledIntTreeMap.sumWithOverflowCheck(x, y);
 				final int oldZ = (AC != null) ? AC.getValue(newLabelAC) : LabeledIntMap.INT_NULL;
 
 				SortedSet<String> sigma = null;
-				if (C == Z) {
+				if (isNegativePathToZ) {
+					/*
+					 * Special case
+					 * A --[beta, x]--> B --[alpha, y, sigma1]--> Z with x<0 and y<0
+					 * results to be
+					 * 
+					 * A --[alpha beta, sum, sigma2]--> Z
+					 * 
+					 * where sum = x+y and sigma2= sigma1+A if A is not in sigma1,
+					 * otherwise sum = -infinity and sigma2 = null.
+					 * 
+					 * If AC contains [alpha beta, w, sigma], then w is overwritten if w> sum and, in any case, sigma = sigma + sigma2.
+					 */
 					final boolean isAInNodeSet = (nodeSetBC == null) ? false : nodeSetBC.contains(A.getName());
-					if (isAInNodeSet && sum < 0) { // the only other possibility is that sum==0
+					if (isAInNodeSet) {
 						sum = Constants.INT_NEG_INFINITE;
 						if (CSTN.LOG.isLoggable(Level.FINER))
-							CSTN.LOG.log(Level.FINER, "QLoop detected during the updated of " + ACinNextGraph.getName() + ": "
-									// + "partic: " + A.getName() + " --(" + labelAB + ", " + formatInt(x) + ")--> " + B.getName() + " --(" + labelBC + ", "
-//									+ formatInt(y) + ")--> " + C.getName()
-									+ "\nNode " + A.getName() + " is in the node set of label '" + labelBC + "' of the edge " + BC.getName()
+							CSTN.LOG.log(Level.FINER, "Negative qLoop detected during the updated of " + ACinNextGraph.getName() + ": "
+									// + "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName() + " --(" + labelBC + ", "
+//									+ Constants.formatInt(y) + ")--> " + C.getName()
+									+ A.getName() + " is in the node set of label '" + labelBC + "' of the edge " + BC.getName()
 									+ ". New labeled = (" + newLabelAC + ", -" + Constants.INFINITY_SYMBOLstring + ").");
 					}
-					if (((x <= 0) && (y < 0)) && (sum != Constants.INT_NEG_INFINITE)) {
+					if (sum != Constants.INT_NEG_INFINITE) {
 						// when z == Constants.INT_NEG_INFINITE, the value can propagate without node set.
 						sigma = new ObjectAVLTreeSet<>();
-						sigma.add(B.getName());
-						if (nodeSetBC != null) {
-							sigma.addAll(nodeSetBC);
-						}
+						sigma.add(A.getName());
+						if (nodeSetBC != null) sigma.addAll(nodeSetBC);
 						// I add only B because the endpoints are specified by the edge.
 						if (CSTN.LOG.isLoggable(Level.FINEST))
 							CSTN.LOG.log(Level.FINEST, "The new node set to add to label '" + newLabelAC + "' on edge " + ACinNextGraph.getName() + " is "
@@ -688,14 +700,14 @@ public class CSTN {
 					status.labeledValuePropagationcalls++;
 					if (CSTN.LOG.isLoggable(Level.FINER)) {
 						CSTN.LOG.log(Level.FINER, "Labeled Propagation Rule applied to edge " + ACinNextGraph.getName() + ":\n"
-								+ "partic: " + A.getName() + " --(" + labelAB + ", " + formatInt(x)
-								+ ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
-								+ ")--> " + B.getName() + " --(" + labelBC + ", " + formatInt(y) + ")--> " + C.getName()
+								+ "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x)	+ ")--> " + B.getName() 
+								+ " --(" + labelBC + ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
+								+ ", " + Constants.formatInt(y) + ")--> " + C.getName()
 								+ "\nresult: " + A.getName() + " --(" + newLabelAC + ", "
-								+ formatInt(sum)
+								+ Constants.formatInt(sum)
 								+ ((sigma != null && !sigma.isEmpty()) ? ", " + sigma.toString() : "")
 								+ ")--> " + C.getName() + "; old value: "
-								+ formatInt(oldZ) + ", " + ((AC != null) ? AC.getNodeSet(newLabelAC) : ""));
+								+ Constants.formatInt(oldZ) + ", " + ((AC != null) ? AC.getNodeSet(newLabelAC) : ""));
 					}
 				}
 				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(newLabelAC, sum, ACinNextGraph))) return ruleApplied;
@@ -761,6 +773,8 @@ public class CSTN {
 	 *
 	 * @param instantaneousReaction true is it is admitted that observation points and other points depending from the observed proposition can be executed in
 	 *            the same 'instant'.
+	 * @param onlyOnZ true if one wants to apply R0, R3 and R5 only when node Z is involved.
+	 * @param excludeR1R2R4 true if one wants to exclude the application of rules R1, R2, and R4.
 	 * @param labelOptimization true if the possibly new generated edges have to remove redundant labeled values.
 	 * @param status the record where to store statistics and exit status of the execution.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
@@ -768,8 +782,7 @@ public class CSTN {
 	 *             there is a problem in the rules coding.
 	 */
 	static CheckStatus oneStepDynamicConsistency(LabeledIntGraph currentGraph, LabeledIntGraph nextGraph, final int n,
-			final boolean instantaneousReaction,
-			final boolean labelOptimization, final CheckStatus status)
+			final boolean instantaneousReaction, final boolean onlyOnZ, final boolean excludeR1R2R4, final boolean labelOptimization, final CheckStatus status)
 			throws WellDefinitionException {
 
 		/*
@@ -824,7 +837,7 @@ public class CSTN {
 				if (A.getPropositionObserved() != null) {
 					// Rule R0
 					ABinNextGraph = nextGraph.findEdge(nextGraph.getNode(A.getName()), nextGraph.getNode(B.getName()));
-					CSTN.labelModificationR0(currentGraph, A, B, AB, ABinNextGraph, status, instantaneousReaction);
+					if (!onlyOnZ || (onlyOnZ && B == Z)) CSTN.labelModificationR0(currentGraph, A, B, AB, ABinNextGraph, status, instantaneousReaction);
 					if (!status.consistency) return status;
 
 					for (final Iterator<LabeledIntEdge> eC1BIter = currentGraph.getInEdges(B).iterator(); eC1BIter.hasNext();) {
@@ -833,11 +846,12 @@ public class CSTN {
 						C1 = currentGraph.getSource(CB);
 						if (A == C1) continue;
 						CBinNextGraph = nextGraph.findEdge(nextGraph.getNode(C1.getName()), nextGraph.getNode(B.getName()));
-						CSTN.labelModificationR3R5(currentGraph, A, B, C1, AB, CB, CBinNextGraph, status, instantaneousReaction);
+						if (!onlyOnZ || (onlyOnZ && B == Z))
+							CSTN.labelModificationR3R5(currentGraph, A, B, C1, AB, CB, CBinNextGraph, status, instantaneousReaction);
 						if (!status.consistency) return status;
 					}
 				}
-				if (B.getPropositionObserved() != null) {
+				if (B.getPropositionObserved() != null && !excludeR1R2R4) {
 					// Rule R2R4
 					ABinNextGraph = nextGraph.findEdge(nextGraph.getNode(A.getName()), nextGraph.getNode(B.getName()));
 					CSTN.labelModificationR2R4(currentGraph, B, A, AB, ABinNextGraph, status, instantaneousReaction);
@@ -845,20 +859,22 @@ public class CSTN {
 					// labelOptimizationR0(B,C,BC); It would be checked two times!
 				}
 
-				for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
-					BC = eBCIter.next();
-					C = currentGraph.getDest(BC);
-					if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
+				if (!excludeR1R2R4) {
+					for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
+						BC = eBCIter.next();
+						C = currentGraph.getDest(BC);
+						if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
 
-					if (A.getPropositionObserved() != null) {
-						// Rule R1
-						if (A != C) {// self loop is useful only for the labeled std propagation rule
-							BCinNextGraph = nextGraph.findEdge(nextGraph.getNode(B.getName()), nextGraph.getNode(C.getName()));
-							CSTN.labelModificationR1(currentGraph, A, B, C, AB, BC, BCinNextGraph, status, instantaneousReaction);
-							if (!status.consistency) return status;
+						if (A.getPropositionObserved() != null) {
+							// Rule R1
+							if (A != C) {// self loop is useful only for the labeled std propagation rule
+								BCinNextGraph = nextGraph.findEdge(nextGraph.getNode(B.getName()), nextGraph.getNode(C.getName()));
+								CSTN.labelModificationR1(currentGraph, A, B, C, AB, BC, BCinNextGraph, status, instantaneousReaction);
+								if (!status.consistency) return status;
+							}
 						}
+						// if (C.getObservable()!=null) labelModificationR2R4(C,B,BC); It would be checked two times!
 					}
-					// if (C.getObservable()!=null) labelModificationR2R4(C,B,BC); It would be checked two times!
 				}
 			}
 		}
@@ -1014,16 +1030,6 @@ public class CSTN {
 		return true;
 	}
 
-	/**
-	 * @param n
-	 * @return the value of n as String using ∞ for infinitive number and null for not valid int.
-	 */
-	static private String formatInt(int n) {
-		if (n == Constants.INT_NEG_INFINITE) return "-" + Constants.INFINITY_SYMBOLstring;
-		if (n == Constants.INT_POS_INFINITE) return Constants.INFINITY_SYMBOLstring;
-		if (n == Constants.INT_NULL) return "null";
-		return String.valueOf(n);
-	}
 
 	/**
 	 * logger
@@ -1052,11 +1058,14 @@ public class CSTN {
 	 *            minimized constraints; otherwise, it is not modified.
 	 * @param instantaneousReactions true is it is admitted that observation points and other points depending from the observed proposition can be executed
 	 *            in the same 'instant'.
+	 * @param onlyOnZ true if one wants to apply R0, R3 and R5 only when node Z is involved.
+	 * @param excludeR1R2R4 true if one wants to exclude the application of rules R1, R2, and R4.
 	 * @return the final status of the checking with some statistics.
 	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions) throws WellDefinitionException {
+	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean onlyOnZ, boolean excludeR1R2R4)
+			throws WellDefinitionException {
 		final CheckStatus status = new CheckStatus();
 		if (g == null) return status;
 
@@ -1079,7 +1088,7 @@ public class CSTN {
 		for (i = 1; (i <= maxCycles) && !status.finished; i++) {
 			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "\n*** Start Cycle " + i + "/" + maxCycles + " ***");
 			status.cycles++;
-			CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, n, instantaneousReactions, this.labelOptimization, status);
+			CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, n, instantaneousReactions, onlyOnZ, excludeR1R2R4, this.labelOptimization, status);
 
 			if (!status.consistency) {
 				if (CSTN.LOG.isLoggable(Level.INFO))
@@ -1110,7 +1119,7 @@ public class CSTN {
 
 	/**
 	 * Help method to initialize and check the CSTN represented by graph g.
-	 * The {@link #dynamicConsistencyCheck(LabeledIntGraph, boolean)} calls this method before to procede the check.
+	 * The {@link #dynamicConsistencyCheck(LabeledIntGraph, boolean, boolean, boolean)} calls this method before to procede the check.
 	 *
 	 * @param g
 	 * @return true if the graph is a well formed CSTN.
@@ -1125,12 +1134,15 @@ public class CSTN {
 	 * @param currentGraph
 	 * @param nextGraph
 	 * @param instantaneousReaction
+	 * @param onlyOnZ true if one wants to apply R0, R3 and R5 only when node Z is involved.
+	 * @param excludeR1R2R4 true if one wants to exclude the application of rules R1, R2, and R4.
 	 * @param status
 	 * @return status the execution
 	 * @throws WellDefinitionException
 	 */
 	public CheckStatus oneStepDynamicConsistency(final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph, final boolean instantaneousReaction,
-			final CheckStatus status) throws WellDefinitionException {
-		return CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, currentGraph.getVertexCount(), instantaneousReaction, this.labelOptimization, status);
+			final boolean onlyOnZ, final boolean excludeR1R2R4, final CheckStatus status) throws WellDefinitionException {
+		return CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, currentGraph.getVertexCount(), instantaneousReaction, onlyOnZ, excludeR1R2R4,
+				this.labelOptimization, status);
 	}
 }
