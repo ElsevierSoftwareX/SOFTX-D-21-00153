@@ -341,8 +341,7 @@ public class CSTN {
 			final int w = obsXLabeledValue.getIntValue();
 			final Label l = obsXLabeledValue.getKey();
 			if ((w > 0) || (instantaneousReaction && (w == 0))) continue;
-			Literal pInL = l.getLiteralWithSameName(p);
-			if (pInL == null || pInL.isUnknown()) continue;
+			if (l.getLiteralWithSameName(p) == null) continue;
 			if (PX.getValue(l) == LabeledIntMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
 
 			
