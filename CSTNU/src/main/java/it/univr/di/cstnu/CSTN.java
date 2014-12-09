@@ -354,7 +354,7 @@ public class CSTN {
 			if (CSTN.LOG.isLoggable(Level.FINER)) {
 				logMessage = "R0 simplifies a label of edge " + PX
 						+ ":\npartic: " + P.getName() + " ---(" + l + ", " + Constants.formatInt(w) + ")---> " + X.getName()
-						+ "\nresult: " + P.getName() + " ---(" + alphaPrime + ", " + Constants.formatInt(w) + ")--- " + X.getName();
+						+ "\nresult: " + P.getName() + " ---(" + alphaPrime + ", " + Constants.formatInt(w) + ")---> " + X.getName();
 			}
 
 			PXinNextGraph.putLabeledValueToRemovedList(l, w);
@@ -700,8 +700,9 @@ public class CSTN {
 					if (CSTN.LOG.isLoggable(Level.FINER)) {
 						CSTN.LOG.log(Level.FINER, "Labeled Propagation Rule applied to edge " + ACinNextGraph.getName() + ":\n"
 								+ "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x)	+ ")--> " + B.getName() 
-								+ " --(" + labelBC + ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
-								+ ", " + Constants.formatInt(y) + ")--> " + C.getName()
+								+ " --(" + labelBC + ", " + Constants.formatInt(y) 
+								+ ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
+								+ ")--> " + C.getName()
 								+ "\nresult: " + A.getName() + " --(" + newLabelAC + ", "
 								+ Constants.formatInt(sum)
 								+ ((sigma != null && !sigma.isEmpty()) ? ", " + sigma.toString() : "")
@@ -1021,7 +1022,7 @@ public class CSTN {
 				g.addEdge(e, node, Z);
 				if (CSTN.LOG.isLoggable(Level.WARNING)) {
 					CSTN.LOG.log(Level.WARNING, "It is necessary to add a preceding constraint between node '" + node.getName() + "' and node '"
-							+ Z.getName() + "' because Z must be the first node.");
+							+ Z.getName());// + "' because Z must be the first node. Be careful, we operate with integer, it is necessary to set -1 the distance!");
 				}
 			}
 			e.mergeLabeledValue(node.getLabel(), 0);// in any case, all nodes must be after Z!

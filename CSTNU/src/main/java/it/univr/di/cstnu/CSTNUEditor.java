@@ -389,7 +389,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		rowForAppButtons.add(instantaneousAct);
 
 		JRadioButton excludeR1R2R4Button = new JRadioButton("R1, R2, R4 rule disabled", excludeR1R2R4);
-		instantaneousAct.addItemListener(new ItemListener() {
+		excludeR1R2R4Button.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
 					excludeR1R2R4 = true;
@@ -403,7 +403,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		rowForAppButtons.add(excludeR1R2R4Button);
 
 		JRadioButton onlyOnZButton = new JRadioButton("R0, R3, R5 applied only in Z", onlyOnZ);
-		instantaneousAct.addItemListener(new ItemListener() {
+		onlyOnZButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
 					onlyOnZ = true;
