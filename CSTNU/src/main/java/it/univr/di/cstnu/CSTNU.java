@@ -454,7 +454,7 @@ public class CSTNU {
 								ij.mergeLabeledValue(l, v);
 							}
 							if (i == j) // check negative cycles
-								if (v < 0) {
+								if (v < 0 || ij.getValue(l) < 0) {
 									CSTNU.LOG.finer("Found a negative cycle on node " + iV.getName() + ": " + ((ijMap != null) ? ijMap : ij));
 									return false;
 								}
@@ -570,9 +570,7 @@ public class CSTNU {
 
 		for (final LabeledIntEdge AB : lowerCaseEdge) {
 			ABMap = AB.getLowerLabelSet();
-			if (ABMap.size() == 0) {
-				continue;
-			}
+			if (ABMap.size() == 0) continue;
 			A = currentGraph.getSource(AB);
 			B = currentGraph.getDest(AB);
 
@@ -588,23 +586,16 @@ public class CSTNU {
 				if (CAInNext == null) throw new IllegalArgumentException("The edge CAInNext cannot be null!");
 				for (final Object2IntMap.Entry<Entry<Label, String>> upperCaseEntryOfCA : CA.getUpperLabelSet()) {
 					final String upperCaseNodeName = upperCaseEntryOfCA.getKey().getValue();
-					if (!upperCaseNodeName.equals(B.getName()))
-					{
-						continue;// Rule rules!
-					}
+					if (!upperCaseNodeName.equals(B.getName())) continue;// Rule condition!
 					final Label l2 = upperCaseEntryOfCA.getKey().getKey();
 					final int z = upperCaseEntryOfCA.getValue();
 
 					for (final Object2IntMap.Entry<Entry<Label, String>> lowerCaseEntryOfAB : ABMap) {
 						final int x = lowerCaseEntryOfAB.getValue();
-						if (z < -x) {
-							continue;
-						}
+						if (z < -x) continue;
 						final Label l1 = lowerCaseEntryOfAB.getKey().getKey();
 						final Label l1l2 = l1.conjunction(l2);
-						if (l1l2 == null) {
-							continue;
-						}
+						if (l1l2 == null) continue;
 						if (!l2.subsumes(l1)) {
 							CSTNU.LOG.finer("Luke's curiosity: the Upper Case label removal on entry "
 									+ upperCaseEntryOfCA + " of edge " + CA.getName() + " is applied with label "
@@ -820,30 +811,6 @@ public class CSTNU {
 		return flag;
 	}
 
-	// /**
-	// * @param alpha
-	// * @param g
-	// * @return Null if any parameter is null.
-	// */
-	// @SuppressWarnings("unused")
-	// private static Set<Label> getNotAlpha(Label alpha, LabeledIntGraph g) {
-	// if (alpha == null || g == null) return null;
-	// ObjectArraySet<Label> labelSet = new ObjectArraySet<>();
-	//
-	// Collection<Literal> allLiteral = alpha.getAll();
-	// for (Literal l : allLiteral) {
-	// Label alphaLabel = new Label(l.getComplement());
-	// Label obsLabel = g.getObservable(l).getLabel();
-	// for (Literal l1 : allLiteral) {
-	// if (l1.equals(l)) continue;
-	// if (obsLabel.contains(l1))
-	// alphaLabel.conjunct(l1);
-	// }
-	// labelSet.add(alphaLabel);
-	// }
-	// return labelSet;
-	// }
-
 	/**
 	 * Apply Morris cross case reduction (see page 1196 of the article).
 	 *
@@ -874,9 +841,7 @@ public class CSTNU {
 		CSTNU.LOG.finer("Cross Case Rule: start.");
 		for (final LabeledIntEdge DC : lowerCaseEdges) {
 			DCMap = DC.getLowerLabelSet();
-			if (DCMap.size() == 0) {
-				continue;
-			}
+			if (DCMap.size() == 0) continue;
 			D = currentGraph.getSource(DC);
 			C = currentGraph.getDest(DC);
 
@@ -894,15 +859,10 @@ public class CSTNU {
 
 				for (final Object2IntMap.Entry<Entry<Label, String>> entryLabelUpperCaseEdge : upperCaseEdge.getUpperLabelSet()) {
 					final String upperCaseNodeName = entryLabelUpperCaseEdge.getKey().getValue();
-					if (upperCaseNodeName.equals(C.getName()))
-					{
-						continue;// Rule rule!
-					}
+					if (upperCaseNodeName.equals(C.getName())) continue;// Rule condition!
+
 					final int x = entryLabelUpperCaseEdge.getValue();
-					if (x > 0)
-					{
-						continue; // Rule rule!
-					}
+					if (x > 0) continue; // Rule condition!
 					final Label l1 = entryLabelUpperCaseEdge.getKey().getKey();
 
 					DA = nextGraph.findEdge(nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
@@ -910,9 +870,7 @@ public class CSTNU {
 						final int y = entryLowerCaseEdgeToC.getValue();
 						final Label l2 = entryLowerCaseEdgeToC.getKey().getKey();
 						final Label l1l2 = l1.conjunction(l2);
-						if (l1l2 == null) {
-							continue;
-						}
+						if (l1l2 == null) continue;
 						if (DA == null) {
 							DA = new LabeledIntEdge("e" + D.getName() + A.getName(), LabeledIntEdge.Type.derived, CSTNU.labelOptimization);
 							nextGraph.addEdge(DA, nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
@@ -931,10 +889,7 @@ public class CSTNU {
 									+ " <---(" + l2 + ", " + entryLowerCaseEdgeToC.getKey().getValue().toLowerCase() + ", " + y + ")--- " + D.getName()
 									+ "\nresult: " + A.getName() + " <---(" + l1l2 + ", " + upperCaseNodeName.toUpperCase() + ", " + z + ")--- " + D.getName()
 									+ "; oldValue: " + oldZ);
-							if (z != oldZ) {
-								CSTNU.LOG.finer("LabeledIntEdge " + DA.getName() + " after the ruel: " + DA.toString());
-							}
-
+							if (z != oldZ) CSTNU.LOG.finer("LabeledIntEdge " + DA.getName() + " after the ruel: " + DA.toString());
 						}
 					}
 				}
@@ -945,7 +900,8 @@ public class CSTNU {
 	}
 
 	/**
-	 * Initializes all data structure before the execution of controllability checking algorithm.<p>
+	 * Initializes all data structure before the execution of controllability checking algorithm.
+	 * <p>
 	 *
 	 * @param g
 	 * @return true. If there is any problem, it throws an exception saying the error.
@@ -967,7 +923,7 @@ public class CSTNU {
 			final LabeledNode s = g.getSource(e);
 			final LabeledNode d = g.getDest(e);
 			final Label conjunctLabel = s.getLabel().conjunction(d.getLabel());
-			CSTNU.LOG.finer("source label: " + s.getLabel() + "; dest label: " + d.getLabel() + " new label: " + conjunctLabel);
+			CSTNU.LOG.finest("source label: " + s.getLabel() + "; dest label: " + d.getLabel() + " new label: " + conjunctLabel);
 			if (conjunctLabel == null) {
 				CSTNU.LOG.warning("Found a inconsistent label between two nodes connected by an edge. LabeledIntEdge removed!");
 				g.removeEdge(e);
@@ -978,7 +934,7 @@ public class CSTNU {
 				for (Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
 					l1 = entry.getKey().conjunction(conjunctLabel);
 					if (l1 == null) {
-						CSTN.LOG.warning("Found a labeled value in "+e+" inconsistent with the conjunction of node labels. Labeled value removed");
+						CSTN.LOG.warning("Found a labeled value in " + e + " inconsistent with the conjunction of node labels. Labeled value removed");
 						e.removeLabel(entry.getKey());
 					}
 				}
@@ -1026,24 +982,33 @@ public class CSTNU {
 
 			boolean insertUpperLowerCaseValue = false;
 			LabeledIntEdge eInverted = g.findEdge(d, s);
+			CSTNU.LOG.finer("Edge e is contingent. Found its companion: " + eInverted);
 			if (eInverted == null) {
 				eInverted = new LabeledIntEdge("e" + d.getName() + s.getName(), LabeledIntEdge.Type.derived, CSTNU.labelOptimization);
 				g.addEdge(eInverted, d, s);
+				CSTNU.LOG.finer("Edge e is contingent. NOT found its companion, so create one: " + eInverted);
 				// in this case we can add the case label
 				insertUpperLowerCaseValue = true;
 			} else {
 				if ((initialValue <= 0) && (eInverted.getLowerLabelValue(conjunctLabel, s) == CSTNU.nullInt)) {
+					CSTNU.LOG.finer("Edge e is contingent with a negative value but the inverted " + eInverted + " does not contain a lower case value: ("
+							+ conjunctLabel + ", " + s.getName() + ") -> " + eInverted.getLowerLabelValue(conjunctLabel, s));
 					insertUpperLowerCaseValue = true;
 				}
 				if ((initialValue > 0) && (eInverted.getUpperLabelValue(conjunctLabel, d) == CSTNU.nullInt)) {
+					CSTNU.LOG.finer("Edge e is contingent with a positive value but the inverted " + eInverted + " does not contain an UPPER case value: ("
+							+ conjunctLabel + ", " + d.getName() + ") -> " + eInverted.getUpperLabelValue(conjunctLabel, d));
 					insertUpperLowerCaseValue = true;
 				}
 			}
 			if (insertUpperLowerCaseValue) {
 				if (initialValue <= 0) {
 					eInverted.mergeLowerLabelValue(conjunctLabel, s, -initialValue);
+					CSTNU.LOG.finer("Insert the lower label value: (" + conjunctLabel + ", " + s.getName().toLowerCase() + ", " + (-initialValue));
 				} else {
 					eInverted.mergeUpperLabelValue(conjunctLabel, d, -initialValue);
+					CSTNU.LOG.finer("Insert the upper label value: (" + conjunctLabel + ", " + s.getName().toUpperCase() + ", " + (-initialValue));
+
 				}
 			}
 		}
@@ -1056,10 +1021,7 @@ public class CSTNU {
 		final Set<LabeledNode> nodeSet = new ObjectArraySet<>(g.getVertices());
 		for (final LabeledNode node : nodeSet) {
 
-			if ((g.getZ() == null) && CSTNU.isZ(node))
-			{
-				g.setZ(node);// FIXME Fai in modo che l'utente possa dire chi è il nodo Z.
-			}
+			if ((g.getZ() == null) && CSTNU.isZ(node)) g.setZ(node);// FIXME Fai in modo che l'utente possa dire chi è il nodo Z.
 
 			// Check that obs-node has no in its label the proposition observed!
 			final Literal obs = node.getPropositionObserved();
@@ -1085,8 +1047,7 @@ public class CSTNU {
 						}
 						e.mergeLabeledValue(label, 0);
 					}
-				} else
-					throw new IllegalArgumentException(ex.getMessage());
+				} else throw new IllegalArgumentException(ex.getMessage());
 			}
 		}
 
@@ -1175,13 +1136,13 @@ public class CSTNU {
 	 * <pre>
 	 * R0:
 	 * P? --[a p,U,-w]--&gt; X changes in P? --[a,U,-w]--&gt; X when w &lt;0
-	 *
+	 * 
 	 * R2:
 	 * P? &lt;--[a p,U,w]-- X  changes in P? &lt;--[a,U,w]-- X when w &gt; 0
-	 *
+	 * 
 	 * R4:
 	 * P? &lt;--[a p,U,w]-- X  changes in P? &lt;--[a,U,0][a p,U,w]-- X when w &le; 0
-	 *
+	 * 
 	 * where:
 	 * U can be ◇ or an upper letter.
 	 * p can be the positive o the negative literal associated to proposition observed in P?.
@@ -1895,21 +1856,15 @@ public class CSTNU {
 		CSTNU.LOG.finer("Lower Case Rule: start.");
 		for (final LabeledIntEdge DC : lowerCaseEdge) {
 			DCMap = DC.getLowerLabelSet();
-			if (DCMap.size() == 0) {
-				continue;
-			}
+			if (DCMap.size() == 0) continue;
 			D = currentGraph.getSource(DC);
 			C = currentGraph.getDest(DC);
 
 			for (final LabeledIntEdge CA : currentGraph.getOutEdges(C)) {
 				A = currentGraph.getDest(CA);
-				if (A.equalsByName(D) || A.equalsByName(C)) {
-					continue;// A==D is a loop =0; A==C, if x<0, then there is a
-				}
-				// negative loop
-				if ((CA.getMinValue() == CSTNU.nullInt) || (CA.getMinValue() > 0)) {
-					continue; // rule condition!
-				}
+				// With guarded it is necessary to check loop!
+				// if (A.equalsByName(D) || A.equalsByName(C)) continue;// A==D is a loop =0; A==C, if x<0, then there is a negative loop
+				if ((CA.getMinValue() == CSTNU.nullInt) || (CA.getMinValue() > 0)) continue; // rule condition!
 
 				final Set<Object2IntMap.Entry<Label>> CAMap = CA.labeledValueSet();
 
@@ -1926,9 +1881,7 @@ public class CSTNU {
 					// }
 					for (final Object2IntMap.Entry<Label> entryCA : CAMap) {
 						final int x = entryCA.getValue();
-						if (x > 0) {
-							continue;
-						}
+						if (x > 0) continue;
 						final Label l1 = entryCA.getKey();
 						final Label l1l2 = l1.conjunction(l2);
 						if (l1l2 == null) {
@@ -2214,7 +2167,7 @@ public class CSTNU {
 	static Entry<Boolean, Boolean> oneStepDynamicConsistency(final int i, final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph,
 			final LabeledIntGraph distanceGraph,
 			final boolean instantaneousReaction)
-					throws WellDefinitionException {
+			throws WellDefinitionException {
 		boolean reductionApplied = false;// FIXME uso reductionApplied or currentGraph.hasSameEdgesOf(nextGraph)?
 
 		final LabeledIntGraph originalGraph = new LabeledIntGraph(true);
@@ -2269,13 +2222,14 @@ public class CSTNU {
 	static Entry<Boolean, Boolean> oneStepDynamicControllability(final int i, final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph,
 			final LabeledIntGraph distanceGraph,
 			final boolean instantaneousReaction)
-					throws WellDefinitionException {
+			throws WellDefinitionException {
 		boolean reductionApplied = false;// FIXME uso reductionApplied or currentGraph.hasSameEdgesOf(nextGraph)?
 
 		final LabeledIntGraph originalGraph = new LabeledIntGraph(true);
 		originalGraph.clone(currentGraph);
 		distanceGraph.clone(CSTNU.makeAllMaxProjection(currentGraph));
-		CSTNU.LOG.info("AllMax Projection check...");
+		CSTNU.LOG.info("Current graph: " + currentGraph);
+		CSTNU.LOG.info("AllMax Projection check... on " + distanceGraph);
 		if (!CSTNU.minimalDistanceGraphFast(distanceGraph)) {
 			CSTNU.LOG.info("The all max projection graph has negative loops at the start of cycle " + i + ": stop!");
 			return new SimpleEntry<>(reductionApplied, true);
@@ -2340,17 +2294,13 @@ public class CSTNU {
 		CSTNU.LOG.finer("Upper Case Rule: start.");
 		for (final LabeledIntEdge CA : upperCaseEdge) {
 			CAMap = CA.getUpperLabelSet();
-			if (CAMap.size() == 0) {
-				continue;
-			}
+			if (CAMap.size() == 0) continue;
 			C = currentGraph.getSource(CA);
 			A = currentGraph.getDest(CA);
 
 			for (final LabeledIntEdge DC : currentGraph.getInEdges(C)) {
 				D = currentGraph.getSource(DC);
-				if (C.equalsByName(D) || A.equalsByName(D)) {
-					continue;// it is useless to consider self loop.
-				}
+//				if (C.equalsByName(D) || A.equalsByName(D)) continue;// it is useless to consider self loop.NO, it is necessary with guarded links!
 
 				DA = nextGraph.findEdge(nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
 				final Set<Object2IntMap.Entry<Label>> DCMap = DC.labeledValueSet();
@@ -2363,9 +2313,7 @@ public class CSTNU {
 					for (final Object2IntMap.Entry<Label> entryDC : DCMap) {
 						final Label l2 = entryDC.getKey();
 						final Label l1l2 = l1.conjunction(l2);
-						if (l1l2 == null) {
-							continue;
-						}
+						if (l1l2 == null) continue;
 						// if (!checkNodeLabelsSubsumption(D, A, l1l2, (DA == null) ? "e" + D.getName() + A.getName() : DA.getName(), "Upper Case Rule"))
 						// continue;// there is a more general check
 						final int y = entryDC.getValue();
@@ -2506,7 +2454,7 @@ public class CSTNU {
 	 *
 	 * @param labelEdgeFromP
 	 * @param labelWithoutP
-	 * @param strict 
+	 * @param strict
 	 * @return an array of three labels as required by lemma R1 and R2.
 	 */
 	private static Label[] getAlphaBetaGamma(final Label labelEdgeFromP, final Label labelWithoutP, boolean strict) {
