@@ -413,7 +413,7 @@ public class LabeledIntEdge extends Component {
 	public void add2NodeSet(final Label label, SortedSet<String> nodeNameSet) {
 		if (label == null) return;
 		if (nodeNameSet==null) {
-			this.nodeSetOfLabel.remove(label);
+			//this.nodeSetOfLabel.remove(label);
 			return;
 		}
 		SortedSet<String> set = this.nodeSetOfLabel.get(label);
@@ -514,7 +514,7 @@ public class LabeledIntEdge extends Component {
 	 * @return the value associated to the labeled wait if it exists.
 	 */
 	public int getLowerLabelValue(final Label l, final LabeledNode n) {
-		return this.lowerLabel.getValue(l, n.getName());
+		return this.lowerLabel.getValue(l, n.getName().toLowerCase());
 	}
 
 	/**
@@ -617,7 +617,7 @@ public class LabeledIntEdge extends Component {
 	 * @return the value associated to the upper label of the occurrence of node n if it exists, {@link LabeledIntMap#INT_NULL} otherwise.
 	 */
 	public int getUpperLabelValue(final Label l, final String name) {
-		return this.upperLabel.getValue(l, name);
+		return this.upperLabel.getValue(l, name.toUpperCase());
 	}
 
 	/**
@@ -740,7 +740,7 @@ public class LabeledIntEdge extends Component {
 	 * @return true if the merge has been successful.
 	 */
 	public boolean mergeLowerLabelValue(final Label l, final LabeledNode n, final int i) {
-		return this.lowerLabel.mergeTriple(l, n.getName(), i, false);
+		return this.lowerLabel.mergeTriple(l, n.getName().toLowerCase(), i, false);
 	}
 
 	/**
@@ -753,7 +753,7 @@ public class LabeledIntEdge extends Component {
 	 * @return true if the merge has been successful.
 	 */
 	public boolean mergeLowerLabelValue(final Label l, final String nodeName, final int i) {
-		return this.lowerLabel.mergeTriple(l, nodeName, i, false);
+		return this.lowerLabel.mergeTriple(l, nodeName.toLowerCase(), i, false);
 	}
 
 	/**
@@ -766,7 +766,7 @@ public class LabeledIntEdge extends Component {
 	 * @return true if the merge has been successful.
 	 */
 	public boolean mergeUpperLabelValue(final Label l, final LabeledNode n, final int i) {
-		return this.mergeUpperLabelValue(l, n.getName(), i);
+		return this.mergeUpperLabelValue(l, n.getName().toUpperCase(), i);
 	}
 
 	/**
@@ -778,7 +778,8 @@ public class LabeledIntEdge extends Component {
 	 * @param i It cannot be LabeledIntMap.nullInt.
 	 * @return true if the merge has been successful.
 	 */
-	public boolean mergeUpperLabelValue(final Label l, final String nodeName, final int i) {
+	public boolean mergeUpperLabelValue(final Label l, String nodeName, final int i) {
+		nodeName = nodeName.toUpperCase();
 		if ((l == null) || (nodeName == null) || (i == LabeledIntMap.INT_NULL))
 			throw new IllegalArgumentException("The label or the value has a not admitted value");
 		final int oldValue = this.removedUpperLabel.getValue(l, nodeName);
@@ -866,7 +867,7 @@ public class LabeledIntEdge extends Component {
 	 * @return the value of the removed labeled value
 	 */
 	public int removeLowerLabel(final Label l, final LabeledNode n) {
-		return this.lowerLabel.remove(l, n.getName());
+		return this.lowerLabel.remove(l, n.getName().toLowerCase());
 	}
 
 	/**
@@ -877,7 +878,7 @@ public class LabeledIntEdge extends Component {
 	 * @return the value of the removed element.
 	 */
 	public int removeUpperLabel(final Label l, final LabeledNode n) {
-		return this.upperLabel.remove(l, n.getName());
+		return this.upperLabel.remove(l, n.getName().toUpperCase());
 	}
 
 	/**
@@ -888,7 +889,7 @@ public class LabeledIntEdge extends Component {
 	 * @return the old value
 	 */
 	public int removeUpperLabel(final Label l, final String n) {
-		return this.upperLabel.remove(l, n);
+		return this.upperLabel.remove(l, n.toUpperCase());
 	}
 
 	/**
@@ -938,7 +939,8 @@ public class LabeledIntEdge extends Component {
 		return "❮" + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getType() + "; "
 				+ ((this.labeledValue.size() > 0) ? this.labeledValue.toString() + "; " : "")
 				+ ((this.upperLabel.size() > 0) ? "UL: " + this.upperLabel.toString() + "; " : "")
-				+ ((this.lowerLabel.size() > 0) ? "LL: " + this.lowerLabel.toString() + ";" : "")
+				+ ((this.lowerLabel.size() > 0) ? "LL: " + this.lowerLabel.toString(true) + ";" : "")
+				+ ((this.nodeSetOfLabel.size() > 0) ? "NodeSet: " + this.nodeSetOfLabel.toString() + ";" : "")
 				+ "❯";
 	}
 
