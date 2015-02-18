@@ -444,19 +444,21 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 
 	/**
 	 * @param g1
-	 * @return true if this graph has the same set of edges (by equals()) of g1. false otherwise.
+	 * @return true if this graph contains edges equal to all g1 edges. Equals is checked using method {@link #equals(Object)}.
+	 * 	False otherwise.
 	 */
 	public boolean hasSameEdgesOf(final LabeledIntGraph g1) {
-		final StringBuffer sb = new StringBuffer("Different edges:");
 		if (g1 == null) return false;
+		final StringBuffer sb = new StringBuffer("Different edges:");
+		final String currentName = this.getName();
+		final String g1name = g1.getName();
 
 		LabeledIntEdge e;
 		boolean sameEdges = true;
 		for (final LabeledIntEdge e1 : g1.edges.keySet()) {
 			e = this.getEdge(e1.getName());
 			if ((e == null) || !e.equalsLabeledValues(e1)) {
-				sb.append("\nCurrent  edge: " + e + "\n"
-						+ "Modified edge: " + e1);
+				sb.append('\n').append(currentName).append(":\t").append(e).append("\n").append(g1name).append(":\t").append(e1);
 				sameEdges = false;// i want to log all differences!!!
 			}
 		}

@@ -6,7 +6,7 @@ package it.univr.di.cstnu.graph;
 import it.univr.di.cstnu.graph.LabeledIntEdge.Type;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 import java.io.FileReader;
@@ -88,7 +88,7 @@ public class GraphMLReader extends edu.uci.ics.jung.io.graphml.GraphMLReader2<La
 			// e.setInitialValue(null);
 			// else
 			// e.setInitialValue(Integer.parseInt(v));
-			e.setLabeledValue(LabeledIntTreeMap.parse(metaData.getProperty("LabeledValues"), optimized));
+			e.setLabeledValue(LabeledIntNodeSetTreeMap.parse(metaData.getProperty("LabeledValues"), optimized));
 			e.setLabeledLowerCaseValue(LabeledContingentIntTreeMap.parse(metaData.getProperty("LowerCaseLabeledValues"), optimized));
 			e.setLabeledUpperCaseValue(LabeledContingentIntTreeMap.parse(metaData.getProperty("UpperCaseLabeledValues"), optimized));
 			return e;

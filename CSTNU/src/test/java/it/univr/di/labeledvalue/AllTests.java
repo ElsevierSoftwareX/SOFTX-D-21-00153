@@ -9,7 +9,7 @@ import org.junit.runners.Suite.SuiteClasses;
  *
  */
 @RunWith(Suite.class)
-@SuiteClasses({ LabeledContingentIntTreeMapTest.class, LabeledIntTreeMapTest.class, LabelTest.class, LiteralTest.class, ValueNodeSetPairTest.class })
+@SuiteClasses({ LabeledContingentIntTreeMapTest.class, LabeledIntNodeSetTreeMapTest.class, LabelTest.class, LiteralTest.class, ValueNodeSetPairTest.class })
 public class AllTests {
 
 }

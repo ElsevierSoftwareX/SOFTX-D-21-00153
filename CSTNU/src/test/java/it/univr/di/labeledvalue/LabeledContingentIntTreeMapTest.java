@@ -183,7 +183,6 @@ public class LabeledContingentIntTreeMapTest {
 		Assert.assertEquals("Check of parse method", this.result, map);
 	}
 
-	
 	/**
 	 * Check if the management of the base is correct.
 	 */
@@ -192,12 +191,12 @@ public class LabeledContingentIntTreeMapTest {
 		map.clear();
 		map = LabeledContingentIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}", true);
 
-		assertTrue(map.getMinValue()==-14);
+		assertTrue(map.getMinValue() == -14);
 		map.clear();
-		
-		assertTrue(map.getMinValue()==LabeledIntMap.INT_NULL);
+
+		assertTrue(map.getMinValue() == LabeledIntNodeSetMap.INT_NULL);
 	}
-	
+
 	/**
 	 * Check if the management of the base is correct.
 	 */
@@ -206,15 +205,15 @@ public class LabeledContingentIntTreeMapTest {
 		map.clear();
 		map = LabeledContingentIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}", true);
 
-		assertTrue(map.getMinValue()==-14);
+		assertTrue(map.getMinValue() == -14);
 		map.clear();
-		assertTrue(map.getMinValue()==LabeledIntMap.INT_NULL);
+		assertTrue(map.getMinValue() == LabeledIntNodeSetMap.INT_NULL);
 
 		map = LabeledContingentIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}", true);
-		assertTrue(map.getMinValueConsistentWith(Label.parse("¬a"),"N9")==-14);
-		assertTrue(map.getMinValueConsistentWith(Label.parse("¬a"),"N11")==LabeledIntMap.INT_NULL);
+		assertTrue(map.getMinValueConsistentWith(Label.parse("¬a"), "N9") == -14);
+		assertTrue(map.getMinValueConsistentWith(Label.parse("¬a"), "N11") == LabeledIntNodeSetMap.INT_NULL);
 	}
-	
+
 	/**
 	 * @throws Exception
 	 */

@@ -398,6 +398,7 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * @param l the label to check
 	 * @return a new label with the conjunction of 'this' and 'label' if they are consistent, null otherwise.<br>
+	 * 			null also if this label or l contains unknown literals.
 	 *         'this' is not altered by this method.
 	 */
 	public Label conjunction(final Label l) {

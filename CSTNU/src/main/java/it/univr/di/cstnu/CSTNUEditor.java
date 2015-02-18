@@ -155,14 +155,14 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 	
 	/**
-	 * Flag for applying R0, R3 and R5 only on Z node.
+	 * Flag for applying R0 and R3 only on Z node.
 	 */
 	boolean onlyOnZ = false;
 	
 	/**
-	 * Flag for excluding the application of R1, R2 and R4 rules.
+	 * Flag for excluding the application of R1 and R2 rules.
 	 */
-	boolean excludeR1R2R4 = false;
+	boolean excludeR1R2 = true;
 	/**
 	 * CSTNU save button
 	 */
@@ -388,21 +388,21 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		});
 		rowForAppButtons.add(instantaneousAct);
 
-		JRadioButton excludeR1R2R4Button = new JRadioButton("R1, R2, R4 rule disabled", excludeR1R2R4);
-		excludeR1R2R4Button.addItemListener(new ItemListener() {
+		JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", excludeR1R2);
+		excludeR1R2Button.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					excludeR1R2R4 = true;
-					LOG.fine("excludeR1R2R4 flag set to true");
+					excludeR1R2 = true;
+					LOG.fine("excludeR1R2 flag set to true");
 				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					excludeR1R2R4 = false;
-					LOG.fine("excludeR1R2R4 flag set to false");
+					excludeR1R2 = false;
+					LOG.fine("excludeR1R2 flag set to false");
 				}
 			}
 		});
-		rowForAppButtons.add(excludeR1R2R4Button);
+		rowForAppButtons.add(excludeR1R2Button);
 
-		JRadioButton onlyOnZButton = new JRadioButton("R0, R3, R5 applied only in Z", onlyOnZ);
+		JRadioButton onlyOnZButton = new JRadioButton("R0 and R3 applied only in Z", onlyOnZ);
 		onlyOnZButton.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
@@ -593,7 +593,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 				try {
 					CheckStatus status;
-					status = cstn.dynamicConsistencyCheck(g1, instantaneousReaction, onlyOnZ, excludeR1R2R4);
+					status = cstn.dynamicConsistencyCheck(g1, instantaneousReaction, onlyOnZ, excludeR1R2);
 					if (status.consistency) {
 						jl.setText("The graph is CSTN consistent.");
 						jl.setIcon(CSTNUEditor.infoIcon);
@@ -650,7 +650,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				cycle++;
 
 				try {
-					final CheckStatus status = cstn.oneStepDynamicConsistency(g1, g2, instantaneousReaction,  onlyOnZ, excludeR1R2R4, new CheckStatus());
+					final CheckStatus status = cstn.oneStepDynamicConsistency(g1, g2, instantaneousReaction,  onlyOnZ, excludeR1R2, new CheckStatus());
 					final boolean reductionsApplied = !status.finished;
 					final boolean inconsistency = !status.consistency;
 					if (inconsistency) {

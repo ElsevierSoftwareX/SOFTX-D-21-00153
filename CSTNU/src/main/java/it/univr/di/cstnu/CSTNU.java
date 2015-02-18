@@ -8,8 +8,8 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -41,7 +41,7 @@ public class CSTNU {
 	/**
 	 * Shortcut
 	 */
-	static int nullInt = LabeledIntMap.INT_NULL;
+	static int nullInt = LabeledIntNodeSetMap.INT_NULL;
 
 	/**
 	 * Counters about the # of application of different rules.
@@ -350,51 +350,51 @@ public class CSTNU {
 	/**
 	 * Determines the minimal distance between all pair of vertexes modifying the given graph if there is no negative
 	 * cycle.<br>
-	 * This method uses the {@link LabeledIntTreeMap#summedTo(LabeledIntTreeMap)} in order to determine the right labels for
+	 * This method uses the {@link LabeledIntNodeSetTreeMap#summedTo(LabeledIntNodeSetTreeMap)} in order to determine the right labels for
 	 * the edge.
 	 *
 	 * @param g the graph
 	 * @return true if the matrix represents the minimal distance between all pairs of nodes, false if there is a
 	 *         negative cycle at least. If the response is false, the matrix does not represent a distance graph!
 	 */
-	static public boolean minimalDistanceGraph(final LabeledIntGraph g) {
-		final int n = g.getVertexCount();
-		final LabeledNode[] node = g.getVerticesArray();
-		LabeledNode iV, jV, kV;
-		LabeledIntEdge ik, kj, ij;
-		LabeledIntTreeMap newLabelSet;
-
-		for (int k = 0; k < n; k++) {
-			kV = node[k];
-			for (int i = 0; i < n; i++) {
-				iV = node[i];
-				for (int j = 0; j < n; j++) {
-					if ((k == i) && (i == j)) {
-						continue;
-					}
-					jV = node[j];
-					ik = g.findEdge(iV, kV);
-					kj = g.findEdge(kV, jV);
-					if ((ik == null) || (kj == null)) {
-						continue;
-					}
-
-					newLabelSet = (LabeledIntTreeMap) ((LabeledIntTreeMap) ik.getLabeledValueMap()).summedTo(kj.getLabeledValueMap());
-					if (newLabelSet.size() > 0) {
-						ij = g.findEdge(iV, jV);
-						if (ij == null) {
-							ij = new LabeledIntEdge("e" + node[i].getName() + node[j].getName(), LabeledIntEdge.Type.derived, CSTNU.labelOptimization);
-							g.addEdge(ij, iV, jV);
-						}
-						ij.mergeLabeledValue(newLabelSet);
-						if (i == j) // check negative cycles
-							if (newLabelSet.isThereNegativeValues()) return false;
-					}
-				}
-			}
-		}
-		return true;
-	}
+//	static public boolean minimalDistanceGraph(final LabeledIntGraph g) {
+//		final int n = g.getVertexCount();
+//		final LabeledNode[] node = g.getVerticesArray();
+//		LabeledNode iV, jV, kV;
+//		LabeledIntEdge ik, kj, ij;
+//		LabeledIntNodeSetTreeMap newLabelSet;
+//
+//		for (int k = 0; k < n; k++) {
+//			kV = node[k];
+//			for (int i = 0; i < n; i++) {
+//				iV = node[i];
+//				for (int j = 0; j < n; j++) {
+//					if ((k == i) && (i == j)) {
+//						continue;
+//					}
+//					jV = node[j];
+//					ik = g.findEdge(iV, kV);
+//					kj = g.findEdge(kV, jV);
+//					if ((ik == null) || (kj == null)) {
+//						continue;
+//					}
+//
+//					newLabelSet = (LabeledIntNodeSetTreeMap) ((LabeledIntNodeSetTreeMap) ik.getLabeledValueMap()).summedTo(kj.getLabeledValueMap());
+//					if (newLabelSet.size() > 0) {
+//						ij = g.findEdge(iV, jV);
+//						if (ij == null) {
+//							ij = new LabeledIntEdge("e" + node[i].getName() + node[j].getName(), LabeledIntEdge.Type.derived, CSTNU.labelOptimization);
+//							g.addEdge(ij, iV, jV);
+//						}
+//						ij.mergeLabeledValue(newLabelSet);
+//						if (i == j) // check negative cycles
+//							if (newLabelSet.isThereNegativeValues()) return false;
+//					}
+//				}
+//			}
+//		}
+//		return true;
+//	}
 
 	/**
 	 * Determines the minimal distance between all pair of vertexes modifying the given graph if there is no negative
@@ -411,7 +411,7 @@ public class CSTNU {
 		LabeledIntEdge ik, kj, ij;
 		int v;
 		Label l;
-		LabeledIntTreeMap ijMap = null;
+		LabeledIntNodeSetTreeMap ijMap = null;
 		for (int k = 0; k < n; k++) {
 			kV = node[k];
 			for (int i = 0; i < n; i++) {
@@ -431,7 +431,7 @@ public class CSTNU {
 					final Set<Object2IntMap.Entry<Label>> ikMap = ik.labeledValueSet();
 					final Set<Object2IntMap.Entry<Label>> kjMap = kj.labeledValueSet();
 					if ((k == i) || (k == j)) {
-						ijMap = new LabeledIntTreeMap(ij.getLabeledValueMap(), g.isOptimize());// this is necessary to avoid concurrent access to the same map
+						ijMap = new LabeledIntNodeSetTreeMap(ij.getLabeledValueMap(), g.isOptimize());// this is necessary to avoid concurrent access to the same map
 						// by the iterator.
 					} else {
 						ijMap = null;
@@ -2531,7 +2531,7 @@ public class CSTNU {
 	 * @return the sum of a and b. If it is over the int capacity and the label does not contain a unknown literal, it throw an overflow exception.
 	 */
 	static private int sumAndOverflowCheck(final int a, final int b, final Label l) {
-		if ((a == LabeledIntMap.INT_NULL) || (b == LabeledIntMap.INT_NULL) || (l == null))
+		if ((a == LabeledIntNodeSetMap.INT_NULL) || (b == LabeledIntNodeSetMap.INT_NULL) || (l == null))
 			throw new IllegalArgumentException("At least one parameter is null: a=" + a + ", b=" + b + ", label=" + l);
 		long sum = (long) a + (long) b;
 		if (sum > Integer.MAX_VALUE) {

@@ -9,8 +9,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.cstnu.CSTNUEditor;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 import java.awt.Cursor;
@@ -290,7 +290,7 @@ MouseListener {
 				modified = true;
 			}
 
-			final LabeledIntMap comp = new LabeledIntTreeMap(e.optimize);
+			final LabeledIntNodeSetMap comp = new LabeledIntNodeSetTreeMap(e.optimize);
 			Label l;
 			String s, is;
 			// It is more safe to build a new Label set and put substitute the old one with the present.
@@ -299,10 +299,7 @@ MouseListener {
 				is = newIntInputs[i].getText();
 				v = (is.length() > 0) ? Integer.valueOf(is) : null;
 				LabelEditingGraphMousePlugin.LOG.finest("Label value" + i + ": (" + s + ", " + is + " [old:" + oldIntInputs[i] + "])");
-				if (v == null)
-				{
-					continue; // if label is null or empty, the value is the default value!
-				}
+				if (v == null) continue; // if label is null or empty, the value is the default value!
 				l = ((s == null) || (s.length() == 0)) ? Label.emptyLabel : Label.parse(s);
 				comp.put(l, v);
 			}
@@ -329,6 +326,7 @@ MouseListener {
 					splitted = caseValue.split(":[ ]*");
 					nodeName = splitted[0].toUpperCase();
 					v = Integer.valueOf(splitted[1]);
+					LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
 				}
 				if ((nodeName == null) || (v == null)) {
 					e.clearUpperLabels();
@@ -340,6 +338,7 @@ MouseListener {
 						e.clearUpperLabels();
 						e.mergeUpperLabelValue(endpointsLabel, source, v);// Temporally I ignore the label specified by user because an upper/lower case
 						// value of a contingent must have the label of its endpoints.
+						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", "+ nodeName + ": " + v + ".");
 					}
 				}
 				// lower case
@@ -377,7 +376,7 @@ MouseListener {
 				modified = true;
 				LabelEditingGraphMousePlugin.LOG.finer("Original label set of the component: " + e.getLabeledValueMap());
 				LabelEditingGraphMousePlugin.LOG.finer("New label set for the component: " + comp);
-				e.clear();
+				e.clearLabels();
 				LabelEditingGraphMousePlugin.LOG.finer("Label set of the component after the clear: " + e.getLabeledValueMap());
 				e.mergeLabeledValue(comp);
 				LabelEditingGraphMousePlugin.LOG.finer("New label set assigned to the component: " + e.getLabeledValueMap());

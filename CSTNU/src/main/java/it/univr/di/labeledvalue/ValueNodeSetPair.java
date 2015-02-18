@@ -3,6 +3,7 @@ package it.univr.di.labeledvalue;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 
 import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Simple class to associate an integer value and a set of strings (representing a set of node names) to a CSTN label.<br>
@@ -25,13 +26,13 @@ public class ValueNodeSetPair {
 	 * 
 	 * @return a new set instance.
 	 */
-	public final static Set<String> newSetInstance() {
+	public final static SortedSet<String> newSetInstance() {
 		return new ObjectRBTreeSet<>();
 	}
 
 	/** 
 	 */
-	public static int defaultReturnValue = LabeledIntMap.INT_NULL;
+	public static int defaultReturnValue = LabeledIntNodeSetMap.INT_NULL;
 
 	/**
 	 * Contains internal node names of any negative path starting from Z. <br>
@@ -40,7 +41,7 @@ public class ValueNodeSetPair {
 	 * decide if two nodes are equal/different) does not compare the name but the memory address (see {@link it.univr.di.cstnu.graph.Component#equals(Object)}
 	 * for explanation).
 	 */
-	private Set<String> nodeNameSet;
+	private SortedSet<String> nodeNameSet;
 
 	/**
 	 * The value
@@ -51,7 +52,7 @@ public class ValueNodeSetPair {
 	 * 
 	 */
 	public ValueNodeSetPair() {
-		value = LabeledIntMap.INT_NULL;
+		value = defaultReturnValue;
 		nodeNameSet = null;
 
 	}
@@ -63,7 +64,10 @@ public class ValueNodeSetPair {
 	public ValueNodeSetPair(int newValue, Set<String> newNodeSet) {
 		value = newValue;
 		if (newNodeSet == null || newNodeSet.isEmpty()) nodeNameSet = null;
-		else nodeNameSet = newNodeSet;
+		else {
+			nodeNameSet =newSetInstance();
+			nodeNameSet.addAll(newNodeSet);
+		}
 	}
 
 	/**
@@ -83,7 +87,8 @@ public class ValueNodeSetPair {
 	 */
 	public void add(Set<String> inputSet) {
 		if (inputSet == null || inputSet.isEmpty()) return;
-		nodeNameSet = inputSet;
+		if (this.nodeNameSet == null ) this.nodeNameSet = newSetInstance();
+		this.nodeNameSet.addAll(inputSet);
 	}
 
 	/**
@@ -112,7 +117,7 @@ public class ValueNodeSetPair {
 	/**
 	 * @return the node set associated to the label as a independent copy (new equal set). Null if such node set does not exists or it is empty.
 	 */
-	public Set<String> getNodeSet() {
+	public SortedSet<String> getNodeSet() {
 		if (this.isNodeSetNullOrEmpty()) return null;
 		return nodeNameSet;
 	}
@@ -134,9 +139,9 @@ public class ValueNodeSetPair {
 	}
 
 	/**
-	 * @param set the node name set to use. This method makes a defensive copy of the set.
+	 * @param set the node name set to use. This method does not make a defensive copy of the set.
 	 */
-	public void setNodeSet(Set<String> set) {
+	public void setNodeSet(SortedSet<String> set) {
 		if (set == null || set.isEmpty()) nodeNameSet = null;
 		else nodeNameSet = set;
 	}
@@ -157,7 +162,7 @@ public class ValueNodeSetPair {
 		} else {
 			sb.append(value);
 		}
-		if (nodeNameSet != null && !nodeNameSet.isEmpty()) {
+		if (nodeNameSet != null){// && !nodeNameSet.isEmpty()) {
 			sb.append(", ");
 			sb.append(nodeNameSet.toString());
 		}

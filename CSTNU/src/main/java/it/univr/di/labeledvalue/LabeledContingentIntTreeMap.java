@@ -87,12 +87,12 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * <li>A labeled Upper/Lower Case constraint is a pair (nodeName, (label, value)), where label represents scenario where value holds. Such kind of
 	 * constraint has been introduced by Hunsbergher, Combi Posenato in 2012.
 	 * <li>Each label is a conjunction of literals, i.e., of type {@link Label}.</li>
-	 * <li>Since there may be more pairs with the same 'nodeName', a labeled Upper/Lower Case constraint is as a map of (nodeName, LabeledIntMap). See
-	 * {@link LabeledIntMap}.
+	 * <li>Since there may be more pairs with the same 'nodeName', a labeled Upper/Lower Case constraint is as a map of (nodeName, LabeledIntNodeSetMap). See
+	 * {@link LabeledIntNodeSetMap}.
 	 * <li>The name of a node is represented as String.
 	 * </ol>
 	 */
-	private final Object2ObjectRBTreeMap<String, LabeledIntTreeMap> map;
+	private final Object2ObjectRBTreeMap<String, LabeledIntNodeSetTreeMap> map;
 
 	/**
 	 * To activate all optimization code in order to remove the redundant label in the set.
@@ -118,8 +118,8 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	public LabeledContingentIntTreeMap(final LabeledContingentIntTreeMap lvm, final boolean optimize) {
 		this(optimize);
 		if (lvm == null) return;
-		for (final Entry<String, LabeledIntTreeMap> entry : lvm.entrySet()) {
-			final LabeledIntTreeMap map1 = new LabeledIntTreeMap(entry.getValue(), optimize);
+		for (final Entry<String, LabeledIntNodeSetTreeMap> entry : lvm.entrySet()) {
+			final LabeledIntNodeSetTreeMap map1 = new LabeledIntNodeSetTreeMap(entry.getValue(), optimize);
 			this.map.put(entry.getKey(), map1);
 		}
 	}
@@ -132,10 +132,10 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return the map as a set of (nodeName, LabeledIntTreeMap).
-	 *         Be careful: returned LabeledIntTreeMap(s) are not a copy but the maps inside this object.
+	 * @return the map as a set of (nodeName, LabeledIntNodeSetTreeMap).
+	 *         Be careful: returned LabeledIntNodeSetTreeMap(s) are not a copy but the maps inside this object.
 	 */
-	public ObjectSortedSet<Entry<String, LabeledIntTreeMap>> entrySet() {
+	public ObjectSortedSet<Entry<String, LabeledIntNodeSetTreeMap>> entrySet() {
 		return this.map.entrySet();
 	}
 
@@ -147,14 +147,14 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return the minimal value of this map, {@link LabeledIntMap#INT_NULL} if the map is empty,
+	 * @return the minimal value of this map, {@link LabeledIntNodeSetMap#INT_NULL} if the map is empty,
 	 */
 	public int getMinValue() {
-		if (this.size() == 0) return LabeledIntMap.INT_NULL;
-		int min = Integer.MAX_VALUE, v = LabeledIntMap.INT_NULL;
-		for (final Entry<String, LabeledIntTreeMap> entry : this.entrySet()) {
-			final LabeledIntTreeMap map1 = entry.getValue();
-			if ((map1 != null) && ((v = map1.getMinValue()) != LabeledIntMap.INT_NULL)) {
+		if (this.size() == 0) return LabeledIntNodeSetMap.INT_NULL;
+		int min = Integer.MAX_VALUE, v = LabeledIntNodeSetMap.INT_NULL;
+		for (final Entry<String, LabeledIntNodeSetTreeMap> entry : this.entrySet()) {
+			final LabeledIntNodeSetTreeMap map1 = entry.getValue();
+			if ((map1 != null) && ((v = map1.getMinValue()) != LabeledIntNodeSetMap.INT_NULL)) {
 				if (min > v) {
 					min = v;
 				}
@@ -166,27 +166,27 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	/**
 	 * Returns the value associated to <code>(l, p)</code> if it exists, otherwise the minimal value among all labels consistent with <code>(l, p)</code>.
 	 *
-	 * @param l if it is null, {@link LabeledIntMap#INT_NULL} is returned.
-	 * @param p if it is null or empty, {@link LabeledIntMap#INT_NULL} is returned.
+	 * @param l if it is null, {@link LabeledIntNodeSetMap#INT_NULL} is returned.
+	 * @param p if it is null or empty, {@link LabeledIntNodeSetMap#INT_NULL} is returned.
 	 * @return the value associated to the <code>(l, p)</code> if it exists or the minimal value among values associated to labels consistent by <code>l</code>.
-	 *         If no labels are subsumed by <code>l</code>, {@link LabeledIntMap#INT_NULL} is returned.
+	 *         If no labels are subsumed by <code>l</code>, {@link LabeledIntNodeSetMap#INT_NULL} is returned.
 	 */
 	public int getMinValueConsistentWith(final Label l, final String p) {
-		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntMap.INT_NULL;
-		final LabeledIntTreeMap map1 = this.map.get(p);
-		if (map1 == null) return LabeledIntMap.INT_NULL;
+		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntNodeSetMap.INT_NULL;
+		final LabeledIntNodeSetTreeMap map1 = this.map.get(p);
+		if (map1 == null) return LabeledIntNodeSetMap.INT_NULL;
 		return map1.getMinValueConsistentWith(l);
 	}
 
 	/**
 	 * @param l
 	 * @param p
-	 * @return the value associate to the key (label, p) if it exits, {@link LabeledIntMap#INT_NULL} otherwise.
+	 * @return the value associate to the key (label, p) if it exits, {@link LabeledIntNodeSetMap#INT_NULL} otherwise.
 	 */
 	public int getValue(final Label l, final String p) {
-		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntMap.INT_NULL;
-		final LabeledIntTreeMap map1 = this.map.get(p);
-		if (map1 == null) return LabeledIntMap.INT_NULL;
+		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntNodeSetMap.INT_NULL;
+		final LabeledIntNodeSetTreeMap map1 = this.map.get(p);
+		if (map1 == null) return LabeledIntNodeSetMap.INT_NULL;
 		return map1.getValue(l);
 	}
 
@@ -201,7 +201,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	public Set<Object2IntMap.Entry<Entry<Label, String>>> labeledTripleSet() {
 		final Set<Object2IntMap.Entry<Entry<Label, String>>> set = new ObjectArraySet<>();
 
-		for (final Entry<String, LabeledIntTreeMap> entryI : this.entrySet()) {
+		for (final Entry<String, LabeledIntNodeSetTreeMap> entryI : this.entrySet()) {
 			for (final Object2IntMap.Entry<Label> entryI1 : entryI.getValue().entrySet()) {
 				final Entry<Label, String> e1 = new SimpleEntry<>(entryI1.getKey(), entryI.getKey());
 				final Object2IntMap.Entry<Entry<Label, String>> e2 = new AbstractObject2IntMap.BasicEntry<>(e1, entryI1.getIntValue());
@@ -236,15 +236,15 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * @return true if the triple is stored, false otherwise.
 	 */
 	public boolean mergeTriple(final Label l, final String p, final int i, final boolean force) {
-		if ((l == null) || (p == null) || p.isEmpty() || (i == LabeledIntMap.INT_NULL)) return false;
-		LabeledIntTreeMap map1 = this.map.get(p);
+		if ((l == null) || (p == null) || p.isEmpty() || (i == LabeledIntNodeSetMap.INT_NULL)) return false;
+		LabeledIntNodeSetTreeMap map1 = this.map.get(p);
 		if (map1 == null) {
-			map1 = new LabeledIntTreeMap(this.optimize);
+			map1 = new LabeledIntNodeSetTreeMap(this.optimize);
 			map1.putForcibly(l, i);
 			this.map.put(p, map1);
 			return true;
 		}
-		return ((force) ? map1.putForcibly(l, i) != LabeledIntMap.INT_NULL : map1.put(l, i));
+		return ((force) ? map1.putForcibly(l, i) != LabeledIntNodeSetMap.INT_NULL : map1.put(l, i));
 	}
 
 	/**
@@ -271,7 +271,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * @return true if the triple is stored, false otherwise.
 	 */
 	public boolean mergeTriple(final String label, final String p, final int i, final boolean force) {
-		if ((label == null) || (p == null) || p.isEmpty() || (i == LabeledIntMap.INT_NULL)) return false;
+		if ((label == null) || (p == null) || p.isEmpty() || (i == LabeledIntNodeSetMap.INT_NULL)) return false;
 		final Label l = Label.parse(label);
 		return this.mergeTriple(l, p, i, force);
 	}
@@ -285,10 +285,10 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * @return the value overwritten.
 	 */
 	public int putTriple(final Label l, final String p, final int i) {
-		if ((l == null) || (p == null) || p.isEmpty() || (i == LabeledIntMap.INT_NULL)) return LabeledIntMap.INT_NULL;
-		LabeledIntTreeMap map1 = this.map.get(p);
+		if ((l == null) || (p == null) || p.isEmpty() || (i == LabeledIntNodeSetMap.INT_NULL)) return LabeledIntNodeSetMap.INT_NULL;
+		LabeledIntNodeSetTreeMap map1 = this.map.get(p);
 		if (map1 == null) {
-			map1 = new LabeledIntTreeMap(this.optimize);
+			map1 = new LabeledIntNodeSetTreeMap(this.optimize);
 			this.map.put(p, map1);
 		}
 		return map1.putForcibly(l, i);
@@ -300,9 +300,9 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * @return the old value if it exists, null otherwise.
 	 */
 	public int remove(final Label l, final String p) {
-		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntMap.INT_NULL;
-		final LabeledIntTreeMap map1 = this.map.get(p);
-		if (map1 == null) return LabeledIntMap.INT_NULL;
+		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntNodeSetMap.INT_NULL;
+		final LabeledIntNodeSetTreeMap map1 = this.map.get(p);
+		if (map1 == null) return LabeledIntNodeSetMap.INT_NULL;
 		return map1.remove(l);
 	}
 
@@ -311,7 +311,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 */
 	public int size() {
 		int n = 0;
-		for (final LabeledIntTreeMap map1 : this.map.values()) {
+		for (final LabeledIntNodeSetTreeMap map1 : this.map.values()) {
 			n += map1.size();
 		}
 		return n;
@@ -330,7 +330,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 		final StringBuffer s = new StringBuffer("{");
 		// tricky
 
-		for (final Entry<String, LabeledIntTreeMap> entry : this.entrySet()) {
+		for (final Entry<String, LabeledIntNodeSetTreeMap> entry : this.entrySet()) {
 			for (final Object2IntMap.Entry<Label> entry1 : entry.getValue().entrySet()) {
 				s.append("(");
 				s.append(entry1.getKey());

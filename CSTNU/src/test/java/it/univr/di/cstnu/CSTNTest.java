@@ -72,11 +72,11 @@ public class CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labelModificationR2R4(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)))}.
+	 * {@link it.univr.di.cstnu.CSTN#labelModificationR2(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)))}.
 	 */
 	@SuppressWarnings({ "static-method", "javadoc" })
 	@Test
-	public final void testLabelModificationR2R4() {
+	public final void testLabelModificationR2() {
 		LabeledIntGraph g = new LabeledIntGraph(true);
 		LabeledNode P = new LabeledNode("P?", new Literal('p'));
 		LabeledNode A = new LabeledNode("A?", new Literal('A'));
@@ -101,14 +101,14 @@ public class CSTNTest {
 		assertEquals(xp.labeledValueSet(), xpNew.labeledValueSet());
 		wellDefinition(g);
 
-		CSTN.labelModificationR2R4(g, P, X, xp, xpNew, status, true);
+		CSTN.labelModificationR2(g, P, X, xp, xpNew, status, true);
 
 		LabeledIntEdge pxOK = new LabeledIntEdge("XY", true);
 		pxOK.mergeLabeledValue(Label.parse("AB"), 0);
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), -1);
 		pxOK.mergeLabeledValue(Label.parse("C"), 0);
 
-		assertEquals("R2R4: XP? labeled values.", pxOK.getLabeledValueMap(), xpNew.getLabeledValueMap());
+		assertEquals("R2: XP? labeled values.", pxOK.getLabeledValueMap(), xpNew.getLabeledValueMap());
 	}
 
 	/**
@@ -171,12 +171,12 @@ public class CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labelModificationR3R5(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)
+	 * {@link it.univr.di.cstnu.CSTN#labelModificationR3(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)
 	 * )}.
 	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
-	public final void testLabelModificationR3R5() {
+	public final void testLabelModificationR3() {
 		LabeledIntGraph g = new LabeledIntGraph(true);
 		LabeledNode P = new LabeledNode("P", new Literal('p'));
 		LabeledNode X = new LabeledNode("X");
@@ -209,7 +209,7 @@ public class CSTNTest {
 
 		LabeledIntEdge yxNew = new LabeledIntEdge(yx, true);
 
-		CSTN.labelModificationR3R5(g, P, X, Y, px, yx, yxNew, new CheckStatus(), true);
+		CSTN.labelModificationR3(g, P, X, Y, px, yx, yxNew, new CheckStatus(), true);
 
 		LabeledIntEdge yxOK = new LabeledIntEdge("YX", true);
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
@@ -220,7 +220,7 @@ public class CSTNTest {
 		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
 		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
 
-		assertEquals("R3R5: yx labeled values.", yxOK.labeledValueSet(), yxNew.labeledValueSet());
+		assertEquals("R3: yx labeled values.", yxOK.labeledValueSet(), yxNew.labeledValueSet());
 	}
 
 	/**

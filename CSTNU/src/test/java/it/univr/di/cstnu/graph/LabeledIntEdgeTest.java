@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 
+import java.util.Set;
 import java.util.SortedSet;
 
 import org.junit.Before;
@@ -80,6 +81,24 @@ public class LabeledIntEdgeTest {
 		assertEquals("❮e; contingent; {(⊡, 1) }; ❯", e.toString());
 	}
 
+	/**
+	 * Test method for {@link it.univr.di.cstnu.graph.LabeledIntEdge#mergeLabeledValue(it.univr.di.labeledvalue.Label, int)}.
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public final void testMergeLabeledValueLabelInt1() {
+		LabeledIntEdge e = new LabeledIntEdge("e", LabeledIntEdge.Type.contingent, Label.emptyLabel, 1, true);
+
+		assertEquals("❮e; contingent; {(⊡, 1) }; ❯", e.toString());
+		Set<String> s = new ObjectAVLTreeSet<>();
+		s.add("B");
+		s.add("A");
+		e.mergeLabeledValue(Label.parse("a"), 1, s);
+		assertEquals("❮e; contingent; {(⊡, 1) (a, 1, {A, B}) }; ❯", e.toString());
+	}
+
+	
+	
 	/**
 	 * Test method for {@link it.univr.di.cstnu.graph.LabeledIntEdge#putLabeledValue(it.univr.di.labeledvalue.Label, int)}.
 	 */

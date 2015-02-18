@@ -1,7 +1,6 @@
 package it.univr.di.cstnu;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.univr.di.cstnu.WellDefinitionException.Type;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
@@ -9,9 +8,10 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
 import it.univr.di.labeledvalue.Literal;
+import it.univr.di.labeledvalue.ValueNodeSetPair;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -41,7 +41,7 @@ public class CSTN {
 		 * Counters about the # of application of different rules.
 		 */
 		@SuppressWarnings("javadoc")
-		int cycles = 0, r0calls = 0, r1calls = 0, r2R4calls = 0, r3R5calls = 0, labeledValuePropagationcalls = 0;
+		int cycles = 0, r0calls = 0, r1calls = 0, r2calls = 0, r3calls = 0, labeledValuePropagationcalls = 0;
 
 		/**
 		 * True if no rule can be applied anymore.
@@ -59,8 +59,8 @@ public class CSTN {
 							: "")
 					+ "Some statistics:\nRule R0 has been applied " + this.r0calls + " times.\n"
 					+ "Rule R1 has been applied " + this.r1calls + " times.\n"
-					+ "Rule R2 has been applied " + this.r2R4calls + " times.\n"
-					+ "Rule R3 has been applied " + this.r3R5calls + " times.\n"
+					+ "Rule R2 has been applied " + this.r2calls + " times.\n"
+					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
 					+ "Rule Labeled Propagation has been applied " + this.labeledValuePropagationcalls + " times.\n");
 		}
 	}
@@ -222,7 +222,7 @@ public class CSTN {
 			}
 
 			final LabeledIntEdge e = g.findEdge(node, obs);
-			if ((e == null) || (e.getMinValue() == LabeledIntMap.INT_NULL) || (e.getMinValue() > 0)) {
+			if ((e == null) || (e.getMinValue() == LabeledIntNodeSetMap.INT_NULL) || (e.getMinValue() > 0)) {
 				if (CSTN.LOG.isLoggable(Level.WARNING)) {
 					CSTN.LOG.log(Level.WARNING, "There is no constraint to execute obs node " + obs + " before node " + node);
 				}
@@ -342,9 +342,8 @@ public class CSTN {
 			final Label l = obsXLabeledValue.getKey();
 			if ((w > 0) || (instantaneousReaction && (w == 0))) continue;
 			if (l.getLiteralWithSameName(p) == null) continue;
-			if (PX.getValue(l) == LabeledIntMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
+			if (PX.getValue(l) == LabeledIntNodeSetMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
 
-			
 			final Label alphaPrime = new Label(l);
 			alphaPrime.removeAllLiteralsWithSameName(p);
 			alphaPrime.removeAllLiteralsWithSameName(currentGraph.getChildrenOf(P));
@@ -453,11 +452,11 @@ public class CSTN {
 	}
 
 	/**
-	 * Applies rule R2 and R4: label containing a proposition that can be decided only in the future, is simplified
+	 * Applies rule R2: label containing a proposition that can be decided only in the future, is simplified
 	 * removing such proposition.
 	 *
 	 * <pre>
-	 * R2+R4:
+	 * R2:
 	 * P? &lt;--[α p,w]-- X  changes in P? &lt;--[α',max{w,0}]-- X
 	 * where:
 	 * p can be the positive o the negative literal associated to proposition observed in P?.
@@ -476,29 +475,29 @@ public class CSTN {
 	 *
 	 * @return true if the rule has been applied one time at least.
 	 */
-	static boolean labelModificationR2R4(final LabeledIntGraph currentGraph, final LabeledNode P, final LabeledNode X, final LabeledIntEdge XP,
+	static boolean labelModificationR2(final LabeledIntGraph currentGraph, final LabeledNode P, final LabeledNode X, final LabeledIntEdge XP,
 			final LabeledIntEdge XPinNextGraph,
 			final CheckStatus status, final boolean instantaneousReaction) {
 		boolean ruleApplied = false;
 		final Literal p = P.getPropositionObserved();
 		if (p == null) {
 			if (CSTN.LOG.isLoggable(Level.WARNING))
-				CSTN.LOG.log(Level.WARNING, "Method labelModificationR2R4 called passing a non observation node as first parameter!");
+				CSTN.LOG.log(Level.WARNING, "Method labelModificationR2 called passing a non observation node as first parameter!");
 			return false;
 		}
-		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R2R4: start.");
+		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R2: start.");
 		for (final Object2IntMap.Entry<Label> x_ObsLabeledValue : XP.labeledValueSet()) {
 			final int w = x_ObsLabeledValue.getValue();
 			final int max = Math.max(w, 0);
 			final Label l = x_ObsLabeledValue.getKey();
 			if (l.getLiteralWithSameName(p) == null) continue;
-			if (XP.getValue(l) == LabeledIntMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
+			if (XP.getValue(l) == LabeledIntNodeSetMap.INT_NULL) continue;// it is possible that in a previous cycle the label has been removed.
 
 			final Label alphaPrime = new Label(l);
 			alphaPrime.removeAllLiteralsWithSameName(p);
 			alphaPrime.removeAllLiteralsWithSameName(currentGraph.getChildrenOf(P));
 
-			if (!CSTN.checkNodeLabelsSubsumption(X, P, alphaPrime, XP.getName(), "R2R4")) {
+			if (!CSTN.checkNodeLabelsSubsumption(X, P, alphaPrime, XP.getName(), "R2")) {
 				if (w > 0) {
 					// R2 rule
 					// It means that 'X' label contains 'p'!
@@ -511,30 +510,30 @@ public class CSTN {
 					XPinNextGraph.mergeLabeledValue(X.getLabel().conjunction(P.getLabel()), 0);
 				} else {
 					if (CSTN.LOG.isLoggable(Level.FINER))
-						CSTN.LOG.log(Level.FINER, "R4 CANNOT be applied because subsumption check of R4 applied to edge " + XP
+						CSTN.LOG.log(Level.FINER, "R2 CANNOT be applied because subsumption check of R2 applied to edge " + XP
 								+ ":\npartic: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X);
 				}
 				continue;
 			}
 
 			// Prepare the log message now with old values of the edge. If it modifies, then we can log it correctly.
-			final String logMessage = "R2R4 simplifies a label of edge " + XP
+			final String logMessage = "R2 simplifies a label of edge " + XP
 					+ ":\npartic: " + P.getName() + " <--(" + l + ", " + Constants.formatInt(w) + ")--- " + X.getName()
 					+ "\nresult: " + P.getName() + " <--(" + alphaPrime + ", " + Constants.formatInt(max) + ")--- " + X.getName();
 
 			XPinNextGraph.putLabeledValueToRemovedList(l, w);
 			// XPinNextGraph.removeLabel(l); If w>0, then the label is removed my optimization. Otherwise the label has to be preserved.
-			status.r2R4calls++;
+			status.r2calls++;
 			ruleApplied = true;
 			if (XPinNextGraph.mergeLabeledValue(alphaPrime, max) && CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, logMessage);
 			if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(alphaPrime, max, XPinNextGraph))) return ruleApplied;
 		}
-		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R2R4: end.");
+		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R2: end.");
 		return ruleApplied;
 	}
 
 	/**
-	 * Rule R3R5
+	 * Rule R3
 	 *
 	 * <pre>
 	 * if P? --[ab, w]--&gt; X &lt;--[bgp, v]-- Y  and w &le;0
@@ -555,12 +554,12 @@ public class CSTN {
 	 * @param instantaneousReaction
 	 * @return true if a rule has been applied.
 	 */
-	static boolean labelModificationR3R5(final LabeledIntGraph currentGraph, final LabeledNode nObs, final LabeledNode nX, final LabeledNode nY,
+	static boolean labelModificationR3(final LabeledIntGraph currentGraph, final LabeledNode nObs, final LabeledNode nX, final LabeledNode nY,
 			final LabeledIntEdge eObsX,
 			final LabeledIntEdge eYX,
 			final LabeledIntEdge eYXnew, final CheckStatus status, final boolean instantaneousReaction) {
 		if (CSTN.LOG.isLoggable(Level.FINEST)) {
-			CSTN.LOG.log(Level.FINEST, "Label Modification R3R5: start.");
+			CSTN.LOG.log(Level.FINEST, "Label Modification R3: start.");
 		}
 		boolean ruleApplied = false;
 		final Literal p = nObs.getPropositionObserved();
@@ -569,43 +568,43 @@ public class CSTN {
 			final int w = entryObsX.getValue();
 			final Label labelObsX = entryObsX.getKey();
 
-			if ((w > 0) || (labelObsX.getLiteralWithSameName(p) != null)) continue; // R3 and R5 work with negative w.
+			if ((w > 0) || (labelObsX.getLiteralWithSameName(p) != null)) continue; // R3 work with negative w.
 
 			for (final Object2IntMap.Entry<Label> entryYX : eYX.labeledValueSet()) {
 				final int v = entryYX.getIntValue();
 				final int max = Math.max(w, v);
 
 				final Label labelYX = entryYX.getKey();
-				if (labelYX.getLiteralWithSameName(p) == null) continue;// R3R5 simplifies 'p' on labelYX!
+				if (labelYX.getLiteralWithSameName(p) == null) continue;// R3 simplifies 'p' on labelYX!
 				if ((nX != Z) && !labelObsX.isConsistentWith(labelYX)) continue;
 				final Label labelYXWithoutP = new Label(labelYX);
 				labelYXWithoutP.removeAllLiteralsWithSameName(p);
 
 				final Label abg1 = CSTN.makeAlphaBetaGammaPrime(currentGraph, nObs, labelObsX, labelYXWithoutP, nX != Z);
-				if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Rule R3R5 details alphaBetaGamma1=" + abg1);
+				if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Rule R3 details alphaBetaGamma1=" + abg1);
 
 				// I check if the label subsumes the label of the endpoints before to proceed
-				if (!CSTN.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3R5")) {
-					if (CSTN.LOG.isLoggable(Level.FINER))
-						CSTN.LOG.log(Level.FINER, "R3R5 cannot be applied to edge " + eYX + " because the label not subsume node labels:\n"
-								+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
-								+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName());
-					continue;
-				}
+//				if (!CSTN.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3")) {
+//					if (CSTN.LOG.isLoggable(Level.FINER))
+//						CSTN.LOG.log(Level.FINER, "R3 cannot be applied to edge " + eYX + " because the label not subsume node labels:\n"
+//								+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
+//								+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName());
+//					continue;
+//				}
 
 				eYXnew.putLabeledValueToRemovedList(labelYX, v);
 				ruleApplied = eYXnew.mergeLabeledValue(abg1, max);
 				if (ruleApplied) {
-					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R3R5 adds a labeled value to edge " + eYX.getName() + ":\n"
+					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eYX.getName() + ":\n"
 							+ "partic: " + nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
 							+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName()
 							+ "\nresult: add " + nX.getName() + " <---(" + abg1 + ", " + Constants.formatInt(max) + ")--- " + nY.getName());
-					status.r3R5calls++;
+					status.r3calls++;
 				}
 				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(abg1, max, eYXnew))) return ruleApplied;
 			}
 		}
-		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R3R5: end.");
+		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R3: end.");
 		return ruleApplied;
 	}
 
@@ -613,7 +612,7 @@ public class CSTN {
 	 * Applies the labeled propagation rule.
 	 *
 	 * <pre>
-	 * if A <--[l1, x]-- B <--[l2, y]-- C, then A <--[l1l2, x+y]-- C
+	 * if A --[l1, x]--> B --[l2, y]--> C, then A --[l1l2, x+y]--> C
 	 * where l1l2 is the extended conjunction when A is the Z node, otherwise is the standard conjunction.
 	 * </pre>
 	 *
@@ -650,47 +649,53 @@ public class CSTN {
 				final Label labelBC = BCEntry.getKey();
 				final int y = BCEntry.getIntValue();
 				final SortedSet<String> nodeSetBC = BC.getNodeSet(labelBC);
+				int sum = LabeledIntNodeSetTreeMap.sumWithOverflowCheck(x, y);
 
-				final boolean isNegativePathToZ = (C == Z) && ((x < 0) && (y < 0));
-				final Label newLabelAC = (isNegativePathToZ) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
+//				final boolean isNegativePathToZ = (C == Z) && (y<0) & (x<0);//original
+				final boolean isNegativePathToZ = (C == Z) && (y < 0);// Node set have to be managed also when we add a positive value of a q-Loop (x>0)
+				Label newLabelAC = (isNegativePathToZ && x < 0) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
 				if (newLabelAC == null) continue;
 
-				int sum = LabeledIntTreeMap.sumWithOverflowCheck(x, y);
-				final int oldZ = (AC != null) ? AC.getValue(newLabelAC) : LabeledIntMap.INT_NULL;
-
+				final int oldZ = (AC != null) ? AC.getValue(newLabelAC) : LabeledIntNodeSetMap.INT_NULL;
 				SortedSet<String> sigma = null;
 				if (isNegativePathToZ) {
+					/*
+					 * If x>0, then we update the value and its possible node set iff sum<=oldZ
+					 */
+					if (x >= 0 && sum >= oldZ) continue;
 					/*
 					 * Special case
 					 * A --[beta, x]--> B --[alpha, y, sigma1]--> Z with x<0 and y<0
 					 * results to be
-					 * 
 					 * A --[alpha beta, sum, sigma2]--> Z
-					 * 
-					 * where sum = x+y and sigma2= sigma1+A if A is not in sigma1,
+					 * where sum = x+y and sigma2 = sigma1 ∪ A, if A is not in sigma1,
 					 * otherwise sum = -infinity and sigma2 = null.
-					 * 
 					 * If AC contains [alpha beta, w, sigma], then w is overwritten if w> sum and, in any case, sigma = sigma + sigma2.
 					 */
+					// Clean the new label from children
+					for (Literal unknownLit : newLabelAC.getAllUnknown()) {
+						newLabelAC.removeAllLiteralsWithSameName(currentGraph.getChildrenOf(currentGraph.getObservator(unknownLit)));
+					}
 					final boolean isAInNodeSet = (nodeSetBC == null) ? false : nodeSetBC.contains(A.getName());
 					if (isAInNodeSet) {
 						sum = Constants.INT_NEG_INFINITE;
 						if (CSTN.LOG.isLoggable(Level.FINER))
 							CSTN.LOG.log(Level.FINER, "Negative qLoop detected during the updated of " + ACinNextGraph.getName() + ": "
-									// + "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName() + " --(" + labelBC + ", "
+									// + "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName() + " --(" + labelBC
+									// + ", "
 //									+ Constants.formatInt(y) + ")--> " + C.getName()
 									+ A.getName() + " is in the node set of label '" + labelBC + "' of the edge " + BC.getName()
-									+ ". New labeled = (" + newLabelAC + ", -" + Constants.INFINITY_SYMBOLstring + ").");
+									+ ". New labeled value = (" + newLabelAC + ", -" + Constants.INFINITY_SYMBOLstring + ").");
 					}
 					if (sum != Constants.INT_NEG_INFINITE) {
 						// when z == Constants.INT_NEG_INFINITE, the value can propagate without node set.
-						sigma = new ObjectAVLTreeSet<>();
+						sigma = ValueNodeSetPair.newSetInstance();
 						sigma.add(A.getName());
 						if (nodeSetBC != null) sigma.addAll(nodeSetBC);
 						// I add only B because the endpoints are specified by the edge.
 						if (CSTN.LOG.isLoggable(Level.FINEST))
-							CSTN.LOG.log(Level.FINEST, "The new node set to add to label '" + newLabelAC + "' on edge " + ACinNextGraph.getName() + " is "
-									+ sigma);
+							CSTN.LOG.log(Level.FINEST, "The new CANDIDATE node set to add to label '" + newLabelAC + "' on edge " + ACinNextGraph.getName()
+									+ " is " + sigma);
 					}
 				}
 
@@ -699,12 +704,14 @@ public class CSTN {
 					status.labeledValuePropagationcalls++;
 					if (CSTN.LOG.isLoggable(Level.FINER)) {
 						CSTN.LOG.log(Level.FINER, "Labeled Propagation Rule applied to edge " + ACinNextGraph.getName() + ":\n"
-								+ "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x)	+ ")--> " + B.getName() 
-								+ " --(" + labelBC + ", " + Constants.formatInt(y) 
+								+ "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName()
+								+ " --(" + labelBC + ", " + Constants.formatInt(y)
 								+ ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
 								+ ")--> " + C.getName()
 								+ "\nresult: " + A.getName() + " --(" + newLabelAC + ", "
-								+ Constants.formatInt(sum)
+								+ ((oldZ == LabeledIntNodeSetMap.INT_NULL || sum < oldZ) ? Constants.formatInt(sum) : Constants.formatInt(oldZ))// it could be
+																																				// add only the
+																																				// node set
 								+ ((sigma != null && !sigma.isEmpty()) ? ", " + sigma.toString() : "")
 								+ ")--> " + C.getName() + "; old value: "
 								+ Constants.formatInt(oldZ) + ", " + ((AC != null) ? AC.getNodeSet(newLabelAC) : ""));
@@ -715,20 +722,20 @@ public class CSTN {
 		}
 		if (A == C) { // self loop, check if there is a negative loop!
 			final int min = ACinNextGraph.getMinValueAmongLabelsWOUnknown();
-			if ((min != LabeledIntMap.INT_NULL) && (min < 0)) {
+			if ((min != LabeledIntNodeSetMap.INT_NULL) && (min < 0)) {
 				if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Found a negative loop in node " + ACinNextGraph.toString());
 				status.consistency = false;
 			}
 		}
 		if (ACinNextGraphCreated && ruleApplied) {
 			nextGraph.addEdge(ACinNextGraph, AinNextGraph, CinNextGraph);
-			if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Labeled propagation rule: added edge " + ACinNextGraph.getName());
+//			if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Labeled propagation rule: added edge " + ACinNextGraph);
 		}
 		return ruleApplied;
 	}
 
 	/**
-	 * Simple method to determine the three parts of labels as required by rules R1 and R3R5.<br>
+	 * Simple method to determine the three parts of labels as required by rules R1 and R3.<br>
 	 * Label[0] is the sublabel of labelEdgeFromObs not in common with labelWithoutP.<br>
 	 * Label[1] is the sublabel of labelEdgeFromObs in common with labelWithoutP.<br>
 	 * Label[2] is the sublabel of labelEdgeFromObs not in common with labelEdgeFromP. <br>
@@ -773,8 +780,8 @@ public class CSTN {
 	 *
 	 * @param instantaneousReaction true is it is admitted that observation points and other points depending from the observed proposition can be executed in
 	 *            the same 'instant'.
-	 * @param onlyOnZ true if one wants to apply R0, R3 and R5 only when node Z is involved.
-	 * @param excludeR1R2R4 true if one wants to exclude the application of rules R1, R2, and R4.
+	 * @param onlyOnZ true if one wants to apply R0 and R3 only when node Z is involved.
+	 * @param excludeR1R2 true if one wants to exclude the application of rules R1 and R2.
 	 * @param labelOptimization true if the possibly new generated edges have to remove redundant labeled values.
 	 * @param status the record where to store statistics and exit status of the execution.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
@@ -782,7 +789,7 @@ public class CSTN {
 	 *             there is a problem in the rules coding.
 	 */
 	static CheckStatus oneStepDynamicConsistency(LabeledIntGraph currentGraph, LabeledIntGraph nextGraph, final int n,
-			final boolean instantaneousReaction, final boolean onlyOnZ, final boolean excludeR1R2R4, final boolean labelOptimization, final CheckStatus status)
+			final boolean instantaneousReaction, final boolean onlyOnZ, final boolean excludeR1R2, final boolean labelOptimization, final CheckStatus status)
 			throws WellDefinitionException {
 
 		/*
@@ -792,7 +799,7 @@ public class CSTN {
 		 * one to find all possible A and, for each A, one to find all possible C.
 		 * In this way, the triple is used to mainly consider:
 		 * A --> B --> C
-		 * Since R3R5 rule needs B <-- C, for that rule also the edge B<--C is considered.
+		 * Since R3 rule needs B <-- C, for that rule also the edge B<--C is considered.
 		 */
 		LabeledNode C, B, A, C1;
 		LabeledIntEdge AB, ABinNextGraph, BC, BCinNextGraph, CB, CBinNextGraph;
@@ -800,9 +807,71 @@ public class CSTN {
 		LabeledNode[] node = currentGraph.getVerticesArray();
 		LabeledNode Z = currentGraph.getZ();
 
-		// There are two separate visit of the graph (it is necessary for the structure of label propagation rule and R3R5 one
+		// There are two separate visit of the graph (it is necessary for the structure of label propagation rule and R3 one
+		
+		//FIRST
+		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Start application rule R0--R3.");
+		for (int k = 0; k < n; k++) {
+			B = node[k];
+			for (final Iterator<LabeledIntEdge> eABIter = currentGraph.getInEdges(B).iterator(); eABIter.hasNext();) {
+				AB = eABIter.next();
+				A = currentGraph.getSource(AB);
+				if (A == B) continue;// self loop on the first pair in not useful.
+
+				if (A.getPropositionObserved() != null) {
+					// Rule R0
+					ABinNextGraph = nextGraph.findEdge(nextGraph.getNode(A.getName()), nextGraph.getNode(B.getName()));
+					if (!onlyOnZ || (onlyOnZ && B == Z)) CSTN.labelModificationR0(currentGraph, A, B, AB, ABinNextGraph, status, instantaneousReaction);
+					if (!status.consistency) return status;
+
+					for (final Iterator<LabeledIntEdge> eC1BIter = currentGraph.getInEdges(B).iterator(); eC1BIter.hasNext();) {
+						// Rule R3
+						CB = eC1BIter.next();
+						C1 = currentGraph.getSource(CB);
+						if (A == C1) continue;
+						CBinNextGraph = nextGraph.findEdge(nextGraph.getNode(C1.getName()), nextGraph.getNode(B.getName()));
+						if (!onlyOnZ || (onlyOnZ && B == Z))
+							CSTN.labelModificationR3(currentGraph, A, B, C1, AB, CB, CBinNextGraph, status, instantaneousReaction);
+						if (!status.consistency) return status;
+					}
+				}
+				if (B.getPropositionObserved() != null && !excludeR1R2) {
+					// Rule R2
+					ABinNextGraph = nextGraph.findEdge(nextGraph.getNode(A.getName()), nextGraph.getNode(B.getName()));
+					CSTN.labelModificationR2(currentGraph, B, A, AB, ABinNextGraph, status, instantaneousReaction);
+					if (!status.consistency) return status;
+					// labelOptimizationR0(B,C,BC); It would be checked two times!
+				}
+
+				if (!excludeR1R2) {
+					for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
+						BC = eBCIter.next();
+						C = currentGraph.getDest(BC);
+						if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
+
+						if (A.getPropositionObserved() != null) {
+							// Rule R1
+							if (A != C) {// self loop is useful only for the labeled std propagation rule
+								BCinNextGraph = nextGraph.findEdge(nextGraph.getNode(B.getName()), nextGraph.getNode(C.getName()));
+								CSTN.labelModificationR1(currentGraph, A, B, C, AB, BC, BCinNextGraph, status, instantaneousReaction);
+								if (!status.consistency) return status;
+							}
+						}
+						// if (C.getObservable()!=null) labelModificationR2(C,B,BC); It would be checked two times!
+					}
+				}
+			}
+		}
+		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "End application rule R0--R3.\n\nSituation after the application of R0--R3 rules.");
+		
+		final boolean noChanged = currentGraph.hasSameEdgesOf(nextGraph);
+
+		currentGraph.clone(nextGraph);
+		node = currentGraph.getVerticesArray();
+		Z = currentGraph.getZ();
+
+		//SECOND
 		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Start application labeled propagation rule.");
-		// 1. First we propagate using the labeled propagation rule.
 		for (int k = 0; k < n; k++) {
 			B = node[k];
 			for (final Iterator<LabeledIntEdge> eABIter = currentGraph.getInEdges(B).iterator(); eABIter.hasNext();) {
@@ -818,75 +887,17 @@ public class CSTN {
 				}
 			}
 		}
-		// 2. Then we apply the label simplification rules R0--R5
 		if (CSTN.LOG.isLoggable(Level.FINER))
 			CSTN.LOG.log(Level.FINER, "End application labeled propagation rule.\n\nSituation after the labeled propagation rule.");
-		final boolean noChanged = nextGraph.hasSameEdgesOf(currentGraph);
 
-		currentGraph.clone(nextGraph);
-		node = currentGraph.getVerticesArray();
-		Z = currentGraph.getZ();
-		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Start application rule R0--R5.");
-		for (int k = 0; k < n; k++) {
-			B = node[k];
-			for (final Iterator<LabeledIntEdge> eABIter = currentGraph.getInEdges(B).iterator(); eABIter.hasNext();) {
-				AB = eABIter.next();
-				A = currentGraph.getSource(AB);
-				if (A == B) continue;// self loop on the first pair in not useful.
-
-				if (A.getPropositionObserved() != null) {
-					// Rule R0
-					ABinNextGraph = nextGraph.findEdge(nextGraph.getNode(A.getName()), nextGraph.getNode(B.getName()));
-					if (!onlyOnZ || (onlyOnZ && B == Z)) CSTN.labelModificationR0(currentGraph, A, B, AB, ABinNextGraph, status, instantaneousReaction);
-					if (!status.consistency) return status;
-
-					for (final Iterator<LabeledIntEdge> eC1BIter = currentGraph.getInEdges(B).iterator(); eC1BIter.hasNext();) {
-						// Rule R3R5
-						CB = eC1BIter.next();
-						C1 = currentGraph.getSource(CB);
-						if (A == C1) continue;
-						CBinNextGraph = nextGraph.findEdge(nextGraph.getNode(C1.getName()), nextGraph.getNode(B.getName()));
-						if (!onlyOnZ || (onlyOnZ && B == Z))
-							CSTN.labelModificationR3R5(currentGraph, A, B, C1, AB, CB, CBinNextGraph, status, instantaneousReaction);
-						if (!status.consistency) return status;
-					}
-				}
-				if (B.getPropositionObserved() != null && !excludeR1R2R4) {
-					// Rule R2R4
-					ABinNextGraph = nextGraph.findEdge(nextGraph.getNode(A.getName()), nextGraph.getNode(B.getName()));
-					CSTN.labelModificationR2R4(currentGraph, B, A, AB, ABinNextGraph, status, instantaneousReaction);
-					if (!status.consistency) return status;
-					// labelOptimizationR0(B,C,BC); It would be checked two times!
-				}
-
-				if (!excludeR1R2R4) {
-					for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
-						BC = eBCIter.next();
-						C = currentGraph.getDest(BC);
-						if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
-
-						if (A.getPropositionObserved() != null) {
-							// Rule R1
-							if (A != C) {// self loop is useful only for the labeled std propagation rule
-								BCinNextGraph = nextGraph.findEdge(nextGraph.getNode(B.getName()), nextGraph.getNode(C.getName()));
-								CSTN.labelModificationR1(currentGraph, A, B, C, AB, BC, BCinNextGraph, status, instantaneousReaction);
-								if (!status.consistency) return status;
-							}
-						}
-						// if (C.getObservable()!=null) labelModificationR2R4(C,B,BC); It would be checked two times!
-					}
-				}
-			}
-		}
-		try {
-			CSTN.checkWellDefinitionProperties(nextGraph);
-		}
-		catch (final WellDefinitionException e) {
-			CSTN.LOG.severe("During the check the instance becomes not well formed: " + e);
-			status.consistency = false;
-		}
-		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "End application rule R0--R5.\n\nSituation after the application of R0--R5 rules.");
-		status.finished = nextGraph.hasSameEdgesOf(currentGraph) && noChanged;
+//		try {
+//			CSTN.checkWellDefinitionProperties(nextGraph);
+//		}
+//		catch (final WellDefinitionException e) {
+//			CSTN.LOG.severe("During the check the instance becomes not well formed: " + e);
+//			status.consistency = false;
+//		}
+		status.finished = currentGraph.hasSameEdgesOf(nextGraph) && noChanged;
 		return status;
 	}
 
@@ -997,7 +1008,8 @@ public class CSTN {
 							e = new LabeledIntEdge("e" + node.getName() + obsl1.getName(), LabeledIntEdge.Type.derived, labelOptimization);
 							g.addEdge(e, node, obsl1);
 							if (CSTN.LOG.isLoggable(Level.WARNING)) {
-								CSTN.LOG.log(Level.WARNING, "It is necessary to add a preceding constraint between node '" + node.getName() + "' and node '"
+								CSTN.LOG.log(Level.WARNING, "It is necessary to add a constraint to guarantee that node '" + node.getName()
+										+ "' occurs after node '"
 										+ obsl1.getName() + "' to satisfy WD2.");
 							}
 						}
@@ -1021,15 +1033,15 @@ public class CSTN {
 				e = new LabeledIntEdge("e" + node.getName() + Z.getName(), LabeledIntEdge.Type.derived, labelOptimization);
 				g.addEdge(e, node, Z);
 				if (CSTN.LOG.isLoggable(Level.WARNING)) {
-					CSTN.LOG.log(Level.WARNING, "It is necessary to add a preceding constraint between node '" + node.getName() + "' and node '"
-							+ Z.getName());// + "' because Z must be the first node. Be careful, we operate with integer, it is necessary to set -1 the distance!");
+					CSTN.LOG.log(Level.WARNING, "It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '"
+							+ Z.getName());// +
+											// "' because Z must be the first node. Be careful, we operate with integer, it is necessary to set -1 the distance!");
 				}
 			}
 			e.mergeLabeledValue(node.getLabel(), 0);// in any case, all nodes must be after Z!
 		}
 		return true;
 	}
-
 
 	/**
 	 * logger
@@ -1058,19 +1070,21 @@ public class CSTN {
 	 *            minimized constraints; otherwise, it is not modified.
 	 * @param instantaneousReactions true is it is admitted that observation points and other points depending from the observed proposition can be executed
 	 *            in the same 'instant'.
-	 * @param onlyOnZ true if one wants to apply R0, R3 and R5 only when node Z is involved.
-	 * @param excludeR1R2R4 true if one wants to exclude the application of rules R1, R2, and R4.
+	 * @param onlyOnZ true if one wants to apply R0 and R3 only when node Z is involved.
+	 * @param excludeR1R2 true if one wants to exclude the application of rules R1 and R2.
 	 * @return the final status of the checking with some statistics.
 	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean onlyOnZ, boolean excludeR1R2R4)
+	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean onlyOnZ, boolean excludeR1R2)
 			throws WellDefinitionException {
 		final CheckStatus status = new CheckStatus();
 		if (g == null) return status;
 
+		String originalName = g.getName();
 		LabeledIntGraph currentGraph, nextGraph;
 		currentGraph = new LabeledIntGraph(g, this.labelOptimization);
+		currentGraph.setName("Current graph");
 		try {
 			CSTN.initLabeledDataStructure(currentGraph, this.labelOptimization);
 		}
@@ -1079,6 +1093,7 @@ public class CSTN {
 		}
 
 		nextGraph = new LabeledIntGraph(currentGraph, this.labelOptimization);
+		nextGraph.setName("New graph");
 
 		final int n = currentGraph.getVertexCount();
 		final int maxCycles = n * n * n / 2;// FIXME after the proof of completeness
@@ -1088,7 +1103,7 @@ public class CSTN {
 		for (i = 1; (i <= maxCycles) && !status.finished; i++) {
 			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "\n*** Start Cycle " + i + "/" + maxCycles + " ***");
 			status.cycles++;
-			CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, n, instantaneousReactions, onlyOnZ, excludeR1R2R4, this.labelOptimization, status);
+			CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, n, instantaneousReactions, onlyOnZ, excludeR1R2, this.labelOptimization, status);
 
 			if (!status.consistency) {
 				if (CSTN.LOG.isLoggable(Level.INFO))
@@ -1097,6 +1112,8 @@ public class CSTN {
 			}
 			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "*** End Cycle " + i + "/" + maxCycles + " ***\n\n");
 			currentGraph = new LabeledIntGraph(nextGraph, this.labelOptimization);
+			currentGraph.setName("Current graph");
+			nextGraph.setName("New graph");
 		}
 
 		if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, status.toString());
@@ -1113,7 +1130,7 @@ public class CSTN {
 		// Put all data structures of currentGraph in g
 		nextGraph.cloneCleaningRedundantLabels(currentGraph);
 		g.takeIn(nextGraph);
-//		g.takeIn(currentGraph);
+		g.setName(originalName);
 		return status;
 	}
 
@@ -1134,15 +1151,15 @@ public class CSTN {
 	 * @param currentGraph
 	 * @param nextGraph
 	 * @param instantaneousReaction
-	 * @param onlyOnZ true if one wants to apply R0, R3 and R5 only when node Z is involved.
-	 * @param excludeR1R2R4 true if one wants to exclude the application of rules R1, R2, and R4.
+	 * @param onlyOnZ true if one wants to apply R0 and R3 only when node Z is involved.
+	 * @param excludeR1R2 true if one wants to exclude the application of rules R1 and R2.
 	 * @param status
 	 * @return status the execution
 	 * @throws WellDefinitionException
 	 */
 	public CheckStatus oneStepDynamicConsistency(final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph, final boolean instantaneousReaction,
-			final boolean onlyOnZ, final boolean excludeR1R2R4, final CheckStatus status) throws WellDefinitionException {
-		return CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, currentGraph.getVertexCount(), instantaneousReaction, onlyOnZ, excludeR1R2R4,
+			final boolean onlyOnZ, final boolean excludeR1R2, final CheckStatus status) throws WellDefinitionException {
+		return CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, currentGraph.getVertexCount(), instantaneousReaction, onlyOnZ, excludeR1R2,
 				this.labelOptimization, status);
 	}
 }
