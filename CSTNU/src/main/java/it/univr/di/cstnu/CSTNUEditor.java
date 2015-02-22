@@ -629,6 +629,68 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			}
 		});
 		rowForCSTNButtons.add(buttonCheck);
+		
+		
+		buttonCheck = new JButton("New CSTN Check");
+		buttonCheck.addActionListener(new AbstractAction("New CSTN") {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
+				saveCSTNResultButton.setEnabled(false);
+				g1 = new LabeledIntGraph(g, labelOptimization);
+				CSTN cstn = new CSTN(labelOptimization);
+				try {
+					cstn.initAndCheckCSTN(g1);
+				}
+				catch (IllegalArgumentException ec) {
+					throw new IllegalArgumentException("The graph has a problem and it cannot be initialize:\n " + ec.getMessage());
+				}
+				CSTNUEditor.LOG.finer("Original graph initialized: " + g1);
+
+				try {
+					CheckStatus status;
+					status = cstn.dynamicConsistencyCheckNew(g1, instantaneousReaction);
+					if (status.consistency) {
+						jl.setText("The graph is CSTN consistent.");
+						jl.setIcon(CSTNUEditor.infoIcon);
+						CSTNUEditor.LOG.finer("Final controllable graph: " + g1);
+					} else {
+						// The distance graph is not consistent
+						jl.setText("The graph is not CSTN consistent.");
+						jl.setIcon(CSTNUEditor.warnIcon);
+					}
+				}
+				catch (WellDefinitionException ex) {
+					jl.setText("There is a problem in the code: " + ex.getMessage());
+					jl.setIcon(CSTNUEditor.warnIcon);
+				}
+				jl.setOpaque(true);
+				jl.setBackground(Color.orange);
+				layout2 = new StaticLayout<>(g1);
+				LabeledNode gV;
+				for (final LabeledNode v : g1.getVertices()) {
+					gV = g.getNode(v.getName());
+					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+				}
+				vv2.setGraphLayout(layout2);
+				vv2.setVisible(true);
+				saveCSTNResultButton.setEnabled(true);
+
+				vv2.validate();
+				vv2.repaint();
+
+				graphPanel.validate();
+				graphPanel.repaint();
+				cycle = 0;
+			}
+		});
+		rowForCSTNButtons.add(buttonCheck);
+		
 
 		buttonCheck = new JButton("One Step CSTN Check");
 		buttonCheck.addActionListener(new AbstractAction("One Step CSTN") {

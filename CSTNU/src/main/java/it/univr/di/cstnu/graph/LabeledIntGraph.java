@@ -51,22 +51,27 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * Set of edges with lower case label set not empty
 	 */
-	private ObjectArraySet<LabeledIntEdge> lowerCaseEdgesSet;
+	private ObjectArraySet<LabeledIntEdge> lowerCaseEdgesSet = null;
 
 	/**
 	 * Name
 	 */
-	private String name;
+	private String name = null;
 
 	/**
 	 * Set of propositions observed in the graph.
 	 */
-	private Set<Literal> observedProposition;
+	private Set<Literal> observedProposition = null;
+
+	/**
+	 * Set of observator time-point
+	 */
+	private Set<LabeledNode> observators = null;
 
 	/**
 	 * Children of observation nodes
 	 */
-	private Map<LabeledNode, Set<Literal>> childrenOfObservator;
+	private Map<LabeledNode, Set<Literal>> childrenOfObservator = null;
 
 	/**
 	 * Zero node. In temporal constraint network such node is the first node to execute.
@@ -90,14 +95,13 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	 * A constructor that clones a given graph g. If g is null, this new graph will be empty.
 	 *
 	 * @param g the graph to be cloned
-	 * @param forceOptimization TODO
+	 * @param forceOptimization
 	 */
 	public LabeledIntGraph(final LabeledIntGraph g, final boolean forceOptimization) {
 		this(forceOptimization);
 		if (g == null) return;
 
 		this.name = g.name;
-		this.optimize = forceOptimization;
 
 		// clone all nodes
 		LabeledNode vNew;
@@ -115,12 +119,6 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 			eNew = new LabeledIntEdge(e, forceOptimization);
 			this.addEdge(eNew, this.getNode(g.getSource(e).getName()), this.getNode(g.getDest(e).getName()));
 		}
-
-		/*
-		 * for (LabeledIntEdge e : g.lowerLabeledEdges) { this.lowerLabeledEdges.add(this.getEdge(e.getName())); } for (LabeledIntEdge e :
-		 * g.upperLabeledEdges) {
-		 * this.upperLabeledEdges.add(this.getEdge(e.getName())); } this.proposition.addAll(g.proposition);
-		 */
 	}
 
 	/**
@@ -166,6 +164,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 		this.lowerCaseEdgesSet = null;
 		this.observedProposition = null;
 		this.childrenOfObservator = null;
+		this.observators = null;
 	}
 
 	/**
@@ -198,7 +197,6 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 		}
 	}
 
-	
 	/**
 	 * @param g
 	 */
@@ -224,20 +222,20 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 		Label label;
 		for (final LabeledIntEdge e : g.getEdges()) {
 			eNew = new LabeledIntEdge(e.getName(), e.getType(), this.optimize);
-			for( Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
+			for (Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
 				value = entry.getIntValue();
 				if (value == Constants.INT_NEG_INFINITE) continue;
 				label = entry.getKey();
 				if (label.containsUnknown()) continue;
 				eNew.mergeLabeledValue(entry.getKey(), value);
 			}
-			for( Object2IntMap.Entry<Entry<Label, String>> entry : e.getUpperLabelSet()) {
+			for (Object2IntMap.Entry<Entry<Label, String>> entry : e.getUpperLabelSet()) {
 				eNew.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
 			}
 			this.addEdge(eNew, this.getNode(g.getSource(e).getName()), this.getNode(g.getDest(e).getName()));
 		}
 	}
-	
+
 	/**
 	 * Equals based on equals of edges and vertices.
 	 *
@@ -333,6 +331,20 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 
 		LabeledIntGraph.LOG.finest("Literal=" + l + "; observer=" + observer);
 		return observer.get(l.isNegated() ? l.getComplement() : l);
+	}
+
+	/**
+	 * @return the set of observator time-points.
+	 */
+	public Set<LabeledNode> getObservators() {
+		if (this.observators == null) {
+			this.observators = new ObjectArraySet<>();
+			for (final LabeledNode n : this.vertices.keySet())
+				if (n.getPropositionObserved() != null) {
+					this.observators.add(n);
+				}
+		}
+		return this.observators;
 	}
 
 	/**
@@ -445,7 +457,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * @param g1
 	 * @return true if this graph contains edges equal to all g1 edges. Equals is checked using method {@link #equals(Object)}.
-	 * 	False otherwise.
+	 *         False otherwise.
 	 */
 	public boolean hasSameEdgesOf(final LabeledIntGraph g1) {
 		if (g1 == null) return false;
@@ -462,7 +474,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 				sameEdges = false;// i want to log all differences!!!
 			}
 		}
-		if (LOG.isLoggable(Level.INFO)) LabeledIntGraph.LOG.log(Level.INFO, sb.toString());
+		if (LOG.isLoggable(Level.FINE)) LabeledIntGraph.LOG.log(Level.FINE, sb.toString());
 		return sameEdges;
 	}
 
@@ -501,6 +513,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 		this.edges = g.edges;
 		this.lowerCaseEdgesSet = g.lowerCaseEdgesSet;
 		this.observedProposition = g.observedProposition;
+		this.observators = g.observators;
 		this.Z = g.Z;
 	}
 

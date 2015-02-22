@@ -382,8 +382,9 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 				v1 = vnspair.getValue();
 				nodeSet1 = vnspair.getNodeSet();
 				if ((newLabelSize >= (l1Size = l1.size())) && newLabel.subsumes(l1) && newValue >= v1) {
-					if (isNullOrEmpty(newNodeSet)) {
+					if (isNullOrEmpty(newNodeSet) || (newLabel.equals(l1) && !isNullOrEmpty(nodeSet1) && nodeSet1.containsAll(newNodeSet))) {
 						// the input value is simple (no associated node set) and it is already contained in the set.
+						//or it has a node set but that it is already represented by the current value
 						return false;
 					}
 					if (v1 == Constants.INT_NEG_INFINITE) {
@@ -401,8 +402,8 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 						hasNewLabelToBeInserted = false;
 						continue;
 					}
-					if (isNullOrEmpty(nodeSet1)) {
-						labelToRemove.add(l1);// ite.remove();// case 1, 2
+					if (isNullOrEmpty(nodeSet1) || (newLabel.equals(l1) && !isNullOrEmpty(newNodeSet) && newNodeSet.equals(nodeSet1))) {
+						labelToRemove.add(l1);// case 1, 2
 						// l1 is more generic and simple, we remove it
 						// this.checkValidityOfTheBaseAfterRemovingOrAddANodeSet(l1, nodeSet1);
 					} else {
@@ -563,6 +564,8 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	private boolean checkValidityOfTheBaseAfterRemovingOrAddANodeSet(final Label l) {
 		int bn, ln;
 		if ((l == null) || ((ln = l.size()) == 0) || ((bn = this.base.size()) == 0) || (ln != bn)) return false;
+		
+		if (l.containsUnknown()) return false;//removing a label with unknown does not affect a possible base.
 
 		int dimConj = l.conjunctionExtended(this.base).size();
 		if (dimConj > ln) return false;
