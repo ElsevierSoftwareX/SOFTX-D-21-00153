@@ -12,7 +12,9 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
 import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
+
 import java.awt.BasicStroke;
+import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.Map.Entry;
@@ -23,6 +25,7 @@ import java.util.logging.Logger;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.functors.ConstantTransformer;
 
 import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
@@ -93,6 +96,13 @@ public class LabeledIntEdge extends Component {
 			return sb.toString();
 		}
 	};
+	
+	/**
+	 * A transformer to return a font for edge label.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static final Transformer<LabeledIntEdge,Font> edgeFontTransformer = new ConstantTransformer(new Font("Helvetica", Font.PLAIN, 14));
+	
 
 	/**
 	 * Select how to draw an edge given its type.
@@ -343,7 +353,6 @@ public class LabeledIntEdge extends Component {
 			this.setType(Type.normal);
 			this.optimize = forceOptimization;
 			this.labeledValue = new LabeledIntNodeSetTreeMap(this.optimize);
-//			this.nodeSetOfLabel = new Object2ObjectAVLTreeMap<>();
 			this.upperLabel = new LabeledContingentIntTreeMap(this.optimize);
 			this.lowerLabel = new LabeledContingentIntTreeMap(this.optimize);
 			this.removedLabeledValue = new LabeledIntNodeSetTreeMap(false);
@@ -352,7 +361,6 @@ public class LabeledIntEdge extends Component {
 			this.type = e.type;
 			this.optimize = forceOptimization;
 			this.labeledValue = new LabeledIntNodeSetTreeMap(e.labeledValue, this.optimize);
-//			this.nodeSetOfLabel = new Object2ObjectAVLTreeMap<>(e.nodeSetOfLabel);
 			this.upperLabel = new LabeledContingentIntTreeMap(e.upperLabel, this.optimize);
 			this.lowerLabel = new LabeledContingentIntTreeMap(e.lowerLabel, this.optimize);
 			this.removedLabeledValue = new LabeledIntNodeSetTreeMap(e.removedLabeledValue, false);
@@ -598,7 +606,7 @@ public class LabeledIntEdge extends Component {
 	 * @return the value associated to the upper label of the occurrence of node n if it exists, {@link LabeledIntNodeSetMap#INT_NULL} otherwise.
 	 */
 	public int getUpperLabelValue(final Label l, final LabeledNode n) {
-		return this.upperLabel.getValue(l, n.getName());
+		return this.upperLabel.getValue(l, n.getName().toUpperCase());
 	}
 
 	/**
@@ -930,7 +938,7 @@ public class LabeledIntEdge extends Component {
 				+ ((this.labeledValue.size() > 0) ? this.labeledValue.toString() + "; " : "")
 				+ ((this.upperLabel.size() > 0) ? "UL: " + this.upperLabel.toString() + "; " : "")
 				+ ((this.lowerLabel.size() > 0) ? "LL: " + this.lowerLabel.toString(true) + ";" : "")
-				//				+ ((this.nodeSetOfLabel.size() > 0) ? "NodeSet: " + this.nodeSetOfLabel.toString() + ";" : "")
+				// + ((this.nodeSetOfLabel.size() > 0) ? "NodeSet: " + this.nodeSetOfLabel.toString() + ";" : "")
 				+ "❯";
 	}
 
