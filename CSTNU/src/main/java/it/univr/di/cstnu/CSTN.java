@@ -2,10 +2,12 @@ package it.univr.di.cstnu;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.univr.di.cstnu.WellDefinitionException.Type;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.StaticLayout;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
@@ -13,17 +15,32 @@ import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
 import it.univr.di.labeledvalue.Literal;
 import it.univr.di.labeledvalue.ValueNodeSetPair;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.kohsuke.args4j.Argument;
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionHandlerFilter;
+
+import edu.uci.ics.jung.io.GraphMLWriter;
 
 /**
  * Simple class to represent and check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  *
  * @author Roberto Posenato
+ * @version $Id: $Id
  */
 public class CSTN {
 
@@ -44,6 +61,11 @@ public class CSTN {
 		int cycles = 0, r0calls = 0, r1calls = 0, r2calls = 0, r3calls = 0, labeledValuePropagationcalls = 0;
 
 		/**
+		 * Execution time in milliseconds.
+		 */
+		long executionTime = 0;
+
+		/**
 		 * True if no rule can be applied anymore.
 		 */
 		boolean finished = false;
@@ -61,14 +83,34 @@ public class CSTN {
 					+ "Rule R1 has been applied " + this.r1calls + " times.\n"
 					+ "Rule R2 has been applied " + this.r2calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
-					+ "Rule Labeled Propagation has been applied " + this.labeledValuePropagationcalls + " times.\n");
+					+ "Rule Labeled Propagation has been applied " + this.labeledValuePropagationcalls + " times.\n"
+					+ "The global execution time has been " + executionTime + " ms. approx.");
 		}
 	}
 
 	/**
-	 * @param g
+	 * logger
+	 */
+	static Logger LOG = Logger.getLogger(CSTN.class.getName());
+
+	/**
+	 * Version of the class
+	 */
+	static final String VERSIONandDATE = "1.1, May, 04 2015";
+
+	/**
+	 * The name for the reference node.
+	 */
+	private static final String ZeroNodeName = "Z";
+
+	/**
+	 * <p>
+	 * checkWellDefinitionProperties.
+	 * </p>
+	 *
+	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
 	 * @return true if the g is a CSTN well defined.
-	 * @throws WellDefinitionException
+	 * @throws it.univr.di.cstnu.WellDefinitionException if any.
 	 */
 	public static boolean checkWellDefinitionProperties(final LabeledIntGraph g) throws WellDefinitionException {
 		boolean flag = false;
@@ -86,6 +128,67 @@ public class CSTN {
 			CSTN.LOG.log(Level.FINER, ((flag) ? "done: all is well defined.\n" : "done: something is wrong. Not well defined graph!\n"));
 		}
 		return flag;
+	}
+
+	/**
+	 * Reads a CSTNU file and converts it into <a href="http://people.cs.aau.dk/~adavid/tiga/index.html">UPPAAL TIGA</a> format.
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
+	 */
+	public static void main(String[] args) {
+		LOG.finest("Start...");
+		CSTN cstn = new CSTN(true);
+
+		if (!cstn.manageParameters(args))
+			return;
+		LOG.finest("Parameters ok!");
+		if (cstn.versionReq) {
+			System.out.println(CSTN.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
+					+ "Copyright © 2015, Roberto Posenato");
+			return;
+		}
+
+		LOG.finest("Loading graph...");
+		LabeledIntGraph g = LabeledIntGraph.load(cstn.fInput);
+		if (g == null) {
+			System.out.println("It was not possible to load the given CSTN");
+			return;
+		}
+		LOG.finest("LabeledIntGraph loaded!");
+
+		LOG.finest("DC Checking...");
+		CheckStatus status;
+		try {
+			status = cstn.dynamicConsistencyCheck(g, true, false, false);
+		}
+		catch (WellDefinitionException e) {
+			System.out.print("An error has been occured during the checking: " + e.getMessage());
+			return;
+		}
+		LOG.finest("LabeledIntGraph minimized!");
+		if (status.finished) {
+			System.out.println("Checking finished!");
+			if (status.consistency) {
+				System.out.println("The given cstn is Dynamic consistent!");
+			} else {
+				System.out.println("The given cstn is Dynamic consistent!");
+			}
+			System.out.println("Details: " + status);
+		} else {
+			System.out.println("Checking has not been finished!");
+			System.out.println("Details: " + status);
+		}
+
+		if (cstn.fOutput != null) {
+			GraphMLWriter<LabeledNode, LabeledIntEdge> graphWriter = new it.univr.di.cstnu.graph.GraphMLWriter(new StaticLayout<>(g));
+			try {
+				graphWriter.save(g, new PrintWriter(cstn.output));
+			}
+			catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -289,7 +392,7 @@ public class CSTN {
 	 * @param newLabel
 	 * @param value
 	 * @param newEdge
-	 * @return true if the value associated to newLabel is not infinity and newLabel does not contain unknown literals.
+	 * @return true if the value associated to newLabel is NOT infinity OR newLabel does contain unknown literals.
 	 */
 	static boolean isNewLabeledValueNotANegativeLoopEspression(final Label newLabel, final int value, final LabeledIntEdge newEdge) {
 		if ((value == Constants.INT_NEG_INFINITE) && !newLabel.containsUnknown()) {
@@ -306,9 +409,8 @@ public class CSTN {
 	 *
 	 * <pre>
 	 * R0:
-	 * P? --[α p, w]--&gt; X changes in P? --[α', w]--&gt; X when w &lt;0 (w<0 for instantaneous reaction)
-	 * </pre>
-	 *
+	 * P? --[α p, w]--&gt; X changes in P? --[α', w]--&gt; X when w &lt;0 (w&lt;0 for instantaneous reaction)
+	 * 
 	 * where:
 	 * p is the positive or the negative literal associated to proposition observed in P?.
 	 * α is a label
@@ -318,7 +420,7 @@ public class CSTN {
 	 * @param currentGraph
 	 * @param P the observation node
 	 * @param X the other node
-	 * @param PX the edge connecting P? ---> X
+	 * @param PX the edge connecting P? ---&gt; X
 	 * @param PXinNextGraph the edge connecting P? to X in the new graph.
 	 * @param status
 	 * @param instantaneousReaction true is it is admitted that observation points and other points depending from the observed proposition can
@@ -351,8 +453,8 @@ public class CSTN {
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
 			String logMessage = null;
 			if (CSTN.LOG.isLoggable(Level.FINER)) {
-				logMessage = "R0 simplifies a label of edge " + PX
-						+ ":\npartic: " + P.getName() + " ---(" + l + ", " + Constants.formatInt(w) + ")---> " + X.getName()
+				logMessage = "R0 simplifies a label of edge " + PX.getName()
+						+ ":\nsource: " + P.getName() + " ---(" + l + ", " + Constants.formatInt(w) + ")---> " + X.getName()
 						+ "\nresult: " + P.getName() + " ---(" + alphaPrime + ", " + Constants.formatInt(w) + ")---> " + X.getName();
 			}
 
@@ -362,7 +464,11 @@ public class CSTN {
 			ruleApplied = true;
 			mergeStatus = PXinNextGraph.mergeLabeledValue(alphaPrime, w);
 			if (mergeStatus && CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, logMessage);
-			if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(alphaPrime, w, PXinNextGraph))) return ruleApplied;
+			if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(alphaPrime, w, PXinNextGraph))) {
+				if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Found an inconsistency. Label Modification R0: end.");
+				status.finished = true;
+				return ruleApplied;
+			}
 		}
 		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R0: end.");
 
@@ -370,11 +476,11 @@ public class CSTN {
 	}
 
 	/**
-	 * Rule R1 adds a modified labeled value for each one of edge X-->Y that cannot be evaluated when the edge has to be considered.
+	 * Rule R1 adds a modified labeled value for each one of edge X--&gt;Y that cannot be evaluated when the edge has to be considered.
 	 *
 	 * <pre>
-	 * if P? --[ab, w]--&gt; X --[bgp, v]--&gt; Y  and w&le;0 and v&lt;-w (v<-w for instantaneous reaction),
-	 * then the constraint between X and Y is modified as X --[abg', v]--[bgp, v]--> Y
+	 * if P? --[ab, w]--&gt; X --[bgp, v]--&gt; Y  and w&le;0 and v&lt;-w (v&lt;-w for instantaneous reaction),
+	 * then the constraint between X and Y is modified as X --[abg', v]--[bgp, v]--&gt; Y
 	 * where
 	 * g' is g without the P? children.
 	 * </pre>
@@ -426,7 +532,7 @@ public class CSTN {
 					// I check if the label subsumes the label of the endpoints before to proceed.
 					// It should not necessary, but I put here as a guard!
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Detail about the error of application R1 to edge " + eXY
-							+ ":\npartic: "
+							+ ":\nsource: "
 							+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName() + " ---(" + labelXY + ", "
 							+ Constants.formatInt(v) + ")---> " + nY.getName()
 							+ "\nresult: " + nX.getName() + " ---(" + abg1 + ", " + Constants.formatInt(v) + ")---> " + nY.getName());
@@ -437,7 +543,7 @@ public class CSTN {
 				ruleApplied = eXYnew.mergeLabeledValue(abg1, v);
 				if (ruleApplied) {
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R1 adds a label to edge " + eXY
-							+ ":\npartic: "
+							+ ":\nsource: "
 							+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName() + " ---(" + labelXY + ", "
 							+ Constants.formatInt(v) + ")---> "
 							+ nY.getName()
@@ -505,20 +611,20 @@ public class CSTN {
 					if (CSTN.LOG.isLoggable(Level.FINER))
 						CSTN.LOG.log(Level.FINER, "Since after R2, the label does not subsumes the conjection of node labes, it means that " + X.getName()
 								+ " has 'p' in its label. It has to be after " + P.getName() + ". Edge: " + XP
-								+ ":\npartic: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X
+								+ ":\nsource: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X
 								+ "\nresult: " + P.getName() + " <---(" + X.getLabel().conjunction(P.getLabel()) + ", 0)--- " + X.getName());
 					XPinNextGraph.mergeLabeledValue(X.getLabel().conjunction(P.getLabel()), 0);
 				} else {
 					if (CSTN.LOG.isLoggable(Level.FINER))
 						CSTN.LOG.log(Level.FINER, "R2 CANNOT be applied because subsumption check of R2 applied to edge " + XP
-								+ ":\npartic: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X);
+								+ ":\nsource: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X);
 				}
 				continue;
 			}
 
 			// Prepare the log message now with old values of the edge. If it modifies, then we can log it correctly.
 			final String logMessage = "R2 simplifies a label of edge " + XP
-					+ ":\npartic: " + P.getName() + " <--(" + l + ", " + Constants.formatInt(w) + ")--- " + X.getName()
+					+ ":\nsource: " + P.getName() + " <--(" + l + ", " + Constants.formatInt(w) + ")--- " + X.getName()
 					+ "\nresult: " + P.getName() + " <--(" + alphaPrime + ", " + Constants.formatInt(max) + ")--- " + X.getName();
 
 			XPinNextGraph.putLabeledValueToRemovedList(l, w);
@@ -580,28 +686,24 @@ public class CSTN {
 				final Label labelYXWithoutP = new Label(labelYX);
 				labelYXWithoutP.removeAllLiteralsWithSameName(p);
 
+				//FIXME If Z is involved, then I had to remove also all children of q-literals! (Check TIME 2015 paper)
 				final Label abg1 = CSTN.makeAlphaBetaGammaPrime(currentGraph, nObs, labelObsX, labelYXWithoutP, nX != Z);
 				if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Rule R3 details alphaBetaGamma1=" + abg1);
-
-				// I check if the label subsumes the label of the endpoints before to proceed
-//				if (!CSTN.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3")) {
-//					if (CSTN.LOG.isLoggable(Level.FINER))
-//						CSTN.LOG.log(Level.FINER, "R3 cannot be applied to edge " + eYX + " because the label not subsume node labels:\n"
-//								+ nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
-//								+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName());
-//					continue;
-//				}
 
 				eYXnew.putLabeledValueToRemovedList(labelYX, v);
 				ruleApplied = eYXnew.mergeLabeledValue(abg1, max);
 				if (ruleApplied) {
 					if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eYX.getName() + ":\n"
-							+ "partic: " + nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
+							+ "source: " + nObs.getName() + " ---(" + labelObsX + ", " + Constants.formatInt(w) + ")---> " + nX.getName()
 							+ " <---(" + labelYX + ", " + Constants.formatInt(v) + ")--- " + nY.getName()
 							+ "\nresult: add " + nX.getName() + " <---(" + abg1 + ", " + Constants.formatInt(max) + ")--- " + nY.getName());
 					status.r3calls++;
 				}
-				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(abg1, max, eYXnew))) return ruleApplied;
+				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(abg1, max, eYXnew))) {
+					if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Found an inconsistency.\nLabel Modification R3: end.");
+					status.finished = true;
+					return ruleApplied;
+				}
 			}
 		}
 		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R3: end.");
@@ -612,7 +714,7 @@ public class CSTN {
 	 * Applies the labeled propagation rule.
 	 *
 	 * <pre>
-	 * if A --[l1, x]--> B --[l2, y]--> C, then A --[l1l2, x+y]--> C
+	 * if A --[l1, x]--&gt; B --[l2, y]--&gt; C, then A --[l1l2, x+y]--&gt; C
 	 * where l1l2 is the extended conjunction when A is the Z node, otherwise is the standard conjunction.
 	 * </pre>
 	 *
@@ -651,8 +753,10 @@ public class CSTN {
 				final SortedSet<String> nodeSetBC = BC.getNodeSet(labelBC);
 				int sum = LabeledIntNodeSetTreeMap.sumWithOverflowCheck(x, y);
 
-//				final boolean isNegativePathToZ = (C == Z) && (y<0) & (x<0);//original
-				final boolean isNegativePathToZ = (C == Z) && (y < 0);// Node set have to be managed also when we add a positive value of a q-Loop (x>0)
+//				final boolean isNegativePathToZ = (C == Z) && (y<0) && (x<0);//original
+				// FIXME
+				final boolean isNegativePathToZ = (C == Z) && (y < 0) && (x < 0);// Node set have to be managed also when we add a positive value of a q-Loop
+																					// (x>0)
 				Label newLabelAC = (isNegativePathToZ && x < 0) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
 				if (newLabelAC == null) continue;
 
@@ -660,9 +764,9 @@ public class CSTN {
 				SortedSet<String> sigma = null;
 				if (isNegativePathToZ) {
 					/*
-					 * If x>0, then we update the value and its possible node set iff sum<oldZ
+					 * The node set is update only if the new value is better the old one.
 					 */
-					if (x >= 0 && sum >= oldZ) continue;
+					if (oldZ != Constants.INT_NULL && sum > oldZ) continue;
 					/*
 					 * Special case
 					 * A --[beta, x]--> B --[alpha, y, sigma1]--> Z with x<0 and y<0
@@ -679,9 +783,9 @@ public class CSTN {
 					final boolean isAInNodeSet = (nodeSetBC == null) ? false : nodeSetBC.contains(A.getName());
 					if (isAInNodeSet) {
 						sum = Constants.INT_NEG_INFINITE;
-						if (CSTN.LOG.isLoggable(Level.FINER))
-							CSTN.LOG.log(Level.FINER, "Negative qLoop detected during the updated of " + ACinNextGraph.getName() + ": "
-									// + "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName() + " --(" + labelBC
+						if (CSTN.LOG.isLoggable(Level.FINEST))
+							CSTN.LOG.log(Level.FINEST, "Negative qLoop detected during the updated of " + ACinNextGraph.getName() + ": "
+									// + "source: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName() + " --(" + labelBC
 									// + ", "
 //									+ Constants.formatInt(y) + ")--> " + C.getName()
 									+ A.getName() + " is in the node set of label '" + labelBC + "' of the edge " + BC.getName()
@@ -698,8 +802,8 @@ public class CSTN {
 						}
 						// I add only B because the endpoints are specified by the edge.
 						if (CSTN.LOG.isLoggable(Level.FINEST)) {
-							CSTN.LOG.log(Level.FINER, "The node set of edge BC is " + nodeSetBC);
-							CSTN.LOG.log(Level.FINER, "The new CANDIDATE node set to add to label '" + newLabelAC + "' on edge " + ACinNextGraph.getName()
+							CSTN.LOG.log(Level.FINEST, "The node set of edge BC is " + nodeSetBC);
+							CSTN.LOG.log(Level.FINEST, "The new CANDIDATE node set to add to label '" + newLabelAC + "' on edge " + ACinNextGraph.getName()
 									+ " is " + sigma);
 						}
 					}
@@ -708,8 +812,8 @@ public class CSTN {
 				// I have to prepare the log before the execution of the merge!
 				String log = null;
 				if (CSTN.LOG.isLoggable(Level.FINER)) {
-					log = "Labeled Propagation Rule applied to edge " + ACinNextGraph + ":\n"
-							+ "partic: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName()
+					log = "Label Propagation Rule applied to edge " + ACinNextGraph.getName()
+							+ ":\nsource: " + A.getName() + " --(" + labelAB + ", " + Constants.formatInt(x) + ")--> " + B.getName()
 							+ " --(" + labelBC + ", " + Constants.formatInt(y)
 							+ ((nodeSetBC != null && !nodeSetBC.isEmpty()) ? ", " + nodeSetBC.toString() : "")
 							+ ")--> " + C.getName()
@@ -726,13 +830,17 @@ public class CSTN {
 					status.labeledValuePropagationcalls++;
 					CSTN.LOG.log(Level.FINER, log);
 				}
-				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(newLabelAC, sum, ACinNextGraph))) return ruleApplied;
+				if (!(status.consistency = CSTN.isNewLabeledValueNotANegativeLoopEspression(newLabelAC, sum, ACinNextGraph))) {
+					status.finished = true;
+					return ruleApplied;
+				}
 			}
 		}
 		if (A == C) { // self loop, check if there is a negative loop!
 			final int min = ACinNextGraph.getMinValueAmongLabelsWOUnknown();
 			if ((min != LabeledIntNodeSetMap.INT_NULL) && (min < 0)) {
 				if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Found a negative loop in node " + ACinNextGraph.toString());
+				status.finished = true;
 				status.consistency = false;
 			}
 		}
@@ -778,6 +886,140 @@ public class CSTN {
 	}
 
 	/**
+	 * Executes one step of the dynamic consistency check in the new version.
+	 * <p>
+	 * One step consists into an exhaustive label propagation with the application of R0 on resulting new edges, followed by an exhaustive R3 application.
+	 *
+	 * @param currentGraph the current graph. It is just read. No modification is made on it.
+	 * @param nextGraph the next graph. At the end of the procedure, it will contain the results of reductions. Since it cannot be null, it is required to be
+	 *            equal to the current graph. For efficiency reasons, no check is made.
+	 * @param n # of vertices.
+	 *
+	 * @param instantaneousReaction true is it is admitted that observation points and other points depending from the observed proposition can be executed in
+	 *            the same 'instant'.
+	 * @param labelOptimization true if the possibly new generated edges have to remove redundant labeled values.
+	 * @param status the record where to store statistics and exit status of the execution.
+	 * @param mainCycle index of this method invocation (just for logging).
+	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
+	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
+	 *             there is a problem in the rules coding.
+	 */
+	// FIXME Cambiato in modo che applichi LP ad ongi triangolo. Per ogni applicazione, sul grafo nuovo si applica subito R0 e R3.
+	static CheckStatus oneStepDynamicConsistencyNEW(LabeledIntGraph currentGraph, LabeledIntGraph nextGraph, final int n, final boolean instantaneousReaction,
+			final boolean labelOptimization, final CheckStatus status, int mainCycle)
+			throws WellDefinitionException {
+
+		/*
+		 * Label Propagation
+		 * Apply label propagation rule to all possible node triple (A,B,C) until no new value is generated.
+		 * Exploiting a possible sparse graph, the triple are generated making, for each node B, two cycles:
+		 * one to find all possible A and, for each A, one to find all possible C.
+		 * In this way, the triple is used to mainly consider:
+		 * A --> B --> C
+		 */
+		LabeledNode A, B, C, AinNextGraph, CinNextGraph;
+		LabeledIntEdge AB, ACinNextGraph, BC;
+
+		LabeledNode[] node = currentGraph.getVerticesArray();
+		LabeledNode Z = currentGraph.getZ();
+
+		status.cycles++;
+
+		if (CSTN.LOG.isLoggable(Level.FINER)) {
+			CSTN.LOG.log(Level.FINER, "");
+			CSTN.LOG.log(Level.FINER, "Start application labeled propagation rule+R0+R3. Cycle " + mainCycle);
+		}
+		for (int k = 0; k < n; k++) {
+			B = node[k];
+			for (final Iterator<LabeledIntEdge> eABIter = currentGraph.getInEdges(B).iterator(); eABIter.hasNext();) {
+				AB = eABIter.next();
+				A = currentGraph.getSource(AB);
+				AinNextGraph = nextGraph.getNode(A.getName());
+				boolean isAanObservation = A.getPropositionObserved() != null;
+				for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
+					BC = eBCIter.next();
+					C = currentGraph.getDest(BC);
+					if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
+					// Now it is possible to propagate the labels with the standard rules
+					CSTN.labelPropagationRule(currentGraph, A, B, C, AB, BC, Z, nextGraph, status);
+					if (!status.consistency) {
+						return status;
+					}
+					CinNextGraph = nextGraph.getNode(C.getName());
+					ACinNextGraph = nextGraph.findEdge(AinNextGraph, CinNextGraph);
+					if (ACinNextGraph != null) {
+						if (isAanObservation) {
+							// R0 on the resulting new values
+							CSTN.labelModificationR0(nextGraph, AinNextGraph, CinNextGraph, ACinNextGraph, ACinNextGraph, status, instantaneousReaction);
+						}
+						// R3 on the resulting new values
+						CSTN.applyR3(nextGraph, AinNextGraph, CinNextGraph, ACinNextGraph, status, instantaneousReaction);
+					}
+				}
+			}
+		}
+		if (CSTN.LOG.isLoggable(Level.FINER))
+			CSTN.LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3. Cycle " + mainCycle
+					+ "\nSituation after the labeled propagation rule+R0+R3.");
+
+		status.finished = currentGraph.hasSameEdgesOf(nextGraph);
+		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "\n");
+
+		return status;
+	}
+
+	/**
+	 * 
+	 * @param currentGraph
+	 * @param nY
+	 * @param nX
+	 * @param eYX
+	 * @param status
+	 * @param instantaneousReaction
+	 * @return
+	 */
+	static CheckStatus applyR3(final LabeledIntGraph currentGraph, final LabeledNode nY, final LabeledNode nX, final LabeledIntEdge eYX,
+			final CheckStatus status, final boolean instantaneousReaction) {
+
+		if (CSTN.LOG.isLoggable(Level.FINER)) {
+			CSTN.LOG.log(Level.FINER, "");
+			CSTN.LOG.log(Level.FINER, "Start application rule R3.");
+		}
+		// I want to reuse labelModificationR3(), so I prepare all data for calling that metods.
+
+		// In order to check all labeled values of eYX, it is necessary to find all observation node involved.
+		Set<LabeledNode> observator = new TreeSet<>();
+		for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> label : eYX.labeledValueSet()) {
+			for (Literal l : label.getKey().getAllAsStraight()) {
+				LabeledNode n = currentGraph.getObservator(l);
+				if (n != null) observator.add(n);
+			}
+		}
+
+		LabeledIntEdge ePX;
+		for (LabeledNode P : observator) {
+			ePX = currentGraph.findEdge(P, nX);
+			if (ePX == null) continue;
+
+			CSTN.labelModificationR3(currentGraph, P, nX, nY, ePX, eYX, eYX, status, instantaneousReaction);
+			if (!status.consistency) {
+				return status;
+			}
+			// Rule R0
+			if (nY.getPropositionObserved() != null) {
+				CSTN.labelModificationR0(currentGraph, nY, nX, eYX, eYX, status, instantaneousReaction);
+			}
+			if (!status.consistency) {
+				return status;
+			}
+		}
+		if (CSTN.LOG.isLoggable(Level.FINER))
+			CSTN.LOG.log(Level.FINER, "End application rule R3.");
+
+		return status;
+	}
+
+	/**
 	 * Executes one step of the dynamic consistency check.
 	 * <p>
 	 * One step consists in the application of all known rules (one time) to all edges/triangles of the network.
@@ -797,8 +1039,7 @@ public class CSTN {
 	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	@Deprecated
-	static CheckStatus oneStepDynamicConsistency(LabeledIntGraph currentGraph, LabeledIntGraph nextGraph, final int n,
+	static CheckStatus oneStepDynamicConsistency4StepByStepExecution(LabeledIntGraph currentGraph, LabeledIntGraph nextGraph, final int n,
 			final boolean instantaneousReaction, final boolean onlyOnZ, final boolean excludeR1R2, final boolean labelOptimization, final CheckStatus status)
 			throws WellDefinitionException {
 
@@ -817,6 +1058,7 @@ public class CSTN {
 		LabeledNode[] node = currentGraph.getVerticesArray();
 		LabeledNode Z = currentGraph.getZ();
 
+		status.cycles++;
 		// There are two separate visit of the graph (it is necessary for the structure of label propagation rule and R3 one)
 
 		// FIRST
@@ -876,9 +1118,11 @@ public class CSTN {
 
 		final boolean noChanged = currentGraph.hasSameEdgesOf(nextGraph);
 
-		currentGraph.clone(nextGraph);
+		currentGraph.copy(nextGraph);
 		node = currentGraph.getVerticesArray();
 		Z = currentGraph.getZ();
+		nextGraph.setName("nextGraph");
+		currentGraph.setName("currentGraph");
 
 		// SECOND
 		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "Start application labeled propagation rule.");
@@ -890,7 +1134,7 @@ public class CSTN {
 				for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
 					BC = eBCIter.next();
 					C = currentGraph.getDest(BC);
-					if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
+					if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is when A == C
 					// Now it is possible to propagate the labels with the standard rules
 					CSTN.labelPropagationRule(currentGraph, A, B, C, AB, BC, Z, nextGraph, status);
 					if (!status.consistency) return status;
@@ -900,151 +1144,8 @@ public class CSTN {
 		if (CSTN.LOG.isLoggable(Level.FINER))
 			CSTN.LOG.log(Level.FINER, "End application labeled propagation rule.\n\nSituation after the labeled propagation rule.");
 
-//		try {
-//			CSTN.checkWellDefinitionProperties(nextGraph);
-//		}
-//		catch (final WellDefinitionException e) {
-//			CSTN.LOG.severe("During the check the instance becomes not well formed: " + e);
-//			status.consistency = false;
-//		}
 		status.finished = currentGraph.hasSameEdgesOf(nextGraph) && noChanged;
-		return status;
-	}
 
-	/**
-	 * Executes one step of the dynamic consistency check in the new version.
-	 * <p>
-	 * One step consists into an exhaustive label propagation with the application of R0 on resulting new edges, followed by an exhaustive R3 application.
-	 *
-	 * @param currentGraph the current graph. It is just read. No modification is made on it.
-	 * @param nextGraph the next graph. At the end of the procedure, it will contain the results of reductions. Since it cannot be null, it is required to be
-	 *            equal to the current graph. For efficiency reasons, no check is made.
-	 * @param n # of vertices.
-	 *
-	 * @param instantaneousReaction true is it is admitted that observation points and other points depending from the observed proposition can be executed in
-	 *            the same 'instant'.
-	 * @param labelOptimization true if the possibly new generated edges have to remove redundant labeled values.
-	 * @param status the record where to store statistics and exit status of the execution.
-	 * @param mainCycle index of this method invocation (just for logging).
-	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
-	 *             there is a problem in the rules coding.
-	 */
-	static CheckStatus oneStepDynamicConsistencyNew(LabeledIntGraph currentGraph, LabeledIntGraph nextGraph, final int n, final boolean instantaneousReaction,
-			final boolean labelOptimization, final CheckStatus status, int mainCycle)
-			throws WellDefinitionException {
-
-		/*
-		 * Exhaustive Label Propagation
-		 * Apply label propagation rule to all possible node triple (A,B,C) until no new value is generated.
-		 * Exploiting a possible sparse graph, the triple are generated making, for each node B, two cycles:
-		 * one to find all possible A and, for each A, one to find all possible C.
-		 * In this way, the triple is used to mainly consider:
-		 * A --> B --> C
-		 */
-		LabeledNode A, B, C, A1, C1;
-		LabeledIntEdge AB, ACinNextGraph, BC;
-
-		LabeledNode[] node = currentGraph.getVerticesArray();
-		LabeledNode Z = currentGraph.getZ();
-
-		int subCycle = 1;
-		boolean changed = true;
-		while (changed) {
-			if (CSTN.LOG.isLoggable(Level.FINER)) {
-				CSTN.LOG.log(Level.FINER, "");
-				CSTN.LOG.log(Level.FINER, "Start application labeled propagation rule. Cycle " + mainCycle + "." + subCycle);
-			}
-			for (int k = 0; k < n; k++) {
-				B = node[k];
-				for (final Iterator<LabeledIntEdge> eABIter = currentGraph.getInEdges(B).iterator(); eABIter.hasNext();) {
-					AB = eABIter.next();
-					A = currentGraph.getSource(AB);
-					A1 = nextGraph.getNode(A.getName());
-					boolean isAanObservation = A.getPropositionObserved() != null;
-					for (final Iterator<LabeledIntEdge> eBCIter = currentGraph.getOutEdges(B).iterator(); eBCIter.hasNext();) {
-						BC = eBCIter.next();
-						C = currentGraph.getDest(BC);
-						if (C == B) continue;// self loop on the second pair in not useful. The only loop it has to be maintain is A == C
-						// Now it is possible to propagate the labels with the standard rules
-						CSTN.labelPropagationRule(currentGraph, A, B, C, AB, BC, Z, nextGraph, status);
-						if (!status.consistency) return status;
-						// Try to apply R0 on the resulting new values
-						if (isAanObservation) {
-							C1 = nextGraph.getNode(C.getName());
-							ACinNextGraph = nextGraph.findEdge(A1, C1);
-							if (ACinNextGraph != null) {
-								CSTN.labelModificationR0(nextGraph, A1, C1, ACinNextGraph, ACinNextGraph, status, instantaneousReaction);
-							}
-						}
-					}
-				}
-			}
-			if (CSTN.LOG.isLoggable(Level.FINER))
-				CSTN.LOG.log(Level.FINER, "End application labeled propagation rule. Cycle " + mainCycle + "." + subCycle
-						+ "\nSituation after the labeled propagation rule.");
-
-			changed = !currentGraph.hasSameEdgesOf(nextGraph);
-			currentGraph.clone(nextGraph);
-			nextGraph.setName("nextGraph");
-			currentGraph.setName("currentGraph");
-			node = currentGraph.getVerticesArray();
-			Z = currentGraph.getZ();
-			subCycle++;
-		}
-
-		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "\n");
-
-		// R3 application
-		subCycle = 1;
-		changed = true;
-		boolean r3Applied = false;
-		LabeledIntEdge PX, YX, YXinNextGraph;
-		LabeledNode X, Y, XinNextGraph, YinNextGraph;
-
-		while (changed) {
-			if (CSTN.LOG.isLoggable(Level.FINER)) {
-				CSTN.LOG.log(Level.FINER, "");
-				CSTN.LOG.log(Level.FINER, "Start application rule R3. Cycle " + mainCycle + "." + subCycle);
-			}
-			Set<LabeledNode> observator = currentGraph.getObservators();
-			for (LabeledNode P : observator) {
-				for (final Iterator<LabeledIntEdge> ePXIter = currentGraph.getOutEdges(P).iterator(); ePXIter.hasNext();) {
-					PX = ePXIter.next();
-					X = currentGraph.getDest(PX);
-					if (P == X) continue;// self loop on the first pair in not useful.
-
-					for (final Iterator<LabeledIntEdge> eYXIter = currentGraph.getInEdges(X).iterator(); eYXIter.hasNext();) {
-						// Rule R3
-						YX = eYXIter.next();
-						Y = currentGraph.getSource(YX);
-						if (X == Y) continue;
-						XinNextGraph = nextGraph.getNode(X.getName());
-						YinNextGraph = nextGraph.getNode(Y.getName());
-
-						YXinNextGraph = nextGraph.findEdge(YinNextGraph, XinNextGraph);
-						CSTN.labelModificationR3(currentGraph, P, X, Y, PX, YX, YXinNextGraph, status, instantaneousReaction);
-						if (!status.consistency) return status;
-						if (Y.getPropositionObserved() != null && YXinNextGraph != null) {
-							CSTN.labelModificationR0(nextGraph, YinNextGraph, XinNextGraph, YXinNextGraph, YXinNextGraph, status, instantaneousReaction);
-						}
-					}
-				}
-			}
-			if (CSTN.LOG.isLoggable(Level.FINER))
-				CSTN.LOG.log(Level.FINER, "End application rule R3. Cycle " + mainCycle + "." + subCycle + "\nSituation after the application of R3 rule.");
-
-			changed = !currentGraph.hasSameEdgesOf(nextGraph);
-			if (changed) r3Applied = true;
-			currentGraph.clone(nextGraph);
-			nextGraph.setName("nextGraph");
-			currentGraph.setName("currentGraph");
-			node = currentGraph.getVerticesArray();
-			Z = currentGraph.getZ();
-			subCycle++;
-		}
-
-		status.finished = !r3Applied;
 		return status;
 	}
 
@@ -1057,10 +1158,12 @@ public class CSTN {
 	 * @return true. If there is any problem, it throws an exception saying the error.
 	 * @throws IllegalArgumentException if the graph is null or it not contains Z node or it is not well formed.
 	 */
-	private static boolean initLabeledDataStructure(final LabeledIntGraph g, final boolean labelOptimization) throws IllegalArgumentException {
+	private static boolean initAndCheck(final LabeledIntGraph g, final boolean labelOptimization) throws IllegalArgumentException {
 		if (g == null) throw new IllegalArgumentException("The graph is null!");
 
-		final Set<LabeledIntEdge> edgeSet = new ObjectArraySet<>(g.getEdges());
+		g.clearCache();
+
+		final SortedSet<LabeledIntEdge> edgeSet = new ObjectRBTreeSet<>(g.getEdges());
 		for (final LabeledIntEdge e : edgeSet) {
 
 			if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Init. Checkin edge e: " + e);
@@ -1085,13 +1188,21 @@ public class CSTN {
 			if (!conjunctLabel.isEmpty()) {
 				Label l1;
 				for (final Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
-					l1 = entry.getKey().conjunction(conjunctLabel);
-					if (l1 == null) {
-						if (CSTN.LOG.isLoggable(Level.WARNING)) {
-							CSTN.LOG.log(Level.WARNING, "Found a labeled value in " + e
-									+ " inconsistent with the conjunction of node labels. Labeled value removed");
+					l1 = entry.getKey();
+					if (l1.conjunction(conjunctLabel) == null) {
+						if (CSTNU.LOG.isLoggable(Level.WARNING)) {
+							CSTNU.LOG.log(Level.WARNING, "Found labeled value " + l1 + " in " + e + " inconsistent with the conjunction of node labels, "
+									+ conjunctLabel + ". Removed");
 						}
 						e.removeLabel(entry.getKey());
+					} else {
+						if (!l1.subsumes(conjunctLabel)) {
+							CSTNU.LOG.warning("Found a labeled value in " + e + " that does not subsume the conjunction of node labels, " + conjunctLabel
+									+ ". It has been fixed.");
+							int v = entry.getIntValue();
+							e.removeLabel(l1);
+							e.putLabeledValue(l1.conjunction(conjunctLabel), v);
+						}
 					}
 				}
 			}
@@ -1109,9 +1220,10 @@ public class CSTN {
 				throw new IllegalArgumentException("Edge " + e + " has the following problem: " + ex.getMessage());
 			}
 
-			if (e.isContingentEdge())
+			if (e.isContingentEdge()) {
 				if (CSTN.LOG.isLoggable(Level.WARNING)) CSTN.LOG.log(Level.WARNING, "Found a contingent edge: " + e
 						+ ". The consistency check does not difference between ordinary and contingent edges.");
+			}
 		}
 
 		// Init two useful structures
@@ -1120,16 +1232,16 @@ public class CSTN {
 		// Start of well definition and properties about nodes (w.r.t. the Z node)!
 		LabeledNode Z = g.getZ();
 		if (Z == null) {
-			Z = g.getNode("Z");
+			Z = g.getNode(CSTN.ZeroNodeName);
 			if (Z == null) {
 				// We add by authority!
-				Z = new LabeledNode("Z");
+				Z = new LabeledNode(CSTN.ZeroNodeName);
 				g.addVertex(Z);
-				if (CSTN.LOG.isLoggable(Level.WARNING)) CSTN.LOG.log(Level.WARNING, "No Z node found: added!");
+				if (CSTN.LOG.isLoggable(Level.WARNING)) CSTN.LOG.log(Level.WARNING, "No " + ZeroNodeName + " node found: added!");
 			}
 			g.setZ(Z);
 		}
-		final Set<LabeledNode> nodeSet = new ObjectArraySet<>(g.getVertices());
+		final SortedSet<LabeledNode> nodeSet = new ObjectRBTreeSet<>(g.getVertices());
 		for (final LabeledNode node : nodeSet) {
 			// Check that observation node has no in the proposition observed its label!
 			final Literal obs = node.getPropositionObserved();
@@ -1179,8 +1291,8 @@ public class CSTN {
 			if (e == null) {
 				e = new LabeledIntEdge("e" + node.getName() + Z.getName(), LabeledIntEdge.Type.derived, labelOptimization);
 				g.addEdge(e, node, Z);
-				if (CSTN.LOG.isLoggable(Level.WARNING)) {
-					CSTN.LOG.log(Level.WARNING, "It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '"
+				if (CSTN.LOG.isLoggable(Level.INFO)) {
+					CSTN.LOG.log(Level.INFO, "It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '"
 							+ Z.getName());// +
 											// "' because Z must be the first node. Be careful, we operate with integer, it is necessary to set -1 the distance!");
 				}
@@ -1191,98 +1303,44 @@ public class CSTN {
 	}
 
 	/**
-	 * logger
-	 */
-	static Logger LOG = Logger.getLogger(CSTN.class.getName());
-
-	/**
 	 * Flag to activate optimization of labeled values.
 	 */
 	boolean labelOptimization = true;
 
 	/**
-	 * @param withOptimization true if the propagation of labeled value has also to remove redundand labeled values.
+	 * The input file containing the CSTN graph in GraphML format.
+	 */
+	@Argument(required = true, index = 0, usage = "input file. Input file has to be a CSTN graph in GraphML format.", metaVar = "CSTNU_file_name")
+	private File fInput;
+
+	/**
+	 * Output file where to write the XML representing the minimal CSTN graph.
+	 */
+	@Option(required = false, name = "-o", aliases = "--output"
+			, usage = "output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output."
+			, metaVar = "CSTN_file_name")
+	private File fOutput = null;
+
+	/**
+	 * Output stream to fOutput
+	 */
+	private PrintStream output = null;
+
+	/**
+	 * Software Version.
+	 */
+	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
+	private boolean versionReq = false;
+
+	/**
+	 * <p>
+	 * Constructor for CSTN.
+	 * </p>
 	 *
+	 * @param withOptimization true if the propagation of labeled value has also to remove redundand labeled values.
 	 */
 	public CSTN(final boolean withOptimization) {
 		this.labelOptimization = withOptimization;
-	}
-
-	/**
-	 * Checks the dynamic consistency of a CSTN instance and, if the instance is consistent, determines all the minimal
-	 * ranges for the constraints. <br>
-	 * All label containing proposition that cannot be evaluated at run time are removed.
-	 *
-	 * @param g the original graph that has to be checked. If the check is successful, g is modified and it contains all
-	 *            minimized constraints; otherwise, it is not modified.
-	 * @param instantaneousReactions true is it is admitted that observation points and other points depending from the observed proposition can be executed
-	 *            in the same 'instant'.
-	 * @param onlyOnZ true if one wants to apply R0 and R3 only when node Z is involved.
-	 * @param excludeR1R2 true if one wants to exclude the application of rules R1 and R2.
-	 * @return the final status of the checking with some statistics.
-	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
-	 *             there is a problem in the rules coding.
-	 */
-	@Deprecated
-	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean onlyOnZ, boolean excludeR1R2)
-			throws WellDefinitionException {
-		final CheckStatus status = new CheckStatus();
-		if (g == null) return status;
-
-		String originalName = g.getName();
-		LabeledIntGraph currentGraph, nextGraph;
-		currentGraph = new LabeledIntGraph(g, this.labelOptimization);
-		currentGraph.setName("Current graph");
-		try {
-			CSTN.initLabeledDataStructure(currentGraph, this.labelOptimization);
-		}
-		catch (final IllegalArgumentException e) {
-			throw new IllegalArgumentException("The CSTN graph has a problem and it cannot be initialize: " + e.getMessage());
-		}
-
-		nextGraph = new LabeledIntGraph(currentGraph, this.labelOptimization);
-		nextGraph.setName("New graph");
-
-		final int n = currentGraph.getVertexCount();
-		final int maxCycles = n * n * n / 2;// FIXME after the proof of completeness
-		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
-
-		int i;
-		long startTime = System.nanoTime();
-		for (i = 1; (i <= maxCycles) && !status.finished; i++) {
-			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "\n*** Start Cycle " + i + "/" + maxCycles + " ***");
-			status.cycles++;
-			CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, n, instantaneousReactions, onlyOnZ, excludeR1R2, this.labelOptimization, status);
-
-			if (!status.consistency) {
-				if (CSTN.LOG.isLoggable(Level.INFO))
-					CSTN.LOG.log(Level.INFO, "\n\nAfter " + i + " cycle, found an inconsistency.\nFinal inconsistent graph: " + nextGraph);
-				return status;
-			}
-			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "*** End Cycle " + i + "/" + maxCycles + " ***\n\n");
-			currentGraph = new LabeledIntGraph(nextGraph, this.labelOptimization);
-			currentGraph.setName("Current graph");
-			nextGraph.setName("New graph");
-		}
-		long elapsedTime = System.nanoTime() - startTime;
-		CSTN.LOG.log(Level.INFO, "Execution time dynamicConsistencyCheck: " + elapsedTime / 1000000 + " ms approximatively.");
-
-		if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, status.toString());
-
-		if (i > maxCycles) {
-			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "The maximum number of cycle (+" + maxCycles + ") has been reached: stop!\n"
-					+ "\nStatus: " + status
-					+ "\nFinal graph: " + nextGraph);
-			status.consistency = status.finished;
-			return status;
-		}
-		if (CSTN.LOG.isLoggable(Level.INFO))
-			CSTN.LOG.log(Level.INFO, "Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles);
-		// Put all data structures of currentGraph in g
-		nextGraph.cloneCleaningRedundantLabels(currentGraph);
-		g.takeIn(nextGraph);
-		g.setName(originalName);
-		return status;
 	}
 
 	/**
@@ -1295,11 +1353,15 @@ public class CSTN {
 	 *            minimized constraints; otherwise, it is not modified.
 	 * @param instantaneousReactions true is it is admitted that observation points and other points depending from the observed proposition can be executed
 	 *            in the same 'instant'.
+	 * @param onlyOnZ true if one wants to apply R0 and R3 only when node Z is involved.
+	 * @param excludeR1R2 true if one wants to exclude the application of rules R1 and R2.
 	 * @return the final status of the checking with some statistics.
-	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
+	 * @throws it.univr.di.cstnu.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this
+	 *             exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	public CheckStatus dynamicConsistencyCheckNew(final LabeledIntGraph g, final boolean instantaneousReactions) throws WellDefinitionException {
+	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean onlyOnZ, boolean excludeR1R2)
+			throws WellDefinitionException {
 		final CheckStatus status = new CheckStatus();
 		if (g == null) return status;
 
@@ -1308,7 +1370,7 @@ public class CSTN {
 		currentGraph = new LabeledIntGraph(g, this.labelOptimization);
 		currentGraph.setName("Current graph");
 		try {
-			CSTN.initLabeledDataStructure(currentGraph, this.labelOptimization);
+			CSTN.initAndCheck(currentGraph, this.labelOptimization);
 		}
 		catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("The CSTN graph has a problem and it cannot be initialize: " + e.getMessage());
@@ -1319,40 +1381,54 @@ public class CSTN {
 
 		final int n = currentGraph.getVertexCount();
 		final int propositionN = currentGraph.getPropositions().size();
-		final int maxCycles = propositionN + 1;
+		// TODO: trovare il numero giusto di iterazioni
+		final int maxCycles = propositionN * 10;
 		if (CSTN.LOG.isLoggable(Level.FINER)) CSTN.LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 
 		int i;
 
 		long startTime = System.nanoTime();
-		for (i = 1; (i <= maxCycles) && !status.finished; i++) {
-			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
-			status.cycles++;
-			CSTN.oneStepDynamicConsistencyNew(currentGraph, nextGraph, n, instantaneousReactions, this.labelOptimization, status, i);
-
-			if (!status.consistency) {
-				if (CSTN.LOG.isLoggable(Level.INFO))
-					CSTN.LOG.log(Level.INFO, "\n\nAfter " + i + " cycle, found an inconsistency.\nFinal inconsistent graph: " + nextGraph);
-				return status;
+		for (i = 1; (i <= maxCycles) && status.consistency && !status.finished; i++) {
+			if (CSTN.LOG.isLoggable(Level.FINE)) CSTN.LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
+			CSTN.oneStepDynamicConsistencyNEW(currentGraph, nextGraph, n, instantaneousReactions, this.labelOptimization, status, i);
+//			CSTN.oneStepDynamicConsistency4StepByStepExecution(currentGraph, nextGraph, n, instantaneousReactions, onlyOnZ, excludeR1R2, this.labelOptimization, status);
+			if (status.consistency && !status.finished) {
+				currentGraph.copy(nextGraph);
+				nextGraph.setName("nextGraph");
+				currentGraph.setName("currentGraph");
 			}
-			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "*** End Main Cycle " + i + "/" + maxCycles + " ***\n\n");
+			if (CSTN.LOG.isLoggable(Level.FINE)) CSTN.LOG.log(Level.FINE, "*** End Main Cycle " + i + "/" + maxCycles + " ***\n\n");
 		}
-		long elapsedTime = System.nanoTime() - startTime;
-		CSTN.LOG.log(Level.INFO, "Execution time dynamicConsistencyCheck: " + elapsedTime / 1000000 + " ms approximatively.");
+		status.executionTime = (System.nanoTime() - startTime) / 1000000;
 
-		if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, status.toString());
-
-		if (i > maxCycles && !status.finished) {
-			if (CSTN.LOG.isLoggable(Level.INFO)) CSTN.LOG.log(Level.INFO, "The maximum number of cycle (+" + maxCycles + ") has been reached: stop!\n"
-					+ "\nStatus: " + status
-					+ "\nFinal graph: " + nextGraph);
-			status.consistency = status.finished;
+		if (!status.consistency) {
+			if (CSTN.LOG.isLoggable(Level.INFO)) {
+				CSTN.LOG.log(Level.INFO, "After " + (i - 1) + " cycle, found an inconsistency.\nStatus: " + status);
+				CSTN.LOG.log(Level.FINER, "Final inconsistent graph: " + nextGraph);
+			}
+			g.takeIn(nextGraph);
+			g.setName(originalName);
 			return status;
 		}
-		if (CSTN.LOG.isLoggable(Level.INFO))
-			CSTN.LOG.log(Level.INFO, "Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles);
+
+		if (i > maxCycles && !status.finished) {
+			if (CSTN.LOG.isLoggable(Level.INFO)) {
+				CSTN.LOG.log(Level.INFO, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + status);
+				CSTN.LOG.log(Level.FINER, "Last determined graph: " + nextGraph);
+			}
+			status.consistency = status.finished;
+			g.takeIn(nextGraph);
+			g.setName(originalName);
+			return status;
+		}
+
+		// consistent && finished
+		if (CSTN.LOG.isLoggable(Level.INFO)) {
+			CSTN.LOG.log(Level.INFO, "Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles + ".\nStatus: "
+					+ status);
+		}
+		nextGraph.copyCleaningRedundantLabels(currentGraph);
 		// Put all data structures of currentGraph in g
-		nextGraph.cloneCleaningRedundantLabels(currentGraph);
 		g.takeIn(nextGraph);
 		g.setName(originalName);
 		return status;
@@ -1360,30 +1436,78 @@ public class CSTN {
 
 	/**
 	 * Help method to initialize and check the CSTN represented by graph g.
-	 * The {@link #dynamicConsistencyCheck(LabeledIntGraph, boolean, boolean, boolean)} calls this method before to procede the check.
+	 * The {@link #dynamicConsistencyCheckOLD(LabeledIntGraph, boolean, boolean, boolean)} calls this method before to procede the check.
 	 *
-	 * @param g
+	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
 	 * @return true if the graph is a well formed CSTN.
 	 */
-	public boolean initAndCheckCSTN(final LabeledIntGraph g) {
-		return CSTN.initLabeledDataStructure(g, this.labelOptimization);
+	public boolean initAndCheck(final LabeledIntGraph g) {
+		return CSTN.initAndCheck(g, this.labelOptimization);
 	}
 
 	/**
 	 * Help method to execute one step of the checking algorithm.
 	 *
-	 * @param currentGraph
-	 * @param nextGraph
-	 * @param instantaneousReaction
+	 * @param currentGraph a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param nextGraph a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param instantaneousReaction a boolean.
 	 * @param onlyOnZ true if one wants to apply R0 and R3 only when node Z is involved.
 	 * @param excludeR1R2 true if one wants to exclude the application of rules R1 and R2.
-	 * @param status
+	 * @param status a {@link it.univr.di.cstnu.CSTN.CheckStatus} object.
 	 * @return status the execution
-	 * @throws WellDefinitionException
+	 * @throws it.univr.di.cstnu.WellDefinitionException if any.
 	 */
 	public CheckStatus oneStepDynamicConsistency(final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph, final boolean instantaneousReaction,
 			final boolean onlyOnZ, final boolean excludeR1R2, final CheckStatus status) throws WellDefinitionException {
-		return CSTN.oneStepDynamicConsistency(currentGraph, nextGraph, currentGraph.getVertexCount(), instantaneousReaction, onlyOnZ, excludeR1R2,
+		return CSTN.oneStepDynamicConsistency4StepByStepExecution(currentGraph, nextGraph, currentGraph.getVertexCount(), instantaneousReaction, onlyOnZ,
+				excludeR1R2,
 				this.labelOptimization, status);
+	}
+
+	/**
+	 * Simple method to manage command line parameters using args4j library.
+	 * 
+	 * @param args
+	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
+	 */
+	private boolean manageParameters(String[] args) {
+		CmdLineParser parser = new CmdLineParser(this);
+		try {
+			// parse the arguments.
+			parser.parseArgument(args);
+
+			if (!fInput.exists()) throw new CmdLineException(parser, "Input file does not exist.");
+
+			if (fOutput != null) {
+				if (fOutput.isDirectory()) throw new CmdLineException(parser, "Output file is a directory.");
+				if (!fOutput.getName().endsWith(".cstn"))
+					fOutput.renameTo(new File(fOutput.getAbsolutePath() + ".cstn"));
+				if (fOutput.exists()) {
+					fOutput.delete();
+				}
+				try {
+					fOutput.createNewFile();
+					output = new PrintStream(fOutput);
+				}
+				catch (IOException e) {
+					throw new CmdLineException(parser, "Output file cannot be created.");
+				}
+			} else {
+				output = System.out;
+			}
+		}
+		catch (CmdLineException e) {
+			// if there's a problem in the command line, you'll get this exception. this will report an error message.
+			System.err.println(e.getMessage());
+			System.err.println("java CSTN [options...] arguments...");
+			// print the list of available options
+			parser.printUsage(System.err);
+			System.err.println();
+
+			// print option sample. This is useful some time
+			System.err.println("Example: java -jar CSTNU-1.7.1-SNAPSHOT.jar" + parser.printExample(OptionHandlerFilter.REQUIRED) + " <CSTN_file_name>");
+			return false;
+		}
+		return true;
 	}
 }
