@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  * Simple class to represent a literal.
  * <p>
- * A literal is a char that can be preceded by the symbol {@link Constants#NOT}, negated literal, or by the symbol {@link Constants#UNKNOWN}, 'unknown' literal.
+ * A literal is a char that can be preceded by the symbol {@link it.univr.di.labeledvalue.Constants#NOT}, negated literal, or by the symbol {@link it.univr.di.labeledvalue.Constants#UNKNOWN}, 'unknown' literal.
  * <p>
  * While the semantics of a literal and its negation is the standard one, the semantics for unknown literal is particular of the CSTN/CSTNU application.<br>
  * An unknown literal, as '¿p' for example, is true if the value of proposition letter 'p' is not assigned yet. False otherwise.
@@ -16,6 +16,7 @@ import java.io.Serializable;
  * A literal object is immutable and must have a propositional letter.
  *
  * @author Roberto Posenato
+ * @version $Id: $Id
  */
 public class Literal implements Comparable<Literal>, Serializable {
 
@@ -108,7 +109,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	/**
 	 * Simple constructor of a positive literal.
 	 *
-	 * @param v
+	 * @param v a char.
 	 */
 	public Literal(final char v) {
 		this(v, State.straight);
@@ -118,7 +119,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	 * Simple constructor allowing to specify if the literal is negated or not.
 	 *
 	 * @param v the proposition letter.
-	 * @param state one of possible state of a literal: {@link State}.
+	 * @param state one of possible state of a literal: {@link it.univr.di.labeledvalue.Literal.State}.
 	 */
 	public Literal(final char v, final State state) {
 		if (!Literal.check(v)) throw new IllegalArgumentException("The char is not a letter!");
@@ -130,7 +131,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	 * Simple constructor allowing to specify if the literal is negated or not.
 	 *
 	 * @param v the proposition letter.
-	 * @param state one of possible state of a literal: {@link State}.
+	 * @param state one of possible state of a literal: {@link it.univr.di.labeledvalue.Literal.State}.
 	 */
 	public Literal(final Literal v, final State state) {
 		this.name = v.name;
@@ -138,6 +139,8 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Implements the lexical order.
 	 */
 	@Override
@@ -150,6 +153,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 		return this.state.compareTo(o.state);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean equals(final Object o) {
 		if ((o == null) || !(o instanceof Literal)) return false;
@@ -170,6 +174,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * <p>getUnknown.</p>
 	 *
 	 * @return a new literal with the same name and state unknown.
 	 */
@@ -178,6 +183,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * <p>getStraight.</p>
 	 *
 	 * @return a new literal with the same name and state straight.
 	 */
@@ -186,6 +192,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * <p>getNegated.</p>
 	 *
 	 * @return a new literal with the same name and state negated.
 	 */
@@ -195,6 +202,8 @@ public class Literal implements Comparable<Literal>, Serializable {
 
 	
 	/**
+	 * <p>Getter for the field <code>name</code>.</p>
+	 *
 	 * @return the propositional letter associated to this literal.
 	 */
 	public final char getName() {
@@ -202,18 +211,23 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * <p>Getter for the field <code>state</code>.</p>
+	 *
 	 * @return the state
 	 */
 	public final State getState() {
 		return this.state;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int hashCode() {
 		return this.name * (this.state.ordinal() * 256);
 	}
 
 	/**
+	 * <p>isNegated.</p>
+	 *
 	 * @return true if it is a negated literal.
 	 */
 	public final boolean isNegated() {
@@ -221,6 +235,8 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * <p>isStraight.</p>
+	 *
 	 * @return true if it is a straight literal.
 	 */
 	public final boolean isStraight() {
@@ -228,12 +244,15 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * <p>isUnknown.</p>
+	 *
 	 * @return true if it is a literal in the unknown state.
 	 */
 	public final boolean isUnknown() {
 		return this.state == State.unknown;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final String toString() {
 		return (new StringBuffer()).append(this.state.stringRep).append(this.name).toString();

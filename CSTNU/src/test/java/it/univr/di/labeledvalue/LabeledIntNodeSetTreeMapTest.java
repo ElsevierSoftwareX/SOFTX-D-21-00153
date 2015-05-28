@@ -178,6 +178,12 @@ public class LabeledIntNodeSetTreeMapTest {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public SortedSet<Label> keys() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	};
 
 	/**
@@ -187,7 +193,7 @@ public class LabeledIntNodeSetTreeMapTest {
 	/**
 	 * 
 	 */
-	final LabeledIntNodeSetTreeMap map1 = new LabeledIntNodeSetTreeMap(true);
+	LabeledIntNodeSetTreeMap map1 = new LabeledIntNodeSetTreeMap(true);
 
 	/**
 	 * 
@@ -521,6 +527,26 @@ public class LabeledIntNodeSetTreeMapTest {
 				LabeledIntNodeSetTreeMap.parse("{(a, 30) (¬a, 25) (b, 30) (¬b, 25) }", true), map);
 		map.putAll(map1);
 	}
+	
+	
+	
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
+	public final void putForciclyTest() {
+		map.clear();
+		map.put(Label.parse("a"), 30, null);
+		map.put(Label.parse("¬a"), 25, null);
+		map.put(Label.emptyLabel, 0, null);
+
+		map1 = new LabeledIntNodeSetTreeMap(map, true);
+		map1.put(Label.emptyLabel, 0, null);
+		
+		assertEquals("Put forcibly with a base", map, map1);
+	}
+	
+	
 
 	/**
 	 * Check if the management of the base is correct.

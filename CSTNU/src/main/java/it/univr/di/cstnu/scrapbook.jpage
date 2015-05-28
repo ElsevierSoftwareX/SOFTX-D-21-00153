@@ -10,3 +10,29 @@ for (int i = 0; i< s1.length(); i++) {
 		break;
 	}
 }
+
+
+
+FINER: End application labeled propagation rule. Cycle 1.3803
+Situation after the labeled propagation rule.
+INFO: Different edges:
+currentGraph:	❮eWZ; derived; {(¬p, -1) (p, -2) (¿p, -5, {3, W}) }; ❯
+nextGraph:	❮eWZ; derived; {(⊡, 0) (¬p, -1) (p, -2) (¿p, -5, {3, W}) }; ❯
+FINER: 
+FINER: Start application labeled propagation rule. Cycle 1.3804
+FINER: Labeled Propagation Rule applied to edge eWZ:
+partic: W --(p, -2)--> 3 --(¬p, -1)--> Z
+result: W --(¿p, -5, {3, W})--> Z; old value: -5, {3, W}
+FINER: Labeled Propagation Rule applied to edge e2Z:
+partic: 2 --(p, -2)--> 3 --(¬p, -1)--> Z
+result: 2 --(¿p, -5, {2, 3})--> Z; old value: -5, {2, 3}
+FINER: Labeled Propagation Rule applied to edge eWZ:
+partic: W --(¬p, -1)--> 4 --(p, -2)--> Z
+result: W --(¿p, -5, {3, W})--> Z; old value: -5, {3, W}
+FINER: End application labeled propagation rule. Cycle 1.3804
+Situation after the labeled propagation rule.
+
+
+FINER: Labeled Propagation Rule applied to edge ❮eWZ; derived; {(⊡, 0) (¬p, -1) (p, -2) (¿p, -5, {3, W}) }; ❯:
+partic: W --(⊡, 0)--> 4 --(⊡, 0)--> Z
+result: W --(⊡, 0)--> Z; old value: null, null

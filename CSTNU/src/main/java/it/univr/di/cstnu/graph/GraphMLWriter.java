@@ -8,7 +8,10 @@ import org.apache.commons.collections15.Transformer;
 import edu.uci.ics.jung.graph.Hypergraph;
 
 /**
+ * <p>GraphMLWriter class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class GraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNode, LabeledIntEdge> {
 
@@ -18,7 +21,9 @@ public class GraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNode
 	StaticLayout<LabeledNode, LabeledIntEdge> layout;
 
 	/**
-	 * @param lay
+	 * <p>Constructor for GraphMLWriter.</p>
+	 *
+	 * @param lay a {@link it.univr.di.cstnu.graph.StaticLayout} object.
 	 */
 	public GraphMLWriter(final StaticLayout<LabeledNode, LabeledIntEdge> lay) {
 		super();

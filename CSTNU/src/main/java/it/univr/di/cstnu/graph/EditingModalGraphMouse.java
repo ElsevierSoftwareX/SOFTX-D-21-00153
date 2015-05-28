@@ -46,6 +46,7 @@ import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
  * @author posenato
  * @param <V>
  * @param <E>
+ * @version $Id: $Id
  */
 @SuppressWarnings("javadoc")
 public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
@@ -120,9 +121,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	/**
 	 * Creates an instance with default values.
 	 *
-	 * @param rc
-	 * @param vertexFactory
-	 * @param edgeFactory
+	 * @param rc a {@link edu.uci.ics.jung.visualization.RenderContext} object.
+	 * @param vertexFactory a {@link org.apache.commons.collections15.Factory} object.
+	 * @param edgeFactory a {@link org.apache.commons.collections15.Factory} object.
 	 */
 	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory) {
 		this(rc, vertexFactory, edgeFactory, 1.1f, 1 / 1.1f);
@@ -131,9 +132,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	/**
 	 * Creates an instance with passed values.
 	 *
-	 * @param rc
-	 * @param vertexFactory
-	 * @param edgeFactory
+	 * @param rc a {@link edu.uci.ics.jung.visualization.RenderContext} object.
+	 * @param vertexFactory a {@link org.apache.commons.collections15.Factory} object.
+	 * @param edgeFactory a {@link org.apache.commons.collections15.Factory} object.
 	 * @param in override value for scale in
 	 * @param out override value for scale out
 	 */
@@ -148,6 +149,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
+	 * <p>Getter for the field <code>annotatingPlugin</code>.</p>
+	 *
 	 * @return the annotatingPlugin
 	 */
 	public AnnotatingGraphMousePlugin<V, E> getAnnotatingPlugin() {
@@ -155,6 +158,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
+	 * <p>Getter for the field <code>editingPlugin</code>.</p>
+	 *
 	 * @return the editingPlugin
 	 */
 	public EditingGraphMousePlugin<V, E> getEditingPlugin() {
@@ -162,15 +167,15 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
+	 * <p>Getter for the field <code>labelEditingPlugin</code>.</p>
+	 *
 	 * @return the labelEditingPlugin
 	 */
 	public LabelEditingGraphMousePlugin<? extends LabeledNode, ? extends LabeledIntEdge> getLabelEditingPlugin() {
 		return this.labelEditingPlugin;
 	}
 
-	/**
-	 * @return the modeBox.
-	 */
+	/** {@inheritDoc} */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public JComboBox getModeComboBox() {
@@ -183,9 +188,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * create (if necessary) and return a menu that will change the mode
+	 * {@inheritDoc}
 	 *
-	 * @return the menu
+	 * create (if necessary) and return a menu that will change the mode
 	 */
 	@Override
 	public JMenu getModeMenu() {
@@ -251,6 +256,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
+	 * <p>Getter for the field <code>popupEditingPlugin</code>.</p>
+	 *
 	 * @return the popupEditingPlugin
 	 */
 	public EditingPopupGraphMousePlugin<V, E> getPopupEditingPlugin() {
@@ -258,6 +265,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * setter for the Mode.
 	 */
 	@Override
@@ -283,6 +292,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Create the plugins, and load the plugins for TRANSFORMING mode
 	 */
 	@SuppressWarnings("unused")
@@ -332,6 +343,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 		this.add(this.popupEditingPlugin);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void setPickingMode() {
 		this.remove(this.translatingPlugin);
@@ -345,6 +357,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 		this.add(this.popupEditingPlugin);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void setTransformingMode() {
 		this.remove(this.pickingPlugin);

@@ -6,6 +6,7 @@ import java.io.Serializable;
  * Some useful constants for the package.
  *
  * @author Roberto Posenato
+ * @version $Id: $Id
  */
 public final class Constants implements Serializable {
 
@@ -96,7 +97,9 @@ public final class Constants implements Serializable {
 	public static final String upperCaseLabel = "[0-9A-Z_]+";
 	
 	/**
-	 * @param n
+	 * <p>formatInt.</p>
+	 *
+	 * @param n a int.
 	 * @return the value of n as String using ∞ for infinitive number and null for not valid int.
 	 */
 	static public String formatInt(int n) {

@@ -16,8 +16,8 @@ import org.netbeans.validation.api.Validator;
 
 /**
  * Simple class to represent a <em>label</em> in the CSTN/CSTNU framework.<br>
- * A label is the conjunction (and logic) of zero or more <em>literals</em> ({@link Literal}).<br>
- * A label without literals is called <em>empty label</em> and it is represented graphically as {@link Constants#EMPTY_LABEL}.<br>
+ * A label is the conjunction (and logic) of zero or more <em>literals</em> ({@link it.univr.di.labeledvalue.Literal}).<br>
+ * A label without literals is called <em>empty label</em> and it is represented graphically as {@link it.univr.di.labeledvalue.Constants#EMPTY_LABEL}.<br>
  * A labels is <em>consistent</em> when it does not contains opposite literals.
  * A label <code>L'</code> subsumes a label <code>L</code> iff <code>L'</code> implies <code>L</code> (<code>⊨ L' ⇒ L</code>).<br>
  * In other words, if <code>L</code> is a sub-label of <code>L'</code>.
@@ -27,9 +27,8 @@ import org.netbeans.validation.api.Validator;
  * <li>Since it is more frequent to search/inspect the components of a label instead of change it, I decided to implement a label as a sorted set of literals.
  * If for some reason, the sorting property has to be avoid, it is necessary to review the following methods: {@link #getLiteralWithSameName(Literal)}.
  * </ol>
- * <p>
- * Execution time for some operations w.r.t the core data structure of the class:<br>
  * <table border="1">
+ * <caption>Execution time for some operations w.r.t the core data structure of the class.</caption>
  * <tr>
  * <th>Method</th>
  * <th>TreeSet</th>
@@ -87,6 +86,7 @@ import org.netbeans.validation.api.Validator;
  * </table>
  *
  * @author Roberto Posenato
+ * @version $Id: $Id
  */
 public class Label implements Comparable<Label>, Serializable {
 	/**
@@ -114,7 +114,7 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * Proposes only some execution time estimates about some class methods.
 	 *
-	 * @param args
+	 * @param args an array of {@link java.lang.String} objects.
 	 */
 	public static void main(final String[] args) {
 		final int nTest = 1000;
@@ -194,9 +194,9 @@ public class Label implements Comparable<Label>, Serializable {
 
 	/**
 	 * Parse a string representing a label and return an equivalent Label object if no errors are found, null otherwise.<br>
-	 * The regular expression syntax for a label is specified in {@link Constants#labelRE}.
+	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Constants#labelRE}.
 	 *
-	 * @param s
+	 * @param s a {@link java.lang.String} object.
 	 * @return a Label object corresponding to the label string representation.
 	 */
 	public static Label parse(final String s) {
@@ -327,7 +327,7 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * Constructs a label with literal l.
 	 *
-	 * @param l
+	 * @param l a {@link it.univr.di.labeledvalue.Literal} object.
 	 */
 	public Label(final Literal l) {
 		if (l == null) return;
@@ -342,6 +342,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Determines a lexicographical order between labels based on the natural order of type {@link Literal}.
 	 */
 	@Override
@@ -396,6 +398,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>conjunction.</p>
+	 *
 	 * @param l the label to check
 	 * @return a new label with the conjunction of 'this' and 'label' if they are consistent, null otherwise.<br>
 	 * 			null also if this label or l contains unknown literals.
@@ -413,13 +417,13 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * Create a new label that represents the conjunction of <code>this<code> and <code>label</code> using also {@link Literal.State#unknown} literals.
-	 * A {@link Literal.State#unknown} literal represent the fact that in the two input labels a proposition letter is present as straight state in one label
+	 * Create a new label that represents the conjunction of <code>this</code> and <code>label</code> using also {@link it.univr.di.labeledvalue.Literal.State#unknown} literals.
+	 * A {@link it.univr.di.labeledvalue.Literal.State#unknown} literal represent the fact that in the two input labels a proposition letter is present as straight state in one label
 	 * and in negated state in the other.
 	 *
 	 * @param l the input label.
-	 * @return a new label with the conjunction of <code>this<code> and <code>label</code>.<br>
-	 *         <code>this<code> is not altered by this method.
+	 * @return a new label with the conjunction of <code>this</code> and <code>label</code>.<br>
+	 *         <code>this</code> is not altered by this method.
 	 */
 	public Label conjunctionExtended(final Label l) {
 		final Label newLabel = new Label();
@@ -434,6 +438,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>contains.</p>
+	 *
 	 * @param l the literal to check
 	 * @return true if this contains l.
 	 */
@@ -443,6 +449,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>containsUnknown.</p>
+	 *
 	 * @return true if the label contains one unknown literal at least.
 	 */
 	public boolean containsUnknown() {
@@ -452,6 +460,7 @@ public class Label implements Comparable<Label>, Serializable {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
 		if ((obj == null) || !(obj instanceof Label)) return false;
@@ -462,6 +471,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>getAll.</p>
+	 *
 	 * @return An iterator over literals composing the label.
 	 */
 	public Literal[] getAll() {
@@ -469,6 +480,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>getAllAsStraight.</p>
+	 *
 	 * @return a copy of all literals of the label as straight literals in a Collection.
 	 */
 	public Literal[] getAllAsStraight() {
@@ -483,7 +496,9 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * @return a copy of all literals of the label having {@link Literal.State#unknown} state.
+	 * <p>getAllUnknown.</p>
+	 *
+	 * @return a copy of all literals of the label having {@link it.univr.di.labeledvalue.Literal.State#unknown} state.
 	 */
 	public Literal[] getAllUnknown() {
 		final ObjectArraySet<Literal> result = new ObjectArraySet<>();
@@ -494,6 +509,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>getLiteralWithSameName.</p>
+	 *
 	 * @param l the literal to check
 	 * @return l or ¬l or ¿l if it is present, null otherwise. It returns a copy of the literal.
 	 */
@@ -515,7 +532,7 @@ public class Label implements Comparable<Label>, Serializable {
 	 * Otherwise, when <code>strict</code> is false, the common part contains also every literal that has the opposite or the unknown counterpart in
 	 * <code>lab</code>. <br>
 	 * For example, is this='a¬b¿cd' and lab='bc¿d', the common part is '¿b¿c¿d'
-	 * 
+	 *
 	 * @param lab the label in which to find the common/uncommon sub-part.
 	 * @param inCommon true if the common sub-label is wanted, false if the sub-label present in <code>this</code> and not in <code>lab</code> is wanted.
 	 * @param strict if the common part should contain only the same literals in both labels.
@@ -575,6 +592,7 @@ public class Label implements Comparable<Label>, Serializable {
 		return theDistinguished;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return this.label.hashCode();
@@ -618,6 +636,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return true if the label contains no literal.
 	 */
 	public boolean isEmpty() {
@@ -654,10 +674,10 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * It removes l if it is present, otherwise it does nothing.
+	 * It removes any variation of literal <b>l</b> if it is present, otherwise it does nothing.
 	 *
 	 * @param l the literal to check
-	 * @return true if the literal is removed
+	 * @return true if any variation of the literal is removed
 	 */
 	public boolean removeAllLiteralsWithSameName(Literal l) {
 		if (l == null) return false;
@@ -666,10 +686,10 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * It removes all literal in inputSet from the current label.
+	 * It removes all literal in <b>inputSet</b> from the current label.
 	 *
-	 * @param inputSet the literal to check
-	 * @return true if any literal is removed
+	 * @param inputSet the literal to check.
+	 * @return true if any literal has been removed.
 	 */
 	public boolean removeAllLiteralsWithSameName(Set<Literal> inputSet) {
 		if (inputSet == null) return false;
@@ -681,6 +701,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return Return the number of literals of the label
 	 */
 	public int size() {
@@ -709,6 +731,8 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
+	 * <p>toArray.</p>
+	 *
 	 * @return the representation of this label as an array of literals.
 	 */
 	public Literal[] toArray() {
@@ -724,7 +748,7 @@ public class Label implements Comparable<Label>, Serializable {
 	 *
 	 * @param negate negate the label before the conversion. Be careful!
 	 * @param not string representing not. If null, it is assumed "!"
-	 * @param and representing not. If null, it is assumed " & "
+	 * @param and representing not. If null, it is assumed "&amp;"
 	 * @param or representing not. If null, it is assumed " | "
 	 * @return empty string if label is null or empty, the string representation as logical expression otherwise.
 	 */
@@ -743,6 +767,7 @@ public class Label implements Comparable<Label>, Serializable {
 		return s.substring(0, s.length() - ((negate) ? or.length() : and.length()));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		if (this.isEmpty()) return String.valueOf(Constants.EMPTY_LABEL);

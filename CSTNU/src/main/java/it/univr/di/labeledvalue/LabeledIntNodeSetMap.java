@@ -9,7 +9,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 /**
- * Declare all methods necessary to manage a set of values (of type int) each labeled by label of type {@link Label}.
+ * Declare all methods necessary to manage a set of values (of type int) each labeled by label of type {@link it.univr.di.labeledvalue.Label}.
  * Each value is also associated to a set of nodes that represent the internal nodes of any path that has determined the value.
  * <p>
  * The semantics of a set of labeled value is defined in the paper “The Dynamic Controllability of Conditional STNs with Uncertainty.” by "Hunsberger, Luke,
@@ -23,6 +23,7 @@ import java.util.SortedSet;
  * </p>
  *
  * @author Robert Posenato
+ * @version $Id: $Id
  */
 public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> because I want to avoid a lot of nonsensical declarations.
 
@@ -52,18 +53,23 @@ public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> b
 	public Set<Entry<Label>> entrySet();
 
 	/**
-	 * @param l
+	 * <p>get.</p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the pair value and node set associated to label l if it exists, null otherwise.
 	 */
 	public ValueNodeSetPair get(Label l);
 
 	/**
-	 * @return the minimum int value present in the set if the set is not empty; {@link #INT_NULL} otherwise.
+	 * <p>getMinValue.</p>
 	 *
+	 * @return the minimum int value present in the set if the set is not empty; {@link #INT_NULL} otherwise.
 	 */
 	public int getMinValue();
 
 	/**
+	 * <p>getMinValueAmongLabelsWOUnknown.</p>
+	 *
 	 * @return the min value among all labeled value having label without unknown literals.
 	 */
 	public int getMinValueAmongLabelsWOUnknown();
@@ -79,16 +85,18 @@ public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> b
 	public int getMinValueConsistentWith(final Label l);
 
 	/**
-	 * @param l
-	 * @return the node set associated to label L if it exists; null otherwise.
+	 * <p>getNodeSet.</p>
 	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @return the node set associated to label L if it exists; null otherwise.
 	 */
 	public SortedSet<String> getNodeSet(Label l);
 
 	/**
-	 * @param l
-	 * @return the value associated to label L if it exists; {@link #INT_NULL} otherwise.
+	 * <p>getValue.</p>
 	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @return the value associated to label L if it exists; {@link #INT_NULL} otherwise.
 	 * @see Object2IntMap#getInt(Object)
 	 */
 	public int getValue(Label l);
@@ -129,7 +137,7 @@ public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> b
 	 *
 	 * @param l a not null label.
 	 * @param i a not {@link #INT_NULL} value.
-	 * @param nodeNameSet
+	 * @param nodeNameSet a {@link java.util.Set} object.
 	 * @return true if <code>(l,i)</code> has been inserted. Since an insertion can be removed more than one redundant labeled ints, it is nonsensical to return
 	 *         "the old value" as expected from a standard put method.
 	 */
@@ -138,7 +146,7 @@ public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> b
 	/**
 	 * Put all elements of inputMap into the current one without making a defensive copy.
 	 *
-	 * @param inputMap
+	 * @param inputMap a {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap} object.
 	 * @see Object2IntMap#putAll(Map)
 	 */
 	public void putAll(final LabeledIntNodeSetMap inputMap);
@@ -165,7 +173,7 @@ public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> b
 	 *
 	 * @param l a not null label.
 	 * @param i a not {@link #INT_NULL} value.
-	 * @param nodeNameSet
+	 * @param nodeNameSet a {@link java.util.Set} object.
 	 * @return the previous int associated to l if it exists, {@link #INT_NULL} otherwise.
 	 */
 	public int putForcibly(Label l, int i, Set<String> nodeNameSet);
@@ -180,13 +188,24 @@ public interface LabeledIntNodeSetMap {// I do not extend Object2IntMap<Label> b
 	public int remove(Label l);
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return the number of labeled value (value with empty label included).
 	 * @see Map#size()
 	 */
 	public int size();
 
 	/**
+	 * <p>values.</p>
+	 *
 	 * @return the set of all integer present in the map.
 	 */
 	public IntCollection values();
+	
+	/**
+	 * <p>keys.</p>
+	 *
+	 * @return the set view of all labels in the map.
+	 */
+	public Set<Label> keys();
 }

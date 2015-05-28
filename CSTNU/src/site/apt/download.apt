@@ -1,5 +1,10 @@
 CSTNU Tool Releases
 
-  Releases of CSTNU Tool are made available in binary distributions at:
+  Releases of CSTNU Tool are made available in binary distribution at:
 
   {{{http://profs.sci.univr.it/~posenato/software/cstnu/bin}http://profs.sci.univr.it/~posenato/software/cstnu/bin}}
+
+  
+Release Notes
+
+%{snippet|id=rn|file=CstnuTool/RELEASE_NOTES}

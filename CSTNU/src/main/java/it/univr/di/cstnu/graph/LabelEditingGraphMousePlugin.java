@@ -44,9 +44,10 @@ import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
  * @author Tom Nelson. Adapted by Roberto Posenato.
  * @param <N>
  * @param <E>
+ * @version $Id: $Id
  */
 public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends LabeledIntEdge> extends AbstractGraphMousePlugin implements
-MouseListener {
+		MouseListener {
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -324,11 +325,17 @@ MouseListener {
 				if (caseValue.length() != 0) {
 					// the value is in the form "<node name>: <int>"
 					splitted = caseValue.split(":[ ]*");
-					nodeName = splitted[0].toUpperCase();
-					v = Integer.valueOf(splitted[1]);
-					LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
+					if (splitted.length < 2) {
+						v = null;
+					} else {
+						nodeName = splitted[0].toUpperCase();
+						v = Integer.valueOf(splitted[1]);
+						LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
+					}
+				} else {
+					e.clearUpperLabels();
 				}
-				if ((nodeName == null) || (v == null)) {
+				if (nodeName == null || v == null) {
 					e.clearUpperLabels();
 				} else {
 					final LabeledNode source = g.getSource(e);
@@ -338,7 +345,7 @@ MouseListener {
 						e.clearUpperLabels();
 						e.mergeUpperLabelValue(endpointsLabel, source, v);// Temporally I ignore the label specified by user because an upper/lower case
 						// value of a contingent must have the label of its endpoints.
-						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", "+ nodeName + ": " + v + ".");
+						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + nodeName + ": " + v + ".");
 					}
 				}
 				// lower case
@@ -349,8 +356,13 @@ MouseListener {
 					// the value is in the form "<node name>: <int>"
 					if (caseValue.length() > 0) {
 						splitted = caseValue.split(":[ ]*");
-						nodeName = splitted[0].toLowerCase();
-						v = Integer.valueOf(splitted[1]);
+						if (splitted.length < 2) {
+							nodeName = null;
+							v = null;
+						} else {
+							nodeName = splitted[0].toLowerCase();
+							v = Integer.valueOf(splitted[1]);
+						}
 					} else {
 						nodeName = null;
 						v = null;
@@ -367,6 +379,8 @@ MouseListener {
 							// value of a contingent must have the label of its endpoints.
 						}
 					}
+				} else {
+					e.clearLowerLabels();
 				}
 			} else {
 				e.clearLowerLabels();
@@ -534,6 +548,8 @@ MouseListener {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * For primary modifiers (default, MouseButton1):
 	 * <ol>
 	 * <li>Pick a single Vertex or LabeledIntEdge that is under the mouse pointer.<br>
@@ -547,8 +563,6 @@ MouseListener {
 	 * <li>If no vertex or LabeledIntEdge is under the pointer, set up to draw a multiple selection rectangle (as above) but do not unpick previously picked
 	 * elements.
 	 * </ol>
-	 *
-	 * @param e the event
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
@@ -603,17 +617,21 @@ MouseListener {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void mouseEntered(final MouseEvent e) {
 		// empty
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void mouseExited(final MouseEvent e) {
 		// empty
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * If the mouse is over a picked vertex, drag all picked vertices with the mouse. If the mouse is not over a Vertex,
 	 * draw the rectangle to select multiple
 	 * Vertices
@@ -624,6 +642,8 @@ MouseListener {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * If the mouse is dragging a rectangle, pick the Vertices contained in that rectangle clean up settings from
 	 * mousePressed
 	 */

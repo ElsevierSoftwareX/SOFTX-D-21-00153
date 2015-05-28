@@ -118,7 +118,7 @@ public class LabeledIntGraphTest {
 		assertEquals(g, g);
 		
 		LabeledIntGraph g1 = new LabeledIntGraph(true);
-		g1.clone(g);
+		g1.copy(g);
 		 
 		
 		assertEquals(g.toString(), g1.toString());

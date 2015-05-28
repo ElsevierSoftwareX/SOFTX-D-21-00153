@@ -1,0 +1,18 @@
+RELEASE NOTES
+=============START SNIPPET: rn
+
+v1.7.1
+------
+	date:	2015-05-28
+
+	This release contains a faster Dynamic Consistency check for CSTNs.
+	The java class <<<CSTN.java>>> has been completely rewritten and almost optimized for a faster check.
+
+
+v1.7.0
+------
+	date:	2015-03-23
+
+	This release is the first public release.
+
+=============END SNIPPET: rn

@@ -17,15 +17,16 @@ import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;
 
 /**
- * StaticLayout places the vertices in the locations specified by its Transformer<V,Point2D> initializer. Vertex locations can be placed in a Map<V,Point2D> and
- * then supplied to this layout as follows: <code>
-            Transformer<V,Point2D> vertexLocations =
-        	TransformerUtils.mapTransformer(map);
- * </code>
+ * StaticLayout places the vertices in the locations specified by its Transformer&lt;V,Point2D&gt; initializer. 
+ * Vertex locations can be placed in a Map&lt;V,Point2D&gt; and then supplied to this layout as follows: <pre>
+ *            Transformer&lt;V,Point2D&gt; vertexLocations =
+ *        	TransformerUtils.mapTransformer(map);
+ * </pre>
  *
  * @author Tom Nelson - tomnelson@dev.java.net
  * @param <V>
  * @param <E>
+ * @version $Id: $Id
  */
 public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializable {
 
@@ -48,7 +49,7 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	/**
 	 * Creates an instance for the specified graph and default size; vertex locations are randomly assigned.
 	 *
-	 * @param graph
+	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
 	 */
 	public StaticLayout(final Graph<V, E> graph) {
 		super(graph);
@@ -57,8 +58,8 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	/**
 	 * Creates an instance for the specified graph and size.
 	 *
-	 * @param graph
-	 * @param size
+	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param size a {@link java.awt.Dimension} object.
 	 */
 	public StaticLayout(final Graph<V, E> graph, final Dimension size) {
 		super(graph, size);
@@ -67,8 +68,8 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	/**
 	 * Creates an instance for the specified graph and locations, with default size.
 	 *
-	 * @param graph
-	 * @param initializer
+	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param initializer a {@link org.apache.commons.collections15.Transformer} object.
 	 */
 	public StaticLayout(final Graph<V, E> graph, final Transformer<V, Point2D> initializer) {
 		super(graph, initializer);
@@ -77,26 +78,30 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	/**
 	 * Creates an instance for the specified graph, locations, and size.
 	 *
-	 * @param graph
-	 * @param initializer
-	 * @param size
+	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param initializer a {@link org.apache.commons.collections15.Transformer} object.
+	 * @param size a {@link java.awt.Dimension} object.
 	 */
 	public StaticLayout(final Graph<V, E> graph, final Transformer<V, Point2D> initializer, final Dimension size) {
 		super(graph, initializer, size);
 	}
 
 	/**
+	 * <p>getLocations.</p>
+	 *
 	 * @return the position of all vertices.
 	 */
 	public Map<V, Point2D> getLocations() {
 		return this.locations;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void initialize() {
 		// empty
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void reset() {
 		// empty

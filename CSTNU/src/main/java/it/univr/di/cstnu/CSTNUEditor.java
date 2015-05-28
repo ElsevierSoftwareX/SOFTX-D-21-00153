@@ -4,10 +4,10 @@
 package it.univr.di.cstnu;
 
 import it.univr.di.cstnu.CSTN.CheckStatus;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.EditingModalGraphMouse;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.GraphMLReader;
+import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.StaticLayout;
 
@@ -51,13 +51,15 @@ import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.VisualizationModel;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
+import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 
 /**
  * Simple facade of Jung graph in order to guarantee the CSTPU semantics.
- * 
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class CSTNUEditor extends JFrame implements Cloneable {
 
@@ -96,7 +98,11 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	static String defaultDir = "/Dropbox/_CSTNU";
 
 	/**
-	 * @param args
+	 * <p>
+	 * main.
+	 * </p>
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
 	 */
 	public static void main(String[] args) {
 
@@ -111,6 +117,10 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	LabeledIntGraph g, g1, g2, distanceGraph;
 
 	/**
+	 * 
+	 */
+	CheckStatus status = null;
+	/**
 	 * Layout algorithm for graph.
 	 */
 	@SuppressWarnings("javadoc")
@@ -123,7 +133,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	VisualizationModel<LabeledNode, LabeledIntEdge> vm1, vm2;
 
 	/**
-	 * The BasicVisualizationServer<V,E> is parameterized by the edge types
+	 * The BasicVisualizationServer&lt;V,E&gt; is parameterized by the edge types
 	 */
 	@SuppressWarnings("javadoc")
 	VisualizationViewer<LabeledNode, LabeledIntEdge> vv1, vv2;
@@ -153,12 +163,6 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	 */
 	boolean labelOptimization = true;
 
-	
-	/**
-	 * Flag for applying R0 and R3 only on Z node.
-	 */
-	boolean onlyOnZ = false;
-	
 	/**
 	 * Flag for excluding the application of R1 and R2 rules.
 	 */
@@ -290,6 +294,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		vm2 = new DefaultVisualizationModel<>(layout2, CSTNUEditor.preferredSize);
 		vv1 = new VisualizationViewer<>(vm1, CSTNUEditor.preferredSize);
 		vv1.setName("Editor");
+//		vv1.getRenderContext().setLabelOffset(20);
 		vv2 = new VisualizationViewer<>(vm2, CSTNUEditor.preferredSize);
 		vv2.setName(distanceViewerName);
 
@@ -304,11 +309,14 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		vv2.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
 
 		// EDGE setting
-		vv1.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
-		vv1.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
-		vv1.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
 		vv1.getRenderContext().setEdgeDrawPaintTransformer(
 				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		vv1.getRenderContext().setEdgeFontTransformer(LabeledIntEdge.edgeFontTransformer);
+		vv1.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
+		vv1.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
+		vv1.getRenderContext().setEdgeShapeTransformer(new EdgeShape.QuadCurve<LabeledNode, LabeledIntEdge>());
+		vv1.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
+
 		vv1.getRenderContext().setArrowDrawPaintTransformer(
 				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
 		vv1.getRenderContext().setArrowFillPaintTransformer(
@@ -402,20 +410,6 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		});
 		rowForAppButtons.add(excludeR1R2Button);
 
-		JRadioButton onlyOnZButton = new JRadioButton("R0 and R3 applied only in Z", onlyOnZ);
-		onlyOnZButton.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ev) {
-				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					onlyOnZ = true;
-					LOG.fine("onlyOnZ flag set to true");
-				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					onlyOnZ = false;
-					LOG.fine("onlyOnZ flag set to false");
-				}
-			}
-		});
-		rowForAppButtons.add(onlyOnZButton);
-		
 		JRadioButton labelOptimizationRadio = new JRadioButton("Label minimization", labelOptimization);
 		labelOptimizationRadio.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ev) {
@@ -530,10 +524,9 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			public void actionPerformed(ActionEvent e) {
 				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
 				g1 = new LabeledIntGraph(g, labelOptimization);
-				CSTN cstn = new CSTN(labelOptimization);
 
 				try {
-					cstn.initAndCheckCSTN(g1);
+					CSTN.initAndCheck(g1, instantaneousReaction);
 				}
 				catch (IllegalArgumentException ec) {
 					jl.setIcon(CSTNUEditor.warnIcon);
@@ -555,9 +548,13 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				for (final LabeledNode v : g1.getVertices()) {
 					CSTNUEditor.LOG.finest("Vertex of complete graph: " + v);
 					gV = g.getNode(v.getName());
-					CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-					CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
-					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					if (gV != null) {
+						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
+						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
+						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					} else {
+						layout2.setLocation(v, v.getX(), v.getY());
+					}
 				}
 				vv2.setGraphLayout(layout2);
 				vv2.setVisible(true);
@@ -571,7 +568,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		rowForCSTNButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("CSTN Check");
-		buttonCheck.addActionListener(new AbstractAction("CSTN") {
+		buttonCheck.addActionListener(new AbstractAction("CSTN Check") {
 			/**
 			 * 
 			 */
@@ -584,16 +581,24 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				g1 = new LabeledIntGraph(g, labelOptimization);
 				CSTN cstn = new CSTN(labelOptimization);
 				try {
-					cstn.initAndCheckCSTN(g1);
+					CSTN.initAndCheck(g1, instantaneousReaction);
 				}
 				catch (IllegalArgumentException ec) {
-					throw new IllegalArgumentException("The graph has a problem and it cannot be initialize:\n " + ec.getMessage());
+					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
+					jl.setIcon(CSTNUEditor.warnIcon);
+					CSTNUEditor.LOG.warning("The graph has a problem and it cannot be initialize:\n " + ec.getMessage());
+					vv2.validate();
+					vv2.repaint();
+
+					graphPanel.validate();
+					graphPanel.repaint();
+					return;
 				}
 				CSTNUEditor.LOG.finer("Original graph initialized: " + g1);
 
 				try {
 					CheckStatus status;
-					status = cstn.dynamicConsistencyCheck(g1, instantaneousReaction, onlyOnZ, excludeR1R2);
+					status = cstn.dynamicConsistencyCheck(g1, instantaneousReaction, excludeR1R2);
 					if (status.consistency) {
 						jl.setText("The graph is CSTN consistent.");
 						jl.setIcon(CSTNUEditor.infoIcon);
@@ -614,69 +619,14 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				LabeledNode gV;
 				for (final LabeledNode v : g1.getVertices()) {
 					gV = g.getNode(v.getName());
-					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
-				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
-
-				vv2.validate();
-				vv2.repaint();
-
-				graphPanel.validate();
-				graphPanel.repaint();
-				cycle = 0;
-			}
-		});
-		rowForCSTNButtons.add(buttonCheck);
-		
-		
-		buttonCheck = new JButton("New CSTN Check");
-		buttonCheck.addActionListener(new AbstractAction("New CSTN") {
-			/**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				saveCSTNResultButton.setEnabled(false);
-				g1 = new LabeledIntGraph(g, labelOptimization);
-				CSTN cstn = new CSTN(labelOptimization);
-				try {
-					cstn.initAndCheckCSTN(g1);
-				}
-				catch (IllegalArgumentException ec) {
-					throw new IllegalArgumentException("The graph has a problem and it cannot be initialize:\n " + ec.getMessage());
-				}
-				CSTNUEditor.LOG.finer("Original graph initialized: " + g1);
-
-				try {
-					CheckStatus status;
-					status = cstn.dynamicConsistencyCheckNew(g1, instantaneousReaction);
-					if (status.consistency) {
-						jl.setText("The graph is CSTN consistent.");
-						jl.setIcon(CSTNUEditor.infoIcon);
-						CSTNUEditor.LOG.finer("Final controllable graph: " + g1);
+					if (gV != null) {
+						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
+						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
+						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
 					} else {
-						// The distance graph is not consistent
-						jl.setText("The graph is not CSTN consistent.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+						layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				catch (WellDefinitionException ex) {
-					jl.setText("There is a problem in the code: " + ex.getMessage());
-					jl.setIcon(CSTNUEditor.warnIcon);
-				}
-				jl.setOpaque(true);
-				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g1);
-				LabeledNode gV;
-				for (final LabeledNode v : g1.getVertices()) {
-					gV = g.getNode(v.getName());
-					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
-				}
 				vv2.setGraphLayout(layout2);
 				vv2.setVisible(true);
 				saveCSTNResultButton.setEnabled(true);
@@ -690,7 +640,6 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			}
 		});
 		rowForCSTNButtons.add(buttonCheck);
-		
 
 		buttonCheck = new JButton("One Step CSTN Check");
 		buttonCheck.addActionListener(new AbstractAction("One Step CSTN") {
@@ -699,27 +648,29 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				CSTN cstn = new CSTN(labelOptimization);
 				if (cycle == -1) return;
 				if (cycle == 0) {
 					g1 = new LabeledIntGraph(g, labelOptimization);
-					cstn.initAndCheckCSTN(g1);
+					CSTN.initAndCheck(g1, instantaneousReaction);
 					g2 = new LabeledIntGraph(g1, labelOptimization);
 					distanceGraph = new LabeledIntGraph(labelOptimization);
+					status = new CheckStatus();
 				} else {
 					g1 = new LabeledIntGraph(g2, labelOptimization);
 				}
 				cycle++;
 
 				try {
-					final CheckStatus status = cstn.oneStepDynamicConsistency(g1, g2, instantaneousReaction,  onlyOnZ, excludeR1R2, new CheckStatus());
+					status = CSTN.oneStepDynamicConsistency(g2, instantaneousReaction, excludeR1R2, status);
+					status.finished = g1.hasSameEdgesOf(g2);
 					final boolean reductionsApplied = !status.finished;
 					final boolean inconsistency = !status.consistency;
 					if (inconsistency) {
 						jl.setText("The graph is inconsistent.");
 						jl.setIcon(CSTNUEditor.warnIcon);
 						cycle = -1;
-						CSTNUEditor.LOG.info("INCONSISTENT GRAPH: " + g2);
+						CSTNUEditor.LOG.fine("INCONSISTENT GRAPH: " + g2);
+						CSTNUEditor.LOG.info("Status stats: " + status);
 					} else if (reductionsApplied) {
 						jl.setText("Step " + cycle + " of consistency check is done.");
 						jl.setIcon(CSTNUEditor.warnIcon);
@@ -727,7 +678,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 						jl.setText("The graph is CSTN consistent. The number of executed cycles is " + cycle);
 						jl.setIcon(CSTNUEditor.infoIcon);
 						cycle = -1;
-						CSTNUEditor.LOG.info("CONSISTENT GRAPH: " + g2);
+						CSTNUEditor.LOG.info("Status stats: " + status);
 					}
 				}
 				catch (WellDefinitionException ex) {
@@ -742,7 +693,13 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				LabeledNode gV;
 				for (final LabeledNode v : g2.getVertices()) {
 					gV = g.getNode(v.getName());
-					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					if (gV != null) {
+						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
+						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
+						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					} else {
+						layout2.setLocation(v, v.getX(), v.getY());
+					}
 				}
 				vv2.setGraphLayout(layout2);
 				vv2.setVisible(true);
@@ -790,9 +747,13 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				for (final LabeledNode v : g1.getVertices()) {
 					CSTNUEditor.LOG.finest("Vertex of complete graph: " + v);
 					gV = g.getNode(v.getName());
-					CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-					CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
-					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					if (gV != null) {
+						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
+						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
+						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					} else {
+						layout2.setLocation(v, v.getX(), v.getY());
+					}
 				}
 				vv2.setGraphLayout(layout2);
 				vv2.setVisible(true);
@@ -887,7 +848,11 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				LabeledNode gV;
 				for (final LabeledNode v : g1.getVertices()) {
 					gV = g.getNode(v.getName());
-					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					if (gV != null) {
+						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					} else {
+						layout2.setLocation(v, v.getX(), v.getY());
+					}
 				}
 				vv2.setGraphLayout(layout2);
 				vv2.setVisible(true);
@@ -952,8 +917,11 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				LabeledNode gV;
 				for (final LabeledNode v : g2.getVertices()) {
 					gV = g.getNode(v.getName());
-					layout2.setLocation(v, layout1.getX(gV),
-							layout1.getY(gV));
+					if (gV != null) {
+						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+					} else {
+						layout2.setLocation(v, v.getX(), v.getY());
+					}
 				}
 				vv2.setGraphLayout(layout2);
 				vv2.setVisible(true);

@@ -1,19 +1,26 @@
-Usage
+Usage:
 
-  * Uncompress the archive <<CstnuTool-<release>-SNAPSHOT.tgz>> 
+  [[1]] Uncompress the archive <<CstnuTool-<release>-SNAPSHOT.tgz>> 
   
-  * In the directory <<CstnuTool-<release>-SNAPSHOT>> there are two shell commands:
+  [[2]] In the directory <<CstnuTool-<release>-SNAPSHOT>> there are three shell commands:
   
 	
-	[[1]] <<cstnuTranslator.sh>>
+	[[I]] <<cstnuTranslator.sh>>
 	
 	It calls a Java program to translate a CSTNU to the corresponding TIGA.
 	The source file in the GraphML representation of a CSTNU.
 	The output is the XML description of the corresponding TIGA.
  
-	You have to install  uppaal-tiga-0.17 software in order to run cstnuTranslator.sh
-	Please, adjust the location of 'verifytga' program inside cstnuTranslator.sh according to the location where you installed 'uppaal-tiga-0.17'.
+	You have to install  <<<uppaal-tiga-0.18>>> software in order to run <<cstnuTranslator.sh>>
+	Please, adjust the location of <<<verifytga>>> program inside cstnuTranslator.sh according to the location where you installed <<<uppaal-tiga-0.18>>>.
 
-	[[2]] <<cstnuEditor.sh>>
+	[[II]] <<cstnuEditor.sh>>
 	
 	A prototype CSTNU editor. 
+	
+	[[III]] <<CSTNRunningTime.sh>>
+	
+	This tool is intended for a subproject in which we are experimenting a new algorithm for checking the dynamic consistency of CSTN (network in which 
+	uncertainty is not present).
+	
+	In particular, this tool determines the average execution time of Dynamic Consistency Check Algorithm given a set of CSTN instances.

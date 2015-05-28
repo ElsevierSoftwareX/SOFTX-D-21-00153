@@ -4,8 +4,10 @@
 package it.univr.di.cstnu;
 
 /**
- * @author posenato
+ * <p>WellDefinitionException class.</p>
  *
+ * @author posenato
+ * @version $Id: $Id
  */
 public class WellDefinitionException extends Exception {
 
@@ -31,7 +33,7 @@ public class WellDefinitionException extends Exception {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * 
+	 * <p>Constructor for WellDefinitionException.</p>
 	 */
 	public WellDefinitionException() {
 		super();
@@ -39,7 +41,9 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * @param message
+	 * <p>Constructor for WellDefinitionException.</p>
+	 *
+	 * @param message a {@link java.lang.String} object.
 	 */
 	public WellDefinitionException(String message) {
 		super(message);
@@ -47,8 +51,10 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * @param message
-	 * @param t
+	 * <p>Constructor for WellDefinitionException.</p>
+	 *
+	 * @param message a {@link java.lang.String} object.
+	 * @param t a {@link it.univr.di.cstnu.WellDefinitionException.Type} object.
 	 */
 	public WellDefinitionException(String message, Type t) {
 		super(message);
@@ -56,7 +62,9 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * @param cause
+	 * <p>Constructor for WellDefinitionException.</p>
+	 *
+	 * @param cause a {@link java.lang.Throwable} object.
 	 */
 	public WellDefinitionException(Throwable cause) {
 		super(cause);
@@ -64,8 +72,10 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * @param message
-	 * @param cause
+	 * <p>Constructor for WellDefinitionException.</p>
+	 *
+	 * @param message a {@link java.lang.String} object.
+	 * @param cause a {@link java.lang.Throwable} object.
 	 */
 	public WellDefinitionException(String message, Throwable cause) {
 		super(message, cause);
@@ -73,10 +83,12 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * @param message
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace
+	 * <p>Constructor for WellDefinitionException.</p>
+	 *
+	 * @param message a {@link java.lang.String} object.
+	 * @param cause a {@link java.lang.Throwable} object.
+	 * @param enableSuppression a boolean.
+	 * @param writableStackTrace a boolean.
 	 */
 	public WellDefinitionException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);

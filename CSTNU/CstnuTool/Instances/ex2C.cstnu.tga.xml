@@ -5,10 +5,10 @@
     <template>
         <name>ex2C_cstnu</name>
         <!--Clock and proposition declarations-->
-        <declaration>clock tG, tDelta, tn1, tn2, tn3, tA;
-bool xn1, xn2, xn3, xA;
+        <declaration>clock tG, tDelta, tn1, tn2, tn3, tZ, tA;
+bool xn1, xn2, xn3, xZ, xA;
 int [-1,1] a = 0;</declaration>
-        <!--Node declarations-->
+        <!--LabeledNode declarations-->
         <location id="agnes">
             <name>agnes</name>
             <urgent/>
@@ -62,6 +62,12 @@ int [-1,1] a = 0;</declaration>
             <label kind="guard">!xn3</label>
             <label kind="assignment">xn3 := true,tn3 := 0</label>
         </transition>
+        <transition action="set_xZ" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xZ</label>
+            <label kind="assignment">xZ := true,tZ := 0</label>
+        </transition>
         <!--Transitions for proposition setting-->
         <transition action="set_a" controllable="false">
             <source ref="agnes"/>
@@ -89,34 +95,34 @@ int [-1,1] a = 0;</declaration>
         </transition>
         <!--Transitions for contingent-constraint setting-->
         <!--WIN transitions-->
-        <transition action="win_labelled1a" controllable="true">
+        <transition action="win_labelled1a" controllable="false">
             <source ref="go"/>
             <target ref="go1"/>
             <label kind="guard">(a == 1)</label>
             <label kind="assignment"/>
         </transition>
-        <transition action="win_labelled1" controllable="true">
+        <transition action="win_labelled1" controllable="false">
             <source ref="go"/>
             <target ref="go1"/>
-            <label kind="guard">(tn1 - tn3 &lt;= -3) &amp;&amp; (tA - tn1 &lt;= -3) &amp;&amp; (tn3 - tn1 &lt;= 4) &amp;&amp; (tn1 - tA &lt;= 4)</label>
+            <label kind="guard">(tn1 - tn3 &lt;= -3) &amp;&amp; (tn1 - tA &lt;= 4) &amp;&amp; (tn3 - tn1 &lt;= 4) &amp;&amp; (tA - tn1 &lt;= -3)</label>
             <label kind="assignment"/>
         </transition>
-        <transition action="win_labelled2a" controllable="true">
+        <transition action="win_labelled2a" controllable="false">
             <source ref="go1"/>
             <target ref="goal"/>
             <label kind="guard">(a == -1)</label>
             <label kind="assignment"/>
         </transition>
-        <transition action="win_labelled2" controllable="true">
+        <transition action="win_labelled2" controllable="false">
             <source ref="go1"/>
             <target ref="goal"/>
-            <label kind="guard">(tn2 - tn3 &lt;= -3) &amp;&amp; (tn2 - tA &lt;= 10) &amp;&amp; (tn3 - tn2 &lt;= 10) &amp;&amp; (tA - tn2 &lt;= -3)</label>
+            <label kind="guard">(tn3 - tn2 &lt;= 10) &amp;&amp; (tA - tn2 &lt;= -3) &amp;&amp; (tn2 - tA &lt;= 10) &amp;&amp; (tn2 - tn3 &lt;= -3)</label>
             <label kind="assignment"/>
         </transition>
         <transition action="win_unlabelled" controllable="false">
-            <source ref="agnes"/>
+            <source ref="vera"/>
             <target ref="go"/>
-            <label kind="guard">xn1 &amp;&amp; xn2 &amp;&amp; xn3 &amp;&amp; xA &amp;&amp; (tn3 - tA &lt;= 7) &amp;&amp; (tA - tn3 &lt;= -7)</label>
+            <label kind="guard">xn1 &amp;&amp; xn2 &amp;&amp; xn3 &amp;&amp; xZ &amp;&amp; xA &amp;&amp; (tn3 - tA &lt;= 7) &amp;&amp; (tA - tn3 &lt;= -7)</label>
             <label kind="assignment"/>
         </transition>
         <system>_processMain = ex2C_cstnu();

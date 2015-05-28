@@ -8,7 +8,10 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 /**
+ * <p>Component class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class Component implements Serializable, Comparable<Object> {
 
@@ -34,7 +37,7 @@ public class Component implements Serializable, Comparable<Object> {
 	private String name;
 
 	/**
-	 * Minimal constructor. the name will be 'c<id>'.
+	 * Minimal constructor. the name will be 'c&lt;id&gt;'.
 	 */
 	Component() {
 		this("");
@@ -63,13 +66,16 @@ public class Component implements Serializable, Comparable<Object> {
 	}
 
 	/**
-	 * @param c
-	 * @return <0 if this has a name coming prior to c.name, 0 if they are equal, >0 otherwise.
+	 * <p>compareTo.</p>
+	 *
+	 * @param c a {@link it.univr.di.cstnu.graph.Component} object.
+	 * @return &lt;0 if this has a name coming prior to c.name, 0 if they are equal, &gt;0 otherwise.
 	 */
 	public int compareTo(final Component c) {
 		return this.name.compareToIgnoreCase(c.name);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int compareTo(final Object o) {
 		if (o == null) return 1;
@@ -78,13 +84,12 @@ public class Component implements Serializable, Comparable<Object> {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * A component is assumed equal to another if it has the same name.<br>
 	 * This is weaker than the original {@link #equals(Object)} semantics.<br>
 	 * Since {@link Component} is memorized into {@link LabeledIntGraph} using {@link HashMap} and we allow an user to change the name of a component,
 	 * {@link #hashCode()} cannot be coherent with {@link #equals(Object)} (otherwise after a renaming a component is not more retrievable).
-	 *
-	 * @param o the object to compare
-	 * @return true if they are the same name.
 	 */
 	@Override
 	@Deprecated
@@ -95,7 +100,9 @@ public class Component implements Serializable, Comparable<Object> {
 	}
 
 	/**
-	 * @param c
+	 * <p>equalsByName.</p>
+	 *
+	 * @param c a {@link it.univr.di.cstnu.graph.Component} object.
 	 * @return true if they are the same name.
 	 */
 	public boolean equalsByName(final Component c) {
@@ -104,6 +111,8 @@ public class Component implements Serializable, Comparable<Object> {
 	}
 
 	/**
+	 * <p>Getter for the field <code>name</code>.</p>
+	 *
 	 * @return the name of the component
 	 */
 	public String getName() {
@@ -111,6 +120,8 @@ public class Component implements Serializable, Comparable<Object> {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Is is necessary to guarantee that hahsCode agrees with {@link #equals(Object)}<br>
 	 * This yields a big issue about the renaming of node or edges. The reason is that LabeledIntGraph class uses hash table to memorize nodes/edges. If an user
 	 * changes a
@@ -136,6 +147,8 @@ public class Component implements Serializable, Comparable<Object> {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Return a string representation of labeled values.
 	 */
 	@Override

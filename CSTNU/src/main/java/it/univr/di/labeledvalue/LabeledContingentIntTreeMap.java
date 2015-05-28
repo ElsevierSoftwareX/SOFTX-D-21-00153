@@ -9,7 +9,6 @@ import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import java.io.Serializable;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -19,19 +18,20 @@ import java.util.regex.Pattern;
  * Allows to manage an augmented Upper/Lower-case constraint that uses also a PLabel to characterize the constraint.
  *
  * @author Roberto Posenato
+ * @version $Id: $Id
  */
 public class LabeledContingentIntTreeMap implements Serializable {
 
 	/**
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
-	 * The format of the string is given by the method {@link HashMap#toString()}:<br>
+	 * The format of the string is given by the method {@link java.util.HashMap#toString()}:<br>
 	 *
 	 * <pre>
-	 * \{{(&langle;label&rangle;, &langle;T&rangle;, &langle;value&rangle;) }*\}
+	 * \{{(&lang;label&rang;, &lang;T&rang;, &lang;value&rang;) }*\}
 	 * </pre>
 	 *
-	 * @param arg
-	 * @param optimized
+	 * @param arg a {@link java.lang.String} object.
+	 * @param optimized a boolean.
 	 * @return a LabeledPairMap object if args represents a valid map, null otherwise.
 	 */
 	public static LabeledContingentIntTreeMap parse(String arg, final boolean optimized) {
@@ -113,7 +113,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * Constructor to clone the structure.
 	 *
 	 * @param lvm the map to clone. If null, 'this' will be a empty map.
-	 * @param optimize
+	 * @param optimize a boolean.
 	 */
 	public LabeledContingentIntTreeMap(final LabeledContingentIntTreeMap lvm, final boolean optimize) {
 		this(optimize);
@@ -125,13 +125,15 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 *
+	 * <p>clear.</p>
 	 */
 	public void clear() {
 		this.map.clear();
 	}
 
 	/**
+	 * <p>entrySet.</p>
+	 *
 	 * @return the map as a set of (nodeName, LabeledIntNodeSetTreeMap).
 	 *         Be careful: returned LabeledIntNodeSetTreeMap(s) are not a copy but the maps inside this object.
 	 */
@@ -139,6 +141,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 		return this.map.entrySet();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object o) {
 		if ((o == null) || !(o instanceof LabeledContingentIntTreeMap)) return false;
@@ -147,7 +150,9 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return the minimal value of this map, {@link LabeledIntNodeSetMap#INT_NULL} if the map is empty,
+	 * <p>getMinValue.</p>
+	 *
+	 * @return the minimal value of this map, {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap#INT_NULL} if the map is empty,
 	 */
 	public int getMinValue() {
 		if (this.size() == 0) return LabeledIntNodeSetMap.INT_NULL;
@@ -166,10 +171,10 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	/**
 	 * Returns the value associated to <code>(l, p)</code> if it exists, otherwise the minimal value among all labels consistent with <code>(l, p)</code>.
 	 *
-	 * @param l if it is null, {@link LabeledIntNodeSetMap#INT_NULL} is returned.
-	 * @param p if it is null or empty, {@link LabeledIntNodeSetMap#INT_NULL} is returned.
+	 * @param l if it is null, {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap#INT_NULL} is returned.
+	 * @param p if it is null or empty, {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap#INT_NULL} is returned.
 	 * @return the value associated to the <code>(l, p)</code> if it exists or the minimal value among values associated to labels consistent by <code>l</code>.
-	 *         If no labels are subsumed by <code>l</code>, {@link LabeledIntNodeSetMap#INT_NULL} is returned.
+	 *         If no labels are subsumed by <code>l</code>, {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap#INT_NULL} is returned.
 	 */
 	public int getMinValueConsistentWith(final Label l, final String p) {
 		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntNodeSetMap.INT_NULL;
@@ -179,9 +184,11 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param l
-	 * @param p
-	 * @return the value associate to the key (label, p) if it exits, {@link LabeledIntNodeSetMap#INT_NULL} otherwise.
+	 * <p>getValue.</p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @return the value associate to the key (label, p) if it exits, {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap#INT_NULL} otherwise.
 	 */
 	public int getValue(final Label l, final String p) {
 		if ((l == null) || (p == null) || p.isEmpty()) return LabeledIntNodeSetMap.INT_NULL;
@@ -190,12 +197,15 @@ public class LabeledContingentIntTreeMap implements Serializable {
 		return map1.getValue(l);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return this.map.hashCode();
 	}
 
 	/**
+	 * <p>labeledTripleSet.</p>
+	 *
 	 * @return the map as ((label,node),value) triples.
 	 */
 	public Set<Object2IntMap.Entry<Entry<Label, String>>> labeledTripleSet() {
@@ -212,9 +222,11 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param l
-	 * @param p
-	 * @param i
+	 * <p>mergeTriple.</p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @param i a int.
 	 * @return see {@link #mergeTriple(Label, String, int, boolean)}
 	 * @see #mergeTriple(Label, String, int, boolean)
 	 */
@@ -223,15 +235,13 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * Merges a label case value
-	 * <p,l,i>
-	 * .<br>
-	 * The value is insert if there is not a labeled value in the set with label <l,p> or it is present with a value higher than i.<br>
+	 * Merges a label case value &lt;p,l,i&gt;.<br>
+	 * The value is insert if there is not a labeled value in the set with label &lt;l,p&gt; or it is present with a value higher than i.<br>
 	 * The method can remove or modify other labeled values of the set in order to minimize the labeled values present guaranteeing that no info is lost.
 	 *
-	 * @param l
-	 * @param p
-	 * @param i
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @param i a int.
 	 * @param force true if the value has to be stored without label optimization.
 	 * @return true if the triple is stored, false otherwise.
 	 */
@@ -250,9 +260,9 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	/**
 	 * Wrapper method. It calls mergeTriple(label, p, i, true);
 	 *
-	 * @param label
-	 * @param p
-	 * @param i
+	 * @param label a {@link java.lang.String} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @param i a int.
 	 * @return see {@link #mergeTriple(String, String, int, boolean)}
 	 * @see #mergeTriple(String, String, int, boolean)
 	 */
@@ -264,9 +274,9 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	 * Wrapper method to {@link #mergeTriple(Label, String, int, boolean)}.
 	 * 'label' parameter is converted to a Label before calling {@link #mergeTriple(Label, String, int, boolean)}.
 	 *
-	 * @param label
-	 * @param p
-	 * @param i
+	 * @param label a {@link java.lang.String} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @param i a int.
 	 * @param force true if the value has to be stored without label optimization.
 	 * @return true if the triple is stored, false otherwise.
 	 */
@@ -279,9 +289,9 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	/**
 	 * Put the triple <code>(p,l,i)</code> into the map. If the triple is already present, it is overwritten.
 	 *
-	 * @param l
-	 * @param p
-	 * @param i
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @param i a int.
 	 * @return the value overwritten.
 	 */
 	public int putTriple(final Label l, final String p, final int i) {
@@ -295,8 +305,10 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param l
-	 * @param p
+	 * <p>remove.</p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p a {@link java.lang.String} object.
 	 * @return the old value if it exists, null otherwise.
 	 */
 	public int remove(final Label l, final String p) {
@@ -307,6 +319,8 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return the number of elements of the map.
 	 */
 	public int size() {
@@ -317,6 +331,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 		return n;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return this.toString(false);
@@ -324,7 +339,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 
 	/**
 	 * @param lower if true, the first element of the pair is rendered as lower case.
-	 * @return a string representing the content of the map. The format is <label, node, value>
+	 * @return a string representing the content of the map. The format is &lt;label, node, value&gt;
 	 */
 	public String toString(final boolean lower) {
 		final StringBuffer s = new StringBuffer("{");

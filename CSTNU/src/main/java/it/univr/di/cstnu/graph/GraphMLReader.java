@@ -19,7 +19,10 @@ import edu.uci.ics.jung.io.graphml.HyperEdgeMetadata;
 import edu.uci.ics.jung.io.graphml.NodeMetadata;
 
 /**
+ * <p>GraphMLReader class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class GraphMLReader extends edu.uci.ics.jung.io.graphml.GraphMLReader2<LabeledIntGraph, LabeledNode, LabeledIntEdge> {
 
@@ -83,14 +86,16 @@ public class GraphMLReader extends edu.uci.ics.jung.io.graphml.GraphMLReader2<La
 				}
 			}
 			e.setType(Type.valueOf(metaData.getProperty("Type")));
-			// String v = metaData.getProperty("Value");
-			// if (v == null || v.isEmpty())
-			// e.setInitialValue(null);
-			// else
-			// e.setInitialValue(Integer.parseInt(v));
+			
 			e.setLabeledValue(LabeledIntNodeSetTreeMap.parse(metaData.getProperty("LabeledValues"), optimized));
 			e.setLabeledLowerCaseValue(LabeledContingentIntTreeMap.parse(metaData.getProperty("LowerCaseLabeledValues"), optimized));
 			e.setLabeledUpperCaseValue(LabeledContingentIntTreeMap.parse(metaData.getProperty("UpperCaseLabeledValues"), optimized));
+			//I parse also value parameter that was present in the first version of the graph file 
+			String v = metaData.getProperty("Value");
+			if (v != null && !v.isEmpty()) {
+				//e.setInitialValue(Integer.parseInt(v));
+				e.putLabeledValue(Label.emptyLabel, Integer.parseInt(v));
+			}
 			return e;
 		}
 	};
@@ -107,7 +112,9 @@ public class GraphMLReader extends edu.uci.ics.jung.io.graphml.GraphMLReader2<La
 	};
 
 	/**
-	 * @param fileReader
+	 * <p>Constructor for GraphMLReader.</p>
+	 *
+	 * @param fileReader a {@link java.io.FileReader} object.
 	 */
 	public GraphMLReader(final FileReader fileReader) {
 		super(fileReader, GraphMLReader.graphTransformer, GraphMLReader.vertexTransformer,

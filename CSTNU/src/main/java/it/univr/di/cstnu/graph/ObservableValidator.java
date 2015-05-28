@@ -11,7 +11,10 @@ import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
 /**
+ * <p>ObservableValidator class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class ObservableValidator implements Validator<String> {
 
@@ -31,8 +34,10 @@ public class ObservableValidator implements Validator<String> {
 	LabeledNode node;
 
 	/**
-	 * @param g
-	 * @param n
+	 * <p>Constructor for ObservableValidator.</p>
+	 *
+	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param n a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 */
 	public ObservableValidator(final LabeledIntGraph g, final LabeledNode n) {
 		if (g == null) throw new NullPointerException("LabeledIntGraph cannot be null!");
@@ -41,11 +46,13 @@ public class ObservableValidator implements Validator<String> {
 		this.node = n;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Class<String> modelType() {
 		return String.class;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void validate(final Problems problems, final String compName, final String model) {
 		if ((model == null) || (model.length() == 0)) return;

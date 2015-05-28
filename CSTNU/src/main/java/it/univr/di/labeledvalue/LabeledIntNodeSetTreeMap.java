@@ -19,12 +19,13 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- * Simple implementation of {@link LabeledIntNodeSetMap} interface.
+ * Simple implementation of {@link it.univr.di.labeledvalue.LabeledIntNodeSetMap} interface.
  * <p>
  * When creating a object it is possible to specify if the labeled values represented into the map should be maintained to the minimal equivalent ones.
  *
  * @author Roberto Posenato
  * @see LabeledIntNodeSetMap
+ * @version $Id: $Id
  */
 public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializable {
 
@@ -39,7 +40,9 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	static private final long serialVersionUID = 1L;
 
 	/**
-	 * @param args
+	 * <p>main.</p>
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
 	 */
 	static public void main(final String[] args) {
 
@@ -92,11 +95,11 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by
 	 * the string.<br>
 	 * The format of the string is given by the method {@link #toString()}:<br>
-	 * {\[(<key>, <value>) \]*}
+	 * {\[(&lt;key&gt;, &lt;value&gt;) \]*}
 	 *
-	 * @param inputMap
+	 * @param inputMap a {@link java.lang.String} object.
 	 * @param withOptimization true if the redundant labeled values have to be removed.
-	 * @return a LabeledValueTreeMap object if <code>inputMap<code> represents a valid map, null otherwise.
+	 * @return a LabeledValueTreeMap object if <code>inputMap</code> represents a valid map, null otherwise.
 	 */
 	static public LabeledIntNodeSetTreeMap parse(final String inputMap, final boolean withOptimization) {
 		if (inputMap == null) return null;
@@ -127,10 +130,10 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 * If the sum is greater/lesser than the maximum/minimum integer representable by a int, it throw an IllegalStateException because the overflow.
 	 * I don't use Overflow exception because it requires to use a try{} catch section.
 	 *
-	 * @param a
-	 * @param b
+	 * @param a a int.
+	 * @param b a int.
 	 * @return the controlled sum.
-	 * @throws ArithmeticException
+	 * @throws java.lang.ArithmeticException if any.
 	 */
 	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
 		if ((a == Constants.INT_NEG_INFINITE) || (b == Constants.INT_NEG_INFINITE)) return Constants.INT_NEG_INFINITE;
@@ -198,8 +201,10 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 				} else {
 					s = null;
 				}
-				this.put(new Label(entry.getKey()), entry.getValue().getValue(), s);
+				// ANNULLATO: Ci sono dei problemi nel clonare LabeledIntNodeSetMap non ottime. Per ora copio in modo identico
+				this.putForcibly(new Label(entry.getKey()), entry.getValue().getValue(), s);
 			}
+			base = ((LabeledIntNodeSetTreeMap) lvm).base;
 		} else {
 			for (final Object2ObjectMap.Entry<Label, ValueNodeSetPair> entry : lvm.object2ObjectEntrySet()) {
 				if ((inputS = entry.getValue().getNodeSet()) != null) {
@@ -213,12 +218,14 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		this.mainInt2SetMap.clear();
 		this.base.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Set<Entry<Label>> entrySet() {
 		final Object2IntRBTreeMap<Label> coll = new Object2IntRBTreeMap<>();
@@ -230,10 +237,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return coll.object2IntEntrySet();
 	}
 
-	/**
-	 *
-	 * @return true if the input is a {@link LabeledIntNodeSetMap} and it has an equal set of labeled values.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object o) {
 		if ((o == null) || !(o instanceof LabeledIntNodeSetMap)) return false;
@@ -243,10 +247,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 																				// representation of optimization is not important!.
 	}
 
-	/**
-	 * @param l
-	 * @return the pair value e node set associate to label if it exists, null otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ValueNodeSetPair get(final Label l) {
 		if (l == null) return null;
@@ -255,6 +256,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return map1.get(l);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getMinValue() {
 		int v = Constants.INT_POS_INFINITE;
@@ -265,6 +267,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return (v == Constants.INT_POS_INFINITE) ? LabeledIntNodeSetMap.INT_NULL : v;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getMinValueAmongLabelsWOUnknown() {
 		int v = Constants.INT_POS_INFINITE, i;
@@ -280,6 +283,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return (v == Constants.INT_POS_INFINITE) ? LabeledIntNodeSetMap.INT_NULL : v;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getMinValueConsistentWith(final Label l) {
 		if (l == null) return LabeledIntNodeSetMap.INT_NULL;
@@ -305,10 +309,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return (min == Constants.INT_POS_INFINITE) ? LabeledIntNodeSetMap.INT_NULL : min;
 	}
 
-	/**
-	 * @param l
-	 * @return the pair value e node set associate to label if it exists, null otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public SortedSet<String> getNodeSet(final Label l) {
 		if (l == null) return null;
@@ -319,6 +320,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return vnsp.getNodeSet();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getValue(final Label l) {
 		if (l == null) return LabeledIntNodeSetMap.INT_NULL;
@@ -328,11 +330,13 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return e.getValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return this.mainInt2SetMap.hashCode();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Set<Object2ObjectMap.Entry<Label, ValueNodeSetPair>> object2ObjectEntrySet() {
 		final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> coll = new Object2ObjectRBTreeMap<>();
@@ -342,19 +346,19 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return coll.object2ObjectEntrySet();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean put(Label l, int i) {
 		return this.put(l, i, null);
 	}
 
 	/**
-	 * Adds the pair &langle;l,i&rangle;.<br>
-	 * Moreover, tries to eliminate all labels that are redundant.
+	 * {@inheritDoc}
 	 *
-	 * @param newLabel
-	 * @param newValue
-	 * @return true if the pair is stored, false otherwise.
+	 * Adds the pair &lang;l,i&rang;.<br>
+	 * Moreover, tries to eliminate all labels that are redundant.
 	 */
+	@SuppressWarnings("null")
 	@Override
 	public boolean put(final Label newLabel, int newValue, Set<String> newNodeSet) {
 		/*
@@ -384,7 +388,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 				if ((newLabelSize >= (l1Size = l1.size())) && newLabel.subsumes(l1) && newValue >= v1) {
 					if (isNullOrEmpty(newNodeSet) || (newLabel.equals(l1) && !isNullOrEmpty(nodeSet1) && nodeSet1.containsAll(newNodeSet))) {
 						// the input value is simple (no associated node set) and it is already contained in the set.
-						//or it has a node set but that it is already represented by the current value
+						// or it has a node set but that it is already represented by the current value
 						return false;
 					}
 					if (v1 == Constants.INT_NEG_INFINITE) {
@@ -468,6 +472,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void putAll(final LabeledIntNodeSetMap inputMap) {
 		if (inputMap == null) return;
@@ -476,11 +481,13 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int putForcibly(Label l, int i) {
 		return this.putForcibly(l, i, null);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int putForcibly(final Label l, final int i, final Set<String> nodeSet) {
 		if ((l == null) || (i == LabeledIntNodeSetMap.INT_NULL)) return LabeledIntNodeSetMap.INT_NULL;
@@ -493,6 +500,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return (old == null) ? INT_NULL : old.getValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int remove(final Label l) {
 		if (l == null) return LabeledIntNodeSetMap.INT_NULL;
@@ -512,6 +520,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return (oldValue == null) ? INT_NULL : oldValue.getValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int size() {
 		int n = 0;
@@ -520,6 +529,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return n;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("{");
@@ -545,6 +555,7 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 		return sb.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public IntSet values() {
 		final IntArraySet coll = new IntArraySet(this.size());
@@ -556,6 +567,16 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	}
 
 	/**
+	 * @return a set view of all labels present into this map.
+	 */
+	public ObjectArraySet<Label> keys() {
+		ObjectArraySet<Label> coll = new ObjectArraySet<>();
+		for (final Object2ObjectRBTreeMap<Label, ValueNodeSetPair> mapI : this.mainInt2SetMap.values()) {
+			coll.addAll(mapI.keySet());
+		}
+		return coll;
+	}
+	/**
 	 * If the removed label <code>l</code> is a component of the base, then reset the base.
 	 *
 	 * @param l
@@ -564,8 +585,8 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	private boolean checkValidityOfTheBaseAfterRemovingOrAddANodeSet(final Label l) {
 		int bn, ln;
 		if ((l == null) || ((ln = l.size()) == 0) || ((bn = this.base.size()) == 0) || (ln != bn)) return false;
-		
-		if (l.containsUnknown()) return false;//removing a label with unknown does not affect a possible base.
+
+		if (l.containsUnknown()) return false;// removing a label with unknown does not affect a possible base.
 
 		int dimConj = l.conjunctionExtended(this.base).size();
 		if (dimConj > ln) return false;

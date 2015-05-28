@@ -44,18 +44,27 @@ public class CSTNUTest {
 	public final void testCaseLabelRemovalRule() {
 		// System.out.printf("LABEL REMOVAL CASE\n");
 		LabeledIntGraph g = new LabeledIntGraph(true);
+		
 		final LabeledIntEdge ab = new LabeledIntEdge("AB",true);
 		ab.mergeLowerLabelValue(Label.parse("B"), "b", 13);
+		
+		final LabeledIntEdge ba = new LabeledIntEdge("ba", true);//now CaseLabelRemoval checks the lower bound, no the guards.
+		ba.putLabeledValue(Label.parse("B"), -10);
+		
 		final LabeledIntEdge ca = new LabeledIntEdge("CA",true);
 		ca.mergeUpperLabelValue(Label.parse("AB"), "B", 3);
 		ca.mergeUpperLabelValue(Label.parse("A"), "B", 4);
+		
 		final LabeledNode A = new LabeledNode("A");
-		g.addEdge(ab, A, new LabeledNode("B"));
+		final LabeledNode B = new LabeledNode("B"); 
+		g.addEdge(ab, A, B);
+		g.addEdge(ba, B, A);
 		g.addEdge(ca, new LabeledNode("C"), A);
+		
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
 		//
 		// System.out.printf("G: %s\n", g);
-		// // System.out.printf("G1.hasSameEdge(G): %s\n", g1.hasAllEdgesOf(g));
+//		System.out.printf("G1.hasSameEdge(G): %s\n", g1.hasSameEdgesOf(g));
 		CSTNU.caseLabelRemovalRule(g, g1);
 		// // System.out.printf("G.hasSameEdge(G1): %s\n", g.hasAllEdgesOf(g1));
 		// System.out.printf("G: %s\n", g1);
@@ -63,8 +72,7 @@ public class CSTNUTest {
 		LabeledIntEdge abOk = new LabeledIntEdge("CA",true);
 		abOk.mergeLabeledValue(Label.parse("AB"), 3);
 
-		assertEquals("Upper Case values:", abOk.getLabeledValueMap(), g1.findEdge(g1.getNode("C"), g1.getNode("A"))
-				.getLabeledValueMap());
+		assertEquals("Upper Case values:", abOk.getLabeledValueMap(), g1.findEdge(g1.getNode("C"), g1.getNode("A")).getLabeledValueMap());
 
 	}
 

@@ -9,7 +9,7 @@
 # Change this variable to point to 'verifytga' executable!
 DIR="$( dirname "${BASH_SOURCE[0]}" )"
 CSTNU="$DIR/$( cd $DIR  && echo `ls CSTNU-*.jar`)"
-TIGAPATH="$DIR/uppaal-tiga-0.17/bin-Linux/verifytga"
+TIGAPATH="$DIR/uppaal-tiga-0.18/bin-Linux/verifytga"
 # END parameter configuration
 #############################
 #Check Java version

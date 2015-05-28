@@ -2,13 +2,13 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.6.0-SNAPSHOT</version>
+	<version>1.7.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.tool.filename>CstnuTool-${project.version}.tgz</project.tool.filename>
+		<project.tool.filename>CstnuTool-${project.version}</project.tool.filename>
 		<project.jar.filename>${project.artifactId}-${project.version}.jar</project.jar.filename>
 	</properties>
 	<licenses>
@@ -83,6 +83,11 @@
 			<artifactId>fastutil</artifactId>
 			<version>6.5.15</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.2</version>
+		</dependency>
 	</dependencies>
 	<repositories>
 		<repository>
@@ -130,13 +135,13 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.2</version>
-			 	<configuration>
+				<configuration>
 					<source>1.7</source>
 					<target>1.7</target>
 					<showDeprecation>true</showDeprecation>
 					<showWarnings>true</showWarnings>
-					<!-- <executable>${env.JAVA_HOME_7}/bin/javac</executable>-->
-			  		<fork>true</fork>
+					<!-- <executable>${env.JAVA_HOME_7}/bin/javac</executable> -->
+					<fork>true</fork>
 					<excludes>
 						<exclude>it/univr/di/attic/*.java</exclude>
 					</excludes>
@@ -207,6 +212,11 @@
 						<artifactId>wagon-ssh</artifactId>
 						<version>1.0</version>
 					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-apt</artifactId>
+						<version>1.6</version>
+					</dependency>
 				</dependencies>
 			</plugin>
 			<plugin>
@@ -235,7 +245,7 @@
 									<fileset dir="${basedir}/CstnuTool/" includes="${project.artifactId}-*.jar" />
 								</delete>
 								<copy file="${project.build.directory}/${project.jar.filename}" tofile="${basedir}/CstnuTool/${project.jar.filename}" />
-								<tar compression="gzip" destfile="${basedir}/${project.tool.filename}">
+								<tar compression="gzip" destfile="${basedir}/${project.tool.filename}.tgz">
 									<tarfileset dir="${basedir}/CstnuTool/" prefix="${project.tool.filename}">
 										<include name="**" />
 										<exclude name="uppaal-tiga-0.17/**" />
@@ -244,7 +254,7 @@
 								<delete>
 									<fileset dir="${basedir}/src/site/resources/bin/" includes="*.jar" />
 								</delete>
-								<copy file="${basedir}/${project.tool.filename}" tofile="${basedir}/src/site/resources/bin/${project.tool.filename}" />
+								<copy file="${basedir}/${project.tool.filename}.tgz" tofile="${basedir}/src/site/resources/bin/${project.tool.filename}.tgz" />
 							</target>
 						</configuration>
 					</execution>
@@ -260,6 +270,11 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.10.1</version>
 				<configuration>
+					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
+					<sourceFileExcludes>
+						<exclude>**/wf/*.java</exclude>
+						<exclude>**/attic/*.java</exclude>
+					</sourceFileExcludes>
 					<show>private</show>
 					<nohelp>true</nohelp>
 				</configuration>
@@ -299,10 +314,12 @@
 					</reportSet>
 				</reportSets>
 				<configuration>
+					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
+						<exclude>**/attic/*.java</exclude>
 					</sourceFileExcludes>
-					<javadocVersion>1.7</javadocVersion>
+					<javadocVersion>1.8</javadocVersion>
 					<show>public</show>
 				</configuration>
 			</plugin>

@@ -40,8 +40,7 @@ public class CSTNTest {
 	}
 
 	/**
-	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)}.
+	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, CheckStatus, boolean)}.
 	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
@@ -54,24 +53,22 @@ public class CSTNTest {
 		px.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		px.mergeLabeledValue(Label.parse("C¬p"), 1);
 		g.addEdge(px, P, X);
-		LabeledIntEdge pxNew = new LabeledIntEdge(px, true);
 		// wellDefinition(g);
 		CheckStatus status = new CheckStatus();
 
-		CSTN.labelModificationR0(g, P, X, px, pxNew, status, true);
+		CSTN.labelModificationR0(g, P, X, px, status, true);
 
 		LabeledIntEdge pxOK = new LabeledIntEdge("XY", true);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
 
-		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), pxNew.getLabeledValueMap());
+		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 		assertEquals(status.r0calls, 1);
 	}
 
 	/**
-	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labelModificationR2(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)))}.
+	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR2(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, CheckStatus, boolean)))}.
 	 */
 	@SuppressWarnings({ "static-method", "javadoc" })
 	@Test
@@ -94,32 +91,28 @@ public class CSTNTest {
 		xp.mergeLabeledValue(Label.parse("C¬p"), -1);
 		g.addEdge(xp, X, P);
 
-		CheckStatus status = new CheckStatus();
-		LabeledIntEdge xpNew = new LabeledIntEdge(xp, true);
-
-		assertEquals(xp.labeledValueSet(), xpNew.labeledValueSet());
 		wellDefinition(g);
+		CheckStatus status = new CheckStatus();
 
-		CSTN.labelModificationR2(g, P, X, xp, xpNew, status, true);
+		CSTN.labelModificationR2(g, P, X, xp, status, true);
 
 		LabeledIntEdge pxOK = new LabeledIntEdge("XY", true);
 		pxOK.mergeLabeledValue(Label.parse("AB"), 0);
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), -1);
 		pxOK.mergeLabeledValue(Label.parse("C"), 0);
 
-		assertEquals("R2: XP? labeled values.", pxOK.getLabeledValueMap(), xpNew.getLabeledValueMap());
+		assertEquals("R2: XP? labeled values.", pxOK.getLabeledValueMap(), xp.getLabeledValueMap());
 	}
 
 	/**
-	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labelModificationR1(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)}
-	 * .
+	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR1(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, CheckStatus, boolean)} .
 	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void testLabelModificationR1() {
 		// System.out.printf("R1 CASE\n");
 		LabeledIntGraph g = new LabeledIntGraph(true);
+		LabeledNode Z = new LabeledNode("Z");
 		LabeledNode P = new LabeledNode("P", new Literal('p'));
 		LabeledNode X = new LabeledNode("X");
 		LabeledNode Y = new LabeledNode("Y");
@@ -128,6 +121,7 @@ public class CSTNTest {
 		LabeledNode B = new LabeledNode("B?", new Literal('b'));
 		LabeledNode C = new LabeledNode("C?", new Literal('c'));
 		LabeledNode G = new LabeledNode("G?", new Literal('g'));
+		g.addVertex(Z);
 		g.addVertex(P);
 		g.addVertex(A);
 		g.addVertex(B);
@@ -148,29 +142,28 @@ public class CSTNTest {
 
 		wellDefinition(g);
 
-		LabeledIntEdge xyNew = new LabeledIntEdge(xy, true);
-
-		CSTN.labelModificationR1(g, P, X, Y, px, xy, xyNew, new CheckStatus(), false);
+		CSTN.labelModificationR1(g, X, Y, xy, new CheckStatus(), false);
 
 		LabeledIntEdge xyOK = new LabeledIntEdge("XY", true);
 		xyOK.putLabeledValue(Label.parse("bgp"), 10);
 		xyOK.putLabeledValue(Label.parse("cp"), -1);
 		xyOK.putLabeledValue(Label.parse("¬bc"), -1);
-		xyOK.putLabeledValue(Label.parse("abg"), 10);//se non è instantaneous!
+		xyOK.putLabeledValue(Label.parse("abg"), 10);// se non è instantaneous!
 		xyOK.putLabeledValue(Label.parse("abc"), -1);
-		
-		assertEquals("R1: xy labeled values.", xyOK.labeledValueSet(), xyNew.labeledValueSet());
+
+		assertEquals("R1: xy labeled values.", xyOK.labeledValueSet(), xy.labeledValueSet());
 
 		xyOK.removeLabel(Label.parse("abg"));
-		xyNew = new LabeledIntEdge(xy, true);
-		CSTN.labelModificationR1(g, P, X, Y, px, xy, xyNew, new CheckStatus(), true);//testo istantaneous
-		
-		assertEquals("R1: xy labeled values.", xyOK.labeledValueSet(), xyNew.labeledValueSet());
+		xy.clear();
+		xy.mergeLabeledValue(Label.parse("bgp"), 10);
+		xy.mergeLabeledValue(Label.parse("cp"), -1);
+		CSTN.labelModificationR1(g, X, Y, xy, new CheckStatus(), true);// test istantaneous
+
+		assertEquals("R1: xy labeled values.", xyOK.labeledValueSet(), xy.labeledValueSet());
 	}
 
 	/**
-	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labelModificationR3(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge, CheckStatus, boolean)
+	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR3(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdge, CheckStatus, boolean)
 	 * )}.
 	 */
 	@SuppressWarnings({ "static-method" })
@@ -206,9 +199,7 @@ public class CSTNTest {
 
 		wellDefinition(g);
 
-		LabeledIntEdge yxNew = new LabeledIntEdge(yx, true);
-
-		CSTN.labelModificationR3(g, P, X, Y, px, yx, yxNew, new CheckStatus(), true);
+		CSTN.labelModificationR3(g, X, Y, yx, new CheckStatus(), true);
 
 		LabeledIntEdge yxOK = new LabeledIntEdge("YX", true);
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
@@ -219,7 +210,7 @@ public class CSTNTest {
 		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
 		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
 
-		assertEquals("R3: yx labeled values.", yxOK.labeledValueSet(), yxNew.labeledValueSet());
+		assertEquals("R3: yx labeled values.", yxOK.labeledValueSet(), yx.labeledValueSet());
 	}
 
 	/**
@@ -245,7 +236,7 @@ public class CSTNTest {
 		XP.mergeLabeledValue(Label.parse("¬A"), 8);
 		XP.mergeLabeledValue(Label.parse("¬B"), -1);
 		XP.mergeLabeledValue(Label.parse("B"), 9);
-		
+
 		LabeledIntEdge PY = new LabeledIntEdge("PY", true);
 		PY.mergeLabeledValue(Label.parse("¬B"), 9);
 		PY.mergeLabeledValue(Label.parse("B"), -10);
@@ -255,44 +246,46 @@ public class CSTNTest {
 
 		wellDefinition(g);
 
-		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
-		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, null, g1, new CheckStatus());
+		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, null, new CheckStatus());
 
 //		System.out.println(XP);
 //		System.out.println(PY);
-		
+
 		LabeledIntEdge xyOK = new LabeledIntEdge("XY", true);
 //		xyOK.mergeLabeledValue(Label.parse("¬A¬B"), 17);
 		xyOK.mergeLabeledValue(Label.parse("¬AB"), -2);
 		xyOK.mergeLabeledValue(Label.parse("¬B"), 8);
 		xyOK.mergeLabeledValue(Label.parse("B"), -1);
-		
-		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), g1.findEdge(g1.getNode("X"), g1.getNode("Y")).getLabeledValueMap());
-		
+
+		LabeledIntEdge xy = g.findEdge(X, Y);
+
+		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), xy.getLabeledValueMap());
+
 		XP.clearLabels();
 		XP.mergeLabeledValue(Label.parse("B"), -1);
 		XP.mergeLabeledValue(Label.parse("¬B"), 1);
-		g1.removeEdge(g1.findEdge(g1.getNode("X"), g1.getNode("Y")));
-		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, Y, g1, new CheckStatus());//Y is Z!!!
+		xy.clear();
+		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, Y, new CheckStatus());// Y is Z!!!
+
 		xyOK.clearLabels();
 		ObjectAVLTreeSet<String> ns = new ObjectAVLTreeSet<>();
 		ns.add(X.getName());
+		ns.add(P.getName());
 		xyOK.mergeLabeledValue(Label.parse("¬B"), 10);
 		xyOK.mergeLabeledValue(Label.parse("B"), -11, ns);
-		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), g1.findEdge(g1.getNode("X"), g1.getNode("Y")).getLabeledValueMap());
-		
+		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), xy.getLabeledValueMap());
+
 		XP.clearLabels();
 		XP.mergeLabeledValue(Label.parse("B"), -1);
 		XP.mergeLabeledValue(Label.parse("¬B"), -10);
-		g1.removeEdge(g1.findEdge(g1.getNode("X"), g1.getNode("Y")));
-		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, Y, g1, new CheckStatus());//Y is Z!!!
+		xy.clear();
+
+		CSTN.labelPropagationRule(g, X, P, Y, XP, PY, Y, new CheckStatus());// Y is Z!!!
 		xyOK.mergeLabeledValue(new Label(new Literal('B', State.unknown)), -20, ns);
 		xyOK.mergeLabeledValue(Label.parse("¬B"), -1);
-		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), g1.findEdge(g1.getNode("X"), g1.getNode("Y")).getLabeledValueMap());
+		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), xy.getLabeledValueMap());
 	}
 
-
-	
 	/**
 	 * Test method for {@link it.univr.di.cstnu.CSTNU#noCaseRule(LabeledIntGraph, LabeledIntGraph)}.
 	 */
@@ -309,11 +302,11 @@ public class CSTNTest {
 		g.addVertex(Y);
 		g.addVertex(Z);
 		g.setZ(Z);
-		
+
 		ObjectAVLTreeSet<String> nodeSet = new ObjectAVLTreeSet<>();
 		nodeSet.add(X.getName());
-		
-		//Recostruisco i passi di un caso di errore
+
+		// Ricostruisco i passi di un caso di errore
 		LabeledIntEdge XZ = new LabeledIntEdge("XZ", true);
 		XZ.mergeLabeledValue(Label.parse("p"), -2);
 		XZ.mergeLabeledValue(Label.parse("¿p"), -5, nodeSet);
@@ -334,19 +327,25 @@ public class CSTNTest {
 		g.addEdge(YZ, Y, Z);
 //		wellDefinition(g);
 
-		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
-		System.out.println(g);
-		System.out.println(g1);
-		LabeledIntEdge XZnew = g1.findEdge(g1.getNode("X"), g1.getNode("Z")); 
-		
-		CSTN.labelPropagationRule(g, X, Y, Z, XY, YZ, Z, g1, new CheckStatus());
+//		System.out.println(g);
+//		System.out.println(g1);
+		LabeledIntEdge XZnew = g.findEdge(X, Z);
 
-		//❮XZ; normal; {(¬p, -1) (p, -2) (¿p, -5, {X, Y}) }; ❯
+		CSTN.labelPropagationRule(g, X, Y, Z, XY, YZ, Z, new CheckStatus());
+		assertEquals("Label propagation rule with particular values", "❮XZ; normal; {(¬p, -1) (p, -2) (¿p, -5, {X, Y}) }; ❯", XZnew.toString());// (¬p, -1, {X,
+																																				// Y}) nel caso
+																																				// in cui
+																																				// accettiamo la
+																																				// propagazione
+																																				// dei node set
+																																				// con valori di
+																																				// edge
+																																				// positivi.
+
+		// ❮XZ; normal; {(¬p, -1) (p, -2) (¿p, -5, {X, Y}) }; ❯
 		assertEquals("Label propagation rule with particular values", "❮XZ; normal; {(¬p, -1) (p, -2) (¿p, -5, {X, Y}) }; ❯", XZ.toString());
-		assertEquals("Label propagation rule with particular values", "❮XZ; normal; {(¬p, -1) (p, -2) (¿p, -5, {X, Y}) }; ❯", XZnew.toString());
 	}
 
-	
 	/**
 	 * Test method for {@link it.univr.di.cstnu.CSTNU#noCaseRule(LabeledIntGraph, LabeledIntGraph)}.
 	 */
@@ -360,7 +359,7 @@ public class CSTNTest {
 		LabeledNode A = new LabeledNode("A?", new Literal('a'));
 		LabeledNode B = new LabeledNode("B?", new Literal('b'));
 		A.setLabel(Label.parse("p"));
-		
+
 		g.addVertex(P);
 		g.addVertex(A);
 		g.addVertex(B);
@@ -372,7 +371,7 @@ public class CSTNTest {
 		XP.mergeLabeledValue(Label.parse("¬ap"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
 		XP.mergeLabeledValue(Label.parse("bap"), 9);
-		
+
 		LabeledIntEdge PY = new LabeledIntEdge("PY", true);
 		PY.mergeLabeledValue(Label.parse("¬b"), 9);
 		PY.mergeLabeledValue(Label.parse("b"), -10);
@@ -386,39 +385,54 @@ public class CSTNTest {
 
 		wellDefinition(g);
 
-		assertEquals("¬abg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("¬ab"), Label.parse("bg"), false).toString());
-		assertEquals("¬abg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("¬ab"), Label.parse("bg"), true).toString());
+		assertEquals("¬abg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("bg"), false).toString());
+		assertEquals("¬abg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("bg"), true).toString());
 
-		assertEquals("bg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("b"), Label.parse("b¬ag"), false).toString());
-		assertEquals("bg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("b"), Label.parse("bg¬a"), true).toString());
+		assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬ag"), false).toString());
+		assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a"), true).toString());
 
-		assertEquals("¿abg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("ba"), Label.parse("b¬ag"), false).toString());
-		assertEquals("bg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("ba"), Label.parse("bg¬a"), true).toString());
+		assertEquals("¿abg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("ba"), Label.parse("b¬ag"), false).toString());
+		assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("ba"), Label.parse("bg¬a"), true).toString());
 
-		assertEquals("¿bg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("¬b"), Label.parse("b¬ag"), false).toString());
-		assertEquals("bg",CSTN.makeAlphaBetaGammaPrime(g, P, Label.parse("b"), Label.parse("bg¬a"), true).toString());
+		assertEquals("¿bg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬ag"), false).toString());
+		assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, P, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a"), true).toString());
 	}
-	
-	
+
 	/**
 	 * Test method for {@link it.univr.di.cstnu.CSTNU#noCaseRule(LabeledIntGraph, LabeledIntGraph)}.
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
-	public final void testAlphaBetaGama() {
-		assertEquals("¬a",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("bg"), true)[0].toString());
-		assertEquals("b",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("bg"), true)[1].toString());
-		assertEquals("g",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("bg"), true)[2].toString());
+	public final void testLabeledPropagation2() {
+		LabeledIntGraph g = new LabeledIntGraph(true);
+		LabeledNode P = new LabeledNode("P?", new Literal('p'));
+		LabeledNode X = new LabeledNode("X");
+		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode Z = new LabeledNode("Z");
+		g.addVertex(P);
+		g.addVertex(X);
+		g.addVertex(Y);
+		g.addVertex(Z);
+		g.setZ(Z);
 
-		assertEquals("¬a",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("¬bg"), true)[0].toString());
-		assertEquals("⊡",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("¬bg"), true)[1].toString());
-		assertEquals("g",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("¬bg"), true)[2].toString());
+		ObjectAVLTreeSet<String> nodeSet = new ObjectAVLTreeSet<>();
+		nodeSet.add(X.getName());
+		nodeSet.add(Y.getName());
 
+		// Ricostruisco i passi di un caso di errore
+		LabeledIntEdge YZ = new LabeledIntEdge("YZ", true);
+		YZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		assertEquals("¬a",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("¬bg"), false)[0].toString());
-		assertEquals("¿b",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("¬bg"), false)[1].toString());
-		assertEquals("g",CSTN.getAlphaBetaGamma(Label.parse("¬ab"), Label.parse("¬bg"), false)[2].toString());
+		LabeledIntEdge XY = new LabeledIntEdge("XY", true);
+		XY.mergeLabeledValue(Label.parse("p"), -2);
+		XY.mergeLabeledValue(Label.parse("¬p"), -1);
+		XY.mergeLabeledValue(Label.emptyLabel, 0);
+
+		g.addEdge(XY, X, Y);
+		g.addEdge(YZ, Y, Z);
+
+		CSTN.labelPropagationRule(g, X, Y, Z, XY, YZ, Z, new CheckStatus());
+		LabeledIntEdge XZnew = g.findEdge(X, Z);
+		assertEquals("Label propagation rule with particular values", "❮eXZ; derived; {(¬p, -1) (p, -2) }; ❯", XZnew.toString());
 	}
-	 */
-
-	
 }
