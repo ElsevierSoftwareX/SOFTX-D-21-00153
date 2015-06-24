@@ -12,7 +12,7 @@ It calls a Java program to translate a CSTNU to the corresponding TIGA.
 The source file in the GraphML representation of a CSTNU.
 The output is the xml description of the corresponding TIGA.
  
-You have to install  uppaal-tiga-0.18 software in order to run cstnuTranslator.sh
+You have to install uppaal-tiga-0.18 software in order to run cstnuTranslator.sh
 Please, adjust the location of 'verifytga' program inside cstnuTranslator.sh according to the location where you installed 'uppaal-tiga-0.18'.
 
 
