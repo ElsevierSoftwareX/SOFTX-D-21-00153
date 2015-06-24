@@ -627,7 +627,7 @@ public class CSTNU {
 						if (CAInNext.mergeLabeledValue(l1l2, z)) {
 							reductionApplied = true;
 							CSTNU.LOG.finer("Case Label Removal applied to edge " + oldCA + ":\n"
-									+ "partic: " + B.getName() + " <---(" + l1 + ", " + lowerCaseEntryOfAB.getKey().getValue().toLowerCase() + ", " + x
+									+ "partic: " + B.getName() + " <---(" + l1 + ", " + ((x<0)? "":lowerCaseEntryOfAB.getKey().getValue().toLowerCase()) + ", " + x
 									+ ")--- " + A.getName() + " <---(" + l2 + ", " + upperCaseNodeName.toUpperCase() + ", " + z + ")--- "
 									+ currentGraph.getSource(CA).getName()
 									+ "\nresult: " + A.getName() + " <---(" + l1l2 + ", " + Constants.EMPTY_UPPER_CASE_LABELstring + ", " + z + ")--- "

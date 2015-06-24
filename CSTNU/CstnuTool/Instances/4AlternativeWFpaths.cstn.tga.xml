@@ -5,7 +5,7 @@
     <template>
         <name>g4AlternativeWFpaths_cstn</name>
         <!--Clock and proposition declarations-->
-        <declaration>clock tG, tDelta, tn10, tn12, tn13, tn14, tn15, tn16, tn17, tn2, tn3, tn4, tn5, tn6, tn7, tn8, tn9, tZ, tA_, tB_;
+        <declaration>clock t__G, t__Delta, tn10, tn12, tn13, tn14, tn15, tn16, tn17, tn2, tn3, tn4, tn5, tn6, tn7, tn8, tn9, tZ, tA_, tB_;
 bool xn10, xn12, xn13, xn14, xn15, xn16, xn17, xn2, xn3, xn4, xn5, xn6, xn7, xn8, xn9, xZ, xA_, xB_;
 int [-1,1] a = 0, b = 0;</declaration>
         <!--LabeledNode declarations-->
@@ -49,7 +49,7 @@ int [-1,1] a = 0, b = 0;</declaration>
         <transition action="gain" controllable="false">
             <source ref="vera"/>
             <target ref="agnes"/>
-            <label kind="guard">tDelta &gt; 0</label>
+            <label kind="guard">t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--PASS transition-->
@@ -57,7 +57,7 @@ int [-1,1] a = 0, b = 0;</declaration>
             <source ref="agnes"/>
             <target ref="vera"/>
             <label kind="guard"/>
-            <label kind="assignment">tDelta := 0</label>
+            <label kind="assignment">t__Delta := 0</label>
         </transition>
         <!--Transitions for clock setting-->
         <transition action="set_xn10" controllable="false">
@@ -167,18 +167,18 @@ int [-1,1] a = 0, b = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xA_ &amp;&amp; a == 0</label>
-            <label kind="assignment">a := -1, tDelta := 0</label>
+            <label kind="assignment">a := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_a_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xA_ &amp;&amp; a == 0</label>
-            <label kind="assignment">a := 1, tDelta := 0</label>
+            <label kind="assignment">a := 1, t__Delta := 0</label>
         </transition>
         <transition action="anot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xA_ &amp;&amp; a == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xA_ &amp;&amp; a == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <transition action="set_b" controllable="false">
@@ -191,18 +191,18 @@ int [-1,1] a = 0, b = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xB_ &amp;&amp; b == 0</label>
-            <label kind="assignment">b := -1, tDelta := 0</label>
+            <label kind="assignment">b := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_b_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xB_ &amp;&amp; b == 0</label>
-            <label kind="assignment">b := 1, tDelta := 0</label>
+            <label kind="assignment">b := 1, t__Delta := 0</label>
         </transition>
         <transition action="bnot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xB_ &amp;&amp; b == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xB_ &amp;&amp; b == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--Transitions for contingent-constraint setting-->

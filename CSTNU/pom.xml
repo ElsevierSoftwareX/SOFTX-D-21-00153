@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.7.1-SNAPSHOT</version>
+	<version>1.7.2-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
@@ -248,7 +248,7 @@
 								<tar compression="gzip" destfile="${basedir}/${project.tool.filename}.tgz">
 									<tarfileset dir="${basedir}/CstnuTool/" prefix="${project.tool.filename}">
 										<include name="**" />
-										<exclude name="uppaal-tiga-0.17/**" />
+										<exclude name="uppaal-tiga-*/**" />
 									</tarfileset>
 								</tar>
 								<delete>

@@ -3,10 +3,10 @@
                      "http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd">
 <nta>
     <template>
-        <name>ex2C_cstnu</name>
+        <name>ex2C_cstn</name>
         <!--Clock and proposition declarations-->
-        <declaration>clock tG, tDelta, tn1, tn2, tn3, tZ, tA;
-bool xn1, xn2, xn3, xZ, xA;
+        <declaration>clock t__G, t__Delta, tn1, tn2, tn3, tZ, tA_;
+bool xn1, xn2, xn3, xZ, xA_;
 int [-1,1] a = 0;</declaration>
         <!--LabeledNode declarations-->
         <location id="agnes">
@@ -33,7 +33,7 @@ int [-1,1] a = 0;</declaration>
         <transition action="gain" controllable="false">
             <source ref="vera"/>
             <target ref="agnes"/>
-            <label kind="guard">tDelta &gt; 0</label>
+            <label kind="guard">t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--PASS transition-->
@@ -41,7 +41,7 @@ int [-1,1] a = 0;</declaration>
             <source ref="agnes"/>
             <target ref="vera"/>
             <label kind="guard"/>
-            <label kind="assignment">tDelta := 0</label>
+            <label kind="assignment">t__Delta := 0</label>
         </transition>
         <!--Transitions for clock setting-->
         <transition action="set_xn1" controllable="false">
@@ -72,25 +72,25 @@ int [-1,1] a = 0;</declaration>
         <transition action="set_a" controllable="false">
             <source ref="agnes"/>
             <target ref="agnes"/>
-            <label kind="guard">!xA &amp;&amp; a == 0</label>
-            <label kind="assignment">xA := true, tA := 0</label>
+            <label kind="guard">!xA_ &amp;&amp; a == 0</label>
+            <label kind="assignment">xA_ := true, tA_ := 0</label>
         </transition>
         <transition action="set_a_false" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
-            <label kind="guard">xA &amp;&amp; a == 0</label>
-            <label kind="assignment">a := -1, tDelta := 0</label>
+            <label kind="guard">xA_ &amp;&amp; a == 0</label>
+            <label kind="assignment">a := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_a_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
-            <label kind="guard">xA &amp;&amp; a == 0</label>
-            <label kind="assignment">a := 1, tDelta := 0</label>
+            <label kind="guard">xA_ &amp;&amp; a == 0</label>
+            <label kind="assignment">a := 1, t__Delta := 0</label>
         </transition>
         <transition action="anot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xA &amp;&amp; a == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xA_ &amp;&amp; a == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--Transitions for contingent-constraint setting-->
@@ -104,7 +104,7 @@ int [-1,1] a = 0;</declaration>
         <transition action="win_labelled1" controllable="false">
             <source ref="go"/>
             <target ref="go1"/>
-            <label kind="guard">(tn1 - tn3 &lt;= -3) &amp;&amp; (tn1 - tA &lt;= 4) &amp;&amp; (tn3 - tn1 &lt;= 4) &amp;&amp; (tA - tn1 &lt;= -3)</label>
+            <label kind="guard">(tn1 - tn3 &lt;= -3) &amp;&amp; (tn1 - tA_ &lt;= 4) &amp;&amp; (tn3 - tn1 &lt;= 4) &amp;&amp; (tA_ - tn1 &lt;= -3)</label>
             <label kind="assignment"/>
         </transition>
         <transition action="win_labelled2a" controllable="false">
@@ -116,16 +116,16 @@ int [-1,1] a = 0;</declaration>
         <transition action="win_labelled2" controllable="false">
             <source ref="go1"/>
             <target ref="goal"/>
-            <label kind="guard">(tn3 - tn2 &lt;= 10) &amp;&amp; (tA - tn2 &lt;= -3) &amp;&amp; (tn2 - tA &lt;= 10) &amp;&amp; (tn2 - tn3 &lt;= -3)</label>
+            <label kind="guard">(tn3 - tn2 &lt;= 10) &amp;&amp; (tA_ - tn2 &lt;= -3) &amp;&amp; (tn2 - tA_ &lt;= 10) &amp;&amp; (tn2 - tn3 &lt;= -3)</label>
             <label kind="assignment"/>
         </transition>
         <transition action="win_unlabelled" controllable="false">
             <source ref="vera"/>
             <target ref="go"/>
-            <label kind="guard">xn1 &amp;&amp; xn2 &amp;&amp; xn3 &amp;&amp; xZ &amp;&amp; xA &amp;&amp; (tn3 - tA &lt;= 7) &amp;&amp; (tA - tn3 &lt;= -7)</label>
+            <label kind="guard">xn1 &amp;&amp; xn2 &amp;&amp; xn3 &amp;&amp; xZ &amp;&amp; xA_ &amp;&amp; (tn3 - tA_ &lt;= 7) &amp;&amp; (tA_ - tn3 &lt;= -7)</label>
             <label kind="assignment"/>
         </transition>
-        <system>_processMain = ex2C_cstnu();
+        <system>_processMain = ex2C_cstn();
 		system _processMain;</system>
     </template>
 </nta>

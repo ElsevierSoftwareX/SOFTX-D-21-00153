@@ -5,7 +5,7 @@
     <template>
         <name>ex1C_cstnu</name>
         <!--Clock and proposition declarations-->
-        <declaration>clock tG, tDelta, tC1_s, tC2_s, tC3_s, tn3, tZ, tC1_e, tC2_e, tC3_e, tA_, tB_;
+        <declaration>clock t__G, t__Delta, tC1_s, tC2_s, tC3_s, tn3, tZ, tC1_e, tC2_e, tC3_e, tA_, tB_;
 bool xC1_s, xC2_s, xC3_s, xn3, xZ, xC1_e, xC2_e, xC3_e, xA_, xB_;
 int [-1,1] A = 0, B = 0;</declaration>
         <!--LabeledNode declarations-->
@@ -37,7 +37,7 @@ int [-1,1] A = 0, B = 0;</declaration>
         <transition action="gain" controllable="false">
             <source ref="vera"/>
             <target ref="agnes"/>
-            <label kind="guard">tDelta &gt; 0</label>
+            <label kind="guard">t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--PASS transition-->
@@ -45,7 +45,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="agnes"/>
             <target ref="vera"/>
             <label kind="guard"/>
-            <label kind="assignment">tDelta := 0</label>
+            <label kind="assignment">t__Delta := 0</label>
         </transition>
         <!--Transitions for clock setting-->
         <transition action="set_xC1_s" controllable="false">
@@ -89,18 +89,18 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xA_ &amp;&amp; A == 0</label>
-            <label kind="assignment">A := -1, tDelta := 0</label>
+            <label kind="assignment">A := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_A_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xA_ &amp;&amp; A == 0</label>
-            <label kind="assignment">A := 1, tDelta := 0</label>
+            <label kind="assignment">A := 1, t__Delta := 0</label>
         </transition>
         <transition action="Anot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xA_ &amp;&amp; A == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xA_ &amp;&amp; A == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <transition action="set_B" controllable="false">
@@ -113,18 +113,18 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xB_ &amp;&amp; B == 0</label>
-            <label kind="assignment">B := -1, tDelta := 0</label>
+            <label kind="assignment">B := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_B_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xB_ &amp;&amp; B == 0</label>
-            <label kind="assignment">B := 1, tDelta := 0</label>
+            <label kind="assignment">B := 1, t__Delta := 0</label>
         </transition>
         <transition action="Bnot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xB_ &amp;&amp; B == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xB_ &amp;&amp; B == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--Transitions for contingent-constraint setting-->
@@ -132,7 +132,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xC1_s &amp;&amp; !xC1_e &amp;&amp; (tC1_s &gt;= 5) &amp;&amp; (tC1_s &lt;= 10)</label>
-            <label kind="assignment">xC1_e := true, tC1_e := 0, tDelta := 0</label>
+            <label kind="assignment">xC1_e := true, tC1_e := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tC1_e" controllable="false">
             <source ref="agnes"/>
@@ -144,7 +144,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xC2_s &amp;&amp; !xC2_e &amp;&amp; (tC2_s &gt;= 3) &amp;&amp; (tC2_s &lt;= 8)</label>
-            <label kind="assignment">xC2_e := true, tC2_e := 0, tDelta := 0</label>
+            <label kind="assignment">xC2_e := true, tC2_e := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tC2_e" controllable="false">
             <source ref="agnes"/>
@@ -156,7 +156,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xC3_s &amp;&amp; !xC3_e &amp;&amp; (tC3_s &gt;= 2) &amp;&amp; (tC3_s &lt;= 7)</label>
-            <label kind="assignment">xC3_e := true, tC3_e := 0, tDelta := 0</label>
+            <label kind="assignment">xC3_e := true, tC3_e := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tC3_e" controllable="false">
             <source ref="agnes"/>

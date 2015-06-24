@@ -31,5 +31,5 @@ To use maven
 	* mvn test //for executing JUNIT4 test
 	* mvn package //for preparing the jar package	
 	* mvn site //for building site
-	* mvn site:install //for deploy site on profs.sci.univr.it.
+	* mvn site:deploy //for deploy site on profs.sci.univr.it.
 	* mvn clean

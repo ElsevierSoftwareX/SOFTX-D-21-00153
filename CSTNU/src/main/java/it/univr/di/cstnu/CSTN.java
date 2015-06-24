@@ -287,10 +287,12 @@ public class CSTN {
 			// Normalize with respect to R0--R3
 			if (s.isObsevator()) {
 				CSTN.labelModificationR0(g, s, d, e, status, instantaneousReaction);
-				CSTN.labelModificationR2(g, s, d, e, status, instantaneousReaction);
+			}
+			if (d.isObsevator()) {
+				CSTN.labelModificationR2(g, d, s, e, status, instantaneousReaction);
 			}
 			CSTN.labelModificationR1(g, s, d, e, status, instantaneousReaction);
-			CSTN.labelModificationR3(g, s, d, e, status, instantaneousReaction);
+			CSTN.labelModificationR3(g, d, s, e, status, instantaneousReaction);
 		}
 		if (CSTN.LOG.isLoggable(Level.INFO))
 			CSTN.LOG.log(Level.INFO, "A preliminary application of label modification rules has been done: " + status.toString());
@@ -840,7 +842,7 @@ public class CSTN {
 					if (CSTN.LOG.isLoggable(Level.FINER))
 						CSTN.LOG.log(Level.FINER, "Since after R2, the label does not subsumes the conjection of node labes, it means that " + X.getName()
 								+ " has 'p' in its label. It has to be after " + P.getName() + ". Edge: " + XP
-								+ ":\nsource: " + P + " <---(" + l + ", " + Constants.formatInt(w) + ")--- " + X
+								+ ":\nsource: " + P + "<--(" + l + ", " + Constants.formatInt(w) + ")--" + X
 								+ "\nresult: " + P.getName() + " <---(" + X.getLabel().conjunction(P.getLabel()) + ", 0)--- " + X.getName());
 					XP.mergeLabeledValue(X.getLabel().conjunction(P.getLabel()), 0);
 				} else {

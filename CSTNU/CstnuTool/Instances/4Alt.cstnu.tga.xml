@@ -5,7 +5,7 @@
     <template>
         <name>g4AlternativeWFpaths_cstnu</name>
         <!--Clock and proposition declarations-->
-        <declaration>clock tG, tDelta, tn0, tn10, tn12, tn14, tn16, tn17, tn2, tn4, tn6, tn7, tn8, tZ, tn13, tn15, tn3, tn5, tn9, tA_, tB_;
+        <declaration>clock t__G, t__Delta, tn0, tn10, tn12, tn14, tn16, tn17, tn2, tn4, tn6, tn7, tn8, tZ, tn13, tn15, tn3, tn5, tn9, tA_, tB_;
 bool xn0, xn10, xn12, xn14, xn16, xn17, xn2, xn4, xn6, xn7, xn8, xZ, xn13, xn15, xn3, xn5, xn9, xA_, xB_;
 int [-1,1] A = 0, B = 0;</declaration>
         <!--LabeledNode declarations-->
@@ -49,7 +49,7 @@ int [-1,1] A = 0, B = 0;</declaration>
         <transition action="gain" controllable="false">
             <source ref="vera"/>
             <target ref="agnes"/>
-            <label kind="guard">tDelta &gt; 0</label>
+            <label kind="guard">t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--PASS transition-->
@@ -57,7 +57,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="agnes"/>
             <target ref="vera"/>
             <label kind="guard"/>
-            <label kind="assignment">tDelta := 0</label>
+            <label kind="assignment">t__Delta := 0</label>
         </transition>
         <!--Transitions for clock setting-->
         <transition action="set_xn0" controllable="false">
@@ -143,18 +143,18 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xA_ &amp;&amp; A == 0</label>
-            <label kind="assignment">A := -1, tDelta := 0</label>
+            <label kind="assignment">A := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_A_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xA_ &amp;&amp; A == 0</label>
-            <label kind="assignment">A := 1, tDelta := 0</label>
+            <label kind="assignment">A := 1, t__Delta := 0</label>
         </transition>
         <transition action="Anot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xA_ &amp;&amp; A == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xA_ &amp;&amp; A == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <transition action="set_B" controllable="false">
@@ -167,18 +167,18 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xB_ &amp;&amp; B == 0</label>
-            <label kind="assignment">B := -1, tDelta := 0</label>
+            <label kind="assignment">B := -1, t__Delta := 0</label>
         </transition>
         <transition action="set_B_true" controllable="true">
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xB_ &amp;&amp; B == 0</label>
-            <label kind="assignment">B := 1, tDelta := 0</label>
+            <label kind="assignment">B := 1, t__Delta := 0</label>
         </transition>
         <transition action="Bnot_set" controllable="false">
             <source ref="agnes"/>
             <target ref="goal"/>
-            <label kind="guard">xB_ &amp;&amp; B == 0 &amp;&amp; tDelta &gt; 0</label>
+            <label kind="guard">xB_ &amp;&amp; B == 0 &amp;&amp; t__Delta &gt; 0</label>
             <label kind="assignment"/>
         </transition>
         <!--Transitions for contingent-constraint setting-->
@@ -186,7 +186,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xn12 &amp;&amp; !xn13 &amp;&amp; (tn12 &gt;= 3) &amp;&amp; (tn12 &lt;= 8)</label>
-            <label kind="assignment">xn13 := true, tn13 := 0, tDelta := 0</label>
+            <label kind="assignment">xn13 := true, tn13 := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tn13" controllable="false">
             <source ref="agnes"/>
@@ -198,7 +198,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xn14 &amp;&amp; !xn15 &amp;&amp; (tn14 &gt;= 5) &amp;&amp; (tn14 &lt;= 7)</label>
-            <label kind="assignment">xn15 := true, tn15 := 0, tDelta := 0</label>
+            <label kind="assignment">xn15 := true, tn15 := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tn15" controllable="false">
             <source ref="agnes"/>
@@ -210,7 +210,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xn2 &amp;&amp; !xn3 &amp;&amp; (tn2 &gt;= 2) &amp;&amp; (tn2 &lt;= 6)</label>
-            <label kind="assignment">xn3 := true, tn3 := 0, tDelta := 0</label>
+            <label kind="assignment">xn3 := true, tn3 := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tn3" controllable="false">
             <source ref="agnes"/>
@@ -222,7 +222,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xn4 &amp;&amp; !xn5 &amp;&amp; (tn4 &gt;= 4) &amp;&amp; (tn4 &lt;= 6)</label>
-            <label kind="assignment">xn5 := true, tn5 := 0, tDelta := 0</label>
+            <label kind="assignment">xn5 := true, tn5 := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tn5" controllable="false">
             <source ref="agnes"/>
@@ -234,7 +234,7 @@ int [-1,1] A = 0, B = 0;</declaration>
             <source ref="vera"/>
             <target ref="vera"/>
             <label kind="guard">xn8 &amp;&amp; !xn9 &amp;&amp; (tn8 &gt;= 2) &amp;&amp; (tn8 &lt;= 7)</label>
-            <label kind="assignment">xn9 := true, tn9 := 0, tDelta := 0</label>
+            <label kind="assignment">xn9 := true, tn9 := 0, t__Delta := 0</label>
         </transition>
         <transition action="cv_tn9" controllable="false">
             <source ref="agnes"/>
