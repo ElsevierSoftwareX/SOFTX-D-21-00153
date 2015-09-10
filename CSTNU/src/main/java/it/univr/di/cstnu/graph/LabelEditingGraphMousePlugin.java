@@ -42,8 +42,8 @@ import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
  * Allows to edit vertex or edge attributes.
  *
  * @author Tom Nelson. Adapted by Roberto Posenato.
- * @param <N>
- * @param <E>
+ * @param <N> vertex type
+ * @param <E> edge type
  * @version $Id: $Id
  */
 public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends LabeledIntEdge> extends AbstractGraphMousePlugin implements

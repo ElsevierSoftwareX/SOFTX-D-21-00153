@@ -167,7 +167,7 @@ public class LabeledIntEdge extends Component {
 	 * state of the edge to
 	 * select the color.
 	 *
-	 * @param pi
+	 * @param pi a {@link PickedInfo} object.
 	 * @param pickedPaint a {@link java.awt.Paint} object.
 	 * @param normalPaint a {@link java.awt.Paint} object.
 	 * @param contingentPaint a {@link java.awt.Paint} object.

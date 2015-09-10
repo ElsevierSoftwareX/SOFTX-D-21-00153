@@ -24,8 +24,8 @@ import edu.uci.ics.jung.graph.Graph;
  * </pre>
  *
  * @author Tom Nelson - tomnelson@dev.java.net
- * @param <V>
- * @param <E>
+ * @param <V> vertex type
+ * @param <E> edge type
  * @version $Id: $Id
  */
 public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializable {

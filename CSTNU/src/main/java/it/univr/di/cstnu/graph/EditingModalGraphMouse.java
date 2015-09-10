@@ -45,7 +45,9 @@ import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
  *
  * @author posenato
  * @param <V>
+ *                vertex type
  * @param <E>
+ *                edge type
  * @version $Id: $Id
  */
 @SuppressWarnings("javadoc")
@@ -64,10 +66,15 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 
 		/**
 		 * @param t
+		 *                t key
 		 * @param p
+		 *                p key
 		 * @param e
+		 *                e key
 		 * @param a
+		 *                a key, not used.
 		 * @param graphMouse
+		 *                a ModalGraphMouse object.
 		 */
 		public ModeKeyAdapter(final char t, final char p, final char e, final char a, final ModalGraphMouse graphMouse) {
 			this.t = t;
@@ -77,7 +84,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 		}
 
 		/**
-		 * @param graphMouse
+		 * @param graphMouse a ModalGraphMouse object.
 		 */
 		public ModeKeyAdapter(final ModalGraphMouse graphMouse) {
 			this.graphMouse = graphMouse;
@@ -121,9 +128,12 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	/**
 	 * Creates an instance with default values.
 	 *
-	 * @param rc a {@link edu.uci.ics.jung.visualization.RenderContext} object.
-	 * @param vertexFactory a {@link org.apache.commons.collections15.Factory} object.
-	 * @param edgeFactory a {@link org.apache.commons.collections15.Factory} object.
+	 * @param rc
+	 *                a {@link edu.uci.ics.jung.visualization.RenderContext} object.
+	 * @param vertexFactory
+	 *                a {@link org.apache.commons.collections15.Factory} object.
+	 * @param edgeFactory
+	 *                a {@link org.apache.commons.collections15.Factory} object.
 	 */
 	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory) {
 		this(rc, vertexFactory, edgeFactory, 1.1f, 1 / 1.1f);
@@ -132,13 +142,19 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	/**
 	 * Creates an instance with passed values.
 	 *
-	 * @param rc a {@link edu.uci.ics.jung.visualization.RenderContext} object.
-	 * @param vertexFactory a {@link org.apache.commons.collections15.Factory} object.
-	 * @param edgeFactory a {@link org.apache.commons.collections15.Factory} object.
-	 * @param in override value for scale in
-	 * @param out override value for scale out
+	 * @param rc
+	 *                a {@link edu.uci.ics.jung.visualization.RenderContext} object.
+	 * @param vertexFactory
+	 *                a {@link org.apache.commons.collections15.Factory} object.
+	 * @param edgeFactory
+	 *                a {@link org.apache.commons.collections15.Factory} object.
+	 * @param in
+	 *                override value for scale in
+	 * @param out
+	 *                override value for scale out
 	 */
-	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory, final float in, final float out) {
+	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory, final float in,
+			final float out) {
 		super(in, out);
 		this.vertexFactory = vertexFactory;
 		this.edgeFactory = edgeFactory;
@@ -149,7 +165,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * <p>Getter for the field <code>annotatingPlugin</code>.</p>
+	 * <p>
+	 * Getter for the field <code>annotatingPlugin</code>.
+	 * </p>
 	 *
 	 * @return the annotatingPlugin
 	 */
@@ -158,7 +176,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * <p>Getter for the field <code>editingPlugin</code>.</p>
+	 * <p>
+	 * Getter for the field <code>editingPlugin</code>.
+	 * </p>
 	 *
 	 * @return the editingPlugin
 	 */
@@ -167,7 +187,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * <p>Getter for the field <code>labelEditingPlugin</code>.</p>
+	 * <p>
+	 * Getter for the field <code>labelEditingPlugin</code>.
+	 * </p>
 	 *
 	 * @return the labelEditingPlugin
 	 */
@@ -188,9 +210,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * create (if necessary) and return a menu that will change the mode
+	 * {@inheritDoc} create (if necessary) and return a menu that will change the mode
 	 */
 	@Override
 	public JMenu getModeMenu() {
@@ -242,13 +262,14 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 			this.addItemListener(new ItemListener() {
 				@Override
 				public void itemStateChanged(final ItemEvent e) {
-					if (e.getStateChange() == ItemEvent.SELECTED) if (e.getItem() == Mode.TRANSFORMING) {
-						transformingButton.setSelected(true);
-					} else if (e.getItem() == Mode.PICKING) {
-						pickingButton.setSelected(true);
-					} else if (e.getItem() == Mode.EDITING) {
-						editingButton.setSelected(true);
-					}
+					if (e.getStateChange() == ItemEvent.SELECTED)
+						if (e.getItem() == Mode.TRANSFORMING) {
+							transformingButton.setSelected(true);
+						} else if (e.getItem() == Mode.PICKING) {
+							pickingButton.setSelected(true);
+						} else if (e.getItem() == Mode.EDITING) {
+							editingButton.setSelected(true);
+						}
 				}
 			});
 		}
@@ -256,7 +277,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * <p>Getter for the field <code>popupEditingPlugin</code>.</p>
+	 * <p>
+	 * Getter for the field <code>popupEditingPlugin</code>.
+	 * </p>
 	 *
 	 * @return the popupEditingPlugin
 	 */
@@ -265,9 +288,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * setter for the Mode.
+	 * {@inheritDoc} setter for the Mode.
 	 */
 	@Override
 	public void setMode(final Mode mode) {
@@ -292,9 +313,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * Create the plugins, and load the plugins for TRANSFORMING mode
+	 * {@inheritDoc} Create the plugins, and load the plugins for TRANSFORMING mode
 	 */
 	@SuppressWarnings("unused")
 	@Override
