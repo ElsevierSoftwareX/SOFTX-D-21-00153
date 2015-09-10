@@ -6,8 +6,14 @@ v1.7.3
 	date:	2015-09-10
 	
 	This release contains some minor bug fixes and a revision of public methods of class it.univr.di.cstnu.CSTNU.
-	Now, it is possible to check the controllability of a cstn instance instantiating a CSTNU object and calling it dynamicControllabilityCheck() method.
-	Moreover, I add the class it.univr.di.cstnu.CSTNURunningTime and the script CSTNURunningTime for checking a bundle of cstnu instances obtaining also some execution time statistics.
+	Now, it is possible to check the controllability of a cstn instance instantiating a CSTNU object and calling its
+	dynamicControllabilityCheck(LabeledIntGraph) method.
+	It is sufficient to create a LabeledIntGraph object representing a given cstnu instance (in LabeledIntGraph class there is also a method for loading 
+	an instance from a file written in GraphML format), instantiate a CSTNU object and call its method dynamicControllabilityCheck(LabeledIntGraph) passing 
+	the created graph.
+	
+	Moreover, I add the class it.univr.di.cstnu.CSTNURunningTime and the script CSTNURunningTime for checking a bundle of cstnu instances obtaining also 
+	some execution time statistics.
 
 v1.7.2
 ------
