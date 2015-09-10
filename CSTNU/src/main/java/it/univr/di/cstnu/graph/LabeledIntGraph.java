@@ -50,7 +50,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Loads the LabeledIntGraph stored in 'file' and return it as LabeledIntGraph.
+	 * Loads the LabeledIntGraph stored in 'file' as GraphML format and returns it as LabeledIntGraph.
 	 *
 	 * @param file a {@link java.io.File} object.
 	 * @return LabeledIntGraph if the file was load successfully; null otherwise.
@@ -110,7 +110,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	private LabeledNode Z = null;
 
 	/**
-	 * The structure of this object comes from the super class:<br>
+	 * The structure of this class comes from the super class:<br>
 	 * protected Map&lt;LabeledNode, Pair&lt;Map&lt;LabeledNode,LabeledIntEdge&gt;&gt;&gt; vertices; // Map of vertices to Pair of adjacency maps {incoming, outgoing} of neighbor
 	 * vertices to incident edges.<br>
 	 * protected Map&lt;LabeledIntEdge, Pair&lt;LabeledNode&gt;&gt; edges; // Map of edges to incident vertex pairs
@@ -156,7 +156,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * <p>Constructor for LabeledIntGraph.</p>
 	 *
-	 * @param name a name to the graph
+	 * @param name a name for the graph
 	 * @param optimize a boolean.
 	 */
 	public LabeledIntGraph(final String name, final boolean optimize) {
@@ -194,7 +194,8 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>clearCache.</p>
+	 * <p>Clear all internal caches.</p>
+	 * Caches are automatically created during any modification or query about the graph structure.
 	 */
 	public void clearCache() {
 		this.lowerCaseEdgesSet = null;
@@ -233,7 +234,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>copyCleaningRedundantLabels.</p>
+	 * Makes a copy as {@link #copy(LabeledIntGraph)} removing all possible redundant labeled values in the given graph.
 	 *
 	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
 	 */
@@ -415,7 +416,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * <p>getPropositions.</p>
 	 *
-	 * @return the set of proposition of the graph.
+	 * @return the set of propositions of the graph.
 	 */
 	public Set<Literal> getPropositions() {
 		if (this.observedProposition == null) {
@@ -430,12 +431,12 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * Given a observation node <b>obs</b> that observes the proposition 'p', its 'children' are all observation nodes, Q, for which 'p' appears in the label of node Q.
+	 * Given a observation node <code>obs</code> that observes the proposition 'p', its 'children' are all observation nodes, Q, for which 'p' appears in the label of node Q.
 	 * <p>
 	 * This method returns the set of children of a given node as a <b>set of the straight literals</b> associated to the children instead of a <b>set of children nodes</b>.
 	 *
 	 * @param obs a {@link it.univr.di.cstnu.graph.LabeledNode} object.
-	 * @return the set of children of observation node obs, null if there is no children.
+	 * @return the set of children of observation node <code>obs</code>, null if there is no children.
 	 */
 	public Set<Literal> getChildrenOf(LabeledNode obs) {
 		if (obs == null) return null;
@@ -519,7 +520,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	 * <p>hasSameEdgesOf.</p>
 	 *
 	 * @param g1 a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
-	 * @return true if this graph contains edges equal to all g1 edges. Equals is checked using method {@link #equals(Object)}.
+	 * @return true if this graph contains edges equal to g1 edges. Equals is checked using method {@link #equals(Object)}.
 	 *         False otherwise.
 	 */
 	public boolean hasSameEdgesOf(final LabeledIntGraph g1) {
@@ -544,7 +545,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * <p>isOptimize.</p>
 	 *
-	 * @return the optimize
+	 * @return true it the graph does not contain redundant labeled values, false otherwise.
 	 */
 	public boolean isOptimize() {
 		return this.optimize;
@@ -562,7 +563,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * <p>setZ.</p>
 	 *
-	 * @param z the z to set
+	 * @param z the node to be set as Z node of the graph.
 	 */
 	public void setZ(final LabeledNode z) {
 		this.Z = z;
