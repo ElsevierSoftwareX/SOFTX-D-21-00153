@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.7.2-SNAPSHOT</version>
+	<version>1.7.3-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
@@ -115,7 +115,8 @@
 	<distributionManagement>
 		<site>
 			<id>profs</id>
-			<url>scp://profs.sci.univr.it/home/posenato/public_html/software/cstnu/</url>
+			<!-- la password è data dal file ~/.m2/setting.xml -->
+			<url>scp://profs.scienze.univr.it/home/posenato/public_html/software/cstnu/</url>
 		</site>
 	</distributionManagement>
 	<build>

@@ -404,6 +404,11 @@ public class CSTNU2UppaalTiga {
 	private String ignore = "";
 
 	/**
+	 * To verify if a cstn has syntax ok!
+	 */
+	private CSTNU cstnuCheck; 
+	
+	/**
 	 * In a TGA, a location element contains the declaration of a node.
 	 * In the CSTNU translation, there are three constants location: controller (id={@link #VERA}), environment (id={@link #AGNES}) and goal (id={@link #GOAL}).
 	 * Then, there are one location for each CSTNU observation node, (id=nodeName without?
@@ -792,6 +797,7 @@ public class CSTNU2UppaalTiga {
 		if (o == null || g == null) throw new IllegalArgumentException("One parameter is null!");
 		output = o;
 		cstnu = g;
+		cstnuCheck = new CSTNU(true, true);
 		if (!checkCSTNUSyntax()) throw new IllegalArgumentException("CSTNU is not well formed!");
 	}
 
@@ -812,8 +818,7 @@ public class CSTNU2UppaalTiga {
 	private boolean checkCSTNUSyntax() {
 		LOG.finest("Checking graph...");
 		try {
-			boolean allOk = CSTNU.initUpperLowerLabelDataStructure(cstnu);
-			if (!allOk) return false;
+			cstnuCheck.initUpperLowerLabelDataStructure(cstnu);
 		}
 		catch (IllegalArgumentException e) {
 			System.err.println(e.getMessage());

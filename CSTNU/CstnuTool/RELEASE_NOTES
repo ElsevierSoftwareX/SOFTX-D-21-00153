@@ -1,6 +1,14 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.7.3
+------
+	date:	2015-09-10
+	
+	This release contains some minor bug fixes and a revision of public methods of class it.univr.di.cstnu.CSTNU.
+	Now, it is possible to check the controllability of a cstn instance instantiating a CSTNU object and calling it dynamicControllabilityCheck() method.
+	Moreover, I add the class it.univr.di.cstnu.CSTNURunningTime and the script CSTNURunningTime for checking a bundle of cstnu instances obtaining also some execution time statistics.
+
 v1.7.2
 ------
 	date:	2015-06-24

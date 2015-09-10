@@ -4,7 +4,7 @@
   <groupId>it.univr.di</groupId>
   <artifactId>CSTNU</artifactId>
   <name>CSTNU</name>
-  <version>1.7.2-SNAPSHOT</version>
+  <version>1.7.3-SNAPSHOT</version>
   <url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
   <developers>
     <developer>
@@ -253,7 +253,7 @@
   <distributionManagement>
     <site>
       <id>profs</id>
-      <url>scp://profs.sci.univr.it/home/posenato/public_html/software/cstnu/</url>
+      <url>scp://profs.scienze.univr.it/home/posenato/public_html/software/cstnu/</url>
     </site>
   </distributionManagement>
   <properties>

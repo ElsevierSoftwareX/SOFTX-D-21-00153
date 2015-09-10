@@ -26,3 +26,8 @@ CSTNRunningTime.sh
 This tool is intended for a subproject in which we are experimenting a new algorithm for checking the dynamic consistency of CSTN
 (network in which uncertainty is not present).
 In particular, this tool determines the average execution time of Dynamic Consistency Check Algorithm given a set of CSTN instances.
+
+CSTNURunningTime.sh
+------------------	
+This tool is intended for a subproject in which we are experimenting a new algorithm for checking the dynamic consistency of CSTNU.
+In particular, this tool determines the average execution time of Dynamic Consistency Check Algorithm given a set of CSTNU instances.

@@ -1,15 +1,7 @@
 /**
- * 
+ *
  */
 package it.univr.di.cstnu;
-
-import it.univr.di.cstnu.CSTN.CheckStatus;
-import it.univr.di.cstnu.graph.EditingModalGraphMouse;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
-import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.cstnu.graph.StaticLayout;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,7 +19,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Writer;
-import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
@@ -54,6 +45,14 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.decorators.EdgeShape;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import it.univr.di.cstnu.CSTN.CSTNCheckStatus;
+import it.univr.di.cstnu.CSTNU.CSTNUCheckStatus;
+import it.univr.di.cstnu.graph.EditingModalGraphMouse;
+import it.univr.di.cstnu.graph.GraphMLReader;
+import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.StaticLayout;
 
 /**
  * Simple facade of Jung graph in order to guarantee the CSTPU semantics.
@@ -83,12 +82,12 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	public static final String distanceViewerName = "DistanceViewer";
 
 	/**
-	 * 
+	 *
 	 */
 	static final ImageIcon infoIcon = new ImageIcon("images/metal-info.png");
 
 	/**
-	 * 
+	 *
 	 */
 	static final ImageIcon warnIcon = new ImageIcon("images/metal-warning.png");
 
@@ -102,12 +101,12 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	 * main.
 	 * </p>
 	 *
-	 * @param args an array of {@link java.lang.String} objects.
+	 * @param args
+	 *                an array of {@link java.lang.String} objects.
 	 */
-	public static void main(String[] args) {
+	public static void main(final String[] args) {
 
-		@SuppressWarnings("unused")
-		final CSTNUEditor cSTNUEditor = new CSTNUEditor();
+		new CSTNUEditor();
 	}
 
 	/**
@@ -117,9 +116,9 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	LabeledIntGraph g, g1, g2, distanceGraph;
 
 	/**
-	 * 
+	 *
 	 */
-	CheckStatus status = null;
+	CSTNCheckStatus status = null;
 	/**
 	 * Layout algorithm for graph.
 	 */
@@ -284,89 +283,90 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	 */
 	public CSTNUEditor() {
 		super("Simple CSTNU Editor");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		g = new LabeledIntGraph(labelOptimization);
-		g1 = new LabeledIntGraph(labelOptimization);
-		layout1 = new StaticLayout<>(g, CSTNUEditor.preferredSize);
-		layout2 = new StaticLayout<>(g1, CSTNUEditor.preferredSize);
-		vm1 = new DefaultVisualizationModel<>(layout1, CSTNUEditor.preferredSize);
-		vm2 = new DefaultVisualizationModel<>(layout2, CSTNUEditor.preferredSize);
-		vv1 = new VisualizationViewer<>(vm1, CSTNUEditor.preferredSize);
-		vv1.setName("Editor");
-//		vv1.getRenderContext().setLabelOffset(20);
-		vv2 = new VisualizationViewer<>(vm2, CSTNUEditor.preferredSize);
-		vv2.setName(distanceViewerName);
+		this.g = new LabeledIntGraph(this.labelOptimization);
+		this.g1 = new LabeledIntGraph(this.labelOptimization);
+		this.layout1 = new StaticLayout<>(this.g, CSTNUEditor.preferredSize);
+		this.layout2 = new StaticLayout<>(this.g1, CSTNUEditor.preferredSize);
+		this.vm1 = new DefaultVisualizationModel<>(this.layout1, CSTNUEditor.preferredSize);
+		this.vm2 = new DefaultVisualizationModel<>(this.layout2, CSTNUEditor.preferredSize);
+		this.vv1 = new VisualizationViewer<>(this.vm1, CSTNUEditor.preferredSize);
+		this.vv1.setName("Editor");
+		// vv1.getRenderContext().setLabelOffset(20);
+		this.vv2 = new VisualizationViewer<>(this.vm2, CSTNUEditor.preferredSize);
+		this.vv2.setName(CSTNUEditor.distanceViewerName);
 
 		// VERTEX setting
 		// vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
-		vv1.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		vv1.getRenderContext().setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
-		vv1.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
+		this.vv1.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		this.vv1.getRenderContext().setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
+		this.vv1.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
 
-		vv2.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		vv2.getRenderContext().setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
-		vv2.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
+		this.vv2.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		this.vv2.getRenderContext().setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
+		this.vv2.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
 
 		// EDGE setting
-		vv1.getRenderContext().setEdgeDrawPaintTransformer(
-				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		vv1.getRenderContext().setEdgeFontTransformer(LabeledIntEdge.edgeFontTransformer);
-		vv1.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
-		vv1.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
-		vv1.getRenderContext().setEdgeShapeTransformer(new EdgeShape.QuadCurve<LabeledNode, LabeledIntEdge>());
-		vv1.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
+		this.vv1.getRenderContext().setEdgeDrawPaintTransformer(
+				LabeledIntEdge.edgeDrawPaintTransformer(this.vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		this.vv1.getRenderContext().setEdgeFontTransformer(LabeledIntEdge.edgeFontTransformer);
+		this.vv1.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
+		this.vv1.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
+		this.vv1.getRenderContext().setEdgeShapeTransformer(new EdgeShape.QuadCurve<LabeledNode, LabeledIntEdge>());
+		this.vv1.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
 
-		vv1.getRenderContext().setArrowDrawPaintTransformer(
-				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		vv1.getRenderContext().setArrowFillPaintTransformer(
-				LabeledIntEdge.edgeDrawPaintTransformer(vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		this.vv1.getRenderContext().setArrowDrawPaintTransformer(
+				LabeledIntEdge.edgeDrawPaintTransformer(this.vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		this.vv1.getRenderContext().setArrowFillPaintTransformer(
+				LabeledIntEdge.edgeDrawPaintTransformer(this.vv1.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
 
-		vv2.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
-		vv2.getRenderContext().setEdgeDrawPaintTransformer(
-				LabeledIntEdge.edgeDrawPaintTransformer(vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		vv2.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
-		vv2.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
-		vv2.getRenderContext().setArrowDrawPaintTransformer(
-				LabeledIntEdge.edgeDrawPaintTransformer(vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		vv2.getRenderContext().setArrowFillPaintTransformer(
-				LabeledIntEdge.edgeDrawPaintTransformer(vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		this.vv2.getRenderContext().setEdgeLabelTransformer(LabeledIntEdge.edgeLabelTransformer);
+		this.vv2.getRenderContext().setEdgeDrawPaintTransformer(
+				LabeledIntEdge.edgeDrawPaintTransformer(this.vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		this.vv2.getRenderContext().setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
+		this.vv2.getRenderContext().setEdgeStrokeTransformer(LabeledIntEdge.edgeStrokeTransformer);
+		this.vv2.getRenderContext().setArrowDrawPaintTransformer(
+				LabeledIntEdge.edgeDrawPaintTransformer(this.vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		this.vv2.getRenderContext().setArrowFillPaintTransformer(
+				LabeledIntEdge.edgeDrawPaintTransformer(this.vv2.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
 
 		// MOUSE setting
 		// Create a graph mouse and add it to the visualization component
-		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm = new EditingModalGraphMouse<>(vv1.getRenderContext(), LabeledNode.getFactory(),
+		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm = new EditingModalGraphMouse<>(this.vv1.getRenderContext(), LabeledNode.getFactory(),
 				LabeledIntEdge.getFactory());
 		gm.setMode(ModalGraphMouse.Mode.PICKING);
-		vv1.setGraphMouse(gm);
-		vv1.addKeyListener(gm.getModeKeyListener());
+		this.vv1.setGraphMouse(gm);
+		this.vv1.addKeyListener(gm.getModeKeyListener());
 		// EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm2 = new EditingModalGraphMouse<LabeledNode, LabeledIntEdge>(vv2.getRenderContext(),
 		// LabeledNode.getFactory(), LabeledIntEdge.getFactory());
 		// gm2.setMode(ModalGraphMouse.Mode.PICKING);
-		vv2.setGraphMouse(gm);
-		vv2.addKeyListener(gm.getModeKeyListener());
+		this.vv2.setGraphMouse(gm);
+		this.vv2.addKeyListener(gm.getModeKeyListener());
 
 		// content is the canvas of the application.
-		final Container baseContainer = getContentPane();
+		final Container baseContainer = this.getContentPane();
 
 		// I put a row for messages: since there will 2 graphs, the row contains two columns,
 		// corresponding to the two following graphs.
-		messagesPanel = new JPanel(new GridLayout(1, 2));
-		messagesPanel.add(new JLabel(" "));
-		messagesPanel.add(new JLabel(" "));
+		this.messagesPanel = new JPanel(new GridLayout(1, 2));
+		this.messagesPanel.add(new JLabel(" "));
+		this.messagesPanel.add(new JLabel(" "));
 
-		baseContainer.add(messagesPanel, BorderLayout.NORTH);
+		baseContainer.add(this.messagesPanel, BorderLayout.NORTH);
 
 		// I put a row for graphs.
-		graphPanel = new JPanel(new GridLayout(1, 2));
-		graphPanel.add(new GraphZoomScrollPane(vv1));
-		GraphZoomScrollPane graphZoomSP = new GraphZoomScrollPane(vv2);
-		graphPanel.add(graphZoomSP, 1);
+		this.graphPanel = new JPanel(new GridLayout(1, 2));
+		this.graphPanel.add(new GraphZoomScrollPane(this.vv1));
+		final GraphZoomScrollPane graphZoomSP = new GraphZoomScrollPane(this.vv2);
+		this.graphPanel.add(graphZoomSP, 1);
 
-		baseContainer.add(graphPanel, BorderLayout.CENTER);
+		baseContainer.add(this.graphPanel, BorderLayout.CENTER);
 
 		// I put a row for commands buttons
 
-		final JPanel controls = new JPanel(new BorderLayout()), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(), rowForCSTNUButtons = new JPanel();
+		final JPanel controls = new JPanel(new BorderLayout()), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(),
+				rowForCSTNUButtons = new JPanel();
 		controls.add(rowForAppButtons, BorderLayout.NORTH);// for tuning application
 		controls.add(rowForCSTNButtons, BorderLayout.CENTER);// for button regarding CSTN
 		controls.add(rowForCSTNUButtons, BorderLayout.SOUTH);// for button regarding CSTNU
@@ -382,80 +382,83 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		// new AnnotationControls<LabeledNode,LabeledIntEdge>(gm.getAnnotatingPlugin());
 		// controls.add(annotationControls.getAnnotationsToolBar());
 
-		JRadioButton instantaneousAct = new JRadioButton("Instant. Reaction", instantaneousReaction);
+		final JRadioButton instantaneousAct = new JRadioButton("Instant. Reaction", this.instantaneousReaction);
 		instantaneousAct.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ev) {
+			@Override
+			public void itemStateChanged(final ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					instantaneousReaction = true;
-					LOG.fine("Instantaneous activations flag set to true");
+					CSTNUEditor.this.instantaneousReaction = true;
+					CSTNUEditor.LOG.fine("Instantaneous activations flag set to true");
 				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					instantaneousReaction = false;
-					LOG.fine("Instantaneous activations flag set to false");
+					CSTNUEditor.this.instantaneousReaction = false;
+					CSTNUEditor.LOG.fine("Instantaneous activations flag set to false");
 				}
 			}
 		});
 		rowForAppButtons.add(instantaneousAct);
 
-		JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", excludeR1R2);
+		final JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", this.excludeR1R2);
 		excludeR1R2Button.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ev) {
+			@Override
+			public void itemStateChanged(final ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					excludeR1R2 = true;
-					LOG.fine("excludeR1R2 flag set to true");
+					CSTNUEditor.this.excludeR1R2 = true;
+					CSTNUEditor.LOG.fine("excludeR1R2 flag set to true");
 				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					excludeR1R2 = false;
-					LOG.fine("excludeR1R2 flag set to false");
+					CSTNUEditor.this.excludeR1R2 = false;
+					CSTNUEditor.LOG.fine("excludeR1R2 flag set to false");
 				}
 			}
 		});
 		rowForAppButtons.add(excludeR1R2Button);
 
-		JRadioButton labelOptimizationRadio = new JRadioButton("Label minimization", labelOptimization);
+		final JRadioButton labelOptimizationRadio = new JRadioButton("Label minimization", this.labelOptimization);
 		labelOptimizationRadio.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ev) {
+			@Override
+			public void itemStateChanged(final ItemEvent ev) {
 				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					labelOptimization = true;
-					LOG.fine("LabelOptimization flag set to true");
+					CSTNUEditor.this.labelOptimization = true;
+					CSTNUEditor.LOG.fine("LabelOptimization flag set to true");
 				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					labelOptimization = false;
-					LOG.fine("LabelOptimization flag set to false");
+					CSTNUEditor.this.labelOptimization = false;
+					CSTNUEditor.LOG.fine("LabelOptimization flag set to false");
 				}
 			}
 		});
 		rowForAppButtons.add(labelOptimizationRadio);
 
-		saveCSTNResultButton = new JButton("Save CSTN(U)");
-		saveCSTNResultButton.setEnabled(false);
-		saveCSTNResultButton.addActionListener(new AbstractAction("Save result") {
+		this.saveCSTNResultButton = new JButton("Save CSTN(U)");
+		this.saveCSTNResultButton.setEnabled(false);
+		this.saveCSTNResultButton.addActionListener(new AbstractAction("Save result") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				// CSTNUEditor.LOG.finest("Current dir:" + f);
 
 				// CSTNUEditor.LOG.finest("Path wanted:" + path);
-				chooser = new JFileChooser(defaultDir);
+				chooser = new JFileChooser(CSTNUEditor.defaultDir);
 				final int option = chooser.showSaveDialog(CSTNUEditor.this);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					final File file = chooser.getSelectedFile();
-					saveXML(g1, file);
+					CSTNUEditor.this.saveXML(CSTNUEditor.this.g1, file);
 				}
 			}
 		});
-		rowForAppButtons.add(saveCSTNResultButton);
+		rowForAppButtons.add(this.saveCSTNResultButton);
 
 		buttonCheck = new JButton("Help");
 		buttonCheck.addActionListener(new AbstractAction("Help") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 			/**
-			 * 
+			 *
 			 */
 			private static final String instructions = "<html>"
 					+ "<h3>All Modes:</h3>"
@@ -506,8 +509,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					+ "</html>";
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(vv1, instructions);
+			public void actionPerformed(final ActionEvent e) {
+				JOptionPane.showMessageDialog(CSTNUEditor.this.vv1, instructions);
 			}
 		});
 		rowForAppButtons.add(buttonCheck);
@@ -516,53 +519,52 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("CSTN Init Graph");
 		buttonCheck.addActionListener(new AbstractAction("CSTN Init LabeledIntGraph") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				g1 = new LabeledIntGraph(g, labelOptimization);
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 
 				try {
-					CSTN.initAndCheck(g1, instantaneousReaction);
-				}
-				catch (IllegalArgumentException ec) {
+					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction);
+				} catch (final IllegalArgumentException ec) {
 					jl.setIcon(CSTNUEditor.warnIcon);
 					jl.setOpaque(true);
 					jl.setBackground(Color.orange);
 					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
-					graphPanel.validate();
-					graphPanel.repaint();
+					CSTNUEditor.this.graphPanel.validate();
+					CSTNUEditor.this.graphPanel.repaint();
 					return;
 				}
 				jl.setText("CSTN initialized.");
 				jl.setIcon(CSTNUEditor.infoIcon);
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g1);
+				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
 				LabeledNode gV;
-				CSTNUEditor.LOG.finer("Original graph: " + g);
-				CSTNUEditor.LOG.finer("Complete graph: " + g1);
-				for (final LabeledNode v : g1.getVertices()) {
+				CSTNUEditor.LOG.finer("Original graph: " + CSTNUEditor.this.g);
+				CSTNUEditor.LOG.finer("Complete graph: " + CSTNUEditor.this.g1);
+				for (final LabeledNode v : CSTNUEditor.this.g1.getVertices()) {
 					CSTNUEditor.LOG.finest("Vertex of complete graph: " + v);
-					gV = g.getNode(v.getName());
+					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
-						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
-						layout2.setLocation(v, v.getX(), v.getY());
+						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
+				CSTNUEditor.this.vv2.setGraphLayout(CSTNUEditor.this.layout2);
+				CSTNUEditor.this.vv2.setVisible(true);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(true);
 
-				graphPanel.validate();
-				graphPanel.repaint();
-				cycle = 0;
+				CSTNUEditor.this.graphPanel.validate();
+				CSTNUEditor.this.graphPanel.repaint();
+				CSTNUEditor.this.cycle = 0;
 			}
 		});
 		rowForCSTNButtons.add(buttonCheck);
@@ -570,73 +572,71 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("CSTN Check");
 		buttonCheck.addActionListener(new AbstractAction("CSTN Check") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				saveCSTNResultButton.setEnabled(false);
-				g1 = new LabeledIntGraph(g, labelOptimization);
-				CSTN cstn = new CSTN(labelOptimization);
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
+				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
+				final CSTN cstn = new CSTN(CSTNUEditor.this.labelOptimization);
 				try {
-					CSTN.initAndCheck(g1, instantaneousReaction);
-				}
-				catch (IllegalArgumentException ec) {
+					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction);
+				} catch (final IllegalArgumentException ec) {
 					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
 					jl.setIcon(CSTNUEditor.warnIcon);
 					CSTNUEditor.LOG.warning("The graph has a problem and it cannot be initialize:\n " + ec.getMessage());
-					vv2.validate();
-					vv2.repaint();
+					CSTNUEditor.this.vv2.validate();
+					CSTNUEditor.this.vv2.repaint();
 
-					graphPanel.validate();
-					graphPanel.repaint();
+					CSTNUEditor.this.graphPanel.validate();
+					CSTNUEditor.this.graphPanel.repaint();
 					return;
 				}
-				CSTNUEditor.LOG.finer("Original graph initialized: " + g1);
+				CSTNUEditor.LOG.finer("Original graph initialized: " + CSTNUEditor.this.g1);
 
 				try {
-					CheckStatus status;
-					status = cstn.dynamicConsistencyCheck(g1, instantaneousReaction, excludeR1R2);
+					CSTNCheckStatus status;
+					status = cstn.dynamicConsistencyCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction, CSTNUEditor.this.excludeR1R2);
 					if (status.consistency) {
 						jl.setText("The graph is CSTN consistent.");
 						jl.setIcon(CSTNUEditor.infoIcon);
-						CSTNUEditor.LOG.finer("Final controllable graph: " + g1);
+						CSTNUEditor.LOG.finer("Final controllable graph: " + CSTNUEditor.this.g1);
 					} else {
 						// The distance graph is not consistent
 						jl.setText("The graph is not CSTN consistent.");
 						jl.setIcon(CSTNUEditor.warnIcon);
 					}
-				}
-				catch (WellDefinitionException ex) {
+				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
 					jl.setIcon(CSTNUEditor.warnIcon);
 				}
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g1);
+				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
 				LabeledNode gV;
-				for (final LabeledNode v : g1.getVertices()) {
-					gV = g.getNode(v.getName());
+				for (final LabeledNode v : CSTNUEditor.this.g1.getVertices()) {
+					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
-						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
-						layout2.setLocation(v, v.getX(), v.getY());
+						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
+				CSTNUEditor.this.vv2.setGraphLayout(CSTNUEditor.this.layout2);
+				CSTNUEditor.this.vv2.setVisible(true);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(true);
 
-				vv2.validate();
-				vv2.repaint();
+				CSTNUEditor.this.vv2.validate();
+				CSTNUEditor.this.vv2.repaint();
 
-				graphPanel.validate();
-				graphPanel.repaint();
-				cycle = 0;
+				CSTNUEditor.this.graphPanel.validate();
+				CSTNUEditor.this.graphPanel.repaint();
+				CSTNUEditor.this.cycle = 0;
 			}
 		});
 		rowForCSTNButtons.add(buttonCheck);
@@ -646,67 +646,67 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				if (cycle == -1) return;
-				if (cycle == 0) {
-					g1 = new LabeledIntGraph(g, labelOptimization);
-					CSTN.initAndCheck(g1, instantaneousReaction);
-					g2 = new LabeledIntGraph(g1, labelOptimization);
-					distanceGraph = new LabeledIntGraph(labelOptimization);
-					status = new CheckStatus();
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				if (CSTNUEditor.this.cycle == -1)
+					return;
+				if (CSTNUEditor.this.cycle == 0) {
+					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
+					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction);
+					CSTNUEditor.this.g2 = new LabeledIntGraph(CSTNUEditor.this.g1, CSTNUEditor.this.labelOptimization);
+					CSTNUEditor.this.distanceGraph = new LabeledIntGraph(CSTNUEditor.this.labelOptimization);
+					CSTNUEditor.this.status = new CSTNCheckStatus();
 				} else {
-					g1 = new LabeledIntGraph(g2, labelOptimization);
+					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g2, CSTNUEditor.this.labelOptimization);
 				}
-				cycle++;
+				CSTNUEditor.this.cycle++;
 
 				try {
-					status = CSTN.oneStepDynamicConsistency(g2, instantaneousReaction, excludeR1R2, status);
-					status.finished = g1.hasSameEdgesOf(g2);
-					final boolean reductionsApplied = !status.finished;
-					final boolean inconsistency = !status.consistency;
+					CSTNUEditor.this.status = CSTN.oneStepDynamicConsistency(CSTNUEditor.this.g2, CSTNUEditor.this.instantaneousReaction, CSTNUEditor.this.excludeR1R2, CSTNUEditor.this.status);
+					CSTNUEditor.this.status.finished = CSTNUEditor.this.g1.hasSameEdgesOf(CSTNUEditor.this.g2);
+					final boolean reductionsApplied = !CSTNUEditor.this.status.finished;
+					final boolean inconsistency = !CSTNUEditor.this.status.consistency;
 					if (inconsistency) {
 						jl.setText("The graph is inconsistent.");
 						jl.setIcon(CSTNUEditor.warnIcon);
-						cycle = -1;
-						CSTNUEditor.LOG.fine("INCONSISTENT GRAPH: " + g2);
-						CSTNUEditor.LOG.info("Status stats: " + status);
+						CSTNUEditor.this.cycle = -1;
+						CSTNUEditor.LOG.fine("INCONSISTENT GRAPH: " + CSTNUEditor.this.g2);
+						CSTNUEditor.LOG.info("Status stats: " + CSTNUEditor.this.status);
 					} else if (reductionsApplied) {
-						jl.setText("Step " + cycle + " of consistency check is done.");
+						jl.setText("Step " + CSTNUEditor.this.cycle + " of consistency check is done.");
 						jl.setIcon(CSTNUEditor.warnIcon);
 					} else {
-						jl.setText("The graph is CSTN consistent. The number of executed cycles is " + cycle);
+						jl.setText("The graph is CSTN consistent. The number of executed cycles is " + CSTNUEditor.this.cycle);
 						jl.setIcon(CSTNUEditor.infoIcon);
-						cycle = -1;
-						CSTNUEditor.LOG.info("Status stats: " + status);
+						CSTNUEditor.this.cycle = -1;
+						CSTNUEditor.LOG.info("Status stats: " + CSTNUEditor.this.status);
 					}
-				}
-				catch (WellDefinitionException ex) {
+				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
 					jl.setIcon(CSTNUEditor.warnIcon);
-					cycle = -1;
+					CSTNUEditor.this.cycle = -1;
 				}
 
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g2);
+				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g2);
 				LabeledNode gV;
-				for (final LabeledNode v : g2.getVertices()) {
-					gV = g.getNode(v.getName());
+				for (final LabeledNode v : CSTNUEditor.this.g2.getVertices()) {
+					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
-						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
-						layout2.setLocation(v, v.getX(), v.getY());
+						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
+				CSTNUEditor.this.vv2.setGraphLayout(CSTNUEditor.this.layout2);
+				CSTNUEditor.this.vv2.setVisible(true);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(true);
 
-				graphPanel.validate();
-				graphPanel.repaint();
+				CSTNUEditor.this.graphPanel.validate();
+				CSTNUEditor.this.graphPanel.repaint();
 			}
 		});
 		rowForCSTNButtons.add(buttonCheck);
@@ -715,155 +715,155 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("CSTNU Init Graph");
 		buttonCheck.addActionListener(new AbstractAction("CSTNU Init LabeledIntGraph") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				g1 = new LabeledIntGraph(g, true);
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 
+				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReaction);
 				try {
-					CSTNU.initUpperLowerLabelDataStructure(g1);
-				}
-				catch (IllegalArgumentException ec) {
+					cstn.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
+				} catch (final IllegalArgumentException ec) {
 					jl.setIcon(CSTNUEditor.warnIcon);
 					jl.setOpaque(true);
 					jl.setBackground(Color.orange);
 					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
-					graphPanel.validate();
-					graphPanel.repaint();
+					CSTNUEditor.this.graphPanel.validate();
+					CSTNUEditor.this.graphPanel.repaint();
 					return;
 				}
 				jl.setText("LabeledIntGraph with Lower and Upper Case Labels.");
 				jl.setIcon(CSTNUEditor.infoIcon);
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g1);
+				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
 				LabeledNode gV;
-				CSTNUEditor.LOG.finer("Original graph: " + g);
-				CSTNUEditor.LOG.finer("Complete graph: " + g1);
-				for (final LabeledNode v : g1.getVertices()) {
+				CSTNUEditor.LOG.finer("Original graph: " + CSTNUEditor.this.g);
+				CSTNUEditor.LOG.finer("Complete graph: " + CSTNUEditor.this.g1);
+				for (final LabeledNode v : CSTNUEditor.this.g1.getVertices()) {
 					CSTNUEditor.LOG.finest("Vertex of complete graph: " + v);
-					gV = g.getNode(v.getName());
+					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + layout1.getX(gV) + ";" + layout1.getY(gV) + ")");
-						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
-						layout2.setLocation(v, v.getX(), v.getY());
+						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
+				CSTNUEditor.this.vv2.setGraphLayout(CSTNUEditor.this.layout2);
+				CSTNUEditor.this.vv2.setVisible(true);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(true);
 
-				graphPanel.validate();
-				graphPanel.repaint();
-				cycle = 0;
+				CSTNUEditor.this.graphPanel.validate();
+				CSTNUEditor.this.graphPanel.repaint();
+				CSTNUEditor.this.cycle = 0;
 			}
 		});
 		rowForCSTNUButtons.add(buttonCheck);
 
-//		buttonCheck = new JButton("STNU Check");
-//		buttonCheck.addActionListener(new AbstractAction("STNU") {
-//			/**
-//			 * 
-//			 */
-//			private static final long serialVersionUID = 1L;
-//
-//			@Override
-//			public void actionPerformed(ActionEvent e) {
-//				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-//				g1 = new LabeledIntGraph(g, true);
-//
-//				if (CSTNU.stnuRules(g1)) {
-//					jl.setText("The graph is stnu controllable.");
-//					jl.setIcon(CSTNUEditor.infoIcon);
-//				} else {
-//					// The distance graph is not consistent
-//					jl.setText("The graph is not stnu controllable.");
-//					jl.setIcon(CSTNUEditor.warnIcon);
-//				}
-//				jl.setOpaque(true);
-//				jl.setBackground(Color.orange);
-//				layout2 = new StaticLayout<>(g1);
-//				LabeledNode gV;
-//				CSTNUEditor.LOG.finer("Original graph: " + g);
-//				CSTNUEditor.LOG.finer("After graph: " + g1);
-//				for (final LabeledNode v : g1.getVertices()) {
-//					gV = g.getNode(v.getName());
-//					layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
-//				}
-//				vv2.setGraphLayout(layout2);
-//				vv2.setVisible(true);
-//				saveCSTNResultButton.setEnabled(true);
-//
-//				graphPanel.validate();
-//				graphPanel.repaint();
-//				cycle = 0;
-//			}
-//		});
-//		rowForCSTNUButtons.add(buttonCheck);
+		// buttonCheck = new JButton("STNU Check");
+		// buttonCheck.addActionListener(new AbstractAction("STNU") {
+		// /**
+		// *
+		// */
+		// private static final long serialVersionUID = 1L;
+		//
+		// @Override
+		// public void actionPerformed(ActionEvent e) {
+		// final JLabel jl = (JLabel) messagesPanel.getComponent(1);
+		// g1 = new LabeledIntGraph(g, true);
+		//
+		// if (CSTNU.stnuRules(g1)) {
+		// jl.setText("The graph is stnu controllable.");
+		// jl.setIcon(CSTNUEditor.infoIcon);
+		// } else {
+		// // The distance graph is not consistent
+		// jl.setText("The graph is not stnu controllable.");
+		// jl.setIcon(CSTNUEditor.warnIcon);
+		// }
+		// jl.setOpaque(true);
+		// jl.setBackground(Color.orange);
+		// layout2 = new StaticLayout<>(g1);
+		// LabeledNode gV;
+		// CSTNUEditor.LOG.finer("Original graph: " + g);
+		// CSTNUEditor.LOG.finer("After graph: " + g1);
+		// for (final LabeledNode v : g1.getVertices()) {
+		// gV = g.getNode(v.getName());
+		// layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+		// }
+		// vv2.setGraphLayout(layout2);
+		// vv2.setVisible(true);
+		// saveCSTNResultButton.setEnabled(true);
+		//
+		// graphPanel.validate();
+		// graphPanel.repaint();
+		// cycle = 0;
+		// }
+		// });
+		// rowForCSTNUButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("CSTNU Check");
 		buttonCheck.addActionListener(new AbstractAction("CSTNU") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				saveCSTNResultButton.setEnabled(false);
-				g1 = new LabeledIntGraph(g, true);
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
+				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
+				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReaction);
+				CSTNUCheckStatus status = new CSTNUCheckStatus();
 				try {
-					CSTNU.initUpperLowerLabelDataStructure(g1);
-				}
-				catch (IllegalArgumentException ec) {
+					cstn.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
+				} catch (final IllegalArgumentException ec) {
 					throw new IllegalArgumentException("The graph has a problem and it cannot be initialize: " + ec.getMessage());
 				}
-				CSTNUEditor.LOG.finer("Original graph initialized: " + g1);
+				CSTNUEditor.LOG.finer("Original graph initialized: " + CSTNUEditor.this.g1);
 
 				try {
-					if (CSTNU.dynamicControllabilityCheck(g1, instantaneousReaction)) {
+					status = cstn.dynamicControllabilityCheck(CSTNUEditor.this.g1);
+					if (status.controllable) {
 						jl.setText("The graph is CSTNU controllable.");
 						jl.setIcon(CSTNUEditor.infoIcon);
-						CSTNUEditor.LOG.finer("Final controllable graph: " + g1);
+						CSTNUEditor.LOG.finer("Final controllable graph: " + CSTNUEditor.this.g1);
 					} else {
-						// The distance graph is not consistent
 						jl.setText("The graph is not CSTNU controllable.");
 						jl.setIcon(CSTNUEditor.warnIcon);
 					}
-				}
-				catch (WellDefinitionException ex) {
+				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
 					jl.setIcon(CSTNUEditor.warnIcon);
 				}
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g1);
+				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
 				LabeledNode gV;
-				for (final LabeledNode v : g1.getVertices()) {
-					gV = g.getNode(v.getName());
+				for (final LabeledNode v : CSTNUEditor.this.g1.getVertices()) {
+					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
-						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
-						layout2.setLocation(v, v.getX(), v.getY());
+						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
+				CSTNUEditor.this.vv2.setGraphLayout(CSTNUEditor.this.layout2);
+				CSTNUEditor.this.vv2.setVisible(true);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(true);
 
-				vv2.validate();
-				vv2.repaint();
+				CSTNUEditor.this.vv2.validate();
+				CSTNUEditor.this.vv2.repaint();
 
-				graphPanel.validate();
-				graphPanel.repaint();
-				cycle = 0;
+				CSTNUEditor.this.graphPanel.validate();
+				CSTNUEditor.this.graphPanel.repaint();
+				CSTNUEditor.this.cycle = 0;
 			}
 		});
 		rowForCSTNUButtons.add(buttonCheck);
@@ -871,64 +871,66 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("One Step CSTNU Check");
 		buttonCheck.addActionListener(new AbstractAction("One Step CSTNU") {
 			private static final long serialVersionUID = 1L;
+			private CSTNUCheckStatus status = null;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
-				if (cycle == -1) return;
-				if (cycle == 0) {
-					g1 = new LabeledIntGraph(g, true);
-					CSTNU.initUpperLowerLabelDataStructure(g1);
-					g2 = new LabeledIntGraph(g1, true);
-					distanceGraph = new LabeledIntGraph(labelOptimization);
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				if (CSTNUEditor.this.cycle == -1)
+					return;
+				final CSTNU cstnu = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReaction);
+				if (CSTNUEditor.this.cycle == 0) {
+					status = new CSTNUCheckStatus();
+					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
+					cstnu.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
+					CSTNUEditor.this.g2 = new LabeledIntGraph(CSTNUEditor.this.g1, CSTNUEditor.this.labelOptimization);
+					CSTNUEditor.this.distanceGraph = new LabeledIntGraph(CSTNUEditor.this.labelOptimization);
 				} else {
-					g1 = new LabeledIntGraph(g2, true);
+					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g2, CSTNUEditor.this.labelOptimization);
 				}
-				cycle++;
+				CSTNUEditor.this.cycle++;
 
 				try {
-					final Entry<Boolean, Boolean> status = CSTNU.oneStepDynamicControllability(cycle, g1, g2, distanceGraph, instantaneousReaction);
-					final boolean reductionsApplied = status.getKey();
-					final boolean inconsistency = status.getValue();
-					if (inconsistency) {
-						jl.setText("The graph is inconsistent.");
+					cstnu.oneStepDynamicControllability(CSTNUEditor.this.g1, CSTNUEditor.this.g2, CSTNUEditor.this.distanceGraph, status);
+					if (status.finished && !status.controllable) {
+						jl.setText("The graph is not controllable.");
 						jl.setIcon(CSTNUEditor.warnIcon);
-						cycle = -1;
-						CSTNUEditor.LOG.info("INCONSISTENT GRAPH: " + g2);
-					} else if (reductionsApplied) {
-						jl.setText("Step " + cycle + " of controllability check is done.");
+						CSTNUEditor.this.cycle = -1;
+						CSTNUEditor.LOG.info("Uncontrollable GRAPH: " + CSTNUEditor.this.g2);
+					} else if (!status.finished) {
+						jl.setText("Step " + CSTNUEditor.this.cycle + " of controllability check is done.");
 						jl.setIcon(CSTNUEditor.warnIcon);
 					} else {
-						jl.setText("The graph is CSTNU controllable.");
+						jl.setText("The graph is CSTNU controllable. The number of executed cycles is " + CSTNUEditor.this.cycle);
 						jl.setIcon(CSTNUEditor.infoIcon);
-						cycle = -1;
-						CSTNUEditor.LOG.info("CONTROLLABLE GRAPH: " + g2);
+						CSTNUEditor.this.cycle = -1;
+						CSTNUEditor.LOG.info("CONTROLLABLE GRAPH: " + CSTNUEditor.this.g2);
+						CSTNUEditor.LOG.info("Status stats: " + status);
 					}
-				}
-				catch (WellDefinitionException ex) {
+				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
 					jl.setIcon(CSTNUEditor.warnIcon);
-					cycle = -1;
+					CSTNUEditor.this.cycle = -1;
 				}
 
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
-				layout2 = new StaticLayout<>(g2);
+				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g2);
 				LabeledNode gV;
-				for (final LabeledNode v : g2.getVertices()) {
-					gV = g.getNode(v.getName());
+				for (final LabeledNode v : CSTNUEditor.this.g2.getVertices()) {
+					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
-						layout2.setLocation(v, layout1.getX(gV), layout1.getY(gV));
+						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
-						layout2.setLocation(v, v.getX(), v.getY());
+						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 					}
 				}
-				vv2.setGraphLayout(layout2);
-				vv2.setVisible(true);
-				saveCSTNResultButton.setEnabled(true);
+				CSTNUEditor.this.vv2.setGraphLayout(CSTNUEditor.this.layout2);
+				CSTNUEditor.this.vv2.setVisible(true);
+				CSTNUEditor.this.saveCSTNResultButton.setEnabled(true);
 
-				graphPanel.validate();
-				graphPanel.repaint();
+				CSTNUEditor.this.graphPanel.validate();
+				CSTNUEditor.this.graphPanel.repaint();
 			}
 		});
 		rowForCSTNUButtons.add(buttonCheck);
@@ -936,28 +938,27 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("Translation to UPPAAL TIGA");
 		buttonCheck.addActionListener(new AbstractAction("UPPAAL Tiga Tranlsation") {
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 1L;
 
 			@SuppressWarnings("resource")
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				final JLabel jl = (JLabel) messagesPanel.getComponent(1);
+			public void actionPerformed(final ActionEvent e) {
+				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
 				PrintStream output;
-				JFileChooser chooser = new JFileChooser(defaultDir);
+				final JFileChooser chooser = new JFileChooser(CSTNUEditor.defaultDir);
 				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				final int option = chooser.showSaveDialog(CSTNUEditor.this);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					File file = chooser.getSelectedFile();
-					defaultDir = file.getParent();
+					CSTNUEditor.defaultDir = file.getParent();
 					if (!file.getName().endsWith("xml")) {
 						file = new File(file.getAbsolutePath() + ".xml");
 					}
 					try {
 						output = new PrintStream(file);
-					}
-					catch (FileNotFoundException e1) {
+					} catch (final FileNotFoundException e1) {
 						e1.printStackTrace();
 						output = System.out;
 					}
@@ -967,33 +968,31 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					jl.setBackground(Color.orange);
 
 					try {
-						translator = new CSTNU2UppaalTiga(g, output);
-						if (!translator.translate()) throw new IllegalArgumentException();
-					}
-					catch (IllegalArgumentException e1) {
+						translator = new CSTNU2UppaalTiga(CSTNUEditor.this.g, output);
+						if (!translator.translate())
+							throw new IllegalArgumentException();
+					} catch (final IllegalArgumentException e1) {
 						e1.printStackTrace();
 						jl.setIcon(CSTNUEditor.warnIcon);
 						jl.setText("The graph has a problem and it cannot be translated to an UPPAAL Tiga automaton.");
-						graphPanel.repaint();
-						graphPanel.validate();
+						CSTNUEditor.this.graphPanel.repaint();
+						CSTNUEditor.this.graphPanel.validate();
 						return;
-					}
-					finally {
+					} finally {
 						output.close();
 					}
 					jl.setText("The graph has been translated and saved into file '" + file.getName() + "'.");
 					try {
 						output = new PrintStream(file.getAbsolutePath().replace(".xml", ".q"));
-					}
-					catch (FileNotFoundException e1) {
+					} catch (final FileNotFoundException e1) {
 						e1.printStackTrace();
 						output = System.out;
 					}
 					output.println("control: A[] not _processMain.goal");
 
 					jl.setIcon(CSTNUEditor.infoIcon);
-					graphPanel.validate();
-					graphPanel.repaint();
+					CSTNUEditor.this.graphPanel.validate();
+					CSTNUEditor.this.graphPanel.repaint();
 					output.close();
 				}
 			}
@@ -1005,25 +1004,24 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser(defaultDir);
+			public void actionPerformed(final ActionEvent e) {
+				final JFileChooser chooser = new JFileChooser(CSTNUEditor.defaultDir);
 				final int option = chooser.showOpenDialog(CSTNUEditor.this);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					final File file = chooser.getSelectedFile();
-					defaultDir = file.getParent();
+					CSTNUEditor.defaultDir = file.getParent();
 					try {
-						openXML(file);
-						vv1.setGraphLayout(layout1);
-						vv2.setVisible(false);
-						saveCSTNResultButton.setEnabled(false);
-						((JLabel) messagesPanel.getComponent(1)).setIcon(null);
-						((JLabel) messagesPanel.getComponent(1)).setText("");
-						((JLabel) messagesPanel.getComponent(1)).setOpaque(false);
-						CSTNUEditor.this.setTitle("CSTNU Editor and Checker: " + file.getName() + "-" + g.getName());
+						CSTNUEditor.this.openXML(file);
+						CSTNUEditor.this.vv1.setGraphLayout(CSTNUEditor.this.layout1);
+						CSTNUEditor.this.vv2.setVisible(false);
+						CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
+						((JLabel) CSTNUEditor.this.messagesPanel.getComponent(1)).setIcon(null);
+						((JLabel) CSTNUEditor.this.messagesPanel.getComponent(1)).setText("");
+						((JLabel) CSTNUEditor.this.messagesPanel.getComponent(1)).setOpaque(false);
+						CSTNUEditor.this.setTitle("CSTNU Editor and Checker: " + file.getName() + "-" + CSTNUEditor.this.g.getName());
 						CSTNUEditor.this.getRootPane().repaint();
-						cycle = 0;
-					}
-					catch (final ClassNotFoundException e1) {
+						CSTNUEditor.this.cycle = 0;
+					} catch (final ClassNotFoundException e1) {
 						e1.printStackTrace();
 					}
 
@@ -1034,53 +1032,52 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				JFileChooser chooser = new JFileChooser(defaultDir);
+			public void actionPerformed(final ActionEvent e) {
+				final JFileChooser chooser = new JFileChooser(CSTNUEditor.defaultDir);
 				// CSTNUEditor.LOG.finest("Path wanted:" + path);
 				final int option = chooser.showSaveDialog(CSTNUEditor.this);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					final File file = chooser.getSelectedFile();
-					defaultDir = file.getParent();
-					saveXML(g, file);
+					CSTNUEditor.defaultDir = file.getParent();
+					CSTNUEditor.this.saveXML(CSTNUEditor.this.g, file);
 				}
 			}
 		});
 		// JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 		final JMenuBar menuBar = new JMenuBar();
 		menuBar.add(menu);
-		setJMenuBar(menuBar);
+		this.setJMenuBar(menuBar);
 
-		JFileChooser chooser = new JFileChooser();
-		defaultDir = chooser.getCurrentDirectory() + defaultDir;
+		final JFileChooser chooser = new JFileChooser();
+		CSTNUEditor.defaultDir = chooser.getCurrentDirectory() + CSTNUEditor.defaultDir;
 
-		pack();
-		setVisible(true);
+		this.pack();
+		this.setVisible(true);
 	}
 
 	/**
 	 * @param fileName
 	 * @throws ClassNotFoundException
 	 */
-	void openXML(File fileName) throws ClassNotFoundException {
+	void openXML(final File fileName) throws ClassNotFoundException {
 		@SuppressWarnings("resource")
 		FileReader fileReader = null;
 		try {
 			fileReader = new FileReader(fileName);
 			final GraphMLReader2<LabeledIntGraph, LabeledNode, LabeledIntEdge> graphReader = new GraphMLReader(fileReader);
-			g = graphReader.readGraph();
-			layout1 = new StaticLayout<>(g, StaticLayout.positionInitializer);
-		}
-		catch (final FileNotFoundException e1) {
+			this.g = graphReader.readGraph();
+			this.layout1 = new StaticLayout<>(this.g, StaticLayout.positionInitializer);
+		} catch (final FileNotFoundException e1) {
 			e1.printStackTrace();
-		}
-		catch (final GraphIOException e) {
+		} catch (final GraphIOException e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			try {
-				if (fileReader != null) fileReader.close();
+				if (fileReader != null) {
+					fileReader.close();
+				}
+			} catch (final Exception ee) {
 			}
-			catch (Exception ee) {}
 		}
 	}
 
@@ -1090,22 +1087,21 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	 * For each node i:<br>
 	 * i: LabeledNode i <Br>
 	 * i+1: Point2D position
-	 * 
-	 * @param g graph to save
+	 *
+	 * @param g
+	 *                graph to save
 	 * @param file
 	 */
-	void saveXML(LabeledIntGraph g, File file) {
-		final GraphMLWriter<LabeledNode, LabeledIntEdge> graphWriter = new it.univr.di.cstnu.graph.GraphMLWriter(layout1);
+	void saveXML(final LabeledIntGraph g, final File file) {
+		final GraphMLWriter<LabeledNode, LabeledIntEdge> graphWriter = new it.univr.di.cstnu.graph.GraphMLWriter(this.layout1);
 		g.setName(file.getName());
 		try {
 			@SuppressWarnings("resource")
 			final Writer out = new BufferedWriter(new FileWriter(file));
 			graphWriter.save(g, out);
-		}
-		catch (final FileNotFoundException e1) {
+		} catch (final FileNotFoundException e1) {
 			e1.printStackTrace();
-		}
-		catch (final IOException e1) {
+		} catch (final IOException e1) {
 			e1.printStackTrace();
 		}
 	}

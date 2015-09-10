@@ -43,11 +43,11 @@ import edu.uci.ics.jung.io.GraphMLWriter;
 public class CSTN {
 
 	/**
-	 * Simple class to represent the status of the checking algorithm during the execution.
+	 * Simple class to represent the status of the checking algorithm during an execution.
 	 *
 	 * @author Roberto Posenato
 	 */
-	public static class CheckStatus {
+	public static class CSTNCheckStatus {
 		/**
 		 * True if the network is consistent so far.
 		 */
@@ -278,7 +278,7 @@ public class CSTN {
 		}
 
 		// It is better to normalize with respect to the label modification rules before starting the DC check.
-		CheckStatus status = new CheckStatus();
+		CSTNCheckStatus status = new CSTNCheckStatus();
 		edgeSet = new ObjectRBTreeSet<>(g.getEdges());
 		for (final LabeledIntEdge e : edgeSet) {
 			final LabeledNode s = g.getSource(e);
@@ -327,7 +327,7 @@ public class CSTN {
 		LOG.finest("LabeledIntGraph loaded!");
 
 		LOG.finest("DC Checking...");
-		CheckStatus status;
+		CSTNCheckStatus status;
 		try {
 			status = cstn.dynamicConsistencyCheck(g, true, false);
 		}
@@ -374,8 +374,8 @@ public class CSTN {
 	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	public static CheckStatus oneStepDynamicConsistency(final LabeledIntGraph currentGraph, final boolean instantaneousReaction, final boolean excludeR1R2,
-			final CheckStatus status) throws WellDefinitionException {
+	public static CSTNCheckStatus oneStepDynamicConsistency(final LabeledIntGraph currentGraph, final boolean instantaneousReaction, final boolean excludeR1R2,
+			final CSTNCheckStatus status) throws WellDefinitionException {
 
 		/*
 		 * Label Propagation
@@ -656,7 +656,7 @@ public class CSTN {
 	 * @return true if the rule has been applied one time at least.
 	 */
 	static boolean labelModificationR0(final LabeledIntGraph currentGraph, final LabeledNode P, final LabeledNode X, final LabeledIntEdge PX,
-			final CheckStatus status, final boolean instantaneousReaction) {
+			final CSTNCheckStatus status, final boolean instantaneousReaction) {
 		boolean ruleApplied = false, mergeStatus;
 		final Literal p = P.getPropositionObserved();
 		if (p == null) {
@@ -720,7 +720,7 @@ public class CSTN {
 	 * @return true if a rule has been applied.
 	 */
 	static boolean labelModificationR1(final LabeledIntGraph currentGraph, final LabeledNode nX, final LabeledNode nY, final LabeledIntEdge eXY,
-			final CheckStatus status, final boolean instantaneousReaction) {
+			final CSTNCheckStatus status, final boolean instantaneousReaction) {
 
 		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R1: start.");
 		boolean ruleApplied = false;
@@ -813,7 +813,7 @@ public class CSTN {
 	 * @return true if the rule has been applied one time at least.
 	 */
 	static boolean labelModificationR2(final LabeledIntGraph currentGraph, final LabeledNode P, final LabeledNode X, final LabeledIntEdge XP,
-			final CheckStatus status, final boolean instantaneousReaction) {
+			final CSTNCheckStatus status, final boolean instantaneousReaction) {
 		boolean ruleApplied = false;
 		final Literal p = P.getPropositionObserved();
 		if (p == null) {
@@ -887,7 +887,7 @@ public class CSTN {
 	 * @return true if a rule has been applied.
 	 */
 	static boolean labelModificationR3(final LabeledIntGraph currentGraph, final LabeledNode nX, final LabeledNode nY,
-			final LabeledIntEdge eYX, final CheckStatus status, final boolean instantaneousReaction) {
+			final LabeledIntEdge eYX, final CSTNCheckStatus status, final boolean instantaneousReaction) {
 
 		if (CSTN.LOG.isLoggable(Level.FINEST)) CSTN.LOG.log(Level.FINEST, "Label Modification R3: start.");
 
@@ -969,7 +969,7 @@ public class CSTN {
 	 * @return true if a reduction has been applied.
 	 */
 	static boolean labelPropagationRule(final LabeledIntGraph currentGraph, final LabeledNode A, final LabeledNode B, final LabeledNode C,
-			final LabeledIntEdge AB, final LabeledIntEdge BC, final LabeledNode Z, final CheckStatus status) {
+			final LabeledIntEdge AB, final LabeledIntEdge BC, final LabeledNode Z, final CSTNCheckStatus status) {
 
 		LabeledIntEdge AC = currentGraph.findEdge(A, C);
 		if (AC == null) {
@@ -1185,11 +1185,9 @@ public class CSTN {
 	private boolean versionReq = false;
 
 	/**
-	 * <p>
 	 * Constructor for CSTN.
-	 * </p>
 	 *
-	 * @param withOptimization true if the propagation of labeled value has also to remove redundand labeled values.
+	 * @param withOptimization true if the propagation of labeled value has also to remove redundant labeled values.
 	 */
 	public CSTN(final boolean withOptimization) {
 		this.labelOptimization = withOptimization;
@@ -1211,10 +1209,10 @@ public class CSTN {
 	 *             exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	public CheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean excludeR1R2)
+	public CSTNCheckStatus dynamicConsistencyCheck(final LabeledIntGraph g, final boolean instantaneousReactions, boolean excludeR1R2)
 			throws WellDefinitionException {
 
-		final CheckStatus status = new CheckStatus();
+		final CSTNCheckStatus status = new CSTNCheckStatus();
 		if (g == null) return status;
 
 		String originalName = g.getName();

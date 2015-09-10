@@ -27,9 +27,9 @@ Moreover, in the main directory there are the following files:
 
 To use maven
 ------------
+	* mvn clean //Fundamental!!! Before to do anything regarding site
 	* mvn compile //for compiling
 	* mvn test //for executing JUNIT4 test
 	* mvn package //for preparing the jar package	
-	* mvn site //for building site
-	* mvn site:deploy //for deploy site on profs.sci.univr.it.
-	* mvn clean
+	* mvn site //for building site without deploy
+	* mvn site-deploy //for building site and deploying it on profs.sci.univr.it.
