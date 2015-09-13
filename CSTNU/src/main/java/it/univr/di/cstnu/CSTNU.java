@@ -85,7 +85,8 @@ public class CSTNU {
 	/**
 	 * Flag to activate instantaneous reaction.
 	 */
-	boolean instantaneousReaction = true;
+	boolean instantaneousReaction = false;// TODO it cannot be true till we fix some issue about the equivalence between instantaneousReaction in Morris
+						// and instantaneousReaction in rules and R0-R3
 
 	/**
 	 * logger
@@ -109,10 +110,12 @@ public class CSTNU {
 	 *                true if propagation rules have also to remove redundant labeled values or redundant propositions in labels.
 	 * @param withInstantaneousReaction
 	 *                true if propagation rules have to assume that CSTN instances are executed by engines that can react instantaneously to observations of
-	 *                propositions.
+	 *                propositions. TODO It must be false for now!
 	 */
 	public CSTNU(final boolean withOptimization, final boolean withInstantaneousReaction) {
 		this.labelOptimization = withOptimization;
+		if (withInstantaneousReaction)
+			throw new IllegalArgumentException("Instantaneous Reaction still not implemented");
 		this.instantaneousReaction = withInstantaneousReaction;
 	}
 
@@ -471,85 +474,85 @@ public class CSTNU {
 		return true;
 	}
 
-//	/**
-//	 * Checks the controllability of a labeled STNU instance and, if the instance is controllable, determines all the minimal ranges for the constraints.
-//	 * This method does not simplify 
-//	 * @param g
-//	 *                the original graph that has to be checked. If the check is successful, g is modified and it contains all minimized constraints;
-//	 *                otherwise, it is not modified.
-//	 * @return true the graph is dynamically controllable, false otherwise.
-//	 */
-//	public boolean stnuRules(final LabeledIntGraph g) {
-//		if (g == null)
-//			return false;
-//
-//		LabeledIntGraph currentGraph, nextGraph, distanceGraph;
-//		currentGraph = new LabeledIntGraph(g, labelOptimization);
-//		try {
-//			initUpperLowerLabelDataStructure(currentGraph);
-//		} catch (final IllegalArgumentException e) {
-//			throw new IllegalArgumentException("The graph has a problem and it cannot be initialize: " + e.getMessage());
-//		}
-//		final int n = currentGraph.getVertexCount();
-//		int k = currentGraph.getUpperLabeledEdges().size();
-//		if (k == 0) {
-//			k = 1;
-//		}
-//		int p = currentGraph.getPropositions().size();
-//		if (p == 0) {
-//			p = 1;
-//		}
-//		int i;
-//
-//		CSTNUCheckStatus status = new CSTNUCheckStatus();
-//
-//		distanceGraph = CSTNU.makeAllMaxProjection(currentGraph);
-//		CSTNU.LOG.finer("Initial All Max Projection check.\n");
-//		if (!minimalDistanceGraphFast(distanceGraph)) {
-//			CSTNU.LOG.info("The initial distance graph has negative cycles: stop!");
-//			return false;
-//		}
-//		CSTNU.LOG.finer("done");
-//
-//		boolean reductionApplied = false;
-//		nextGraph = new LabeledIntGraph(currentGraph, true);
-//		long startTime = System.nanoTime();
-//		for (i = 1; i <= (n * k * p); i++) {
-//			reductionApplied = false;
-//			CSTNU.LOG.info("*** Cycle " + i + " ***");
-//			CSTNU.LOG.finer("Rules phase...");
-//			reductionApplied = noCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
-//			reductionApplied = upperCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
-//			reductionApplied = crossCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
-//			reductionApplied = lowerCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
-//			reductionApplied = caseLabelRemovalRule(currentGraph, nextGraph, status) ? true : reductionApplied;
-//			CSTNU.LOG.finer("done.");
-//			currentGraph = new LabeledIntGraph(nextGraph, true);
-//			status.cycles++;
-//			if (!reductionApplied) {
-//				status.finished = true;
-//				CSTNU.LOG.finer("No more reductions applied at cycle " + i);
-//				break;
-//			}
-//		}
-//
-//		distanceGraph = CSTNU.makeAllMaxProjection(currentGraph);
-//		CSTNU.LOG.finer("All Max Projection check.\n");
-//		if (!minimalDistanceGraphFast(distanceGraph)) {
-//			CSTNU.LOG.info("The all max projection graph has negative cycles: stop!\n");
-//			status.controllable = false;
-//			status.executionTime = (System.nanoTime() - startTime) / 1000000;
-//			return false;
-//		}
-//		status.executionTime = (System.nanoTime() - startTime) / 1000000;
-//		CSTNU.LOG.info("Stable state reached. Number of minimization cycles: " + ((i > (n * k * p)) ? (i - 1) : i));
-//		// Put all data structures of currentGraph in g
-//		CSTNU.LOG.finer("Original graph: " + g);
-//		CSTNU.LOG.finer("Determined graph: " + currentGraph);
-//		g.takeIn(currentGraph);
-//		status.controllable = true;
-//		return true;
-//	}
+	// /**
+	// * Checks the controllability of a labeled STNU instance and, if the instance is controllable, determines all the minimal ranges for the constraints.
+	// * This method does not simplify
+	// * @param g
+	// * the original graph that has to be checked. If the check is successful, g is modified and it contains all minimized constraints;
+	// * otherwise, it is not modified.
+	// * @return true the graph is dynamically controllable, false otherwise.
+	// */
+	// public boolean stnuRules(final LabeledIntGraph g) {
+	// if (g == null)
+	// return false;
+	//
+	// LabeledIntGraph currentGraph, nextGraph, distanceGraph;
+	// currentGraph = new LabeledIntGraph(g, labelOptimization);
+	// try {
+	// initUpperLowerLabelDataStructure(currentGraph);
+	// } catch (final IllegalArgumentException e) {
+	// throw new IllegalArgumentException("The graph has a problem and it cannot be initialize: " + e.getMessage());
+	// }
+	// final int n = currentGraph.getVertexCount();
+	// int k = currentGraph.getUpperLabeledEdges().size();
+	// if (k == 0) {
+	// k = 1;
+	// }
+	// int p = currentGraph.getPropositions().size();
+	// if (p == 0) {
+	// p = 1;
+	// }
+	// int i;
+	//
+	// CSTNUCheckStatus status = new CSTNUCheckStatus();
+	//
+	// distanceGraph = CSTNU.makeAllMaxProjection(currentGraph);
+	// CSTNU.LOG.finer("Initial All Max Projection check.\n");
+	// if (!minimalDistanceGraphFast(distanceGraph)) {
+	// CSTNU.LOG.info("The initial distance graph has negative cycles: stop!");
+	// return false;
+	// }
+	// CSTNU.LOG.finer("done");
+	//
+	// boolean reductionApplied = false;
+	// nextGraph = new LabeledIntGraph(currentGraph, true);
+	// long startTime = System.nanoTime();
+	// for (i = 1; i <= (n * k * p); i++) {
+	// reductionApplied = false;
+	// CSTNU.LOG.info("*** Cycle " + i + " ***");
+	// CSTNU.LOG.finer("Rules phase...");
+	// reductionApplied = noCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
+	// reductionApplied = upperCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
+	// reductionApplied = crossCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
+	// reductionApplied = lowerCaseRule(currentGraph, nextGraph, status) ? true : reductionApplied;
+	// reductionApplied = caseLabelRemovalRule(currentGraph, nextGraph, status) ? true : reductionApplied;
+	// CSTNU.LOG.finer("done.");
+	// currentGraph = new LabeledIntGraph(nextGraph, true);
+	// status.cycles++;
+	// if (!reductionApplied) {
+	// status.finished = true;
+	// CSTNU.LOG.finer("No more reductions applied at cycle " + i);
+	// break;
+	// }
+	// }
+	//
+	// distanceGraph = CSTNU.makeAllMaxProjection(currentGraph);
+	// CSTNU.LOG.finer("All Max Projection check.\n");
+	// if (!minimalDistanceGraphFast(distanceGraph)) {
+	// CSTNU.LOG.info("The all max projection graph has negative cycles: stop!\n");
+	// status.controllable = false;
+	// status.executionTime = (System.nanoTime() - startTime) / 1000000;
+	// return false;
+	// }
+	// status.executionTime = (System.nanoTime() - startTime) / 1000000;
+	// CSTNU.LOG.info("Stable state reached. Number of minimization cycles: " + ((i > (n * k * p)) ? (i - 1) : i));
+	// // Put all data structures of currentGraph in g
+	// CSTNU.LOG.finer("Original graph: " + g);
+	// CSTNU.LOG.finer("Determined graph: " + currentGraph);
+	// g.takeIn(currentGraph);
+	// status.controllable = true;
+	// return true;
+	// }
 
 	/**
 	 * Apply Morris Label Removal Reduction (see page 1196 of the article MM2005).
@@ -897,7 +900,7 @@ public class CSTNU {
 			final Set<LabeledIntEdge> upperCaseEdgeFromC = new ObjectArraySet<>();
 			int v;
 			for (final LabeledIntEdge e : currentGraph.getOutEdges(C)) {
-				if (((v = e.getMinUpperLabeledValue()) != CSTNU.nullInt) && (v <= 0)) {
+				if (((v = e.getMinUpperLabeledValue()) != CSTNU.nullInt) && (v <= 0)) {// FIXME: if instantaneousReaction, v < 0 ?
 					upperCaseEdgeFromC.add(e);
 				}
 			}
@@ -913,8 +916,8 @@ public class CSTNU {
 					final int x = entryLabelUpperCaseEdge.getValue();
 					if (x > 0)
 						continue; // Rule condition!
-					if (x == 0 && C.equalsByName(A))
-						continue; // Rule condition!
+					// if (x == 0 && C.equalsByName(A))//FIXME: It seems that <= 0 is not correct.
+					// continue; // Rule condition!
 					final Label l1 = entryLabelUpperCaseEdge.getKey().getKey();
 
 					DA = nextGraph.findEdge(nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
@@ -1028,14 +1031,19 @@ public class CSTNU {
 			if (!e.isContingentEdge()) {
 				continue;
 			}
-
 			/***
-			 * Manage contingent link From svn version 74 I try to introduce the management of guarded link (contingent link with different paired
-			 * requirement constraints). The idea is to set the upper/lower case label if and only if there is NO upper/lower case label.
+			 * Manage contingent link.
+			 */
+			/**
+			 * From svn version 74 I try to introduce the management of guarded link (contingent link with different paired requirement
+			 * constraints). The idea is to set the upper/lower case label if and only if there is NO upper/lower case label.
 			 */
 			final int initialValue = e.getMinValueConsistentWith(conjunctLabel);
 			if (initialValue == CSTNU.nullInt)
 				throw new IllegalArgumentException("Contingent edge " + e + " cannot be inizialized because it hasn't an initial value.");
+			if (initialValue == 0 && !this.instantaneousReaction)
+				throw new IllegalArgumentException(
+						"Contingent edge " + e + " cannot have a bound equals to 0. The two bounds [x,y] have to be 0<x<y<∞.");
 
 			// e.clearLabels();
 
@@ -1055,23 +1063,30 @@ public class CSTNU {
 			LabeledIntEdge eInverted = g.findEdge(d, s);
 			CSTNU.LOG.finer("Edge " + e + " is contingent. Found its companion: " + eInverted);
 			if (eInverted == null) {
-				eInverted = new LabeledIntEdge("e" + d.getName() + s.getName(), LabeledIntEdge.Type.derived, this.labelOptimization);
-				g.addEdge(eInverted, d, s);
-				CSTNU.LOG.warning("Edge " + e + " is contingent. Its companion is null, so a new one has been created: " + eInverted);
-				// in this case we can add the case label
-				insertUpperLowerCaseValue = true;
-			} else {
-				if ((initialValue <= 0) && (eInverted.getLowerLabelValue(conjunctLabel, s) == CSTNU.nullInt)) {
-					CSTNU.LOG.warning("Edge " + e + " is contingent with a negative value but the inverted " + eInverted
-							+ " does not contain a lower case value: (" + conjunctLabel + ", " + s.getName() + ").");
-					insertUpperLowerCaseValue = true;
-				}
-				if ((initialValue > 0) && (eInverted.getUpperLabelValue(conjunctLabel, d) == CSTNU.nullInt)) {
-					CSTNU.LOG.warning("Edge " + e + " is contingent with a positive value but the inverted " + eInverted
-							+ " does not contain an UPPER case value: (" + conjunctLabel + ", " + d.getName() + ").");
-					insertUpperLowerCaseValue = true;
-				}
+				// Since
+				throw new IllegalArgumentException("Contingent edge " + e + " is alone. The companion contingent edge between " + d.getName()
+						+ " and " + s.getName() + " does not exist. It must!");
+				// eInverted = new LabeledIntEdge("e" + d.getName() + s.getName(), LabeledIntEdge.Type.derived, this.labelOptimization);
+				// g.addEdge(eInverted, d, s);
+				// CSTNU.LOG.warning("Edge " + e + " is contingent. Its companion is null, so a new one has been created: " + eInverted);
+				// // in this case we can add the case label
+				// insertUpperLowerCaseValue = true;
+			} // else {
+			if ((initialValue == eInverted.getMinValueConsistentWith(conjunctLabel))) {
+				throw new IllegalArgumentException(
+						"Contingent edge " + e + " cannot have a bound equals to the bound of its companion. The two bounds [x,y] have to be 0<x<y<∞.");
 			}
+			if ((initialValue <= 0) && (eInverted.getLowerLabelValue(conjunctLabel, s) == CSTNU.nullInt)) {
+				CSTNU.LOG.warning("Edge " + e + " is contingent with a negative value but the inverted " + eInverted
+						+ " does not contain a lower case value: (" + conjunctLabel + ", " + s.getName() + ").");
+				insertUpperLowerCaseValue = true;
+			}
+			if ((initialValue > 0) && (eInverted.getUpperLabelValue(conjunctLabel, d) == CSTNU.nullInt)) {
+				CSTNU.LOG.warning("Edge " + e + " is contingent with a positive value but the inverted " + eInverted
+						+ " does not contain an UPPER case value: (" + conjunctLabel + ", " + d.getName() + ").");
+				insertUpperLowerCaseValue = true;
+			}
+			// }
 			if (insertUpperLowerCaseValue) {
 				if (initialValue <= 0) {
 					eInverted.mergeLowerLabelValue(conjunctLabel, s, -initialValue);
@@ -1640,14 +1655,8 @@ public class CSTNU {
 
 				if (UCLabelXY.equals(Constants.EMPTY_UPPER_CASE_LABELstring)) {
 					eXYnew.putLabeledValueToRemovedList(l1, v);
-					// FIXME: new version eXYnew.removeLabel(l1);
-					// CSTNU.LOG.finest("LabeledIntEdge " + eXY.getName() + "
-					// after remove " + l1 + " in R1 application: " +
-					// eXYnew.toString());
 					r1Applied = eXYnew.mergeLabeledValue(abg1, v);
 				} else {
-					// FIXME: new version eXYnew.removeUpperLabel(l1,
-					// UCLabelXY);
 					eXYnew.putUpperLabeledValueToRemovedList(l1, UCLabelXY, v);
 					r1Applied = eXYnew.mergeUpperLabelValue(abg1, UCLabelXY, v);
 				}
@@ -1903,11 +1912,8 @@ public class CSTNU {
 					// R3 rule
 					if (UCLabelYX.equals(Constants.EMPTY_UPPER_CASE_LABELstring)) {
 						eYXnew.putLabeledValueToRemovedList(l1, v);
-						// FIXME: new version eYXnew.removeLabel(l1);
 						r3Applied = eYXnew.mergeLabeledValue(abg1, v);
 					} else {
-						// FIXME: new version eYXnew.removeUpperLabel(l1,
-						// UCLabelYX);
 						eYXnew.putUpperLabeledValueToRemovedList(l1, UCLabelYX, v);
 						r3Applied = eYXnew.mergeUpperLabelValue(abg1, UCLabelYX, v);
 					}
@@ -2040,7 +2046,7 @@ public class CSTNU {
 					// }
 					for (final Object2IntMap.Entry<Label> entryCA : CAMap) {
 						final int x = entryCA.getValue();
-						if (x > 0)
+						if (x > 0) //FIXME if instantaneousReaction is true, v>=0 ??
 							continue;
 						final Label l1 = entryCA.getKey();
 						final Label l1l2 = l1.conjunction(l2);

@@ -27,7 +27,7 @@ public class CSTNURunningTime {
 	/**
 	 * Version
 	 */
-	static final String VERSIONandDATE = "1.0, September, 9 2015";
+	static final String VERSIONandDATE = "1.1, September, 13 2015";
 
 	/**
 	 * class logger
@@ -54,9 +54,10 @@ public class CSTNURunningTime {
 
 	/**
 	 * Parameter for asking to determine a NON optimized DC checking.
+	 * TODO si attiverà un giorno!
 	 */
-	@Option(required = false, name = "-NOinstantaneousReaction", usage = "DC checking without assuming instantaneous reactions")
-	private boolean noInstantaneousReaction = false;
+//	@Option(required = false, name = "-NOinstantaneousReaction", usage = "DC checking without assuming instantaneous reactions")
+	private boolean noInstantaneousReaction = true;
 	
 	/**
 	 * Parameter for asking how many time to check the DC for each CSTN.

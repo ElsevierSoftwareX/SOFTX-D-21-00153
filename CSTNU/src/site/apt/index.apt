@@ -21,7 +21,7 @@ Introduction
   medical tests for any given patient frequently generate information in real time that can affect which pathway that patient will follow [3].  
   The system must guarantee that any possible execution of the workflow strictly satisfies all specified temporal constraints no matter which test outcomes are observed.  
   A <<Conditional Simple Temporal Network with Uncertainty (CSTNU)>> has been introduced to represent the temporal features of workflows, 
-  and the dynamic controllability property---which captures the temporal <safety> of workflows---has been defined for CSTNUs [4].  
+  and the dynamic controllability property---which captures the temporal <safety> of workflows---has been defined for CSTNUs [4][5][6][7].  
 
   <<The goal of this project is to publish a prototype allowing one to design and check the controllability of a CSTNU by a graphical editor.>>
 
@@ -38,3 +38,14 @@ Bibliography
 
   [[4]] L. Hunsberger, R. Posenato, and C. Combi, “The Dynamic Controllability of Conditional STNs with Uncertainty,” in Workshop on Planning and Plan Execution 
 	for Real-World Systems: Principles and Practices (PlanEx) @ ICAPS-2012, Atibaia, Jun. 2012, pp. 1–8.
+	
+  [[5]] C. Combi, L. Hunsberger, and R. Posenato, “An algorithm for checking the dynamic controllability of a conditional simple temporal network with uncertainty,”
+  	in Proc. of the 5th Int. Conf. on Agents and Art. Int. (ICAART-2013) (J. Filipe and A. Fred, eds.), vol. 2, pp. 144–156, SCITEPRESS, Feb. 2013
+  	
+  [[6]] C. Combi, L. Hunsberger, and R. Posenato, “An algorithm for checking the dynamic controllability of a conditional simple temporal network with uncertainty
+    - revisited,” in Agents and Artificial Intelligence (J. Filipe and A. Fred, eds.), vol. 449 of Communications in Computer and Information Science, pp. 314–331,
+     Springer-Verlag, 2014.
+    
+  [[7]] A. Cimatti, L. Hunsberger, A. Micheli, R. Posenato, and M. Roveri, “Sound and complete algorithms for checking the dynamic controllability of temporal 
+    networks with uncertainty, disjunction and observation,” in 21st International Symposium on Temporal Representation and Reasoning (TIME 2014) 
+    (A. Cesta, C. Combi, and F. Laroussinie, eds.), pp. 27–36, IEEE Computer Society, Sept. 2014.

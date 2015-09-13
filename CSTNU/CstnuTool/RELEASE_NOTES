@@ -1,6 +1,17 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.7.4
+------
+	date:	2015-09-13
+	
+	In this release, a more strict check of contingent links has been introduced.
+	Bounds of a contingent link A==[x,y]==>B must observe the property 0<x<y<∞. 
+	Moreover, since for CSTNU instances it is not yet defined the concept of 'instantaneous reactions', it is not possible to define
+	a CSTNU instance in which there exists a constraint like C--[0,0]-->B where B is contingent.
+	This constraint requires that C has to be executed in at the same time of the contingent time point B, but this is not possible 
+	because B is decided by the environment and the runtime engine has to observe it before to execute standard node like C.
+	
 v1.7.3
 ------
 	date:	2015-09-10

@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -65,7 +66,13 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	/**
 	 * Standard serial number
 	 */
-	private static final long serialVersionUID = 647420826043015774L;
+	private static final long serialVersionUID = 647420826043015775L;
+
+	/**
+	 * Version
+	 */
+	private static final String version = "Version  $Rev$";
+
 	/**
 	 * class logger
 	 */
@@ -155,7 +162,12 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	/**
 	 * To activate instantaneous activation
 	 */
-	boolean instantaneousReaction = true;
+	boolean instantaneousReactionCSTN = true;
+
+	/**
+	 * To activate instantaneous activation TODO: forse un giorno le attiviamo
+	 */
+	boolean instantaneousReactionCSTNU = false;
 
 	/**
 	 * Flag to activate optimization of labeled values.
@@ -282,7 +294,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	 * Default constructor
 	 */
 	public CSTNUEditor() {
-		super("Simple CSTNU Editor");
+		super("Simple CSTNU Editor " + CSTNUEditor.version);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		this.g = new LabeledIntGraph(this.labelOptimization);
@@ -333,7 +345,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 		// MOUSE setting
 		// Create a graph mouse and add it to the visualization component
-		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm = new EditingModalGraphMouse<>(this.vv1.getRenderContext(), LabeledNode.getFactory(),
+		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm = new EditingModalGraphMouse<>(this.vv1.getRenderContext(),
+				LabeledNode.getFactory(),
 				LabeledIntEdge.getFactory());
 		gm.setMode(ModalGraphMouse.Mode.PICKING);
 		this.vv1.setGraphMouse(gm);
@@ -371,6 +384,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		controls.add(rowForCSTNButtons, BorderLayout.CENTER);// for button regarding CSTN
 		controls.add(rowForCSTNUButtons, BorderLayout.SOUTH);// for button regarding CSTNU
 		baseContainer.add(controls, BorderLayout.SOUTH);
+		rowForCSTNButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
 
 		JButton buttonCheck;
 		// FIRST ROW OF COMMANDS
@@ -382,35 +396,20 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		// new AnnotationControls<LabeledNode,LabeledIntEdge>(gm.getAnnotatingPlugin());
 		// controls.add(annotationControls.getAnnotationsToolBar());
 
-		final JRadioButton instantaneousAct = new JRadioButton("Instant. Reaction", this.instantaneousReaction);
-		instantaneousAct.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(final ItemEvent ev) {
-				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					CSTNUEditor.this.instantaneousReaction = true;
-					CSTNUEditor.LOG.fine("Instantaneous activations flag set to true");
-				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					CSTNUEditor.this.instantaneousReaction = false;
-					CSTNUEditor.LOG.fine("Instantaneous activations flag set to false");
-				}
-			}
-		});
-		rowForAppButtons.add(instantaneousAct);
-
-		final JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", this.excludeR1R2);
-		excludeR1R2Button.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(final ItemEvent ev) {
-				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					CSTNUEditor.this.excludeR1R2 = true;
-					CSTNUEditor.LOG.fine("excludeR1R2 flag set to true");
-				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					CSTNUEditor.this.excludeR1R2 = false;
-					CSTNUEditor.LOG.fine("excludeR1R2 flag set to false");
-				}
-			}
-		});
-		rowForAppButtons.add(excludeR1R2Button);
+		// final JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", this.excludeR1R2);
+		// excludeR1R2Button.addItemListener(new ItemListener() {
+		// @Override
+		// public void itemStateChanged(final ItemEvent ev) {
+		// if (ev.getStateChange() == ItemEvent.SELECTED) {
+		// CSTNUEditor.this.excludeR1R2 = true;
+		// CSTNUEditor.LOG.fine("excludeR1R2 flag set to true");
+		// } else if (ev.getStateChange() == ItemEvent.DESELECTED) {
+		// CSTNUEditor.this.excludeR1R2 = false;
+		// CSTNUEditor.LOG.fine("excludeR1R2 flag set to false");
+		// }
+		// }
+		// });
+		// rowForAppButtons.add(excludeR1R2Button);
 
 		final JRadioButton labelOptimizationRadio = new JRadioButton("Label minimization", this.labelOptimization);
 		labelOptimizationRadio.addItemListener(new ItemListener() {
@@ -461,7 +460,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			 *
 			 */
 			private static final String instructions = "<html>"
-					+ "<h3>All Modes:</h3>"
+					+ "<h2>Simple CSTNU Editor " + CSTNUEditor.version + "</h2><h3>All Modes:</h3>"
 					+ "<ul>"
 					+ "<li>Right-click an empty area for <b>Create Vertex</b> popup"
 					+ "<li>Right-click on a Vertex for <b>Delete Vertex</b> popup"
@@ -516,6 +515,21 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		rowForAppButtons.add(buttonCheck);
 
 		// SECOND ROW OF COMMANDS
+		JRadioButton instantaneousAct = new JRadioButton("Instantaneous Reactions", this.instantaneousReactionCSTN);
+		instantaneousAct.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(final ItemEvent ev) {
+				if (ev.getStateChange() == ItemEvent.SELECTED) {
+					CSTNUEditor.this.instantaneousReactionCSTN = true;
+					CSTNUEditor.LOG.fine("Instantaneous activations flag set to true");
+				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
+					CSTNUEditor.this.instantaneousReactionCSTN = false;
+					CSTNUEditor.LOG.fine("Instantaneous activations flag set to false");
+				}
+			}
+		});
+		rowForCSTNButtons.add(instantaneousAct);
+
 		buttonCheck = new JButton("CSTN Init Graph");
 		buttonCheck.addActionListener(new AbstractAction("CSTN Init LabeledIntGraph") {
 			/**
@@ -529,7 +543,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 
 				try {
-					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction);
+					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN);
 				} catch (final IllegalArgumentException ec) {
 					jl.setIcon(CSTNUEditor.warnIcon);
 					jl.setOpaque(true);
@@ -552,7 +566,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";"
+								+ CSTNUEditor.this.layout1.getY(gV) + ")");
 						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
 						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
@@ -583,7 +598,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 				final CSTN cstn = new CSTN(CSTNUEditor.this.labelOptimization);
 				try {
-					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction);
+					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN);
 				} catch (final IllegalArgumentException ec) {
 					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
 					jl.setIcon(CSTNUEditor.warnIcon);
@@ -599,7 +614,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 				try {
 					CSTNCheckStatus status;
-					status = cstn.dynamicConsistencyCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction, CSTNUEditor.this.excludeR1R2);
+					status = cstn.dynamicConsistencyCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN,
+							CSTNUEditor.this.excludeR1R2);
 					if (status.consistency) {
 						jl.setText("The graph is CSTN consistent.");
 						jl.setIcon(CSTNUEditor.infoIcon);
@@ -621,7 +637,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";"
+								+ CSTNUEditor.this.layout1.getY(gV) + ")");
 						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
 						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
@@ -652,7 +669,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					return;
 				if (CSTNUEditor.this.cycle == 0) {
 					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
-					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReaction);
+					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN);
 					CSTNUEditor.this.g2 = new LabeledIntGraph(CSTNUEditor.this.g1, CSTNUEditor.this.labelOptimization);
 					CSTNUEditor.this.distanceGraph = new LabeledIntGraph(CSTNUEditor.this.labelOptimization);
 					CSTNUEditor.this.status = new CSTNCheckStatus();
@@ -662,7 +679,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				CSTNUEditor.this.cycle++;
 
 				try {
-					CSTNUEditor.this.status = CSTN.oneStepDynamicConsistency(CSTNUEditor.this.g2, CSTNUEditor.this.instantaneousReaction, CSTNUEditor.this.excludeR1R2, CSTNUEditor.this.status);
+					CSTNUEditor.this.status = CSTN.oneStepDynamicConsistency(CSTNUEditor.this.g2,
+							CSTNUEditor.this.instantaneousReactionCSTN, CSTNUEditor.this.excludeR1R2, CSTNUEditor.this.status);
 					CSTNUEditor.this.status.finished = CSTNUEditor.this.g1.hasSameEdgesOf(CSTNUEditor.this.g2);
 					final boolean reductionsApplied = !CSTNUEditor.this.status.finished;
 					final boolean inconsistency = !CSTNUEditor.this.status.consistency;
@@ -695,7 +713,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";"
+								+ CSTNUEditor.this.layout1.getY(gV) + ")");
 						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
 						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
@@ -712,6 +731,22 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		rowForCSTNButtons.add(buttonCheck);
 
 		// THIRD row
+		instantaneousAct = new JRadioButton("Instantaneous Reactions (not yet implemented)", this.instantaneousReactionCSTNU);
+		instantaneousAct.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(final ItemEvent ev) {
+				if (ev.getStateChange() == ItemEvent.SELECTED) {
+					CSTNUEditor.this.instantaneousReactionCSTNU = true;
+					CSTNUEditor.LOG.fine("Instantaneous activations flag set to true");
+				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
+					CSTNUEditor.this.instantaneousReactionCSTNU = false;
+					CSTNUEditor.LOG.fine("Instantaneous activations flag set to false");
+				}
+			}
+		});
+		instantaneousAct.setEnabled(false);// TODO togliere quando si attivano instantaneous reaction
+		rowForCSTNUButtons.add(instantaneousAct);
+
 		buttonCheck = new JButton("CSTNU Init Graph");
 		buttonCheck.addActionListener(new AbstractAction("CSTNU Init LabeledIntGraph") {
 			/**
@@ -724,7 +759,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 
-				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReaction);
+				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReactionCSTNU);
 				try {
 					cstn.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
 				} catch (final IllegalArgumentException ec) {
@@ -749,7 +784,8 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					gV = CSTNUEditor.this.g.getNode(v.getName());
 					if (gV != null) {
 						CSTNUEditor.LOG.finest("Vertex of original graph: " + gV);
-						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";" + CSTNUEditor.this.layout1.getY(gV) + ")");
+						CSTNUEditor.LOG.finest("Original position (" + CSTNUEditor.this.layout1.getX(gV) + ";"
+								+ CSTNUEditor.this.layout1.getY(gV) + ")");
 						CSTNUEditor.this.layout2.setLocation(v, CSTNUEditor.this.layout1.getX(gV), CSTNUEditor.this.layout1.getY(gV));
 					} else {
 						CSTNUEditor.this.layout2.setLocation(v, v.getX(), v.getY());
@@ -819,7 +855,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
 				CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
-				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReaction);
+				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReactionCSTNU);
 				CSTNUCheckStatus status = new CSTNUCheckStatus();
 				try {
 					cstn.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
@@ -878,7 +914,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
 				if (CSTNUEditor.this.cycle == -1)
 					return;
-				final CSTNU cstnu = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReaction);
+				final CSTNU cstnu = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReactionCSTNU);
 				if (CSTNUEditor.this.cycle == 0) {
 					status = new CSTNUCheckStatus();
 					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
