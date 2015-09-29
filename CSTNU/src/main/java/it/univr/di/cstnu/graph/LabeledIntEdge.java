@@ -800,7 +800,16 @@ public class LabeledIntEdge extends Component {
 	 * @param i It cannot be null.
 	 * @return true if the merge has been successful.
 	 */
-	public boolean mergeLowerLabelValue(final Label l, final String nodeName, final int i) {
+	public boolean mergeLowerLabelValue(final Label l, String nodeName, final int i) {
+		nodeName = nodeName.toLowerCase();
+		if ((l == null) || (nodeName == null) || (i == LabeledIntNodeSetMap.INT_NULL))
+			throw new IllegalArgumentException("The label or the value has a not admitted value");
+		final int value = this.getValue(l);
+		if ((value != LabeledIntNodeSetMap.INT_NULL) && (value <= i)) {
+			LabeledIntEdge.LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains ("
+					+ l + ", " + value + ").");
+			return false;
+		}
 		return this.lowerLabel.mergeTriple(l, nodeName.toLowerCase(), i, false);
 	}
 

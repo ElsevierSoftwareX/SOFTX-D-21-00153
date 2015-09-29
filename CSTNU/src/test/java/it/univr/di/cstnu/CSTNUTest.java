@@ -133,7 +133,7 @@ public class CSTNUTest {
 
 		CSTNU cstnu = new CSTNU(true, false);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
-		cstnu.labelModificationR0R2R4(g, status);
+		cstnu.labelModificationR0R2(g, status);
 
 		LabeledIntEdge pxOK = new LabeledIntEdge("XY", true);
 		pxOK.mergeUpperLabelValue(Label.parse("AB"), "C", -11);
@@ -184,7 +184,7 @@ public class CSTNUTest {
 
 		CSTNU cstnu = new CSTNU(true, false);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
-		cstnu.labelModificationR0R2R4(g, status);
+		cstnu.labelModificationR0R2(g, status);
 
 		LabeledIntEdge pxOK = new LabeledIntEdge("XY", true);
 		pxOK.mergeUpperLabelValue(Label.parse("ABC"), "C", 9);
@@ -203,7 +203,7 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTNU#labelModificationR0R2R4(LabeledIntGraph, CSTNUCheckStatus)}.
+	 * Test method for {@link it.univr.di.cstnu.CSTNU#labelModificationR0R2(LabeledIntGraph, CSTNUCheckStatus)}.
 	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
@@ -233,7 +233,7 @@ public class CSTNUTest {
 		CSTNU cstnu = new CSTNU(true, false);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.noCaseRule(g, g1, status);
-		cstnu.labelModificationR0R2R4(g1, status);
+		cstnu.labelModificationR0R2(g1, status);
 
 		LabeledIntEdge AP_OK = new LabeledIntEdge("AP", true);
 		AP_OK.mergeLabeledValue("", 0);
@@ -285,7 +285,7 @@ public class CSTNUTest {
 		boolean instantaneousReaction = false;
 		CSTNU cstnu = new CSTNU(true, instantaneousReaction);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
-		cstnu.labelModificationR1R3R5(g, g1, status);
+		cstnu.labelModificationR1R3(g, g1, status);
 
 		// <XY, normal, X, Y, L:{(¬ABGp, 10) (¬ACp, -1) (ABC, -1) (ABG, 10) (¬BC, -1) (BCp, -1) }
 		LabeledIntEdge xyOK = new LabeledIntEdge("XY", true);
@@ -345,7 +345,7 @@ public class CSTNUTest {
 
 		CSTNU cstnu = new CSTNU(true, false);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
-		cstnu.labelModificationR1R3R5(g, g1, status);
+		cstnu.labelModificationR1R3(g, g1, status);
 
 		// <YX, normal, Y, X, L:{(¬ABGp, -4) (ABG, -4) }, LL:{}, UL:{(¬ABG¬p,C:-4) (¬ABGp,C:-7) (ABG,C:-7) }>
 		LabeledIntEdge yxOK = new LabeledIntEdge("YX", true);

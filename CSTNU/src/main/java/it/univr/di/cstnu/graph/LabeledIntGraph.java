@@ -270,6 +270,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 			for (Object2IntMap.Entry<Entry<Label, String>> entry : e.getUpperLabelSet()) {
 				eNew.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
 			}
+			for (Object2IntMap.Entry<Entry<Label, String>> entry : e.getLowerLabelSet()) {
+				eNew.mergeLowerLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
+			}
 			this.addEdge(eNew, this.getNode(g.getSource(e).getName()), this.getNode(g.getDest(e).getName()));
 		}
 	}

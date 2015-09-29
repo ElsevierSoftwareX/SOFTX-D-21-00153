@@ -33,3 +33,5 @@ To use maven
 	* mvn package //for preparing the jar package	
 	* mvn site //for building site without deploy
 	* mvn site-deploy //for building site and deploying it on profs.sci.univr.it.
+
+   Before a 'mvn site-deploy', make a 'mvn clean, mvn package'.

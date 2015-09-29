@@ -43,7 +43,7 @@ public class CSTNU {
 		 * Counters about the # of application of different rules.
 		 */
 		@SuppressWarnings("javadoc")
-		int cycles = 0, r0calls = 0, r1calls = 0, r2calls = 0, r3calls = 0, r4calls = 0, r5calls = 0, r6calls = 0, stdRuleCalls = 0,
+		int cycles = 0, r0calls = 0, r1calls = 0, r2calls = 0, r3calls = 0, stdRuleCalls = 0,
 				upperCaseRuleCalls = 0, lowerCaseRuleCalls = 0, crossCaseRuleCalls = 0, caseLabelRemovalRuleCalls = 0;
 
 		/**
@@ -65,9 +65,6 @@ public class CSTNU {
 					+ "Rule R1 has been applied " + this.r1calls + " times.\n"
 					+ "Rule R2 has been applied " + this.r2calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
-					+ "Rule R4 has been applied " + this.r4calls + " times.\n"
-					+ "Rule R5 has been applied " + this.r5calls + " times.\n"
-					+ "Rule R6 has been applied " + this.r6calls + " times.\n"
 					+ "Standard Rule has been applied " + this.stdRuleCalls + " times.\n"
 					+ "Upper Case Rule has been applied " + this.upperCaseRuleCalls + " times.\n"
 					+ "Lower Case Rule has been applied " + this.lowerCaseRuleCalls + " times.\n"
@@ -621,10 +618,14 @@ public class CSTNU {
 							continue;
 
 						// With guarded link it is not sufficient to be lower than the lower case value (that represents the guard).
-						x = BA.getValue(l1);
-						if (x == Constants.INT_NULL || z < x)
+						int x1 = BA.getValue(l1);
+						if (x1 == Constants.INT_NULL || z < x1) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LOG.log(Level.FINEST, "Case Label Removal not applied to edge " + CA 
+										+ ": lower bound of " + BA + " is greater than " + z);
+							}
 							continue;
-
+						}
 						final Label l1l2 = l1.conjunction(l2);
 						if (l1l2 == null)
 							continue;
@@ -636,7 +637,8 @@ public class CSTNU {
 							status.caseLabelRemovalRuleCalls++;
 							CSTNU.LOG.finer("Case Label Removal applied to edge " + oldCA + ":\n" + "partic: " + B.getName()
 									+ " <---(" + l1 + ", "
-									+ ((x < 0) ? "" : lowerCaseEntryOfAB.getKey().getValue().toLowerCase()) + ", " + x
+									// + ((x < 0) ? "" : lowerCaseEntryOfAB.getKey().getValue().toLowerCase()) + ", " + x
+									+ (lowerCaseEntryOfAB.getKey().getValue().toLowerCase()) + ", " + x
 									+ ")--- " + A.getName() + " <---(" + l2 + ", " + upperCaseNodeName.toUpperCase() + ", "
 									+ z + ")--- " + currentGraph.getSource(CA).getName() + "\nresult: " + A.getName()
 									+ " <---(" + l1l2 + ", " + Constants.EMPTY_UPPER_CASE_LABELstring + ", " + z + ")--- "
@@ -1074,7 +1076,8 @@ public class CSTNU {
 			} // else {
 			if ((initialValue == eInverted.getMinValueConsistentWith(conjunctLabel))) {
 				throw new IllegalArgumentException(
-						"Contingent edge " + e + " cannot have a bound equals to the bound of its companion. The two bounds [x,y] have to be 0<x<y<∞.");
+						"Contingent edge " + e
+								+ " cannot have a bound equals to the bound of its companion. The two bounds [x,y] have to be 0<x<y<∞.");
 			}
 			if ((initialValue <= 0) && (eInverted.getLowerLabelValue(conjunctLabel, s) == CSTNU.nullInt)) {
 				CSTNU.LOG.warning("Edge " + e + " is contingent with a negative value but the inverted " + eInverted
@@ -1237,17 +1240,14 @@ public class CSTNU {
 	// }
 
 	/**
-	 * Applies rule R0, R2 and R4: label containing a proposition that can be decided only in the future, is simplified removing such proposition.
+	 * Applies rule R0 and R2: label containing a proposition that can be decided only in the future, is simplified removing such proposition.
 	 *
 	 * <pre>
 	 * R0:
-	 * P? --[a p,U,-w]--&gt; X changes in P? --[a,U,-w]--&gt; X when w &lt;0
+	 * P? --[a p,U,-w]--&gt; X adds in P? --[a,U,-w]--&gt; X when w &lt;0
 	 * 
 	 * R2:
-	 * P? &lt;--[a p,U,w]-- X  changes in P? &lt;--[a,U,w]-- X when w &gt; 0
-	 * 
-	 * R4:
-	 * P? &lt;--[a p,U,w]-- X  changes in P? &lt;--[a,U,0][a p,U,w]-- X when w &le; 0
+	 * P? &lt;--[a p,U,w]-- X  adds in P? &lt;--[a,U,max{0,w}]-- X;
 	 * 
 	 * where:
 	 * U can be ◇ or an upper letter.
@@ -1259,7 +1259,7 @@ public class CSTNU {
 	 *                CSTNUCheckStatus representing the status of the checking algorithm.
 	 * @return true if the rule has been applied one time at least.
 	 */
-	boolean labelModificationR0R2R4(final LabeledIntGraph currentGraph, final CSTNUCheckStatus status) {
+	boolean labelModificationR0R2(final LabeledIntGraph currentGraph, final CSTNUCheckStatus status) {
 
 		boolean ruleApplied = false;
 		final Map<Literal, LabeledNode> obsMap = currentGraph.getObservedAndObservator();
@@ -1269,7 +1269,7 @@ public class CSTNU {
 
 		Literal p;
 		Collection<LabeledIntEdge> outEdges, inEdges;
-		CSTNU.LOG.finer("Label Modification R0, R2 and R4: start.");
+		CSTNU.LOG.finer("Label Modification R0 and R2: start.");
 		for (final LabeledNode obsNode : obsNodes) {
 			p = obsNode.getPropositionObserved();
 
@@ -1385,14 +1385,14 @@ public class CSTNU {
 				}
 			}
 
-			// R2 & R4 rule
+			// R2 rule
 			inEdges = currentGraph.getInEdges(obsNode);
 			for (final LabeledIntEdge edgeInModification : inEdges) {
 				// CSTNU.LOG.finer("R2 to be applied to edge " + edge.getName()
 				// + ": "+edge.toString());
 
 				final LabeledNode sourceNode = currentGraph.getSource(edgeInModification);
-				boolean r2Applied = false, r4Applied = false;
+				boolean r2Applied = false;
 				// destNode == obsNode;
 				// ordinary labels
 				final Set<Object2IntMap.Entry<Label>> edgeLabeledValueSet = new ObjectArraySet<>(edgeInModification.labeledValueSet());
@@ -1446,25 +1446,25 @@ public class CSTNU {
 						}
 					} else {
 						// w<=0
-						// R4 CASE
-						if (!CSTNU.checkNodeLabelsSubsumption(sourceNode, obsNode, labelWithouP, edgeInModification.getName(), "R4")) {
-							CSTNU.LOG.finer("R4 CANNOT be applied because node label to " + edgeInModification + ": "
+						// R2 special CASE
+						if (!CSTNU.checkNodeLabelsSubsumption(sourceNode, obsNode, labelWithouP, edgeInModification.getName(), "R2")) {
+							CSTNU.LOG.finer("R2 CANNOT be applied because node label to " + edgeInModification + ": "
 									+ obsNode.getName() + " <---(" + l + ", " + Constants.EMPTY_UPPER_CASE_LABELstring
 									+ ", " + w + ")--- (" + sourceNode.getName() + ", " + sourceNode.getLabel() + ")");
 							continue;
 						}
 
 						// Prepare the log message now with old values of the
-						// edge. If R4 modifies, then we can log it correctly.
-						final String logMessage = "R4 adds a label to edge " + edgeInModification + ":\npartic: " + obsNode.getName()
+						// edge. If R2 modifies, then we can log it correctly.
+						final String logMessage = "R2 adds a label to edge " + edgeInModification + ":\npartic: " + obsNode.getName()
 								+ " <---(" + l + ", " + Constants.EMPTY_UPPER_CASE_LABELstring + ", " + w + ")--- "
 								+ sourceNode.getName() + "\nresult: " + obsNode.getName() + " <---(" + l + ", "
 								+ Constants.EMPTY_UPPER_CASE_LABELstring + ", " + w + ")" + "(" + labelWithouP + ", "
 								+ Constants.EMPTY_UPPER_CASE_LABELstring + ", " + 0 + ")--- " + sourceNode.getName();
 
 						if (edgeInModification.mergeLabeledValue(labelWithouP, 0)) {
-							r4Applied = true;
-							status.r4calls++;
+							r2Applied = true;
+							status.r2calls++;
 							CSTNU.LOG.finer(logMessage);
 						}
 					}
@@ -1522,34 +1522,34 @@ public class CSTNU {
 							CSTNU.LOG.finer(logMessage);
 						}
 					} else {
-						// R4 rule
-						if (!CSTNU.checkNodeLabelsSubsumption(sourceNode, obsNode, labelWithouP, edgeInModification.getName(), "R4")) {
-							CSTNU.LOG.finer("Details because R4 cannot be applied to " + edgeInModification + obsNode.getName()
+						// R2 special case
+						if (!CSTNU.checkNodeLabelsSubsumption(sourceNode, obsNode, labelWithouP, edgeInModification.getName(), "R2")) {
+							CSTNU.LOG.finer("Details because R2 cannot be applied to " + edgeInModification + obsNode.getName()
 									+ " <---(" + l + ", " + nodeName + ", " + w + ")--- (" + sourceNode.getName() + ", "
 									+ sourceNode.getLabel() + ")");
 							continue;
 						}
 						// Prepare the log message now with old values of the
 						// edge. If R2 modifies, then we can log it correctly.
-						final String logMessage = "R4 applied to edge " + edgeInModification + ":\npartic: " + obsNode.getName()
+						final String logMessage = "R2 applied to edge " + edgeInModification + ":\npartic: " + obsNode.getName()
 								+ " <---(" + l + ", " + nodeName + ", " + w + ")--- " + sourceNode.getName() + "\nresult: "
 								+ obsNode.getName() + " <---(" + l + ", " + nodeName + ", " + w + ")" + "(" + labelWithouP
 								+ ", " + nodeName + ", " + 0 + ")--- " + sourceNode.getName();
 						if (edgeInModification.mergeUpperLabelValue(labelWithouP, nodeName, 0)) {
 							CSTNU.LOG.finer(logMessage);
-							status.r4calls++;
-							r4Applied = true;
+							status.r2calls++;
+							r2Applied = true;
 						}
 					}
 				}
-				if (r2Applied || r4Applied) {
-					CSTNU.LOG.finer("LabeledIntEdge " + edgeInModification.getName() + " after the rule R2R4: "
+				if (r2Applied) {
+					CSTNU.LOG.finer("LabeledIntEdge " + edgeInModification.getName() + " after the rule R2: "
 							+ edgeInModification.toString());
 					ruleApplied = true;
 				}
 			}
 		}
-		CSTNU.LOG.finer("Label Modification R0, R2 and R4: end.");
+		CSTNU.LOG.finer("Label Modification R0 and R2: end.");
 		return ruleApplied;
 	}
 
@@ -1643,14 +1643,13 @@ public class CSTNU {
 					throw new IllegalArgumentException(msg);
 				}
 				if (!CSTNU.checkNodeLabelsSubsumption(nX, nY, abg1, eXY.getName(), "R1")) {
-					// I check if the label subsumes the label of the endpoints
-					// before to proceed.
+					// I check if the label subsumes the label of the endpoints before to proceed.
 					// It should not necessary, but I put here as a guard!
 					CSTNU.LOG.finer("Detail about the error of application R1 to edge " + eXY + ":\npartic: " + obs.getName() + " ---(" + l
 							+ ", " + Constants.EMPTY_UPPER_CASE_LABELstring + ", " + w + ")---> " + nX.getName() + " ---(" + l1
 							+ ", " + UCLabelXY + ", " + v + ")---> " + nY.getName() + "\nresult: " + nX.getName() + " ---(" + abg1
 							+ ", " + UCLabelXY + ", " + v + ")---> " + nY.getName());
-					throw new IllegalStateException("Rule R1 cannot determine label that does not subsume node labels!");
+					continue;
 				}
 
 				if (UCLabelXY.equals(Constants.EMPTY_UPPER_CASE_LABELstring)) {
@@ -1724,11 +1723,11 @@ public class CSTNU {
 	}
 
 	/**
-	 * Applies the rules R1 and R3 and R5 about the simplification of constraint having label decided in the future.<br>
+	 * Applies the rules R1 and R3 about the simplification of constraint having label decided in the future.<br>
 	 * For about the rules, see javadoc of method
 	 * {@link #labelModificationR1Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge, LabeledIntGraph, CSTNUCheckStatus)}
 	 * and
-	 * {@link #labelModificationR3R5Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge, LabeledIntGraph, CSTNUCheckStatus)}
+	 * {@link #labelModificationR3Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge, LabeledIntGraph, CSTNUCheckStatus)}
 	 *
 	 * @param currentGraph
 	 *                the originating graph.
@@ -1739,10 +1738,10 @@ public class CSTNU {
 	 * @return true if one rule has been applied one time at least.
 	 * @see CSTNU#labelModificationR1Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge, LabeledIntGraph,
 	 *      CSTNUCheckStatus)
-	 * @see CSTNU#labelModificationR3R5Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge,
+	 * @see CSTNU#labelModificationR3Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge,
 	 *      LabeledIntGraph, CSTNUCheckStatus)
 	 */
-	boolean labelModificationR1R3R5(final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph, CSTNUCheckStatus status) {
+	boolean labelModificationR1R3(final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph, CSTNUCheckStatus status) {
 		if ((currentGraph == null)) {
 			CSTNU.LOG.info("One parameter is null. Game over");
 			return false;
@@ -1754,7 +1753,7 @@ public class CSTNU {
 			return false;
 		final Collection<LabeledNode> obsNodes = obsMap.values();
 
-		CSTNU.LOG.finer("Label Modification R1 and R3 and R5: start.");
+		CSTNU.LOG.finer("Label Modification R1 and R3: start.");
 		for (final LabeledNode obsNode : obsNodes) {
 			final Literal p = obsNode.getPropositionObserved();
 			if (p == null)
@@ -1774,19 +1773,19 @@ public class CSTNU {
 							: ruleApplied;
 				}
 
-				// R3 R5 Rules
+				// R3 Rules
 				for (final LabeledIntEdge eYX : currentGraph.getInEdges(nX)) {
 					final LabeledNode nY = currentGraph.getSource(eYX);
 					if (nY.equalsByName(obsNode)) {
 						continue;
 					}
 					final LabeledIntEdge eYXnew = nextGraph.findEdge(nextGraph.getNode(nY.getName()), nextGraph.getNode(nX.getName()));
-					ruleApplied = (labelModificationR3R5Action(obsNode, nX, nY, eYX, eObsX, p, eYXnew, currentGraph, status)) ? true
+					ruleApplied = (labelModificationR3Action(obsNode, nX, nY, eYX, eObsX, p, eYXnew, currentGraph, status)) ? true
 							: ruleApplied;
 				}
 			}
 		}
-		CSTNU.LOG.finer("Label Modification R1R3R5: end.");
+		CSTNU.LOG.finer("Label Modification R1R3: end.");
 		return ruleApplied;
 	}
 
@@ -1795,17 +1794,8 @@ public class CSTNU {
 	 *
 	 * <pre>
 	 * if P? --[ab, U ,w]--&gt; X &lt;--[bgp, U1, v]-- Y  and (w &le;0 and v&ge;w)
-	 * then the constraint between Y and X is modified as
-	 * X &lt;--[abg, U1, v]--[bgp, U1, v]-- Y,
-	 * when U is empty or is equal to U1.
-	 * </pre>
-	 *
-	 * Rule R5 requires preliminary conditions similar to the R3 ones.
-	 *
-	 * <pre>
-	 * if P? --[ab, U ,w]--&gt; X &lt;--[bgp, U1, v]-- Y  and (w &le; 0 and v&lt;w),
-	 * then the constraint between Y and X is modified as
-	 * X &lt;--[abg, U1, w]--[bgp, U1, v]-- Y,
+	 * then the following constraint between Y and X is added
+	 * X &lt;--[abg, U1, max{v,w}]--[bgp, U1, v]-- Y,
 	 * when U is empty or is equal to U1.
 	 * </pre>
 	 *
@@ -1830,7 +1820,7 @@ public class CSTNU {
 	 * @return true if a rule has been applied.
 	 */
 	@SuppressWarnings("static-method")
-	private boolean labelModificationR3R5Action(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nY, final LabeledIntEdge eYX,
+	private boolean labelModificationR3Action(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nY, final LabeledIntEdge eYX,
 			final LabeledIntEdge eObsX, final Literal p, final LabeledIntEdge eYXnew, final LabeledIntGraph g, CSTNUCheckStatus status) {
 		if (eYX == null)
 			return false;
@@ -1850,13 +1840,12 @@ public class CSTNU {
 		for (final Object2IntMap.Entry<Entry<Label, String>> entryObsX : obs_xLabeledValueSet) {
 			final int w = entryObsX.getValue();
 			if (w > 0) {
-				continue; // R3 and R5 work with negative w.
+				continue; // R3 works with negative w.
 			}
 
 			final Label l = entryObsX.getKey().getKey();
 			if (l.getLiteralWithSameName(p) != null) {
-				continue; // R3 and R5 work with a w associated to a label
-						// without 'p'.
+				continue; // R3 works with a w associated to a label without 'p'.
 			}
 
 			final String UCLabelObsX = entryObsX.getKey().getValue();
@@ -1898,14 +1887,14 @@ public class CSTNU {
 
 				// I check if the label subsumes the label of the endpoints
 				// before to proceed
-				if (!CSTNU.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3R5")) {
-					CSTNU.LOG.finer("Details because R3R5 cannot be applied to edge " + eYX + ":\n" + nObs.getName() + " ---(" + l + ", "
+				if (!CSTNU.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3")) {
+					CSTNU.LOG.finer("Details because R3 cannot be applied to edge " + eYX + ":\n" + nObs.getName() + " ---(" + l + ", "
 							+ UCLabelObsX + ", " + w + ")---> " + nX.getName() + " <---(" + l1 + ", " + UCLabelYX + ", " + v
 							+ ")--- " + nY.getName());
 					continue;
 				}
 
-				boolean r3Applied = false, r5Applied = false;
+				boolean r3Applied = false;
 				// R3 RULE
 				// v >= w (in case of instantaneous activations, the case v=w has been already sort out not allowing to reach this line.).
 				if (v >= w) {
@@ -1958,17 +1947,17 @@ public class CSTNU {
 					// }
 					// }
 				} else {
-					// R5 rule
+					// R3 special case rule
 					// It requires both w and v negative and v<w.
 					if (UCLabelYX.equals(Constants.EMPTY_UPPER_CASE_LABELstring)) {
-						r5Applied = eYXnew.mergeLabeledValue(abg1, w);
+						r3Applied = eYXnew.mergeLabeledValue(abg1, w);
 					} else {
-						r5Applied = eYXnew.mergeUpperLabelValue(abg1, UCLabelYX, w);
+						r3Applied = eYXnew.mergeUpperLabelValue(abg1, UCLabelYX, w);
 					}
-					if (r5Applied) {
-						// R5 changed the edge
-						status.r5calls++;
-						CSTNU.LOG.finer("R5 adds a label to edge " + eYX + ":\n" + "partic: " + nObs.getName() + " ---(" + l + ", "
+					if (r3Applied) {
+						// RR changed the edge
+						status.r3calls++;
+						CSTNU.LOG.finer("R3 adds a label to edge " + eYX + ":\n" + "partic: " + nObs.getName() + " ---(" + l + ", "
 								+ UCLabelObsX + ", " + w + ")---> " + nX.getName() + " <---(" + l1 + ", " + UCLabelYX + ", " + v
 								+ ")--- " + nY.getName() + "\nresult: " + nX.getName() + " <---(" + l1 + ", " + UCLabelYX + ", "
 								+ v + ")(" + abg1 + ", " + UCLabelYX + ", " + w + ")--- " + nY.getName());
@@ -1978,9 +1967,9 @@ public class CSTNU {
 			}
 		}
 		if (ruleApplied) {
-			CSTNU.LOG.finer("LabeledIntEdge " + eYXnew.getName() + " after R3R5 application: " + eYXnew.toString());
+			CSTNU.LOG.finer("LabeledIntEdge " + eYXnew.getName() + " after R3 application: " + eYXnew.toString());
 		}
-		CSTNU.LOG.finest("Label Modification R3R5: end.");
+		CSTNU.LOG.finest("Label Modification R3: end.");
 		return ruleApplied;
 	}
 
@@ -2046,7 +2035,7 @@ public class CSTNU {
 					// }
 					for (final Object2IntMap.Entry<Label> entryCA : CAMap) {
 						final int x = entryCA.getValue();
-						if (x > 0) //FIXME if instantaneousReaction is true, v>=0 ??
+						if (x > 0) // FIXME if instantaneousReaction is true, v>=0 ??
 							continue;
 						final Label l1 = entryCA.getKey();
 						final Label l1l2 = l1.conjunction(l2);
@@ -2371,11 +2360,11 @@ public class CSTNU {
 		CSTNU.LOG.info("AllMax Projection check done.\n");
 
 		CSTNU.LOG.info("Label modifications phase...");
-		labelModificationR0R2R4(currentGraph, status);
+		labelModificationR0R2(currentGraph, status);
 		reductionApplied = !originalGraph.hasSameEdgesOf(currentGraph);
 		nextGraph.copy(currentGraph);
 
-		labelModificationR1R3R5(currentGraph, nextGraph, status);
+		labelModificationR1R3(currentGraph, nextGraph, status);
 
 		reductionApplied = !currentGraph.hasSameEdgesOf(nextGraph) || reductionApplied; // .hasAllEdgesOf is first
 		CSTNU.LOG.info("Label modifications phase done.\n");

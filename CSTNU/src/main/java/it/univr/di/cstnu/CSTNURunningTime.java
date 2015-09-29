@@ -27,7 +27,7 @@ public class CSTNURunningTime {
 	/**
 	 * Version
 	 */
-	static final String VERSIONandDATE = "1.1, September, 13 2015";
+	static final String VERSIONandDATE = "1.2, September, 29 2015";
 
 	/**
 	 * class logger
@@ -159,9 +159,6 @@ public class CSTNURunningTime {
 						+ CSVSep + "\"#R1\""
 						+ CSVSep + "\"#R2\""
 						+ CSVSep + "\"#R3\""
-						+ CSVSep + "\"#R4\""
-						+ CSVSep + "\"#R5\""
-						+ CSVSep + "\"#R6\""
 						+ CSVSep + "\"#StdRuleCall\""
 						+ CSVSep + "\"#LowerCaseRuleCall\""
 						+ CSVSep + "\"#UpperCaseRuleCall\""
@@ -242,9 +239,6 @@ public class CSTNURunningTime {
 						+ CSVSep + status.r1calls
 						+ CSVSep + status.r2calls
 						+ CSVSep + status.r3calls
-						+ CSVSep + status.r4calls
-						+ CSVSep + status.r5calls
-						+ CSVSep + status.r6calls
 						+ CSVSep + status.stdRuleCalls
 						+ CSVSep + status.lowerCaseRuleCalls
 						+ CSVSep + status.upperCaseRuleCalls
