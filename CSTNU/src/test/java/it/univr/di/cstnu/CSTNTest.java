@@ -448,6 +448,6 @@ public class CSTNTest {
 
 		CSTN.labelPropagationRule(g, X, Y, Z, XY, YZ, Z, new CSTNCheckStatus());
 		LabeledIntEdge XZnew = g.findEdge(X, Z);
-		assertEquals("Label propagation rule with particular values", "❮eXZ; derived; {(¬p, -1) (p, -2) }; ❯", XZnew.toString());
+		assertEquals("Label propagation rule with particular values", "❮X_Z; derived; {(¬p, -1) (p, -2) }; ❯", XZnew.toString());
 	}
 }

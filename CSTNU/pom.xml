@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.7.5-SNAPSHOT</version>
+	<version>1.7.6-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
@@ -225,6 +225,7 @@
 				<version>1.7</version>
 				<executions>
 					<execution>
+						<id>package</id>
 						<phase>package</phase>
 						<goals>
 							<goal>run</goal>
@@ -245,7 +246,7 @@
 								<delete>
 									<fileset dir="${basedir}/CstnuTool/" includes="${project.artifactId}-*.jar" />
 								</delete>
-								<copy file="${project.build.directory}/${project.jar.filename}" tofile="${basedir}/CstnuTool/${project.jar.filename}" />
+								<copy preservelastmodified="true" file="${project.build.directory}/${project.jar.filename}" tofile="${basedir}/CstnuTool/${project.jar.filename}" />
 								<tar compression="gzip" destfile="${basedir}/${project.tool.filename}.tgz">
 									<tarfileset dir="${basedir}/CstnuTool/" prefix="${project.tool.filename}">
 										<include name="**" />
@@ -255,7 +256,38 @@
 								<delete>
 									<fileset dir="${basedir}/src/site/resources/bin/" includes="*.jar" />
 								</delete>
-								<copy file="${basedir}/${project.tool.filename}.tgz" tofile="${basedir}/src/site/resources/bin/${project.tool.filename}.tgz" />
+								<copy preservelastmodified="true" file="${basedir}/${project.tool.filename}.tgz" tofile="${basedir}/src/site/resources/bin/${project.tool.filename}.tgz" />
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>site</id>
+						<phase>site</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete>
+									<fileset dir="${basedir}/target/site/bin/" includes="*.tgz" />
+								</delete>
+								<copy todir="${basedir}/target/site/bin/" preservelastmodified="true">
+									<fileset dir="${basedir}/src/site/resources/bin/">
+										<include name="*.tgz" />
+									</fileset>
+								</copy>
+							</target>
+						</configuration>
+					</execution>
+					<execution>
+						<id>pre-site</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete dir="${basedir}/target/site" verbose="true"/>
 							</target>
 						</configuration>
 					</execution>

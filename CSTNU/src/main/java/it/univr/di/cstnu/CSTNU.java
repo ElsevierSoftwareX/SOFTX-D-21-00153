@@ -231,8 +231,8 @@ public class CSTNU {
 
 	// System.out.printf("UPPER CASE\n");
 	// g = new LabeledIntGraph();
-	// dc = new LabeledIntEdge("DC");
-	// ca = new LabeledIntEdge("CA");
+	// dc = newEdgeInCSTNU("DC");
+	// ca = newEdgeInCSTNU("CA");
 	// ca.mergeUpperLabelValue(Label.parse("AB"), "B", 3);
 	// dc.mergeLabeledValue(Label.parse("B"), -13);
 	// dc.mergeLabeledValue(Label.parse("C"), 11);
@@ -249,8 +249,8 @@ public class CSTNU {
 
 	// System.out.printf("LOWER CASE\n");
 	// g = new LabeledIntGraph();
-	// dc = new LabeledIntEdge("DC");
-	// ca = new LabeledIntEdge("CA");
+	// dc = newEdgeInCSTNUge("DC");
+	// ca = newEdgeInCSTNUge("CA");
 	// dc.mergeLowerLabelValue(Label.parse("AB"), "c", 3);
 	// ca.mergeLabeledValue(Label.parse("B"), -13);
 	// ca.mergeLabeledValue(Label.parse("C"), -11);
@@ -268,8 +268,8 @@ public class CSTNU {
 	//
 	// System.out.printf("CROSS CASE\n");
 	// g = new LabeledIntGraph();
-	// dc = new LabeledIntEdge("DC");
-	// ca = new LabeledIntEdge("CA");
+	// dc = newEdgeInCSTNU("DC");
+	// ca = newEdgeInCSTNU("CA");
 	// dc.mergeLowerLabelValue(Label.parse("AB"), "c", 3);
 	// ca.mergeUpperLabelValue(Label.parse("B¬C"), "D", -3);
 	// C = new LabeledNode("C");
@@ -285,8 +285,8 @@ public class CSTNU {
 
 	// System.out.printf("LABEL REMOVAL CASE\n");
 	// g = new LabeledIntGraph();
-	// final LabeledIntEdge ab = new LabeledIntEdge("AB");
-	// ca = new LabeledIntEdge("CA");
+	// final LabeledIntEdge ab = newEdgeInCSTNU("AB");
+	// ca = newEdgeInCSTNU("CA");
 	// ca.mergeUpperLabelValue(Label.parse("AB"), "B", 3);
 	// ca.mergeUpperLabelValue(Label.parse("¬B"), "B", 4);
 	// ab.mergeLowerLabelValue(Label.parse("B"), "b", 13);
@@ -307,15 +307,15 @@ public class CSTNU {
 	// LabeledNode P = new LabeledNode("P", new Literal('p'));
 	// LabeledNode X = new LabeledNode("X");
 	// LabeledNode Y = new LabeledNode("Y");
-	// LabeledIntEdge px = new LabeledIntEdge("PX");
+	// LabeledIntEdge px = newEdgeInCSTNU("PX");
 	// px.mergeLabeledValue(Label.parse("AB"), -10);
 	// px.mergeUpperLabelValue(Label.parse("AB"), "C", -11);
-	// LabeledIntEdge yx = new LabeledIntEdge("YX");
+	// LabeledIntEdge yx = newEdgeInCSTNU("YX");
 	// yx.mergeLabeledValue(Label.parse("BGp"), -4);
 	// yx.mergeUpperLabelValue(Label.parse("BGp"), "C", -7);
 	// yx.mergeUpperLabelValue(Label.parse("BG¬p"), "C", -4);
 	//
-	// LabeledIntEdge xy = new LabeledIntEdge("XY");
+	// LabeledIntEdge xy = newEdgeInCSTNU("XY");
 	// xy.mergeLabeledValue(Label.parse("BGp"), 5);
 	// xy.mergeUpperLabelValue(Label.parse("BGp"), "C", 8);
 	// xy.mergeUpperLabelValue(Label.parse("BG¬p"), "C", 9);
@@ -373,7 +373,7 @@ public class CSTNU {
 	// if (newLabelSet.size() > 0) {
 	// ij = g.findEdge(iV, jV);
 	// if (ij == null) {
-	// ij = new LabeledIntEdge("e" + node[i].getName() + node[j].getName(),
+	// ij = newEdgeInCSTNU("e" + node[i].getName() + node[j].getName(),
 	// LabeledIntEdge.Type.derived, CSTNU.labelOptimization);
 	// g.addEdge(ij, iV, jV);
 	// }
@@ -443,8 +443,8 @@ public class CSTNU {
 								continue;
 							}
 							if (ij == null) {
-								ij = new LabeledIntEdge("e" + node[i].getName() + node[j].getName(),
-										LabeledIntEdge.Type.derived, labelOptimization);
+								ij = newEdgeInCSTNU(node[i].getName() + "_" + node[j].getName(), LabeledIntEdge.Type.derived,
+										labelOptimization, g);
 								g.addEdge(ij, iV, jV);
 							}
 							v = ikL.getValue() + kjL.getValue();
@@ -621,7 +621,7 @@ public class CSTNU {
 						int x1 = BA.getValue(l1);
 						if (x1 == Constants.INT_NULL || z < x1) {
 							if (LOG.isLoggable(Level.FINEST)) {
-								LOG.log(Level.FINEST, "Case Label Removal not applied to edge " + CA 
+								LOG.log(Level.FINEST, "Case Label Removal not applied to edge " + CA
 										+ ": lower bound of " + BA + " is greater than " + z);
 							}
 							continue;
@@ -930,8 +930,8 @@ public class CSTNU {
 						if (l1l2 == null)
 							continue;
 						if (DA == null) {
-							DA = new LabeledIntEdge("e" + D.getName() + A.getName(), LabeledIntEdge.Type.derived,
-									this.labelOptimization);
+							DA = newEdgeInCSTNU(D.getName() + "_" + A.getName(), LabeledIntEdge.Type.derived,
+									this.labelOptimization, nextGraph);
 							nextGraph.addEdge(DA, nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
 							// nextGraph.addUpperLabeledEdge(DA);
 							CSTNU.LOG.finer("crossCaseRule: added edge " + DA.getName());
@@ -1068,7 +1068,7 @@ public class CSTNU {
 				// Since
 				throw new IllegalArgumentException("Contingent edge " + e + " is alone. The companion contingent edge between " + d.getName()
 						+ " and " + s.getName() + " does not exist. It must!");
-				// eInverted = new LabeledIntEdge("e" + d.getName() + s.getName(), LabeledIntEdge.Type.derived, this.labelOptimization);
+				// eInverted = newEdgeInCSTNU(d.getName() + "_" + s.getName()+, LabeledIntEdge.Type.derived, this.labelOptimization);
 				// g.addEdge(eInverted, d, s);
 				// CSTNU.LOG.warning("Edge " + e + " is contingent. Its companion is null, so a new one has been created: " + eInverted);
 				// // in this case we can add the case label
@@ -1145,8 +1145,8 @@ public class CSTNU {
 						final LabeledNode obsl1 = g.getObservator(l1);
 						LabeledIntEdge e = g.findEdge(node, obsl1);
 						if (e == null) {
-							e = new LabeledIntEdge("e" + node.getName() + obsl1.getName(), LabeledIntEdge.Type.derived,
-									this.labelOptimization);
+							e = newEdgeInCSTNU(node.getName() + "_" + obsl1.getName(), LabeledIntEdge.Type.derived,
+									this.labelOptimization, g);
 							g.addEdge(e, node, obsl1);
 							CSTNU.LOG.warning("It is necessary to add a preceding constraint between node '" + node.getName()
 									+ "' and node '" + obsl1.getName() + "' to satisfy WD2.");
@@ -1170,7 +1170,7 @@ public class CSTNU {
 			}
 			LabeledIntEdge e = g.findEdge(node, Z);
 			if (e == null) {
-				e = new LabeledIntEdge("e" + node.getName() + Z.getName(), LabeledIntEdge.Type.derived, this.labelOptimization);
+				e = newEdgeInCSTNU(node.getName() + "_" + Z.getName(), LabeledIntEdge.Type.derived, this.labelOptimization, g);
 				g.addEdge(e, node, Z);
 				CSTNU.LOG.info("It is necessary to add a preceding constraint between node '" + node.getName() + "' and node '" + Z.getName()
 						+ "' because Z must be the first node.");
@@ -1738,8 +1738,8 @@ public class CSTNU {
 	 * @return true if one rule has been applied one time at least.
 	 * @see CSTNU#labelModificationR1Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge, LabeledIntGraph,
 	 *      CSTNUCheckStatus)
-	 * @see CSTNU#labelModificationR3Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge,
-	 *      LabeledIntGraph, CSTNUCheckStatus)
+	 * @see CSTNU#labelModificationR3Action(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, Literal, LabeledIntEdge, LabeledIntGraph,
+	 *      CSTNUCheckStatus)
 	 */
 	boolean labelModificationR1R3(final LabeledIntGraph currentGraph, final LabeledIntGraph nextGraph, CSTNUCheckStatus status) {
 		if ((currentGraph == null)) {
@@ -2050,8 +2050,8 @@ public class CSTNU {
 						}
 
 						if (DA == null) {
-							DA = new LabeledIntEdge("e" + D.getName() + A.getName(), LabeledIntEdge.Type.derived,
-									this.labelOptimization);
+							DA = newEdgeInCSTNU(D.getName() + "_" + A.getName(), LabeledIntEdge.Type.derived,
+									this.labelOptimization, nextGraph);
 							nextGraph.addEdge(DA, nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
 							CSTNU.LOG.finer("lowerCaseRule: added edge " + DA.getName());
 						}
@@ -2291,8 +2291,8 @@ public class CSTNU {
 							final int y = DCEntry.getValue();
 
 							if (DA == null) {
-								DA = new LabeledIntEdge("e" + D.getName() + A.getName(), LabeledIntEdge.Type.derived,
-										this.labelOptimization);
+								DA = newEdgeInCSTNU(D.getName() + "_" + A.getName(), LabeledIntEdge.Type.derived,
+										this.labelOptimization, nextGraph);
 								nextGraph.addEdge(DA, DinNextGraph, AinNextGraph);
 								CSTNU.LOG.finer("No-CaseRule: added edge " + DA.getName());
 							}
@@ -2453,8 +2453,8 @@ public class CSTNU {
 						// continue;// there is a more general check
 						final int y = entryDC.getValue();
 						if (DA == null) {
-							DA = new LabeledIntEdge("e" + D.getName() + A.getName(), LabeledIntEdge.Type.derived,
-									this.labelOptimization);
+							DA = newEdgeInCSTNU(D.getName() + "_" + A.getName(), LabeledIntEdge.Type.derived,
+									this.labelOptimization, nextGraph);
 							nextGraph.addEdge(DA, nextGraph.getNode(D.getName()), nextGraph.getNode(A.getName()));
 							CSTNU.LOG.finer("upperCaseRule: added edge " + DA.getName());
 						}
@@ -2564,7 +2564,7 @@ public class CSTNU {
 	// // continue;// THERE IS A MORE GENERAL CHECK
 	//
 	// if (YP == null) {
-	// YP = new LabeledIntEdge("e" + Y.getName() + P.getName(),
+	// YP = newEdgeInCSTNU("e" + Y.getName() + P.getName(),
 	// LabeledIntEdge.Type.derived);
 	// nextGraph.addEdge(YP, nextGraph.getNode(Y.getName()),
 	// nextGraph.getNode(P.getName()));
@@ -2683,6 +2683,30 @@ public class CSTNU {
 			sum = Constants.INT_POS_INFINITE;
 		}
 		return (int) sum;
+	}
+
+	/**
+	 * Create an edge assuring that its name is unique in the graph 'g'.
+	 * 
+	 * @param name
+	 *                the proposed name. If an edge with name already exists, then name is modified adding an suitable integer suche that the name becomes
+	 *                unique in 'g'.
+	 * @param type
+	 *                the type of edge to create.
+	 * @param optimize
+	 *                true if the labeled values in the edge have to be optimized
+	 * @param g
+	 *                the graph in which edge has to be added. This method cannot add the edge!
+	 * @return an edge with a unique name.
+	 */
+	static private LabeledIntEdge newEdgeInCSTNU(String name, LabeledIntEdge.Type type, boolean optimize, LabeledIntGraph g) {
+		int i = g.getEdgeCount();
+		String name1 = new String(name);
+		while (g.getEdge(name1) != null) {
+			name1 = name + "_" + i++;
+		}
+		LabeledIntEdge e = new LabeledIntEdge(name1, type, optimize);
+		return e;
 	}
 
 }

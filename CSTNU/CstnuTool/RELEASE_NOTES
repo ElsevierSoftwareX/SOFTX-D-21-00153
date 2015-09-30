@@ -1,9 +1,15 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.7.6
+------
+	date:	2015-09-30
+	
+	Fixed a subtle bug in the generation of new edges. Thanks to Dian Liu for his help in discovering such error.
+
 v1.7.5
 ------
-	date:	2015-9-23
+	date:	2015-09-23
 	
 	Cleaned some log messages. 
 	We have discovered that instantaneous reaction feature requires a sharp adjustment in semantics of the network.
