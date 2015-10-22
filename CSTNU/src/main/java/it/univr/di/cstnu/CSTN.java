@@ -260,7 +260,7 @@ public class CSTN {
 												+ "' to satisfy WD2.");
 							}
 						}
-						e.mergeLabeledValue(label, 0);
+						e.mergeLabeledValue(label, 0);// FIXME instantaneous reaction
 					}
 				} else
 					throw new IllegalArgumentException(ex.getMessage());
@@ -529,7 +529,10 @@ public class CSTN {
 
 		final Label labelConjunction = tail.getLabel().conjunction(head.getLabel());
 		if (labelConjunction == null) {
-			final String msg = "The two endpoints don't allow any constraint because they have inconsistent labels.";
+			final String msg = "Two endpoints do not allow any constraint because the have inconsisten labels."
+					+ "\nHead node: " + head
+					+ "\nTail node: " + tail
+					+ "\nConnecting edge: " + e;
 			if (CSTN.LOG.isLoggable(Level.WARNING))
 				CSTN.LOG.log(Level.WARNING, msg);
 			throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelInconsistent);
@@ -721,8 +724,7 @@ public class CSTN {
 		if (CSTN.LOG.isLoggable(Level.FINEST))
 			CSTN.LOG.log(Level.FINEST, "Label Modification R0: start.");
 		final ObjectArraySet<Label> obsXLabelSet = new ObjectArraySet<>(PX.getLabeledValueMap().keys());// It is necessary to have a copy of current
-														// labels
-														// for updating them without problems.
+														// labels for updating them without problems.
 		for (final Label l : obsXLabelSet) {
 			final int w = PX.getValue(l);
 			if (w == LabeledIntNodeSetMap.INT_NULL)
@@ -736,6 +738,11 @@ public class CSTN {
 			alphaPrime.removeAllLiteralsWithSameName(p);
 			alphaPrime.removeAllLiteralsWithSameName(currentGraph.getChildrenOf(P));
 
+			if (w== 0 && !CSTN.checkNodeLabelsSubsumption(P, X, alphaPrime, PX.getName(), "R0")) {
+				//It means that 'X' label contains 'p' and occur at the same time of P?
+				continue;//FIXME instantaneous reaction
+			}
+			
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
 			String logMessage = null;
 			if (CSTN.LOG.isLoggable(Level.FINER)) {

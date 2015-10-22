@@ -82,8 +82,11 @@ public class CSTNU {
 	/**
 	 * Flag to activate instantaneous reaction.
 	 */
-	boolean instantaneousReaction = false;// TODO it cannot be true till we fix some issue about the equivalence between instantaneousReaction in Morris
-						// and instantaneousReaction in rules and R0-R3
+	boolean instantaneousReaction = false;// FIXME There are some issue about the equivalence between instantaneousReaction in Morris
+						// and instantaneousReaction in rules and R0-R3!
+						// 2015-10-22 Remember that after the correct implementation of these feature, initUpperLowerLabelDataStructure
+						// has
+						// to be adjusted.
 
 	/**
 	 * logger
@@ -707,9 +710,12 @@ public class CSTNU {
 
 		final Label labelConjunction = tail.getLabel().conjunction(head.getLabel());
 		if (labelConjunction == null) {
-			CSTNU.LOG.warning("Two endpoints don not allow any constraint because the have inconsisten labels.");
-			throw new WellDefinitionException("Two endpoints don not allow any constraint because the have inconsisten labels.",
-					WellDefinitionException.Type.LabelInconsistent);
+			final String msg = "Two endpoints do not allow any constraint because the have inconsisten labels."
+					+ "\nHead node: " + head
+					+ "\nTail node: " + tail
+					+ "\nConnecting edge: " + e;
+			CSTNU.LOG.warning(msg);
+			throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelInconsistent);
 		}
 		// check the ordinary labeled values
 		for (final Object2IntMap.Entry<Label> entry : e.getLabeledValueMap().entrySet()) {
@@ -1151,7 +1157,7 @@ public class CSTNU {
 							CSTNU.LOG.warning("It is necessary to add a preceding constraint between node '" + node.getName()
 									+ "' and node '" + obsl1.getName() + "' to satisfy WD2.");
 						}
-						e.mergeLabeledValue(label, 0);
+						e.mergeLabeledValue(label, 0);// FIXME instantaneous reaction
 					}
 				} else
 					throw new IllegalArgumentException(ex.getMessage());
@@ -1289,8 +1295,7 @@ public class CSTNU {
 
 					final Label l = entryObs.getKey();
 					if (edge.getValue(l) == CSTNU.nullInt) {
-						continue;// it is possible that in a previous cycle the
-								// label has been removed.
+						continue;// it is possible that in a previous cycle the label has been removed.
 					}
 					if (l.getLiteralWithSameName(p) == null) {
 						continue;
@@ -1300,18 +1305,10 @@ public class CSTNU {
 					labelWithouP.remove(p);
 					labelWithouP.remove(p.getComplement());
 
-					// if (!checkNodeLabelsSubsumption(obsNode, destNode,
-					// labelWithouP, edge.getName(), "R0")) {
-					// // It means that 'X' label contains 'p', but node 'X'
-					// must occur before P? => graph not well defined!
-					// final String msg = "Rule R0: new label does not subsume
-					// labels of P? and X. It means that P? or X label contains
-					// 'p'." +
-					// "\n***This is not possible. LabeledIntGraph not well
-					// formed.***";
-					// CSTNU.LOG.severe(msg);
-					// throw new IllegalStateException(msg);
-					// }
+					if (w == 0 && !CSTNU.checkNodeLabelsSubsumption(obsNode, destNode, labelWithouP, edge.getName(), "R0")) {
+						// It means that 'X' label contains 'p' and occur at the same time of P?
+						continue;// FIXME instantaneous reaction
+					}
 
 					// Prepare the log message now with old values of the edge.
 					// If R0 modifies, then we can log it correctly.
@@ -1352,18 +1349,10 @@ public class CSTNU {
 					labelWithouP.remove(p);
 					labelWithouP.remove(p.getComplement());
 
-					// if (!checkNodeLabelsSubsumption(obsNode, destNode,
-					// labelWithouP, edge.getName(), "R0")) {
-					// // It means that 'X' label contains 'p', but node 'X'
-					// must occur before P? => graph not well defined!
-					// final String msg = "Rule R0: new label does not subsume
-					// labels of P? and X. It means that P? or X label contains
-					// 'p'." +
-					// "\n***This is not possible. LabeledIntGraph not well
-					// formed.***";
-					// CSTNU.LOG.severe(msg);
-					// throw new IllegalStateException(msg);
-					// }
+					if (w == 0 && !CSTNU.checkNodeLabelsSubsumption(obsNode, destNode, labelWithouP, edge.getName(), "R0")) {
+						// It means that 'X' label contains 'p' and occur at the same time of P?
+						continue;// FIXME instantaneous reaction
+					}
 
 					// Prepare the log message now with old values of the edge.
 					// If R0 modifies, then we can log it correctly.
@@ -1885,8 +1874,7 @@ public class CSTNU {
 					throw new IllegalArgumentException(msg);
 				}
 
-				// I check if the label subsumes the label of the endpoints
-				// before to proceed
+				// I check if the label subsumes the label of the endpoints before to proceed
 				if (!CSTNU.checkNodeLabelsSubsumption(nY, nX, abg1, eYX.getName(), "R3")) {
 					CSTNU.LOG.finer("Details because R3 cannot be applied to edge " + eYX + ":\n" + nObs.getName() + " ---(" + l + ", "
 							+ UCLabelObsX + ", " + w + ")---> " + nX.getName() + " <---(" + l1 + ", " + UCLabelYX + ", " + v
@@ -2350,9 +2338,9 @@ public class CSTNU {
 		distanceGraph.copy(CSTNU.makeAllMaxProjection(currentGraph));
 		CSTNU.LOG.finest("distanceGraph:" + distanceGraph);
 		CSTNU.LOG.info("Current graph: " + currentGraph.getName());
-		CSTNU.LOG.info("AllMax Projection check... on " + distanceGraph.getName());
+		CSTNU.LOG.info("AllMax Projection check on " + distanceGraph.getName() + "...");
 		if (!minimalDistanceGraphFast(distanceGraph)) {
-			CSTNU.LOG.info("The all max projection graph has negative loops at the start of cycle " + status.cycles + ": stop!");
+			CSTNU.LOG.info("The AllMax Projection graph has at leat one negative loop at the start of cycle " + status.cycles + ": stop!");
 			status.controllable = false;
 			status.finished = true;
 			return status;
@@ -2361,14 +2349,17 @@ public class CSTNU {
 
 		CSTNU.LOG.info("Label modifications phase...");
 		labelModificationR0R2(currentGraph, status);
+		currentGraph.setName("New Graph");
 		reductionApplied = !originalGraph.hasSameEdgesOf(currentGraph);
 		nextGraph.copy(currentGraph);
+		currentGraph.setName("Current Graph");
 
 		labelModificationR1R3(currentGraph, nextGraph, status);
 
 		reductionApplied = !currentGraph.hasSameEdgesOf(nextGraph) || reductionApplied; // .hasAllEdgesOf is first
 		CSTNU.LOG.info("Label modifications phase done.\n");
 		currentGraph.copy(nextGraph);
+		currentGraph.setName("Current Graph");
 
 		CSTNU.LOG.info("Rules phase...");
 		noCaseRule(currentGraph, nextGraph, status);

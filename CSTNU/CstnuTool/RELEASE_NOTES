@@ -1,6 +1,14 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.7.7
+------
+	date:	2015-10-22
+	
+	Fixed another issue with instantaneous reaction in CSTNU. Thanks to Dian Liu for his help in discovering such error.
+	I repeat that, even in this release, it is better to set any timepoint---that depends from a observation timepoint or follows a contingent timepoint---to 
+	a not 0 distance from the considered observation timepoint or contingent one.
+
 v1.7.6
 ------
 	date:	2015-09-30
