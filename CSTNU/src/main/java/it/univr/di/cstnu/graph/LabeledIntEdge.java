@@ -987,7 +987,7 @@ public class LabeledIntEdge extends Component {
 	 *
 	 * @param type the type to set
 	 */
-	public void setType(final Type type) {
+	public void setType(final LabeledIntEdge.Type type) {
 		this.type = type;
 	}
 

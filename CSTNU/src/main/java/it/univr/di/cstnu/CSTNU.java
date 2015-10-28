@@ -1080,6 +1080,11 @@ public class CSTNU {
 				// // in this case we can add the case label
 				// insertUpperLowerCaseValue = true;
 			} // else {
+				// I have discovered that some users can set one edge 'contingent' while set 'normal' the companion!
+				// I fix!
+			if (!eInverted.isContingentEdge()) {
+				throw new IllegalArgumentException("Edge " + e + " is contingent while the companion edge " + eInverted + " is not contingent!\nIt must be!");
+			}
 			if ((initialValue == eInverted.getMinValueConsistentWith(conjunctLabel))) {
 				throw new IllegalArgumentException(
 						"Contingent edge " + e
