@@ -34,6 +34,25 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 */
 	static private Logger LOG = Logger.getLogger(LabeledIntNodeSetTreeMap.class.getName());
 
+	
+	/**
+	 * 
+	 */
+	private static final String labelCharsRE = Constants.propositionLetterRanges+"0-9,\\-" + Constants.NOT + Constants.UNKNOWN + Constants.EMPTY_LABEL;
+	/**
+	 * Matcher for RE
+	 */
+	private static final Pattern patternlabelCharsRE = Pattern.compile("\\{[\\(" + labelCharsRE + "\\) ]*\\}");
+
+	/**
+	 * 
+	 */
+	private static final Pattern splitterEntry = Pattern.compile("\\{\\}|[{(]+|\\) [(}]*");
+	/**
+	 * 
+	 */
+	private static final Pattern splitterPair = Pattern.compile(", ");
+
 	/**
 	 *
 	 */
@@ -103,12 +122,13 @@ public class LabeledIntNodeSetTreeMap implements LabeledIntNodeSetMap, Serializa
 	 */
 	static public LabeledIntNodeSetTreeMap parse(final String inputMap, final boolean withOptimization) {
 		if (inputMap == null) return null;
-		final String labelCharsRE = "a-zA-Z0-9, \\-" + Constants.NOT + Constants.UNKNOWN + Constants.EMPTY_LABEL;
-		if (!Pattern.matches("\\{[\\(" + labelCharsRE + "\\) ]*\\}", inputMap)) return null;
+
+		if (!patternlabelCharsRE.matcher(inputMap).matches()) {
+			LOG.warning("Input string is not well formed for representing a proposition");
+			return null;
+		}
 
 		final LabeledIntNodeSetTreeMap newMap = new LabeledIntNodeSetTreeMap(withOptimization);
-		final Pattern splitterEntry = Pattern.compile("\\{\\}|[{(]+|\\) [(}]*");
-		final Pattern splitterPair = Pattern.compile(", ");
 
 		final String[] entryPair = splitterEntry.split(inputMap);
 		// LabeledValueTreeMap.LOG.finest("EntryPairs: " + Arrays.toString(entryPair));

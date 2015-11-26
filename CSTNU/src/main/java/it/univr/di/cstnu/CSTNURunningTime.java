@@ -53,13 +53,6 @@ public class CSTNURunningTime {
 	private boolean noOptimized = false;
 
 	/**
-	 * Parameter for asking to determine a NON optimized DC checking.
-	 * TODO si attiverà un giorno!
-	 */
-//	@Option(required = false, name = "-NOinstantaneousReaction", usage = "DC checking without assuming instantaneous reactions")
-	private boolean noInstantaneousReaction = true;
-	
-	/**
 	 * Parameter for asking how many time to check the DC for each CSTN.
 	 */
 	@Option(required = false, name = "-numRepetitionDCCheck", usage = "Number of time to re-execute DC checking")
@@ -194,7 +187,7 @@ public class CSTNURunningTime {
 			return;
 		}
 
-		CSTNU cstnu = new CSTNU(!tester.noOptimized, !tester.noInstantaneousReaction);
+		CSTNU cstnu = new CSTNU(!tester.noOptimized);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		LabeledIntGraph g = null;
 

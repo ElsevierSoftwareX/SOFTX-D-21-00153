@@ -1,5 +1,5 @@
 /**
- * Translator to the Time Game Automata (TIGA) model.
+// * Translator to the Time Game Automata (TIGA) model.
  */
 package it.univr.di.cstnu;
 
@@ -600,7 +600,7 @@ public class CSTNU2UppaalTiga {
 						// So, (a¬b => (A-B <= t)) has to be represented as (!`a` | 'b' | `(A-B <= t)`)
 						String labelNegatedandEscaped = label.toLogicalExpr(true, jboolNot, jboolAnd, jboolOr);
 
-						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("([a-zA-Z])", "`$1`");// tutto a 1
+						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("(["+Constants.propositionLetterRanges+"])", "`$1`");// tutto a 1
 						// LOG.finest("labelNegatedandEscaped= " + labelNegatedandEscaped);
 						psi2dirty.append("(" + labelNegatedandEscaped + jboolOr + "`((" + destClock + " - " + sourceClock + ") <= " + value + ")`)" + jboolAnd);
 					}
@@ -639,8 +639,8 @@ public class CSTNU2UppaalTiga {
 
 				// A literal "`l`" has to be transformed to "(l == 1)"
 				// while "!`l`" to "(l == -1)"
-				psi2DnfJbool = psi2DnfJbool.replaceAll("`([a-zA-Z])`", "\\($1 == 1\\)");// tutto a 1
-				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\(([a-zA-Z]) == 1", "\\($1 == -1");// mentre si mette a -1 chi è negato!
+				psi2DnfJbool = psi2DnfJbool.replaceAll("`(["+Constants.propositionLetterRanges+"])`", "\\($1 == 1\\)");// tutto a 1
+				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\((["+Constants.propositionLetterRanges+"]) == 1", "\\($1 == -1");// mentre si mette a -1 chi è negato!
 
 				psi2DNF = jbool2TigaExpr(psi2DnfJbool, null, null, " | ");
 				LOG.finest("psi2DNF= " + psi2DNF);
@@ -797,7 +797,7 @@ public class CSTNU2UppaalTiga {
 		if (o == null || g == null) throw new IllegalArgumentException("One parameter is null!");
 		output = o;
 		cstnu = g;
-		cstnuCheck = new CSTNU(true, true);
+		cstnuCheck = new CSTNU(true);
 		if (!checkCSTNUSyntax()) throw new IllegalArgumentException("CSTNU is not well formed!");
 	}
 

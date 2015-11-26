@@ -1,6 +1,7 @@
 package it.univr.di.labeledvalue;
 
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 /**
  * Simple class to represent a literal.
@@ -31,12 +32,14 @@ public class Literal implements Comparable<Literal>, Serializable {
 		/**
 		 * A negated literal is true if the truth value assigned to its proposition letter is false, false otherwise.
 		 */
-		negated(Constants.NOTstring), /**
-						 * A straight literal is true if the truth value assigned to its proposition letter is true, false otherwise.
-						 */
-		straight(""), /**
-				 * An unknown literal, as '¿p' for example, is true if the value of proposition letter 'p' is not assigned yet. False otherwise.
-				 */
+		negated(Constants.NOTstring),
+		/**
+		 * A straight literal is true if the truth value assigned to its proposition letter is true, false otherwise.
+		 */
+		straight(""),
+		/**
+		 * An unknown literal, as '¿p' for example, is true if the value of proposition letter 'p' is not assigned yet. False otherwise.
+		 */
 		unknown(Constants.UNKNOWNstring);
 
 		/**
@@ -48,7 +51,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 		 * Default constructor.
 		 *
 		 * @param s
-		 *                the string representation of the state.
+		 *            the string representation of the state.
 		 */
 		State(final String s) {
 			this.stringRep = s;
@@ -64,12 +67,12 @@ public class Literal implements Comparable<Literal>, Serializable {
 	 * Parse a string returning the literal represented.
 	 *
 	 * @param s
-	 *                It can be a single char ([a..zA..Z]) or the character ¬ [\u00ac] followed by a char. If the argument is null or not valid, it returns
-	 *                null.
+	 *            It can be a single char ([a-zA-ZÀ-ÿ]) or the character ¬ [\u00ac] followed by a char. If the argument is null or not valid, it returns
+	 *            null.
 	 * @return the literal represented by 's' if 's' is a valid representation of a literal, null otherwise.
 	 */
 	public static final Literal parse(final String s) {
-		if (s == null)
+		if (s == null || s.length() > 2)
 			return null;
 		if (s.length() == 1) {
 			if (!Literal.check(s.charAt(0)))
@@ -87,11 +90,18 @@ public class Literal implements Comparable<Literal>, Serializable {
 	}
 
 	/**
+	 * For re match
+	 */
+	private static final Pattern patterPropositionLetterRangesRE = Pattern.compile("["+Constants.propositionLetterRanges+"]");
+
+	/**
 	 * @param c
 	 * @return true if the char represents a valid literal identifier
 	 */
 	private static final boolean check(final char c) {
-		return (((c >= 'a') && (c <= 'z')) || ((c >= 'A') || (c <= 'Z')));
+//		return (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || ((c >= '\u00C0') && (c <= '\u00FF')));
+		String s = new String(""+c);
+		return (patterPropositionLetterRangesRE.matcher(s).matches());//not efficient but now the set in controlled in Constants class
 	}
 
 	/**
@@ -113,7 +123,7 @@ public class Literal implements Comparable<Literal>, Serializable {
 	 * Simple constructor of a positive literal.
 	 *
 	 * @param v
-	 *                a char.
+	 *            a char.
 	 */
 	public Literal(final char v) {
 		this(v, State.straight);
@@ -123,9 +133,9 @@ public class Literal implements Comparable<Literal>, Serializable {
 	 * Simple constructor allowing to specify if the literal is negated or not.
 	 *
 	 * @param v
-	 *                the proposition letter.
+	 *            the proposition letter.
 	 * @param state
-	 *                one of possible state of a literal: {@link it.univr.di.labeledvalue.Literal.State}.
+	 *            one of possible state of a literal: {@link it.univr.di.labeledvalue.Literal.State}.
 	 */
 	public Literal(final char v, final State state) {
 		if (!Literal.check(v))
@@ -138,9 +148,9 @@ public class Literal implements Comparable<Literal>, Serializable {
 	 * Simple constructor allowing to specify if the literal is negated or not.
 	 *
 	 * @param v
-	 *                the proposition letter.
+	 *            the proposition letter.
 	 * @param state
-	 *                one of possible state of a literal: {@link it.univr.di.labeledvalue.Literal.State}.
+	 *            one of possible state of a literal: {@link it.univr.di.labeledvalue.Literal.State}.
 	 */
 	public Literal(final Literal v, final State state) {
 		this.name = v.name;

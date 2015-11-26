@@ -6,6 +6,7 @@ package it.univr.di.cstnu.graph;
 import org.apache.commons.collections15.Transformer;
 
 import edu.uci.ics.jung.graph.Hypergraph;
+import it.univr.di.labeledvalue.Constants;
 
 /**
  * <p>GraphMLWriter class.</p>
@@ -63,13 +64,13 @@ public class GraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNode
 				return Double.toString(GraphMLWriter.this.layout.getY(v));
 			}
 		});
-		this.addVertexData("Obs", "Proposition Observed. Format: [a-zA-Z]", "", new Transformer<LabeledNode, String>() {
+		this.addVertexData("Obs", "Proposition Observed. Format: ["+Constants.propositionLetterRanges+"]", "", new Transformer<LabeledNode, String>() {
 			@Override
 			public String transform(final LabeledNode v) {
 				return (v.propositionObserved != null) ? v.propositionObserved.toString() : "";
 			}
 		});
-		this.addVertexData("Label", "Label. Format: [¬[a-zA-Z]|[a-zA-Z]]+|⊡", "", new Transformer<LabeledNode, String>() {
+		this.addVertexData("Label", "Label. Format: [¬["+Constants.propositionLetterRanges+"]|["+Constants.propositionLetterRanges+"]]+|⊡", "", new Transformer<LabeledNode, String>() {
 			@Override
 			public String transform(final LabeledNode v) {
 				return v.getLabel().toString();

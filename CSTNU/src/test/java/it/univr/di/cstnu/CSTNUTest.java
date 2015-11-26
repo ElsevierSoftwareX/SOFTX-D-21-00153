@@ -68,7 +68,7 @@ public class CSTNUTest {
 		//
 		// System.out.printf("G: %s\n", g);
 		// System.out.printf("G1.hasSameEdge(G): %s\n", g1.hasSameEdgesOf(g));
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.caseLabelRemovalRule(g, g1, status);
 		// // System.out.printf("G.hasSameEdge(G1): %s\n", g.hasAllEdgesOf(g1));
@@ -103,7 +103,7 @@ public class CSTNUTest {
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
 		// // System.out.printf("G: %s\n", g);
 		// // System.out.printf("G1.hasSameEdge(G): %s\n", g1.hasAllEdgesOf(g));
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.crossCaseRule(g, g1, status);
 		// // System.out.printf("G.hasSameEdge(G1): %s\n", g.hasAllEdgesOf(g1));
@@ -131,7 +131,7 @@ public class CSTNUTest {
 		px.mergeUpperLabelValue(Label.parse("AB¬p"), "C", -11);
 		g.addEdge(px, P, X);
 
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.labelModificationR0R2(g, status);
 
@@ -182,7 +182,7 @@ public class CSTNUTest {
 		// fail("LabeledIntGraph not well formed: "+e.getMessage());
 		// }
 
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.labelModificationR0R2(g, status);
 
@@ -230,7 +230,7 @@ public class CSTNUTest {
 		// System.out.print(g);
 		// System.out.print(g1);
 
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.noCaseRule(g, g1, status);
 		cstnu.labelModificationR0R2(g1, status);
@@ -283,7 +283,7 @@ public class CSTNUTest {
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
 
 		boolean instantaneousReaction = false;
-		CSTNU cstnu = new CSTNU(true, instantaneousReaction);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.labelModificationR1R3(g, g1, status);
 
@@ -343,7 +343,7 @@ public class CSTNUTest {
 
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
 
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.labelModificationR1R3(g, g1, status);
 
@@ -381,7 +381,7 @@ public class CSTNUTest {
 		g.addEdge(dc, new LabeledNode("D"), C);
 		g.addEdge(ca, C, new LabeledNode("A"));
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.lowerCaseRule(g, g1,status);
 
@@ -412,7 +412,7 @@ public class CSTNUTest {
 		g.addEdge(ca, C, A);
 
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.upperCaseRule(g, g1,status);
 
@@ -457,7 +457,7 @@ public class CSTNUTest {
 
 		LabeledIntGraph g1 = new LabeledIntGraph(g, true);
 
-		CSTNU cstnu = new CSTNU(true, false);
+		CSTNU cstnu = new CSTNU(true);
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 		cstnu.noCaseRule(g, g1,status);
 

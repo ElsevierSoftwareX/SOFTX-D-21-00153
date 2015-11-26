@@ -3,13 +3,8 @@
  */
 package it.univr.di.cstnu.graph;
 
-import it.univr.di.cstnu.graph.LabeledIntEdge.Type;
-import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
-import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
-import it.univr.di.labeledvalue.Literal;
-
 import java.io.FileReader;
+import java.util.regex.Pattern;
 
 import org.apache.commons.collections15.Transformer;
 
@@ -17,6 +12,11 @@ import edu.uci.ics.jung.io.graphml.EdgeMetadata;
 import edu.uci.ics.jung.io.graphml.GraphMetadata;
 import edu.uci.ics.jung.io.graphml.HyperEdgeMetadata;
 import edu.uci.ics.jung.io.graphml.NodeMetadata;
+import it.univr.di.cstnu.graph.LabeledIntEdge.Type;
+import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
+import it.univr.di.labeledvalue.Literal;
 
 /**
  * <p>
@@ -48,14 +48,15 @@ public class GraphMLReader extends edu.uci.ics.jung.io.graphml.GraphMLReader2<La
 	 * Vertex Transformer
 	 */
 	static Transformer<NodeMetadata, LabeledNode> vertexTransformer = new Transformer<NodeMetadata, LabeledNode>() {
+		
+		Pattern pattern = Pattern.compile("^n[0-9]+$");
 		@Override
 		public LabeledNode transform(final NodeMetadata metaData) {
 			final LabeledNode v = LabeledNode.getFactory().create();
 			final String name = metaData.getId();
 			v.setName(metaData.getId());
-			if (name.matches("^n[0-9]+$")) {// check the LabeledNode.getFactory(): there you can find/define the format for name create using the
-							// mouse in the
-							// app.
+			if (pattern.matcher(name).matches()) {// check the LabeledNode.getFactory(): there you can find/define the format for name create using the
+							// mouse in the app.
 				final int n = Integer.parseInt(name.substring(1));
 				if (LabeledNode.idSeq <= n) {
 					LabeledNode.idSeq = n + 1;
@@ -79,15 +80,15 @@ public class GraphMLReader extends edu.uci.ics.jung.io.graphml.GraphMLReader2<La
 	 * LabeledIntEdge transformer
 	 */
 	static Transformer<EdgeMetadata, LabeledIntEdge> edgeTransformer = new Transformer<EdgeMetadata, LabeledIntEdge>() {
+		Pattern pattern = Pattern.compile("^n[0-9]+$");
 		@Override
 		public LabeledIntEdge transform(final EdgeMetadata metaData) {
 			final boolean optimized = Boolean.getBoolean(metaData.getProperty("Optimized"));
 			final LabeledIntEdge e = new LabeledIntEdge(optimized); // .getFactory().create(optimized);
 			final String name = metaData.getId();
 			e.setName(metaData.getId());
-			if (name.matches("^e[0-9]+$")) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the
-							// mouse in
-							// the app.
+			if (pattern.matcher(name).matches()) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the
+							// mouse in the app.
 				final int n = Integer.parseInt(name.substring(1));
 				if (LabeledIntEdge.idSeq <= n) {
 					LabeledIntEdge.idSeq = n + 1;

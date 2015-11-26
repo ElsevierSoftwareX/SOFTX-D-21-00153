@@ -11,6 +11,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -27,6 +29,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -34,6 +37,11 @@ import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
+
+import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
+import org.netbeans.validation.api.ui.ValidationGroup;
+import org.netbeans.validation.api.ui.swing.ValidationPanel;
 
 import edu.uci.ics.jung.io.GraphIOException;
 import edu.uci.ics.jung.io.GraphMLWriter;
@@ -54,6 +62,7 @@ import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.StaticLayout;
+import it.univr.di.labeledvalue.Constants;
 
 /**
  * Simple facade of Jung graph in order to guarantee the CSTPU semantics.
@@ -160,14 +169,14 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 	int cycle;
 
 	/**
-	 * To activate instantaneous activation
+	 * Reaction time for CSTN
 	 */
-	boolean instantaneousReactionCSTN = true;
+	int cstnReactionTime = 1;
 
 	/**
-	 * To activate instantaneous activation TODO: forse un giorno le attiviamo
+	 * Reaction time for CSTN
 	 */
-	boolean instantaneousReactionCSTNU = false;
+	int cstnUReactionTime = 0;
 
 	/**
 	 * Flag to activate optimization of labeled values.
@@ -176,8 +185,9 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 	/**
 	 * Flag for excluding the application of R1 and R2 rules.
-	 */
 	boolean excludeR1R2 = true;
+	 */
+
 	/**
 	 * CSTNU save button
 	 */
@@ -362,9 +372,11 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 		// I put a row for messages: since there will 2 graphs, the row contains two columns,
 		// corresponding to the two following graphs.
-		this.messagesPanel = new JPanel(new GridLayout(1, 2));
-		this.messagesPanel.add(new JLabel(" "));
-		this.messagesPanel.add(new JLabel(" "));
+		this.messagesPanel = new JPanel(new GridLayout(1, 1));
+//		this.messagesPanel.add(new JLabel(" "));
+		JTextArea jl = new JTextArea("");
+		jl.setEditable(false);
+		this.messagesPanel.add(jl);
 
 		baseContainer.add(this.messagesPanel, BorderLayout.NORTH);
 
@@ -380,11 +392,14 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 		final JPanel controls = new JPanel(new BorderLayout()), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(),
 				rowForCSTNUButtons = new JPanel();
+		final ValidationPanel validationPanelRowForCSTNButtons = new ValidationPanel();
+		final ValidationGroup validationGroupCSTN = validationPanelRowForCSTNButtons.getValidationGroup();
+		validationPanelRowForCSTNButtons.setInnerComponent(rowForCSTNButtons);
 		controls.add(rowForAppButtons, BorderLayout.NORTH);// for tuning application
-		controls.add(rowForCSTNButtons, BorderLayout.CENTER);// for button regarding CSTN
+		controls.add(validationPanelRowForCSTNButtons, BorderLayout.CENTER);// for button regarding CSTN
 		controls.add(rowForCSTNUButtons, BorderLayout.SOUTH);// for button regarding CSTNU
 		baseContainer.add(controls, BorderLayout.SOUTH);
-		rowForCSTNButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
+		validationPanelRowForCSTNButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
 
 		JButton buttonCheck;
 		// FIRST ROW OF COMMANDS
@@ -515,20 +530,23 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		rowForAppButtons.add(buttonCheck);
 
 		// SECOND ROW OF COMMANDS
-		JRadioButton instantaneousAct = new JRadioButton("Instantaneous Reactions", this.instantaneousReactionCSTN);
-		instantaneousAct.addItemListener(new ItemListener() {
+		rowForCSTNButtons.add(new JLabel("System reacts "));
+
+		final JFormattedTextField reactionTime = new JFormattedTextField();
+		reactionTime.setValue(this.cstnReactionTime);
+		reactionTime.setColumns(3);
+		reactionTime.addPropertyChangeListener("value", new PropertyChangeListener() {
 			@Override
-			public void itemStateChanged(final ItemEvent ev) {
-				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					CSTNUEditor.this.instantaneousReactionCSTN = true;
-					CSTNUEditor.LOG.fine("Instantaneous activations flag set to true");
-				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					CSTNUEditor.this.instantaneousReactionCSTN = false;
-					CSTNUEditor.LOG.fine("Instantaneous activations flag set to false");
-				}
+			public void propertyChange(PropertyChangeEvent evt) {
+				CSTNUEditor.LOG.finest("Property: " + evt.getPropertyName());
+				CSTNUEditor.this.cstnReactionTime = ((Number) reactionTime.getValue()).intValue();
+				CSTNUEditor.LOG.info("New reaction time: " + CSTNUEditor.this.cstnReactionTime);
 			}
 		});
-		rowForCSTNButtons.add(instantaneousAct);
+		validationGroupCSTN.add(reactionTime, StringValidators.regexp(Constants.strictlyPositiveIntValueRE, "A positive and not 0 integer!", false));
+		rowForCSTNButtons.add(reactionTime);
+
+		rowForCSTNButtons.add(new JLabel("time units after (≥) an observation."));
 
 		buttonCheck = new JButton("CSTN Init Graph");
 		buttonCheck.addActionListener(new AbstractAction("CSTN Init LabeledIntGraph") {
@@ -539,22 +557,27 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 
+				CSTN cstn = new CSTN(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.cstnReactionTime);
 				try {
-					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN);
-				} catch (final IllegalArgumentException ec) {
-					jl.setIcon(CSTNUEditor.warnIcon);
+					cstn.initAndCheck(CSTNUEditor.this.g1);
+				} catch (final WellDefinitionException ec) {
+					String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+					CSTNUEditor.LOG.warning(msg);
+					jl.setText(msg);
+//					jl.setIcon(CSTNUEditor.warnIcon);
 					jl.setOpaque(true);
 					jl.setBackground(Color.orange);
-					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
+//					CSTNUEditor.this.vv2.validate();
+//					CSTNUEditor.this.vv2.repaint();
 					CSTNUEditor.this.graphPanel.validate();
 					CSTNUEditor.this.graphPanel.repaint();
 					return;
 				}
 				jl.setText("CSTN initialized.");
-				jl.setIcon(CSTNUEditor.infoIcon);
+//				jl.setIcon(CSTNUEditor.infoIcon);
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
 				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
@@ -593,44 +616,29 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
 				CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
-				final CSTN cstn = new CSTN(CSTNUEditor.this.labelOptimization);
-				try {
-					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN);
-				} catch (final IllegalArgumentException ec) {
-					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
-					jl.setIcon(CSTNUEditor.warnIcon);
-					CSTNUEditor.LOG.warning("The graph has a problem and it cannot be initialize:\n " + ec.getMessage());
-					CSTNUEditor.this.vv2.validate();
-					CSTNUEditor.this.vv2.repaint();
-
-					CSTNUEditor.this.graphPanel.validate();
-					CSTNUEditor.this.graphPanel.repaint();
-					return;
-				}
-				CSTNUEditor.LOG.finer("Original graph initialized: " + CSTNUEditor.this.g1);
-
+				final CSTN cstn = new CSTN(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.cstnReactionTime);
+				jl.setBackground(Color.orange);
 				try {
 					CSTNCheckStatus status;
-					status = cstn.dynamicConsistencyCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN,
-							CSTNUEditor.this.excludeR1R2);
+					status = cstn.dynamicConsistencyCheck(CSTNUEditor.this.g1);
 					if (status.consistency) {
 						jl.setText("The graph is CSTN consistent.");
-						jl.setIcon(CSTNUEditor.infoIcon);
+						jl.setBackground(Color.green);
+//						jl.setIcon(CSTNUEditor.infoIcon);
 						CSTNUEditor.LOG.finer("Final controllable graph: " + CSTNUEditor.this.g1);
 					} else {
 						// The distance graph is not consistent
 						jl.setText("The graph is not CSTN consistent.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+//						jl.setIcon(CSTNUEditor.warnIcon);
 					}
 				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
-					jl.setIcon(CSTNUEditor.warnIcon);
+//					jl.setIcon(CSTNUEditor.warnIcon);
 				}
 				jl.setOpaque(true);
-				jl.setBackground(Color.orange);
 				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
 				LabeledNode gV;
 				for (final LabeledNode v : CSTNUEditor.this.g1.getVertices()) {
@@ -664,12 +672,20 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
+				CSTN cstn = new CSTN(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.cstnReactionTime);
 				if (CSTNUEditor.this.cycle == -1)
 					return;
 				if (CSTNUEditor.this.cycle == 0) {
 					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
-					CSTN.initAndCheck(CSTNUEditor.this.g1, CSTNUEditor.this.instantaneousReactionCSTN);
+					try {
+						cstn.initAndCheck(CSTNUEditor.this.g1);
+					} catch (final WellDefinitionException ex) {
+						jl.setText("There is a problem in the graph: " + ex.getMessage());
+//						jl.setIcon(CSTNUEditor.warnIcon);
+						CSTNUEditor.this.cycle = -1;
+						return;
+					}
 					CSTNUEditor.this.g2 = new LabeledIntGraph(CSTNUEditor.this.g1, CSTNUEditor.this.labelOptimization);
 					CSTNUEditor.this.distanceGraph = new LabeledIntGraph(CSTNUEditor.this.labelOptimization);
 					CSTNUEditor.this.status = new CSTNCheckStatus();
@@ -678,35 +694,36 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 				}
 				CSTNUEditor.this.cycle++;
 
+				jl.setBackground(Color.orange);
 				try {
-					CSTNUEditor.this.status = CSTN.oneStepDynamicConsistency(CSTNUEditor.this.g2,
-							CSTNUEditor.this.instantaneousReactionCSTN, CSTNUEditor.this.excludeR1R2, CSTNUEditor.this.status);
+					CSTNUEditor.this.status = cstn.oneStepDynamicConsistency(CSTNUEditor.this.g2, CSTNUEditor.this.status);
 					CSTNUEditor.this.status.finished = CSTNUEditor.this.g1.hasSameEdgesOf(CSTNUEditor.this.g2);
 					final boolean reductionsApplied = !CSTNUEditor.this.status.finished;
 					final boolean inconsistency = !CSTNUEditor.this.status.consistency;
 					if (inconsistency) {
 						jl.setText("The graph is inconsistent.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+//						jl.setIcon(CSTNUEditor.warnIcon);
 						CSTNUEditor.this.cycle = -1;
 						CSTNUEditor.LOG.fine("INCONSISTENT GRAPH: " + CSTNUEditor.this.g2);
 						CSTNUEditor.LOG.info("Status stats: " + CSTNUEditor.this.status);
 					} else if (reductionsApplied) {
 						jl.setText("Step " + CSTNUEditor.this.cycle + " of consistency check is done.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+//						jl.setIcon(CSTNUEditor.warnIcon);
 					} else {
 						jl.setText("The graph is CSTN consistent. The number of executed cycles is " + CSTNUEditor.this.cycle);
-						jl.setIcon(CSTNUEditor.infoIcon);
+//						jl.setIcon(CSTNUEditor.infoIcon);
 						CSTNUEditor.this.cycle = -1;
+						jl.setBackground(Color.green);
 						CSTNUEditor.LOG.info("Status stats: " + CSTNUEditor.this.status);
 					}
 				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
-					jl.setIcon(CSTNUEditor.warnIcon);
+//					jl.setIcon(CSTNUEditor.warnIcon);
 					CSTNUEditor.this.cycle = -1;
+					return;
 				}
 
 				jl.setOpaque(true);
-				jl.setBackground(Color.orange);
 				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g2);
 				LabeledNode gV;
 				for (final LabeledNode v : CSTNUEditor.this.g2.getVertices()) {
@@ -730,23 +747,6 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 		});
 		rowForCSTNButtons.add(buttonCheck);
 
-		// THIRD row
-		instantaneousAct = new JRadioButton("Instantaneous Reactions (not yet implemented)", this.instantaneousReactionCSTNU);
-		instantaneousAct.addItemListener(new ItemListener() {
-			@Override
-			public void itemStateChanged(final ItemEvent ev) {
-				if (ev.getStateChange() == ItemEvent.SELECTED) {
-					CSTNUEditor.this.instantaneousReactionCSTNU = true;
-					CSTNUEditor.LOG.fine("Instantaneous activations flag set to true");
-				} else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-					CSTNUEditor.this.instantaneousReactionCSTNU = false;
-					CSTNUEditor.LOG.fine("Instantaneous activations flag set to false");
-				}
-			}
-		});
-		instantaneousAct.setEnabled(false);// TODO togliere quando si attivano instantaneous reaction
-		rowForCSTNUButtons.add(instantaneousAct);
-
 		buttonCheck = new JButton("CSTNU Init Graph");
 		buttonCheck.addActionListener(new AbstractAction("CSTNU Init LabeledIntGraph") {
 			/**
@@ -756,23 +756,27 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
 
-				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReactionCSTNU);
+				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization);
 				try {
 					cstn.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
 				} catch (final IllegalArgumentException ec) {
-					jl.setIcon(CSTNUEditor.warnIcon);
+					String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+					CSTNUEditor.LOG.warning(msg);
+					jl.setText(msg);
+//					jl.setIcon(CSTNUEditor.warnIcon);
 					jl.setOpaque(true);
 					jl.setBackground(Color.orange);
-					jl.setText("The graph has a problem and it cannot be initialize: " + ec.getMessage());
+//					CSTNUEditor.this.vv2.validate();
+//					CSTNUEditor.this.vv2.repaint();
 					CSTNUEditor.this.graphPanel.validate();
 					CSTNUEditor.this.graphPanel.repaint();
 					return;
 				}
 				jl.setText("LabeledIntGraph with Lower and Upper Case Labels.");
-				jl.setIcon(CSTNUEditor.infoIcon);
+//				jl.setIcon(CSTNUEditor.infoIcon);
 				jl.setOpaque(true);
 				jl.setBackground(Color.orange);
 				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
@@ -852,34 +856,47 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+//				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
 				CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
 				CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
-				final CSTNU cstn = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReactionCSTNU);
+				final CSTNU cstnu = new CSTNU(CSTNUEditor.this.labelOptimization);
 				CSTNUCheckStatus status = new CSTNUCheckStatus();
 				try {
-					cstn.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
-				} catch (final IllegalArgumentException ec) {
-					throw new IllegalArgumentException("The graph has a problem and it cannot be initialize: " + ec.getMessage());
+					cstnu.initUpperLowerLabelDataStructure(CSTNUEditor.this.g1);
+				} catch (final IllegalStateException ec) {
+					String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+					CSTNUEditor.LOG.warning(msg);
+					jl.setText(msg);
+//					jl.setIcon(CSTNUEditor.warnIcon);
+					jl.setOpaque(true);
+					jl.setBackground(Color.orange);
+//					CSTNUEditor.this.vv2.validate();
+//					CSTNUEditor.this.vv2.repaint();
+					CSTNUEditor.this.graphPanel.validate();
+					CSTNUEditor.this.graphPanel.repaint();
+					return;
 				}
 				CSTNUEditor.LOG.finer("Original graph initialized: " + CSTNUEditor.this.g1);
 
+				jl.setBackground(Color.orange);
 				try {
-					status = cstn.dynamicControllabilityCheck(CSTNUEditor.this.g1);
+					status = cstnu.dynamicControllabilityCheck(CSTNUEditor.this.g1);
 					if (status.controllable) {
 						jl.setText("The graph is CSTNU controllable.");
-						jl.setIcon(CSTNUEditor.infoIcon);
+//						jl.setIcon(CSTNUEditor.infoIcon);
+						jl.setBackground(Color.green);
 						CSTNUEditor.LOG.finer("Final controllable graph: " + CSTNUEditor.this.g1);
 					} else {
 						jl.setText("The graph is not CSTNU controllable.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+//						jl.setIcon(CSTNUEditor.warnIcon);
 					}
 				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
-					jl.setIcon(CSTNUEditor.warnIcon);
+//					jl.setIcon(CSTNUEditor.warnIcon);
 				}
 				jl.setOpaque(true);
-				jl.setBackground(Color.orange);
+				
 				CSTNUEditor.this.layout2 = new StaticLayout<>(CSTNUEditor.this.g1);
 				LabeledNode gV;
 				for (final LabeledNode v : CSTNUEditor.this.g1.getVertices()) {
@@ -911,10 +928,10 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
 				if (CSTNUEditor.this.cycle == -1)
 					return;
-				final CSTNU cstnu = new CSTNU(CSTNUEditor.this.labelOptimization, CSTNUEditor.this.instantaneousReactionCSTNU);
+				final CSTNU cstnu = new CSTNU(CSTNUEditor.this.labelOptimization);
 				if (CSTNUEditor.this.cycle == 0) {
 					status = new CSTNUCheckStatus();
 					CSTNUEditor.this.g1 = new LabeledIntGraph(CSTNUEditor.this.g, CSTNUEditor.this.labelOptimization);
@@ -930,22 +947,22 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					cstnu.oneStepDynamicControllability(CSTNUEditor.this.g1, CSTNUEditor.this.g2, CSTNUEditor.this.distanceGraph, status);
 					if (status.finished && !status.controllable) {
 						jl.setText("The graph is not controllable.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+//						jl.setIcon(CSTNUEditor.warnIcon);
 						CSTNUEditor.this.cycle = -1;
 						CSTNUEditor.LOG.info("Uncontrollable GRAPH: " + CSTNUEditor.this.g2);
 					} else if (!status.finished) {
 						jl.setText("Step " + CSTNUEditor.this.cycle + " of controllability check is done.");
-						jl.setIcon(CSTNUEditor.warnIcon);
+//						jl.setIcon(CSTNUEditor.warnIcon);
 					} else {
 						jl.setText("The graph is CSTNU controllable. The number of executed cycles is " + CSTNUEditor.this.cycle);
-						jl.setIcon(CSTNUEditor.infoIcon);
+//						jl.setIcon(CSTNUEditor.infoIcon);
 						CSTNUEditor.this.cycle = -1;
 						CSTNUEditor.LOG.info("CONTROLLABLE GRAPH: " + CSTNUEditor.this.g2);
 						CSTNUEditor.LOG.info("Status stats: " + status);
 					}
 				} catch (final WellDefinitionException ex) {
 					jl.setText("There is a problem in the code: " + ex.getMessage());
-					jl.setIcon(CSTNUEditor.warnIcon);
+//					jl.setIcon(CSTNUEditor.warnIcon);
 					CSTNUEditor.this.cycle = -1;
 				}
 
@@ -981,7 +998,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 			@SuppressWarnings("resource")
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				final JLabel jl = (JLabel) CSTNUEditor.this.messagesPanel.getComponent(1);
+				final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
 				PrintStream output;
 				final JFileChooser chooser = new JFileChooser(CSTNUEditor.defaultDir);
 				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -1008,11 +1025,14 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 						if (!translator.translate())
 							throw new IllegalArgumentException();
 					} catch (final IllegalArgumentException e1) {
-						e1.printStackTrace();
-						jl.setIcon(CSTNUEditor.warnIcon);
-						jl.setText("The graph has a problem and it cannot be translated to an UPPAAL Tiga automaton.");
-						CSTNUEditor.this.graphPanel.repaint();
+						String msg = "The graph has a problem and it cannot be translated to an UPPAAL Tiga automaton:" + e1.getMessage();
+						CSTNUEditor.LOG.warning(msg);
+						jl.setText(msg);
+//						jl.setIcon(CSTNUEditor.warnIcon);
+						jl.setOpaque(true);
+						jl.setBackground(Color.orange);
 						CSTNUEditor.this.graphPanel.validate();
+						CSTNUEditor.this.graphPanel.repaint();
 						return;
 					} finally {
 						output.close();
@@ -1026,7 +1046,7 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 					}
 					output.println("control: A[] not _processMain.goal");
 
-					jl.setIcon(CSTNUEditor.infoIcon);
+//					jl.setIcon(CSTNUEditor.infoIcon);
 					CSTNUEditor.this.graphPanel.validate();
 					CSTNUEditor.this.graphPanel.repaint();
 					output.close();
@@ -1051,9 +1071,10 @@ public class CSTNUEditor extends JFrame implements Cloneable {
 						CSTNUEditor.this.vv1.setGraphLayout(CSTNUEditor.this.layout1);
 						CSTNUEditor.this.vv2.setVisible(false);
 						CSTNUEditor.this.saveCSTNResultButton.setEnabled(false);
-						((JLabel) CSTNUEditor.this.messagesPanel.getComponent(1)).setIcon(null);
-						((JLabel) CSTNUEditor.this.messagesPanel.getComponent(1)).setText("");
-						((JLabel) CSTNUEditor.this.messagesPanel.getComponent(1)).setOpaque(false);
+						final JTextArea jl = (JTextArea) CSTNUEditor.this.messagesPanel.getComponent(0);
+//						((JTextArea) CSTNUEditor.this.messagesPanel.getComponent(1)).setIcon(null);
+						jl.setText("");
+						jl.setOpaque(false);
 						CSTNUEditor.this.setTitle("CSTNU Editor and Checker: " + file.getName() + "-" + CSTNUEditor.this.g.getName());
 						CSTNUEditor.this.getRootPane().repaint();
 						CSTNUEditor.this.cycle = 0;

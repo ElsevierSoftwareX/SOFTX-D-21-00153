@@ -1,6 +1,13 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.7.9
+------
+	date:	2015-11-26
+	
+	Added the new feature to CSTN DC-checking. Now DC-checking algorithm considers a user specified 'reaction time' ε (ε>0) of the system during the checking of 
+	a network. A reaction time ε means that an engine that executes a CSTN reacts in at least ε time units to a setting of a truth-value to a proposition.  
+
 v1.7.8
 ------
 	date:	2015-10-28

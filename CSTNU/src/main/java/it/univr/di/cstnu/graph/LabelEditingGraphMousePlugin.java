@@ -27,6 +27,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
@@ -81,7 +82,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [A-Za-z0-9_]"));
+		jp.add(new JLabel("Syntax: ["+Constants.propositionLetterRanges+"0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
 		// Default Value
@@ -433,7 +434,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [A-Za-z0-9_]"));
+		jp.add(new JLabel("Syntax: ["+Constants.propositionLetterRanges+"0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
 		// Observed proposition
@@ -445,8 +446,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(observedProposition);
 		LabelEditingGraphMousePlugin.setConditionToEnable(observedProposition, viewerName, false);
-		jp.add(new JLabel("Syntax: [A-Za-z]| "));
-		group.add(observedProposition, StringValidators.regexp("[A-Za-z]|", "Only One Char!", false),
+		jp.add(new JLabel("Syntax: ["+Constants.propositionLetterRanges+"]| "));
+		group.add(observedProposition, StringValidators.regexp("["+Constants.propositionLetterRanges+"]|", "Only One Char!", false),
 				new ObservableValidator(g, node));
 
 		// Label
@@ -570,9 +571,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		if ((e.getModifiers() == this.modifiers) && (e.getClickCount() == 2)) {
 			final VisualizationViewer<N, E> vv = (VisualizationViewer<N, E>) e.getSource();
 			JPanel jp2;
-			final JLabel mesg2 = (JLabel) ((JPanel) vv.getParent().getParent().getParent().getComponent(0))
-					.getComponent(1);
-			mesg2.setIcon(null);
+			final JTextArea mesg2 = (JTextArea) ((JPanel) vv.getParent().getParent().getParent().getComponent(0)).getComponent(0);
+//			mesg2.setIcon(null);
 			mesg2.setText("");
 			mesg2.setOpaque(false);
 

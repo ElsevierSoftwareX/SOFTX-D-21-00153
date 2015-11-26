@@ -362,7 +362,7 @@ public class LabelTest {
 	 */
 	@SuppressWarnings("static-method")
 	@Test
-	public final void testUnmodifiable() {
+	public final void unmodifiable() {
 		Label a = Label.parse("");
 		Label b = Label.emptyLabel;
 		
@@ -386,6 +386,18 @@ public class LabelTest {
 	}
 
 	
+	/**
+	 * 
+	 */
+	@SuppressWarnings("static-method")
+	@Test
+	public final void cloneEmptyLabel() {
+		Label a = Label.emptyLabel;
+		Label b = new Label(a);
+
+		assertTrue(a.equals(b));
+	}
+
 	
 	/**
 	 * Test unmodifiable Label

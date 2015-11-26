@@ -4,7 +4,7 @@
   <groupId>it.univr.di</groupId>
   <artifactId>CSTNU</artifactId>
   <name>CSTNU</name>
-  <version>1.7.6-SNAPSHOT</version>
+  <version>1.7.9-SNAPSHOT</version>
   <url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
   <developers>
     <developer>
@@ -37,14 +37,6 @@
     <url>http://www.di.univr.it</url>
   </organization>
   <build>
-    <resources>
-      <resource>
-        <directory>src/site/resources/bin</directory>
-        <excludes>
-          <exclude>**/*.tgz</exclude>
-        </excludes>
-      </resource>
-    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-eclipse-plugin</artifactId>
@@ -141,6 +133,7 @@
         <version>1.7</version>
         <executions>
           <execution>
+            <id>package</id>
             <phase>package</phase>
             <goals>
               <goal>run</goal>
@@ -161,11 +154,37 @@
                   <fileset />
                 </delete>
                 <copy />
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>site</id>
+            <phase>site</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete>
+                  <fileset />
+                </delete>
                 <copy>
                   <fileset>
                     <include />
                   </fileset>
                 </copy>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>pre-site</id>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete />
               </target>
             </configuration>
           </execution>

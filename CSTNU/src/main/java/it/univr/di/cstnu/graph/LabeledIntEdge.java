@@ -1000,6 +1000,22 @@ public class LabeledIntEdge extends Component {
 		return this.labeledValue.size();
 	}
 
+	
+	/**
+	 * A copy by reference of internal structure of edge e. Only optimize field cannot be update because it is read-only.
+	 *
+	 * @param e edge to clone. If null, it returns doing nothing.
+	 */
+	public void takeIn(final LabeledIntEdge e) {
+		if (e == null) return;
+		this.type = e.type;
+		this.labeledValue = e.labeledValue;
+		this.upperLabel =  e.upperLabel;
+		this.lowerLabel = e.lowerLabel;
+		this.removedLabeledValue = e.removedLabeledValue;
+		this.removedUpperLabel = e.removedUpperLabel;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 *

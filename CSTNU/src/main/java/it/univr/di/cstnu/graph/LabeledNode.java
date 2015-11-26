@@ -13,7 +13,9 @@ import org.apache.commons.collections15.Transformer;
 import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 
 /**
- * <p>LabeledNode class.</p>
+ * <p>
+ * LabeledNode class.
+ * </p>
  *
  * @author posenato
  * @version $Id: $Id
@@ -21,7 +23,9 @@ import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 public class LabeledNode extends Component {
 
 	/**
-	 * <p>getFactory.</p>
+	 * <p>
+	 * getFactory.
+	 * </p>
 	 *
 	 * @return a factory to build empty nodes.
 	 */
@@ -50,7 +54,7 @@ public class LabeledNode extends Component {
 	public static Transformer<LabeledNode, String> vertexLabelTransformer = new ToStringLabeller<LabeledNode>() {
 		@Override
 		public String transform(final LabeledNode v) {
-			return v.getName();
+			return v.getName() + (v.getLabel().isEmpty() ? "" : "_[" + v.getLabel() + "]");
 		}
 	};
 
@@ -85,9 +89,12 @@ public class LabeledNode extends Component {
 	Literal propositionObserved;
 
 	/**
-	 * <p>Constructor for LabeledNode.</p>
+	 * <p>
+	 * Constructor for LabeledNode.
+	 * </p>
 	 *
-	 * @param string a {@link java.lang.String} object.
+	 * @param string
+	 *            a {@link java.lang.String} object.
 	 */
 	public LabeledNode(final String string) {
 		super(string);
@@ -99,8 +106,10 @@ public class LabeledNode extends Component {
 	/**
 	 * Standard constructor for an observation node
 	 *
-	 * @param n name of the node.
-	 * @param proposition proposition observed by this node.
+	 * @param n
+	 *            name of the node.
+	 * @param proposition
+	 *            proposition observed by this node.
 	 */
 	public LabeledNode(final String n, final Literal proposition) {
 		super(n);
@@ -112,7 +121,8 @@ public class LabeledNode extends Component {
 	/**
 	 * Constructor for cloning.
 	 *
-	 * @param n the node to copy.
+	 * @param n
+	 *            the node to copy.
 	 */
 	LabeledNode(final LabeledNode n) {
 		super(n);
@@ -136,7 +146,9 @@ public class LabeledNode extends Component {
 	}
 
 	/**
-	 * <p>Getter for the field <code>label</code>.</p>
+	 * <p>
+	 * Getter for the field <code>label</code>.
+	 * </p>
 	 *
 	 * @return the label
 	 */
@@ -145,7 +157,9 @@ public class LabeledNode extends Component {
 	}
 
 	/**
-	 * <p>Getter for the field <code>propositionObserved</code>.</p>
+	 * <p>
+	 * Getter for the field <code>propositionObserved</code>.
+	 * </p>
 	 *
 	 * @return the proposition under the control of this node. null, if no observation is made.
 	 */
@@ -156,11 +170,14 @@ public class LabeledNode extends Component {
 	/**
 	 * @return true if this node is an observator one (it is associated to a proposition letter), false otherwise;
 	 */
-	public boolean isObsevator() {
+	public boolean isObservator() {
 		return this.propositionObserved != null;
 	}
+
 	/**
-	 * <p>Getter for the field <code>x</code>.</p>
+	 * <p>
+	 * Getter for the field <code>x</code>.
+	 * </p>
 	 *
 	 * @return the x
 	 */
@@ -169,7 +186,9 @@ public class LabeledNode extends Component {
 	}
 
 	/**
-	 * <p>Getter for the field <code>y</code>.</p>
+	 * <p>
+	 * Getter for the field <code>y</code>.
+	 * </p>
 	 *
 	 * @return the y
 	 */
@@ -178,18 +197,24 @@ public class LabeledNode extends Component {
 	}
 
 	/**
-	 * <p>Setter for the field <code>label</code>.</p>
+	 * <p>
+	 * Setter for the field <code>label</code>.
+	 * </p>
 	 *
-	 * @param label the label to set
+	 * @param label
+	 *            the label to set
 	 */
 	public void setLabel(final Label label) {
 		this.label = (label == null) ? Label.emptyLabel : label;
 	}
 
 	/**
-	 * <p>Setter for the field <code>label</code>.</p>
+	 * <p>
+	 * Setter for the field <code>label</code>.
+	 * </p>
 	 *
-	 * @param s the label to set
+	 * @param s
+	 *            the label to set
 	 */
 	public void setLabel(final String s) {
 		this.label = ((s != null) && !s.isEmpty()) ? Label.parse(s) : Label.emptyLabel;
@@ -198,25 +223,32 @@ public class LabeledNode extends Component {
 	/**
 	 * Set the proposition to be observed.
 	 *
-	 * @param l the proposition to observe. If null, the node became not observable node.
+	 * @param l
+	 *            the proposition to observe. If null, the node became not observable node.
 	 */
 	public void setObservable(final Literal l) {
 		this.propositionObserved = (l != null) ? new Literal(l, State.straight) : null;
 	}
 
 	/**
-	 * <p>Setter for the field <code>x</code>.</p>
+	 * <p>
+	 * Setter for the field <code>x</code>.
+	 * </p>
 	 *
-	 * @param x the x to set
+	 * @param x
+	 *            the x to set
 	 */
 	public void setX(final Double x) {
 		this.x = x;
 	}
 
 	/**
-	 * <p>Setter for the field <code>y</code>.</p>
+	 * <p>
+	 * Setter for the field <code>y</code>.
+	 * </p>
 	 *
-	 * @param y the y to set
+	 * @param y
+	 *            the y to set
 	 */
 	public void setY(final Double y) {
 		this.y = y;

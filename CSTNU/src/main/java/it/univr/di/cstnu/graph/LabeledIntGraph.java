@@ -30,8 +30,8 @@ import edu.uci.ics.jung.io.GraphIOException;
 import edu.uci.ics.jung.io.graphml.GraphMLReader2;
 
 /**
- * Simple extensions of Jung DirectedSparseGraph&lt;LabeledNode, LabeledIntEdge&gt; that allows an easy access to the details of an edge or of
- * a node given the name.<br>
+ * Simple extensions of Jung DirectedSparseGraph&lt;LabeledNode, LabeledIntEdge&gt; that allows an easy access to the details of an edge or of a node given the
+ * name.<br>
  * In this graph, node name and edge name are key.<br>
  *
  * @author posenato
@@ -52,7 +52,8 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * Loads the LabeledIntGraph stored in 'file' as GraphML format and returns it as LabeledIntGraph.
 	 *
-	 * @param file a {@link java.io.File} object.
+	 * @param file
+	 *            a {@link java.io.File} object.
 	 * @return LabeledIntGraph if the file was load successfully; null otherwise.
 	 */
 	static public LabeledIntGraph load(File file) {
@@ -60,22 +61,19 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 		try (final FileReader fileReader = new FileReader(file);) {
 			final GraphMLReader2<LabeledIntGraph, LabeledNode, LabeledIntEdge> graphReader = new GraphMLReader(fileReader);
 			g = graphReader.readGraph();
-		}
-		catch (final FileNotFoundException e) {
+		} catch (final FileNotFoundException e) {
 			LOG.warning("File " + file.getName() + " not found. Ruturns null.");
-		}
-		catch (final GraphIOException e1) {
+		} catch (final GraphIOException e1) {
 			LOG.warning("File " + file.getName() + " contains a not well defined graph: " + e1.getMessage());
-		}
-		catch (IOException e2) {
+		} catch (IOException e2) {
 			LOG.warning("Generic IO error during reading file " + file.getName() + ": " + e2.getMessage());
 		}
 		return g;
 	}
 
 	/**
-	 * To activate all optimization code in order to remove the redundant label in the set.
-	 * No final because in the simulator we want to reuse graph internal data structures.
+	 * To activate all optimization code in order to remove the redundant label in the set. No final because in the simulator we want to reuse graph internal
+	 * data structures.
 	 */
 	boolean optimize;
 
@@ -111,11 +109,12 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 
 	/**
 	 * The structure of this class comes from the super class:<br>
-	 * protected Map&lt;LabeledNode, Pair&lt;Map&lt;LabeledNode,LabeledIntEdge&gt;&gt;&gt; vertices; // Map of vertices to Pair of adjacency maps {incoming, outgoing} of neighbor
-	 * vertices to incident edges.<br>
+	 * protected Map&lt;LabeledNode, Pair&lt;Map&lt;LabeledNode,LabeledIntEdge&gt;&gt;&gt; vertices; // Map of vertices to Pair of adjacency maps {incoming,
+	 * outgoing} of neighbor vertices to incident edges.<br>
 	 * protected Map&lt;LabeledIntEdge, Pair&lt;LabeledNode&gt;&gt; edges; // Map of edges to incident vertex pairs
 	 *
-	 * @param optimize To activate all optimization code in order to remove the redundant label in the set.
+	 * @param optimize
+	 *            To activate all optimization code in order to remove the redundant label in the set.
 	 */
 	public LabeledIntGraph(final boolean optimize) {
 		super();
@@ -123,15 +122,17 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * A constructor that copy a given graph g using copy constructor even for internal structures.
-	 * If g is null, this new graph will be empty.
+	 * A constructor that copy a given graph g using copy constructor even for internal structures. If g is null, this new graph will be empty.
 	 *
-	 * @param g the graph to be cloned
-	 * @param forceOptimization a boolean.
+	 * @param g
+	 *            the graph to be cloned
+	 * @param forceOptimization
+	 *            a boolean.
 	 */
 	public LabeledIntGraph(final LabeledIntGraph g, final boolean forceOptimization) {
 		this(forceOptimization);
-		if (g == null) return;
+		if (g == null)
+			return;
 
 		this.name = g.name;
 
@@ -154,10 +155,14 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>Constructor for LabeledIntGraph.</p>
+	 * <p>
+	 * Constructor for LabeledIntGraph.
+	 * </p>
 	 *
-	 * @param name a name for the graph
-	 * @param optimize a boolean.
+	 * @param name
+	 *            a name for the graph
+	 * @param optimize
+	 *            a boolean.
 	 */
 	public LabeledIntGraph(final String name, final boolean optimize) {
 		super();
@@ -166,8 +171,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/*
-	 * It is necessary to copy the general method here because otherwise it calls the general addEdge(e, v1, v2,
-	 * edge_type)!!!
+	 * It is necessary to copy the general method here because otherwise it calls the general addEdge(e, v1, v2, edge_type)!!!
 	 */
 	/** {@inheritDoc} */
 	@Override
@@ -179,10 +183,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/*
-	 * It is necessary to copy the general method here because otherwise it calls the general addEdge(e, new
-	 * Pair<LabeledNode>(v1, v2), edge_type)!!!
-	 * @see edu.uci.ics.jung.graph.AbstractGraph#addEdge(java.lang.Object, java.lang.Object, java.lang.Object,
-	 * edu.uci.ics.jung.graph.util.EdgeType)
+	 * It is necessary to copy the general method here because otherwise it calls the general addEdge(e, new Pair<LabeledNode>(v1, v2), edge_type)!!!
+	 * 
+	 * @see edu.uci.ics.jung.graph.AbstractGraph#addEdge(java.lang.Object, java.lang.Object, java.lang.Object, edu.uci.ics.jung.graph.util.EdgeType)
 	 */
 	/** {@inheritDoc} */
 	@Override
@@ -194,7 +197,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>Clear all internal caches.</p>
+	 * <p>
+	 * Clear all internal caches.
+	 * </p>
 	 * Caches are automatically created during any modification or query about the graph structure.
 	 */
 	public void clearCache() {
@@ -206,10 +211,10 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 
 	/**
 	 * Defensive copy of all internal structures of g into this.<br>
-	 * This method is useful to copy a graph into the current without modifying the reference to the current.
-	 * Internal structures are copied as they are.
+	 * This method is useful to copy a graph into the current without modifying the reference to the current. Internal structures are copied as they are.
 	 *
-	 * @param g the graph to copy.
+	 * @param g
+	 *            the graph to copy.
 	 */
 	public void copy(final LabeledIntGraph g) {
 		this.name = g.name;
@@ -236,7 +241,8 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * Makes a copy as {@link #copy(LabeledIntGraph)} removing all possible redundant labeled values in the given graph.
 	 *
-	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param g
+	 *            a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
 	 */
 	public void copyCleaningRedundantLabels(LabeledIntGraph g) {
 		this.name = g.name;
@@ -262,9 +268,11 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 			eNew = new LabeledIntEdge(e.getName(), e.getType(), this.optimize);
 			for (Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
 				value = entry.getIntValue();
-				if (value == Constants.INT_NEG_INFINITE) continue;
+				if (value == Constants.INT_NEG_INFINITE)
+					continue;
 				label = entry.getKey();
-				if (label.containsUnknown()) continue;
+				if (label.containsUnknown())
+					continue;
 				eNew.mergeLabeledValue(entry.getKey(), value);
 			}
 			for (Object2IntMap.Entry<Entry<Label, String>> entry : e.getUpperLabelSet()) {
@@ -278,34 +286,52 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * Equals based on equals of edges and vertices.
+	 * {@inheritDoc} Equals based on equals of edges and vertices.
 	 */
 	@Override
 	public boolean equals(final Object obj) {
-		if ((obj == null) || !(obj instanceof LabeledIntGraph)) return false;
+		if ((obj == null) || !(obj instanceof LabeledIntGraph))
+			return false;
 		final LabeledIntGraph g1 = (LabeledIntGraph) obj;
 		return g1.edges.equals(this.edges) && g1.vertices.equals(this.vertices);
 	}
 
 	/**
+	 * Find the edge given the name of source node and destination one.
+	 * @param s
+	 * @param d
+	 * @return null if any parameter is null or there not exists at least one of two nodes or the edge does not exist.
+	 */
+	public LabeledIntEdge findEdge(String s, String d) {
+		if (s == null || d == null)
+			return null;
+		LabeledNode source = this.getNode(s);
+		if (source == null)
+			return null;
+		LabeledNode destination = this.getNode(d);
+		if (destination == null)
+			return null;
+		return this.findEdge(source, destination);
+	}
+
+	/**
 	 * Returns the edge associated to the name.
 	 *
-	 * @param s a {@link java.lang.String} object.
+	 * @param s
+	 *            a {@link java.lang.String} object.
 	 * @return the edge associated to the name.
 	 */
 	public LabeledIntEdge getEdge(final String s) {
-		if ((s == null) || s.isEmpty()) return null;
+		if ((s == null) || s.isEmpty())
+			return null;
 		for (final LabeledIntEdge e : this.edges.keySet())
-			if (e.getName().equals(s)) return e;
+			if (e.getName().equals(s))
+				return e;
 		return null;
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * In order to compare saved files more easily, we save nodes and edges in lexicographical order.
+	 * {@inheritDoc} In order to compare saved files more easily, we save nodes and edges in lexicographical order.
 	 */
 	@Override
 	public Collection<LabeledIntEdge> getEdges() {
@@ -314,7 +340,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>getEdgesArray.</p>
+	 * <p>
+	 * getEdgesArray.
+	 * </p>
 	 *
 	 * @return the set of edges as an array ordered w.r.t the name of edge in ascending order.
 	 */
@@ -324,7 +352,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>getLowerLabeledEdges.</p>
+	 * <p>
+	 * getLowerLabeledEdges.
+	 * </p>
 	 *
 	 * @return the set of edges containing Lower Case Labels
 	 */
@@ -340,7 +370,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>Getter for the field <code>name</code>.</p>
+	 * <p>
+	 * Getter for the field <code>name</code>.
+	 * </p>
 	 *
 	 * @return the name
 	 */
@@ -351,19 +383,24 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	/**
 	 * Returns the node associated to the name.
 	 *
-	 * @param s a {@link java.lang.String} object.
+	 * @param s
+	 *            a {@link java.lang.String} object.
 	 * @return the node associated to the name.
 	 */
 	public LabeledNode getNode(final String s) {
-		if ((s == null) || s.isEmpty()) return null;
+		if ((s == null) || s.isEmpty())
+			return null;
 		final LabeledNode[] a = this.getVerticesArray();
 		for (final LabeledNode n : a)
-			if (n.getName().equals(s)) return n;
+			if (n.getName().equals(s))
+				return n;
 		return null;
 	}
 
 	/**
-	 * <p>getNodes.</p>
+	 * <p>
+	 * getNodes.
+	 * </p>
 	 *
 	 * @return return the set of node ordered w.r.t. the lexicographical order of their names.
 	 */
@@ -372,21 +409,27 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>getObservator.</p>
+	 * <p>
+	 * getObservator.
+	 * </p>
 	 *
-	 * @param l the request proposition
+	 * @param l
+	 *            the request proposition
 	 * @return the node that observes the proposition l if it exists, null otherwise.
 	 */
 	public LabeledNode getObservator(final Literal l) {
 		final Map<Literal, LabeledNode> observer = this.getObservedAndObservator();
-		if ((observer == null) || (l == null)) return null;
+		if ((observer == null) || (l == null))
+			return null;
 
 		LabeledIntGraph.LOG.finest("Literal=" + l + "; observer=" + observer);
 		return observer.get(l.isNegated() ? l.getComplement() : l);
 	}
 
 	/**
-	 * <p>Getter for the field <code>observators</code>.</p>
+	 * <p>
+	 * Getter for the field <code>observators</code>.
+	 * </p>
 	 *
 	 * @return the set of observator time-points.
 	 */
@@ -402,7 +445,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>getObservedAndObservator.</p>
+	 * <p>
+	 * getObservedAndObservator.
+	 * </p>
 	 *
 	 * @return the map of propositions and their observator nodes. If there is no observator node, it returns null. The key is the literal observed.
 	 */
@@ -412,12 +457,15 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 
 		Literal l;
 		for (final LabeledNode n : vertexSet)
-			if ((l = n.getPropositionObserved()) != null) obs.put(l, n);
+			if ((l = n.getPropositionObserved()) != null)
+				obs.put(l, n);
 		return (obs.size() > 0) ? obs : null;
 	}
 
 	/**
-	 * <p>getPropositions.</p>
+	 * <p>
+	 * getPropositions.
+	 * </p>
 	 *
 	 * @return the set of propositions of the graph.
 	 */
@@ -434,15 +482,19 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * Given a observation node <code>obs</code> that observes the proposition 'p', its 'children' are all observation nodes, Q, for which 'p' appears in the label of node Q.
+	 * Given a observation node <code>obs</code> that observes the proposition 'p', its 'children' are all observation nodes, Q, for which 'p' appears in the
+	 * label of node Q.
 	 * <p>
-	 * This method returns the set of children of a given node as a <b>set of the straight literals</b> associated to the children instead of a <b>set of children nodes</b>.
+	 * This method returns the set of children of a given node as a <b>set of the straight literals</b> associated to the children instead of a <b>set of
+	 * children nodes</b>.
 	 *
-	 * @param obs a {@link it.univr.di.cstnu.graph.LabeledNode} object.
+	 * @param obs
+	 *            a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 * @return the set of children of observation node <code>obs</code>, null if there is no children.
 	 */
 	public Set<Literal> getChildrenOf(LabeledNode obs) {
-		if (obs == null) return null;
+		if (obs == null)
+			return null;
 		// The soundness of this method is based on the property that the observed proposition of an observation node is represented as a straight literal.
 		if (this.childrenOfObservator == null) {
 			this.childrenOfObservator = new Object2ObjectRBTreeMap<>();
@@ -466,7 +518,9 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>getUpperLabeledEdges.</p>
+	 * <p>
+	 * getUpperLabeledEdges.
+	 * </p>
 	 *
 	 * @return the set of edges containing Upper Case Label.
 	 */
@@ -480,9 +534,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * In order to compare saved files more easily, we save nodes and edges in lexicographical order.
+	 * {@inheritDoc} In order to compare saved files more easily, we save nodes and edges in lexicographical order.
 	 */
 	@Override
 	public Collection<LabeledNode> getVertices() {
@@ -491,17 +543,22 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>getVerticesArray.</p>
+	 * <p>
+	 * getVerticesArray.
+	 * </p>
 	 *
 	 * @return the set of vertices as an array ordered w.r.t the name of node in ascending order.
 	 */
 	public LabeledNode[] getVerticesArray() {
-		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[this.getVertexCount()]);
+		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[this.getVertexCount() - 1]);// I put -1 because I discovered that sometime the
+																											// array
 		return nodes;
 	}
 
 	/**
-	 * <p>getZ.</p>
+	 * <p>
+	 * getZ.
+	 * </p>
 	 *
 	 * @return the Z node
 	 */
@@ -510,9 +567,7 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * Since equals has been specialized, hashCode too.
+	 * {@inheritDoc} Since equals has been specialized, hashCode too.
 	 */
 	@Override
 	public int hashCode() {
@@ -520,14 +575,17 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>hasSameEdgesOf.</p>
+	 * <p>
+	 * hasSameEdgesOf.
+	 * </p>
 	 *
-	 * @param g1 a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
-	 * @return true if this graph contains edges equal to g1 edges. Equals is checked using method {@link #equals(Object)}.
-	 *         False otherwise.
+	 * @param g1
+	 *            a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @return true if this graph contains edges equal to g1 edges. Equals is checked using method {@link #equals(Object)}. False otherwise.
 	 */
 	public boolean hasSameEdgesOf(final LabeledIntGraph g1) {
-		if (g1 == null) return false;
+		if (g1 == null)
+			return false;
 		final StringBuffer sb = new StringBuffer("Different edges:");
 		final String currentName = this.getName();
 		final String g1name = g1.getName();
@@ -541,12 +599,15 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 				sameEdges = false;// i want to log all differences!!!
 			}
 		}
-		if (LOG.isLoggable(Level.FINE)) LabeledIntGraph.LOG.log(Level.FINE, sb.toString());
+		if (LOG.isLoggable(Level.FINE))
+			LabeledIntGraph.LOG.log(Level.FINE, sb.toString());
 		return sameEdges;
 	}
 
 	/**
-	 * <p>isOptimize.</p>
+	 * <p>
+	 * isOptimize.
+	 * </p>
 	 *
 	 * @return true it the graph does not contain redundant labeled values, false otherwise.
 	 */
@@ -555,18 +616,24 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 	}
 
 	/**
-	 * <p>Setter for the field <code>name</code>.</p>
+	 * <p>
+	 * Setter for the field <code>name</code>.
+	 * </p>
 	 *
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
 	 */
 	public void setName(final String name) {
 		this.name = name;
 	}
 
 	/**
-	 * <p>setZ.</p>
+	 * <p>
+	 * setZ.
+	 * </p>
 	 *
-	 * @param z the node to be set as Z node of the graph.
+	 * @param z
+	 *            the node to be set as Z node of the graph.
 	 */
 	public void setZ(final LabeledNode z) {
 		this.Z = z;
@@ -574,10 +641,11 @@ public class LabeledIntGraph extends DirectedSparseGraph<LabeledNode, LabeledInt
 
 	/**
 	 * Takes in all internal structures of g.<br>
-	 * This method is useful to copy the references of internal data structure of the given graph 'g' into the current.
-	 * It is not a clone because even if g!=this, all internal data structures are the same.
+	 * This method is useful to copy the references of internal data structure of the given graph 'g' into the current. It is not a clone because even if
+	 * g!=this, all internal data structures are the same.
 	 *
-	 * @param g the graph to copy.
+	 * @param g
+	 *            the graph to copy.
 	 */
 	public void takeIn(final LabeledIntGraph g) {
 		this.name = g.name;

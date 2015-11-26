@@ -80,15 +80,6 @@ public class CSTNU {
 	boolean labelOptimization = true;
 
 	/**
-	 * Flag to activate instantaneous reaction.
-	 */
-	boolean instantaneousReaction = false;// FIXME There are some issue about the equivalence between instantaneousReaction in Morris
-						// and instantaneousReaction in rules and R0-R3!
-						// 2015-10-22 Remember that after the correct implementation of these feature, initUpperLowerLabelDataStructure
-						// has
-						// to be adjusted.
-
-	/**
 	 * logger
 	 */
 	static Logger LOG = Logger.getLogger(CSTNU.class.getName());
@@ -108,15 +99,9 @@ public class CSTNU {
 	 *
 	 * @param withOptimization
 	 *                true if propagation rules have also to remove redundant labeled values or redundant propositions in labels.
-	 * @param withInstantaneousReaction
-	 *                true if propagation rules have to assume that CSTN instances are executed by engines that can react instantaneously to observations of
-	 *                propositions. TODO It must be false for now!
 	 */
-	public CSTNU(final boolean withOptimization, final boolean withInstantaneousReaction) {
+	public CSTNU(final boolean withOptimization) {
 		this.labelOptimization = withOptimization;
-		if (withInstantaneousReaction)
-			throw new IllegalArgumentException("Instantaneous Reaction still not implemented");
-		this.instantaneousReaction = withInstantaneousReaction;
 	}
 
 	/**
@@ -1049,7 +1034,7 @@ public class CSTNU {
 			final int initialValue = e.getMinValueConsistentWith(conjunctLabel);
 			if (initialValue == CSTNU.nullInt)
 				throw new IllegalArgumentException("Contingent edge " + e + " cannot be inizialized because it hasn't an initial value.");
-			if (initialValue == 0 && !this.instantaneousReaction)
+			if (initialValue == 0)
 				throw new IllegalArgumentException(
 						"Contingent edge " + e + " cannot have a bound equals to 0. The two bounds [x,y] have to be 0<x<y<∞.");
 
@@ -1270,6 +1255,7 @@ public class CSTNU {
 	 *                CSTNUCheckStatus representing the status of the checking algorithm.
 	 * @return true if the rule has been applied one time at least.
 	 */
+	@SuppressWarnings("static-method")
 	boolean labelModificationR0R2(final LabeledIntGraph currentGraph, final CSTNUCheckStatus status) {
 
 		boolean ruleApplied = false;
@@ -1294,7 +1280,7 @@ public class CSTNU {
 				final Set<Object2IntMap.Entry<Label>> edgeLabeledValueSet = new ObjectArraySet<>(edge.labeledValueSet());
 				for (final Object2IntMap.Entry<Label> entryObs : edgeLabeledValueSet) {
 					final int w = entryObs.getValue();
-					if ((w > 0) || (instantaneousReaction && (w == 0))) {
+					if (w >= 0) {
 						continue;
 					}
 
@@ -1335,7 +1321,7 @@ public class CSTNU {
 				final Set<Object2IntMap.Entry<Entry<Label, String>>> edgeUpperLabeledValueSet = new ObjectArraySet<>(edge.getUpperLabelSet());
 				for (final Object2IntMap.Entry<Entry<Label, String>> entryObs : edgeUpperLabeledValueSet) {
 					final int w = entryObs.getValue();
-					if ((w > 0) || (instantaneousReaction && (w == 0))) {
+					if (w >= 0) {
 						continue;
 					}
 
@@ -1576,6 +1562,7 @@ public class CSTNU {
 	 *                CSTNUCheckStatus object representing the status of a checking algorithm run.
 	 * @return true if a rule has been applied.
 	 */
+	@SuppressWarnings("static-method")
 	private boolean labelModificationR1Action(final LabeledNode obs, final LabeledNode nX, final LabeledNode nY, final LabeledIntEdge eXY,
 			final LabeledIntEdge eObsX, final Literal p, final LabeledIntEdge eXYnew, final LabeledIntGraph g, CSTNUCheckStatus status) {
 		if (eXY == null)
@@ -1606,7 +1593,7 @@ public class CSTNU {
 				// w is surely <=0; v can be any value. R1 has to applied when
 				// v<=-w (in case of instantaneous, v<-w). So, if v<=-w, then R1
 				// is applied.
-				if ((v > -w) || (instantaneousReaction && (v == -w))) {
+				if (v > -w) {//TODO verify!
 					continue; // R1 cannot be applied
 				}
 

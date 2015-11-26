@@ -1,25 +1,26 @@
 package it.univr.di.labeledvalue;
 
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+
+import org.netbeans.validation.api.Problems;
+import org.netbeans.validation.api.Validator;
+
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 import it.univr.di.labeledvalue.Literal.State;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import org.netbeans.validation.api.Problems;
-import org.netbeans.validation.api.Validator;
-
 /**
  * Simple class to represent a <em>label</em> in the CSTN/CSTNU framework.<br>
  * A label is the conjunction (and logic) of zero or more <em>literals</em> ({@link it.univr.di.labeledvalue.Literal}).<br>
  * A label without literals is called <em>empty label</em> and it is represented graphically as {@link it.univr.di.labeledvalue.Constants#EMPTY_LABEL}.<br>
- * A labels is <em>consistent</em> when it does not contains opposite literals.
- * A label <code>L'</code> subsumes a label <code>L</code> iff <code>L'</code> implies <code>L</code> (<code>⊨ L' ⇒ L</code>).<br>
+ * A labels is <em>consistent</em> when it does not contains opposite literals. A label <code>L'</code> subsumes a label <code>L</code> iff <code>L'</code>
+ * implies <code>L</code> (<code>⊨ L' ⇒ L</code>).<br>
  * In other words, if <code>L</code> is a sub-label of <code>L'</code>.
  * <p>
  * Design assumptions
@@ -93,14 +94,17 @@ public class Label implements Comparable<Label>, Serializable {
 	 * A base is a set of same-length labels that are can be used to build any other greater-length label of the universe.<br>
 	 * The label components of a base can be built from a set of literals making all possible same-length combinations of such literals and their negations.
 	 *
-	 * @param baseElements It cannot contain literal having unknown state.
+	 * @param baseElements
+	 *            It cannot contain literal having unknown state.
 	 * @return return all the components of the base built using literals of baseElements. Null if baseElements is null or empty or contains at least a literal
 	 *         with unknown state.
 	 */
 	public static final Label[] allComponentsOfBaseGenerator(final Literal[] baseElements) {
-		if ((baseElements == null) || (baseElements.length == 0)) return null;
+		if ((baseElements == null) || (baseElements.length == 0))
+			return null;
 		for (final Literal l : baseElements) {
-			if (l.isUnknown()) return null;
+			if (l.isUnknown())
+				return null;
 		}
 		final int baseSize = baseElements.length;
 		final int n = (int) Math.pow(2, baseSize);
@@ -114,7 +118,8 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * Proposes only some execution time estimates about some class methods.
 	 *
-	 * @param args an array of {@link java.lang.String} objects.
+	 * @param args
+	 *            an array of {@link java.lang.String} objects.
 	 */
 	public static void main(final String[] args) {
 		final int nTest = 1000;
@@ -196,14 +201,17 @@ public class Label implements Comparable<Label>, Serializable {
 	 * Parse a string representing a label and return an equivalent Label object if no errors are found, null otherwise.<br>
 	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Constants#labelRE}.
 	 *
-	 * @param s a {@link java.lang.String} object.
+	 * @param s
+	 *            a {@link java.lang.String} object.
 	 * @return a Label object corresponding to the label string representation.
 	 */
 	public static Label parse(final String s) {
-		if (s == null) return null;
+		if (s == null)
+			return null;
 		int n = s.length();
 		final Label label = new Label();
-		if (n == 0) return label;
+		if (n == 0)
+			return label;
 		char c;
 
 		// trim all internal spaces
@@ -217,11 +225,12 @@ public class Label implements Comparable<Label>, Serializable {
 		}
 		final String s2 = sb.toString();
 		// LOG.finest("String trimmed: " + s2);
-		if (!s2.matches(Constants.labelRE)) // LOG.finest("Input '" + s2 + "' does not satisfy Label format: " + Constants.labelRE);
+		if (!patterLabelRE.matcher(s2).matches()) // LOG.finest("Input '" + s2 + "' does not satisfy Label format: " + Constants.labelRE);
 			return null;
 
 		n = s2.length();
-		if ((n == 1) && (s2.charAt(0) == Constants.EMPTY_LABEL)) return Label.emptyLabel; // Check only one time the special case made with the empty symbol.
+		if ((n == 1) && (s2.charAt(0) == Constants.EMPTY_LABEL))
+			return Label.emptyLabel; // Check only one time the special case made with the empty symbol.
 		Literal l;
 		i = 0;
 		Literal oldL;
@@ -235,8 +244,10 @@ public class Label implements Comparable<Label>, Serializable {
 				l = new Literal(c);
 			}
 			oldL = label.getLiteralWithSameName(l);
-			if (oldL == null || oldL.equals(oldL)) label.conjunctExtended(l);
-			else return null;
+			if (oldL == null || oldL.equals(oldL))
+				label.conjunctExtended(l);
+			else
+				return null;
 			i++;
 		}
 		return label;
@@ -245,22 +256,26 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * Returns a label containing a copy of 'label' but with literals having indexes corresponding to bits 1 in the parameter 'index' set to negative state.
 	 *
-	 * @param l a consistent label represented as an array of literals. l must not contain any literal havng unknown state.
+	 * @param l
+	 *            a consistent label represented as an array of literals. l must not contain any literal havng unknown state.
 	 * @param index
-	 * @return a label copy of label but with literals having indexes corresponding to bits 1 in the parameter 'index' set to negative state.
-	 *         If label is null or empty or contains UNKNOWN literals, returns null;
+	 * @return a label copy of label but with literals having indexes corresponding to bits 1 in the parameter 'index' set to negative state. If label is null
+	 *         or empty or contains UNKNOWN literals, returns null;
 	 */
 	private static final Label complementGenerator(final Literal[] l, final int index) {
 		int n;
-		if ((l == null) || ((n = l.length) == 0) || (index < 0) || (index > Math.pow(2, n))) return null;
+		if ((l == null) || ((n = l.length) == 0) || (index < 0) || (index > Math.pow(2, n)))
+			return null;
 		int j = 1;
 		final Label newLabel = new Label();
 		final Set<Literal> lit = new ObjectOpenHashSet<>(n);
 		Literal labelStraight;
 		for (int i = 0; i < n; i++, j <<= 1) {
-			if (l[i].isUnknown()) return null;
+			if (l[i].isUnknown())
+				return null;
 			labelStraight = l[i].isNegated() ? l[i].getComplement() : l[i];
-			if (lit.contains(labelStraight)) return null;// l contains two times at least the same proposition letter. It is not proper.
+			if (lit.contains(labelStraight))
+				return null;// l contains two times at least the same proposition letter. It is not proper.
 			lit.add(labelStraight);
 			newLabel.label.add(((j & index) != 0) ? l[i].getComplement() : l[i]);
 		}
@@ -283,7 +298,8 @@ public class Label implements Comparable<Label>, Serializable {
 
 		@Override
 		public void validate(final Problems problems, final String compName, final String model) {
-			if ((model == null) || (model.length() == 0)) return;
+			if ((model == null) || (model.length() == 0))
+				return;
 			final Label l = Label.parse(model);
 			if (l == null) {
 				problems.append("Highlighted label is inconsistent.");
@@ -304,6 +320,11 @@ public class Label implements Comparable<Label>, Serializable {
 	private static final long serialVersionUID = 2L;
 
 	/**
+	 * For re match
+	 */
+	private static final Pattern patterLabelRE = Pattern.compile(Constants.labelRE);
+
+	/**
 	 * The label info
 	 */
 	// private final TreeSet<Literal> label = new TreeSet<>();
@@ -312,25 +333,30 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * Default constructor.
 	 */
-	public Label() {}
+	public Label() {
+	}
 
 	/**
 	 * Constructs a label cloning the given label l. This object shares the literals of l.
 	 *
-	 * @param l the label to clone. If null, this will be an empty label.
+	 * @param l
+	 *            the label to clone. If null, this will be an empty label.
 	 */
 	public Label(final Label l) {
-		if (l == null) return;
+		if (l == null || l == emptyLabel)
+			return;
 		this.label.addAll(l.label);
 	}
 
 	/**
 	 * Constructs a label with literal l.
 	 *
-	 * @param l a {@link it.univr.di.labeledvalue.Literal} object.
+	 * @param l
+	 *            a {@link it.univr.di.labeledvalue.Literal} object.
 	 */
 	public Label(final Literal l) {
-		if (l == null) return;
+		if (l == null)
+			return;
 		this.label.add(l);
 	}
 
@@ -342,24 +368,25 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * {@inheritDoc}
-	 *
-	 * Determines a lexicographical order between labels based on the natural order of type {@link Literal}.
+	 * {@inheritDoc} Determines a lexicographical order between labels based on the natural order of type {@link Literal}.
 	 */
 	@Override
 	public int compareTo(final Label l) {
 		int cmp;
 		final int s1 = this.size(), s2 = l.size();
 		// case where one of two is empty
-		if ((s1 == 0) || (s2 == 0)) return s1 - s2;
+		if ((s1 == 0) || (s2 == 0))
+			return s1 - s2;
 
 		final Iterator<Literal> l2I = l.label.iterator();
 		Literal l2;
 		for (final Literal l1 : this.label) {
 			if (l2I.hasNext()) {
 				l2 = l2I.next();
-				if ((cmp = l1.compareTo(l2)) != 0) return cmp;
-			} else return 1;
+				if ((cmp = l1.compareTo(l2)) != 0)
+					return cmp;
+			} else
+				return 1;
 		}
 		// All the compared literal are equal.
 		return (s1 == s2) ? 0 : -1;
@@ -368,60 +395,70 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * It conjuncts <code>l</code> to this if <code>this</code> does not contain <code>l</code> or ¬<code>l</code>.
 	 *
-	 * @param l the literal to conjunct. It cannot be an UNKNOWN literal.
+	 * @param l
+	 *            the literal to conjunct. It cannot be an UNKNOWN literal.
 	 * @return true if l is added, false otherwise.
 	 */
 	public boolean conjunct(final Literal l) {
 		// if l is unknown state, getComplement returns false!
-		if ((l == null) || l.isUnknown() || this.label.contains(l.getComplement())) return false;
+		if ((l == null) || l.isUnknown() || this.label.contains(l.getComplement()))
+			return false;
 		return this.label.add(l);
 	}
 
 	/**
-	 * It conjuncts <code>l</code> to <code>this</code>.
+	 * It conjuncts <code>l</code> to <code>this</code>. If <code>l</code> is opposite to any literal in <code>this</code>, the opposite literal in
+	 * <code>this</code> is substituted with <code>l</code> but with unknown state. If <code>l</code> has unknown state, it is add to <code>this</code>,
+	 * removing possible literal with the same propositional letter.
 	 *
-	 * If <code>l</code> is opposite to any literal in <code>this</code>, the opposite literal in <code>this</code> is substituted with <code>l</code> but with
-	 * unknown state.
-	 * If <code>l</code> has unknown state, it is add to <code>this</code>, removing possible literal with the same propositional letter.
-	 *
-	 * @param l the literal to conjunct.
+	 * @param l
+	 *            the literal to conjunct.
 	 * @return true if l is the size of <code>this</code> is augmented, false otherwise.
 	 */
 	public boolean conjunctExtended(final Literal l) {
-		if (l == null) return false;
+		if (l == null)
+			return false;
 		final Literal inLabel = this.getLiteralWithSameName(l);
-		if (inLabel == null) return this.label.add(l);
-		if (inLabel.equals(l)) return false;
+		if (inLabel == null)
+			return this.label.add(l);
+		if (inLabel.equals(l))
+			return false;
 
 		this.label.remove(inLabel);
 		return this.label.add(l.getUnknown());
 	}
 
 	/**
-	 * <p>conjunction.</p>
+	 * <p>
+	 * conjunction.
+	 * </p>
 	 *
-	 * @param l the label to check
+	 * @param l
+	 *            the label to check
 	 * @return a new label with the conjunction of 'this' and 'label' if they are consistent, null otherwise.<br>
-	 * 			null also if this label or l contains unknown literals.
-	 *         'this' is not altered by this method.
+	 *         null also if this label or l contains unknown literals. 'this' is not altered by this method.
 	 */
 	public Label conjunction(final Label l) {
-		if (l == null || this.containsUnknown() || l.containsUnknown()) return null;
+		if (l == null || this.containsUnknown() || l.containsUnknown())
+			return null;
 		final Label newLabel = new Label();
 		newLabel.label.addAll(this.label);
 		for (Literal l1 : l.label) {
-			if (newLabel.label.contains(l1)) continue; // it is necessary otherwise the conjunct return false adding one already present element.
-			if (!newLabel.conjunct(l1)) return null;
+			if (newLabel.label.contains(l1))
+				continue; // it is necessary otherwise the conjunct return false adding one already present element.
+			if (!newLabel.conjunct(l1))
+				return null;
 		}
 		return newLabel;
 	}
 
 	/**
-	 * Create a new label that represents the conjunction of <code>this</code> and <code>label</code> using also {@link it.univr.di.labeledvalue.Literal.State#unknown} literals.
-	 * A {@link it.univr.di.labeledvalue.Literal.State#unknown} literal represent the fact that in the two input labels a proposition letter is present as straight state in one label
-	 * and in negated state in the other.
+	 * Create a new label that represents the conjunction of <code>this</code> and <code>label</code> using also
+	 * {@link it.univr.di.labeledvalue.Literal.State#unknown} literals. A {@link it.univr.di.labeledvalue.Literal.State#unknown} literal represent the fact that
+	 * in the two input labels a proposition letter is present as straight state in one label and in negated state in the other.
 	 *
-	 * @param l the input label.
+	 * @param l
+	 *            the input label.
 	 * @return a new label with the conjunction of <code>this</code> and <code>label</code>.<br>
 	 *         <code>this</code> is not altered by this method.
 	 */
@@ -429,7 +466,8 @@ public class Label implements Comparable<Label>, Serializable {
 		final Label newLabel = new Label();
 		newLabel.label.addAll(this.label);
 
-		if ((l == null) || l.isEmpty()) return newLabel;
+		if ((l == null) || l.isEmpty())
+			return newLabel;
 
 		for (final Literal lit : l.label) {
 			newLabel.conjunctExtended(lit);
@@ -438,24 +476,42 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * <p>contains.</p>
+	 * <p>
+	 * contains.
+	 * </p>
 	 *
-	 * @param l the literal to check
+	 * @param l
+	 *            the literal to check
 	 * @return true if this contains l.
 	 */
 	public boolean contains(final Literal l) {
-		if (l == null) return false;
+		if (l == null)
+			return false;
 		return this.label.contains(l);
 	}
 
 	/**
-	 * <p>containsUnknown.</p>
+	 * @param l
+	 *            the literal to check
+	 * @return true if this contains l or ¬l or ¿l .
+	 */
+	public boolean containsLiteralWithSameName(final Literal l) {
+		if (l == null)
+			return false;
+		return (this.getLiteralWithSameName(l) != null);
+	}
+
+	/**
+	 * <p>
+	 * containsUnknown.
+	 * </p>
 	 *
 	 * @return true if the label contains one unknown literal at least.
 	 */
 	public boolean containsUnknown() {
 		for (final Literal l : this.label) {
-			if (l.isUnknown()) return true;
+			if (l.isUnknown())
+				return true;
 		}
 		return false;
 	}
@@ -463,15 +519,19 @@ public class Label implements Comparable<Label>, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
-		if ((obj == null) || !(obj instanceof Label)) return false;
+		if ((obj == null) || !(obj instanceof Label))
+			return false;
 		final Label l1 = (Label) obj;
-		if (this.isEmpty() && l1.isEmpty()) return true; // label is a TreeSet and two empty TreeSet are always considered not equal while here we want them
+		if (this.isEmpty() && l1.isEmpty())
+			return true; // label is a TreeSet and two empty TreeSet are always considered not equal while here we want them
 		// equal!
 		return this.label.equals(l1.label);
 	}
 
 	/**
-	 * <p>getAll.</p>
+	 * <p>
+	 * getAll.
+	 * </p>
 	 *
 	 * @return An iterator over literals composing the label.
 	 */
@@ -480,7 +540,9 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * <p>getAllAsStraight.</p>
+	 * <p>
+	 * getAllAsStraight.
+	 * </p>
 	 *
 	 * @return a copy of all literals of the label as straight literals in a Collection.
 	 */
@@ -496,30 +558,38 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * <p>getAllUnknown.</p>
+	 * <p>
+	 * getAllUnknown.
+	 * </p>
 	 *
 	 * @return a copy of all literals of the label having {@link it.univr.di.labeledvalue.Literal.State#unknown} state.
 	 */
 	public Literal[] getAllUnknown() {
 		final ObjectArraySet<Literal> result = new ObjectArraySet<>();
 		for (final Literal l : this.label) {
-			if (l.isUnknown()) result.add(l);
+			if (l.isUnknown())
+				result.add(l);
 		}
 		return result.toArray(new Literal[result.size()]);
 	}
 
 	/**
-	 * <p>getLiteralWithSameName.</p>
+	 * <p>
+	 * getLiteralWithSameName.
+	 * </p>
 	 *
-	 * @param l the literal to check
+	 * @param l
+	 *            the literal to check
 	 * @return l or ¬l or ¿l if it is present, null otherwise. It returns a copy of the literal.
 	 */
 	public Literal getLiteralWithSameName(final Literal l) {
-		if (l == null) return null;
+		if (l == null)
+			return null;
 		final char lName = l.getName();
 		// This method exploits the order of literals in the label!
 		for (final Literal l1 : this.label.subSet(l.getNegated(), new Literal((char) (l.getName() + 1), State.negated))) {
-			if (l1.getName() == lName) return l1;
+			if (l1.getName() == lName)
+				return l1;
 		}
 		return null;
 	}
@@ -533,21 +603,26 @@ public class Label implements Comparable<Label>, Serializable {
 	 * <code>lab</code>. <br>
 	 * For example, is this='a¬b¿cd' and lab='bc¿d', the common part is '¿b¿c¿d'
 	 *
-	 * @param lab the label in which to find the common/uncommon sub-part.
-	 * @param inCommon true if the common sub-label is wanted, false if the sub-label present in <code>this</code> and not in <code>lab</code> is wanted.
-	 * @param strict if the common part should contain only the same literals in both labels.
-	 * @return the sub label of <code>this</code> that is in common/not in common (if inCommon is true/false) with <code>lab</code>.
-	 *         The label returned is a new object that shares only literals with this or with from.
-	 *         If there is no common part, an empty label is returned.
+	 * @param lab
+	 *            the label in which to find the common/uncommon sub-part.
+	 * @param inCommon
+	 *            true if the common sub-label is wanted, false if the sub-label present in <code>this</code> and not in <code>lab</code> is wanted.
+	 * @param strict
+	 *            if the common part should contain only the same literals in both labels.
+	 * @return the sub label of <code>this</code> that is in common/not in common (if inCommon is true/false) with <code>lab</code>. The label returned is a new
+	 *         object that shares only literals with this or with from. If there is no common part, an empty label is returned.
 	 */
 	public Label getSubLabelIn(final Label lab, final boolean inCommon, boolean strict) {
 		final Label sub = new Label();
-		if (this.isEmpty()) return sub;
-		if ((lab == null) || lab.isEmpty()) return (inCommon) ? sub : new Label(this);
+		if (this.isEmpty())
+			return sub;
+		if ((lab == null) || lab.isEmpty())
+			return (inCommon) ? sub : new Label(this);
 		for (final Literal l : this.label) {
 			Literal found = lab.getLiteralWithSameName(l);
 			if (inCommon) {
-				if (found == null) continue;
+				if (found == null)
+					continue;
 				if (l.equals(found)) {
 					sub.label.add(l);
 					continue;
@@ -556,38 +631,45 @@ public class Label implements Comparable<Label>, Serializable {
 					sub.label.add(l.getUnknown());
 				}
 			} else {
-				if (found == null) sub.label.add(l);
+				if (found == null)
+					sub.label.add(l);
 			}
 		}
 		return sub;
 	}
 
 	/**
-	 * Finds and returns the unique different literal between <code>this</code> and <code>lab</code> if it exists.
-	 * If label <code>this</code> and <code>lab</code> differs in more than one literals, it returns null.
+	 * Finds and returns the unique different literal between <code>this</code> and <code>lab</code> if it exists. If label <code>this</code> and
+	 * <code>lab</code> differs in more than one literals, it returns null.
 	 * <p>
 	 * If <code>this</code> and <code>lab</code> contain a common propositional label but in one the literal is unknown and in other is straight or negated, it
 	 * returns null;
 	 *
-	 * @param lab a nor null neither empty label.
+	 * @param lab
+	 *            a nor null neither empty label.
 	 * @return the unique literal of 'this' that has its opposite in <code>lab</code>.<br>
 	 *         null, if there is no literal of such kind or there are two or more literals of this kind or this/label is empty or null.
 	 */
 	public Literal getUniqueDifferentLiteral(final Label lab) {
-		if ((lab == null) || (lab.size() == 0) || this.isEmpty()) return null;
+		if ((lab == null) || (lab.size() == 0) || this.isEmpty())
+			return null;
 		Literal theDistinguished = null;
 		for (final Literal l : this.label) {
 			final Literal lInLabel = lab.getLiteralWithSameName(l);
-			if (lInLabel == null) return null;
+			if (lInLabel == null)
+				return null;
 			if (lInLabel.getState() == l.getState()) {
 				continue;
 			}
-			if (l.isUnknown() || lInLabel.isUnknown()) return null;
+			if (l.isUnknown() || lInLabel.isUnknown())
+				return null;
 			if (theDistinguished == null) {
 				if (lab.contains(l.getComplement())) {
 					theDistinguished = l;
-				} else return null;
-			} else return null;
+				} else
+					return null;
+			} else
+				return null;
 		}
 		return theDistinguished;
 	}
@@ -602,11 +684,13 @@ public class Label implements Comparable<Label>, Serializable {
 	 * A label <code>L</code> is consistent with a label <code>L1</code> if <code>L1</code> does not contain any negative literal of <code>L</code>.<br>
 	 * L.subsumes(L1) implies L.isConsistentWith(L1) but not vice-versa.
 	 *
-	 * @param l the label to check
+	 * @param l
+	 *            the label to check
 	 * @return true if the label is consistent with this label.
 	 */
 	public boolean isConsistentWith(final Label l) {
-		if ((l == null) || l.isEmpty() || this.isEmpty()) return true;
+		if ((l == null) || l.isEmpty() || this.isEmpty())
+			return true;
 		Label shorterLabel, longestLabel;
 		if (this.size() > l.size()) {// It is better to cycle on the shorter label.
 			shorterLabel = l;
@@ -616,27 +700,34 @@ public class Label implements Comparable<Label>, Serializable {
 			longestLabel = l;
 		}
 		for (final Literal lit : shorterLabel.label)
-			if (!longestLabel.isConsistentWith(lit)) return false;
+			if (!longestLabel.isConsistentWith(lit))
+				return false;
 		return true;
 	}
 
 	/**
 	 * A literal l is consistent with a label if the last one does not contain ¬l.
 	 *
-	 * @param l the literal to check
+	 * @param l
+	 *            the literal to check
 	 * @return true if the literal is consistent with this label.
 	 */
 	public boolean isConsistentWith(final Literal l) {
-		if ((l == null) || this.isEmpty()) return true;
+		if ((l == null) || this.isEmpty())
+			return true;
 
 		final Literal lInLabel = this.getLiteralWithSameName(l);
-		if (lInLabel == null) return true;
-		if ((lInLabel.isStraight() && l.isNegated()) || (lInLabel.isNegated() && l.isStraight())) return false;
+		if (lInLabel == null)
+			return true;
+		if ((lInLabel.isStraight() && l.isNegated()) || (lInLabel.isNegated() && l.isStraight()))
+			return false;
 		return true;
 	}
 
 	/**
-	 * <p>isEmpty.</p>
+	 * <p>
+	 * isEmpty.
+	 * </p>
 	 *
 	 * @return true if the label contains no literal.
 	 */
@@ -653,7 +744,8 @@ public class Label implements Comparable<Label>, Serializable {
 	 * @return the set of all negative literal of this. If this is empty, returns null;
 	 */
 	public Literal[] negation() {
-		if (this.isEmpty()) return null;
+		if (this.isEmpty())
+			return null;
 
 		final Literal[] literals = new Literal[this.size()];
 		int i = 0;
@@ -666,7 +758,8 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * It removes l if it is present, otherwise it does nothing.
 	 *
-	 * @param l the literal to check
+	 * @param l
+	 *            the literal to check
 	 * @return true if the literal is removed
 	 */
 	public boolean remove(final Literal l) {
@@ -676,23 +769,28 @@ public class Label implements Comparable<Label>, Serializable {
 	/**
 	 * It removes any variation of literal <b>l</b> if it is present, otherwise it does nothing.
 	 *
-	 * @param l the literal to check
+	 * @param l
+	 *            the literal to check
 	 * @return true if any variation of the literal is removed
 	 */
 	public boolean removeAllLiteralsWithSameName(Literal l) {
-		if (l == null) return false;
-		if (l.isUnknown()) l = new Literal(l, State.straight);
+		if (l == null)
+			return false;
+		if (l.isUnknown())
+			l = new Literal(l, State.straight);
 		return this.label.remove(l) || this.label.remove(l.getComplement()) || this.label.remove(l.getUnknown());
 	}
 
 	/**
 	 * It removes all literal in <b>inputSet</b> from the current label.
 	 *
-	 * @param inputSet the literal to check.
+	 * @param inputSet
+	 *            the literal to check.
 	 * @return true if any literal has been removed.
 	 */
 	public boolean removeAllLiteralsWithSameName(Set<Literal> inputSet) {
-		if (inputSet == null) return false;
+		if (inputSet == null)
+			return false;
 		boolean rem = false;
 		for (Literal l : inputSet) {
 			rem = this.removeAllLiteralsWithSameName(l) || rem;
@@ -701,7 +799,9 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * <p>size.</p>
+	 * <p>
+	 * size.
+	 * </p>
 	 *
 	 * @return Return the number of literals of the label
 	 */
@@ -713,25 +813,32 @@ public class Label implements Comparable<Label>, Serializable {
 	 * A label <code>L'</code> subsumes a label <code>L</code> iff <code>L'</code> implies <code>L</code> ( <code>⊨ L' ⇒ L</code>).<br>
 	 * In other words, if <code>L</code> is a sub-label of <code>L'</code>.
 	 *
-	 * @param inputLabel the label to check
+	 * @param inputLabel
+	 *            the label to check
 	 * @return true if this subsumes 'inputLabel'.
 	 */
 	public boolean subsumes(final Label inputLabel) {
-		if ((inputLabel == null) || inputLabel.isEmpty()) return true;
+		if ((inputLabel == null) || inputLabel.isEmpty())
+			return true;
 		for (Literal l1 : inputLabel.label) {
 			Literal l2 = this.getLiteralWithSameName(l1);
-			if (l2 == null) return false;
-			if (l2.equals(l1)) continue;
+			if (l2 == null)
+				return false;
+			if (l2.equals(l1))
+				continue;
 			// before to say that it is false, we have to check if there is a ¿l1 in this.label
 			// ¿p subsumes p, ¿p subsumes ¬p, ¿p subsumes ¿p
 			// p NOT subsumes ¿p, ¬p NOT subsumes ¿p.
-			if (!l2.isUnknown()) return false;
+			if (!l2.isUnknown())
+				return false;
 		}
 		return true;
 	}
 
 	/**
-	 * <p>toArray.</p>
+	 * <p>
+	 * toArray.
+	 * </p>
 	 *
 	 * @return the representation of this label as an array of literals.
 	 */
@@ -740,23 +847,28 @@ public class Label implements Comparable<Label>, Serializable {
 	}
 
 	/**
-	 * Return a string representing the the label as logical expression using logical 'not', 'and', and 'or'.
-	 * String representations of operators can be given as parameters.
+	 * Return a string representing the the label as logical expression using logical 'not', 'and', and 'or'. String representations of operators can be given
+	 * as parameters. A label 'P¬A' is represented as "P and not A" If negate is true, then 'P¬A' is represented as negated: "not P or A".
 	 *
-	 * A label 'P¬A' is represented as "P and not A"
-	 * If negate is true, then 'P¬A' is represented as negated: "not P or A".
-	 *
-	 * @param negate negate the label before the conversion. Be careful!
-	 * @param not string representing not. If null, it is assumed "!"
-	 * @param and representing not. If null, it is assumed "&amp;"
-	 * @param or representing not. If null, it is assumed " | "
+	 * @param negate
+	 *            negate the label before the conversion. Be careful!
+	 * @param not
+	 *            string representing not. If null, it is assumed "!"
+	 * @param and
+	 *            representing not. If null, it is assumed "&amp;"
+	 * @param or
+	 *            representing not. If null, it is assumed " | "
 	 * @return empty string if label is null or empty, the string representation as logical expression otherwise.
 	 */
 	public String toLogicalExpr(final boolean negate, String not, String and, String or) {
-		if (this.isEmpty()) return "";
-		if (not == null) not = "!";
-		if (and == null) and = " & ";
-		if (or == null) or = " | ";
+		if (this.isEmpty())
+			return "";
+		if (not == null)
+			not = "!";
+		if (and == null)
+			and = " & ";
+		if (or == null)
+			or = " | ";
 		final Literal[] lit = (negate) ? this.negation() : this.toArray();
 		final StringBuffer s = new StringBuffer();
 
@@ -770,7 +882,8 @@ public class Label implements Comparable<Label>, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
-		if (this.isEmpty()) return String.valueOf(Constants.EMPTY_LABEL);
+		if (this.isEmpty())
+			return String.valueOf(Constants.EMPTY_LABEL);
 		final StringBuffer s = new StringBuffer();
 		for (final Literal l : this.label)
 			s.append(l);

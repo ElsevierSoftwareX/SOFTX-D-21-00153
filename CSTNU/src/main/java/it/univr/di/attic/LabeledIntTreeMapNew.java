@@ -1,3 +1,5 @@
+import it.univr.di.labeledvalue.Constants;
+
 //package it.univr.di.attic;
 //
 //import it.unimi.dsi.fastutil.ints.IntCollection;
@@ -96,7 +98,7 @@
 //			LabeledIntTreeMapNew.LOG.finest("Arg not valid: " + arg);
 //			return null;
 //		}
-//		final String labelCharsRE = "a-zA-Z0-9, \\-" + Constants.NOT + Constants.EMPTY_LABEL;
+//		final String labelCharsRE = ""+Constants.propositionLetterRanges+"0-9, \\-" + Constants.NOT + Constants.EMPTY_LABEL;
 //		if (!Pattern.matches("\\{[\\(" + labelCharsRE + "\\) ]*\\}", arg)) {
 //			LabeledIntTreeMapNew.LOG.finest("Arg not valid: " + arg);
 //			return null;

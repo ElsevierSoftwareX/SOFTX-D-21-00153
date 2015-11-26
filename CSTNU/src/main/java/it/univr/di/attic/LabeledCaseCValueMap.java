@@ -1,3 +1,5 @@
+import it.univr.di.labeledvalue.Constants;
+
 ///**
 // * 
 // */
@@ -63,7 +65,7 @@
 ////		final Pattern splitterNode = Pattern.compile("〈|; ");
 //		LOG.finest("Begin parse: "+arg);
 //		if (arg == null || arg.length()<3) return null;
-//		final String labelCharsRE = "a-zA-Z0-9,\\-" + Constants.NOT + Constants.EMPTY_LABEL;
+//		final String labelCharsRE = "+Constants.propositionLetterRanges+"0-9,\\-" + Constants.NOT + Constants.EMPTY_LABEL;
 //		if (!Pattern.matches("\\{[\\(" + labelCharsRE + "\\) ]*\\}", arg)) return null;
 //		final LabeledCaseCValueMap<Integer> newMap = new LabeledCaseCValueMap<>();
 //

@@ -25,8 +25,9 @@ public class LabeledIntGraphTest {
 	 * @param g
 	 */
 	private final static void wellDefinition(LabeledIntGraph g) {
+		CSTN cstn = new CSTN();
 		try {
-			CSTN.checkWellDefinitionProperties(g);
+			cstn.checkWellDefinitionProperties(g);
 		}
 		catch (WellDefinitionException e) {
 			fail("LabeledIntGraph not well formed: " + e.getMessage());
@@ -64,7 +65,7 @@ public class LabeledIntGraphTest {
 		PY.mergeLabeledValue(Label.parse("b"), -10);
 
 		LabeledIntEdge AP = new LabeledIntEdge("AP", true);
-		AP.mergeLabeledValue(Label.parse("p"), 0);
+		AP.mergeLabeledValue(Label.parse("p"), -1);
 
 		g.addEdge(XP, X, P);
 		g.addEdge(PY, P, Y);

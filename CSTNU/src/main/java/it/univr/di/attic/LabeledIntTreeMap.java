@@ -1,3 +1,5 @@
+import it.univr.di.labeledvalue.Constants;
+
 //package it.univr.di.labeledvalue;
 //
 //import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
@@ -87,7 +89,7 @@
 //	 */
 //	static public LabeledIntTreeMap parse(final String inputMap, final boolean withOptimization) {
 //		if (inputMap == null) return null;
-//		final String labelCharsRE = "a-zA-Z0-9, \\-" + Constants.NOT + Constants.UNKNOWN + Constants.EMPTY_LABEL;
+//		final String labelCharsRE = Constants.propositionLetterRanges+", \\-" + Constants.NOT + Constants.UNKNOWN + Constants.EMPTY_LABEL;
 //		if (!Pattern.matches("\\{[\\(" + labelCharsRE + "\\) ]*\\}", inputMap)) // LabeledIntTreeMap.LOG.finest("Arg not valid: " + inputMap);
 //			return null;
 //
