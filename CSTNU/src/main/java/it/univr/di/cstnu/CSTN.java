@@ -568,8 +568,10 @@ public class CSTN {
 		nextGraph.setName("New graph");
 
 		final int propositionN = currentGraph.getPropositions().size();
+		final int nodeN = currentGraph.getVertexCount();
 		// TODO: trovare il numero giusto di iterazioni
-		final int maxCycles = propositionN * 10;
+//		final int maxCycles = propositionN * 10;
+		final int maxCycles = nodeN^3*2^propositionN;
 		if (CSTN.LOG.isLoggable(Level.FINER)) {
 			CSTN.LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 		}
