@@ -645,17 +645,17 @@ public class Label implements Comparable<Label>, Serializable {
 	 * If <code>this</code> and <code>lab</code> contain a common propositional label but in one the literal is unknown and in other is straight or negated, it
 	 * returns null;
 	 *
-	 * @param lab
+	 * @param inputLabel
 	 *            a nor null neither empty label.
 	 * @return the unique literal of 'this' that has its opposite in <code>lab</code>.<br>
 	 *         null, if there is no literal of such kind or there are two or more literals of this kind or this/label is empty or null.
 	 */
-	public Literal getUniqueDifferentLiteral(final Label lab) {
-		if ((lab == null) || (lab.size() == 0) || this.isEmpty())
+	public Literal getUniqueDifferentLiteral(final Label inputLabel) {
+		if ((inputLabel == null) || (inputLabel.size() == 0) || this.size() != inputLabel.size())
 			return null;
 		Literal theDistinguished = null;
 		for (final Literal l : this.label) {
-			final Literal lInLabel = lab.getLiteralWithSameName(l);
+			final Literal lInLabel = inputLabel.getLiteralWithSameName(l);
 			if (lInLabel == null)
 				return null;
 			if (lInLabel.getState() == l.getState()) {
@@ -664,7 +664,7 @@ public class Label implements Comparable<Label>, Serializable {
 			if (l.isUnknown() || lInLabel.isUnknown())
 				return null;
 			if (theDistinguished == null) {
-				if (lab.contains(l.getComplement())) {
+				if (inputLabel.contains(l.getComplement())) {
 					theDistinguished = l;
 				} else
 					return null;
