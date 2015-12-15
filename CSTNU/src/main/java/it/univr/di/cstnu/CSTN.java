@@ -571,7 +571,7 @@ public class CSTN {
 		final int nodeN = currentGraph.getVertexCount();
 		// TODO: trovare il numero giusto di iterazioni
 //		final int maxCycles = propositionN * 10;
-		final int maxCycles = nodeN^3*2^propositionN;
+		final int maxCycles = (int) (Math.pow(nodeN, 3)*Math.pow(2, propositionN));
 		if (CSTN.LOG.isLoggable(Level.FINER)) {
 			CSTN.LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 		}
@@ -622,6 +622,14 @@ public class CSTN {
 			CSTN.LOG.log(Level.INFO, "Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles + ".\nStatus: "
 					+ status);
 		}
+//	Just an experiment to find the most heavy edge
+//		LabeledIntEdge max = new LabeledIntEdge("guard",LabeledIntEdge.Type.internal, Label.emptyLabel, 0, false);
+//		for (LabeledIntEdge e : currentGraph.getEdgesArray()) {
+//			if (e.labeledValueSet().size() > max.labeledValueSet().size()) {
+//				max = e;
+//			}
+//		}
+//		System.out.println("Edge with maximum set of labels: "+max);
 		nextGraph.copyCleaningRedundantLabels(currentGraph);
 		// Put all data structures of currentGraph in g
 		g.takeIn(nextGraph);

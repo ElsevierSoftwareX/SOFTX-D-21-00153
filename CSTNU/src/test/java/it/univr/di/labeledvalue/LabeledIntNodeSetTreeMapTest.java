@@ -916,7 +916,7 @@ public class LabeledIntNodeSetTreeMapTest {
 		map.put(Label.parse("¿p¬q"), -22, XUY);
 		map.put(Label.emptyLabel, -10, null);
 		map.put(Label.parse("¿p¿q"), Constants.INT_NEG_INFINITE, YXW);
-		System.out.println(map.toString());
+//		System.out.println(map.toString());
 		assertEquals(
 				"{(⊡, -10) (¬p¬q, -13, {U, X}) (¬p¿q, -13, {U, X}) (¿p, -15) (¿p¬q, -22, {U, X, Y}) (¿p¿q, -∞, {W, X, Y}) }"
 				, map.toString());
