@@ -13,12 +13,26 @@ import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.labeledvalue.Literal.State;
 
 /**
  * Simple implementation of {@link it.univr.di.labeledvalue.LabeledIntMap} interface.
  * <p>
- * When creating a object it is possible to specify if the labeled values represented into the map should be maintained to the minimal equivalent ones.
- *
+ * An experimental result on 2016-01-13 showed that using base there is a small improvement in the performance.
+ * 
+ * <table border="1">
+ * <caption>Execution time (ms) for some operations w.r.t the core data structure of the class.</caption>
+ * <tr>
+ * <th>Operation</th>
+ * <th>Using all AVL Tree (ms)</th>
+ * <th>Using fastUtil.Array (ms)</th>
+ * </tr>
+ * <tr><td>Create 1st map</td><td>0.181518783</td><td> </td></tr>
+ * <tr><td>min value</td><td>0.006420972</td><td> </td></tr>
+ * <tr><td>Retrieve value</td><td>0.001024462</td><td> </td></tr>
+ * <tr><td>Simplification</td><td>~0.178705</td><td> </td></tr>
+ * </table>
+ * 
  * @author Roberto Posenato
  * @see LabeledIntMap
  * @version $Id: $Id
@@ -94,7 +108,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			map.put(l20, 23);
 		}
 		long endTime = System.nanoTime();
-		System.out.println("LABELED VALUE SET-TREE MANAGED\nExecution time for some merge operations (mean over " + nTest + " tests).\nFinal map: " + map
+		System.out.println("LABELED VALUE SET-TREE MANAGED\nExecution time for some merge operations (mean over " + nTest + " tests).\nFirst map: " + map
 				+ ".\nTime: (ms): "
 				+ ((endTime - startTime) / msNorm));
 		String rightAnswer = "{(⊡, 23) (¬a¿bf, 20) (abcdef, 20) (abc¬f, 10) (abd¿f, 11) (a¿d¬f, 11) (ae¬f, 20) (b¬d¿ef, 22) (c, 22) (c¬e, 11) }";
@@ -119,9 +133,13 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		System.out.println("Execution time for retrieving value of label " + l + " (mean over " + nTest + " tests). (ms): "
 				+ ((endTime - startTime) / msNorm));
 
+		startTime = System.nanoTime();
 		map.put(Label.parse("c"), 11);
 		map.put(Label.parse("¬c"), 11);
+		endTime = System.nanoTime();
 		System.out.println("After the insertion of (c,11) and (¬c,11) the map becomes: " + map);
+		System.out.println("Execution time for simplification (ms): "
+				+ ((endTime - startTime) / 1.0E6));
 	}
 
 	/**
@@ -137,15 +155,15 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	private Int2ObjectAVLTreeMap<Object2IntRBTreeMap<Label>> mainInt2SetMap;
 
 	/**
-	 * Simple constructor. The internal structure is built and empty.
+	 * Necessary constructor for the factory. The internal structure is built and empty.
 	 */
-	LabeledIntTreeMap() {
+	public LabeledIntTreeMap() {
 		this.mainInt2SetMap = new Int2ObjectAVLTreeMap<>();
 		this.base = new Label();
 	}
 
 	/**
-	 * Constructor to clone the structure.
+	 * Constructor to clone the structure. For optimization issue, this method clone only LabeledIntTreeMap object.
 	 *
 	 * @param lvm the LabeledValueTreeMap to clone. If lvm is null, this will be a empty map.
 	 */
@@ -153,16 +171,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		this();
 		if (lvm == null)
 			return;
-		// if (withOptimization) {
+		base = ((LabeledIntTreeMap) lvm).base;
 		for (final Entry<Label> entry : lvm.entrySet()) {
 			this.putForcibly(entry.getKey(), entry.getIntValue());
 		}
-		base = ((LabeledIntTreeMap) lvm).base;
-		// } else {
-		// for (final Entry<Label> entry : lvm.entrySet()) {
-		// this.putForcibly(entry.getKey(), entry.getIntValue());
-		// }
-		// }
 	}
 
 	/** {@inheritDoc} */
@@ -186,10 +198,17 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public ObjectSet<Entry<Label>> entrySet() {
 		final ObjectSet<Entry<Label>> coll = new ObjectArraySet<>();
+		return entrySet(coll);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
+		setToReuse.clear();
 		for (final Object2IntRBTreeMap<Label> mapI : this.mainInt2SetMap.values()) {
-			coll.addAll(mapI.object2IntEntrySet());
+			setToReuse.addAll(mapI.object2IntEntrySet());
 		}
-		return coll;
+		return setToReuse;
 	}
 
 	/** {@inheritDoc} */
@@ -225,12 +244,22 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	/**
 	 * @return a set view of all labels present into this map.
 	 */
+	@Override
 	public ObjectSet<Label> keySet() {
 		ObjectSet<Label> coll = new ObjectArraySet<>();
+		return keySet(coll);
+	}
+
+	/**
+	 * @return a set view of all labels present into this map.
+	 */
+	@Override
+	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
+		setToReuse.clear();
 		for (final Object2IntRBTreeMap<Label> mapI : this.mainInt2SetMap.values()) {
-			coll.addAll(mapI.keySet());
+			setToReuse.addAll(mapI.keySet());
 		}
-		return coll;
+		return setToReuse;
 	}
 
 	/**
@@ -292,7 +321,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			if (LOG.isLoggable(Level.FINEST))
 				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + map.get(lr) + ").");
 			map.remove(lr);
-			this.checkValidityOfTheBaseAfterRemovingOrAdd(lr);
+			checkValidityOfTheBaseAfterRemovingOrAdd(lr);
 		}
 		for (Label lr : labelToAdjust) {
 			Object2IntRBTreeMap<Label> map = this.mainInt2SetMap.get(lr.size());
@@ -380,6 +409,9 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	/**
 	 * If the removed label <code>l</code> is a component of the base, then reset the base.
 	 *
+	 * <p>
+	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
+	 * 
 	 * @param l
 	 * @return true if <code>l</code> is a component of the base, false otherwise.
 	 */
@@ -470,7 +502,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						// we maintain the pair with lower value
 						// while we insert the one with greater value removing from its label 'lit'
 						Label labelWOlit = new Label(l1);
-						labelWOlit.removeAllLiteralsWithSameName(lit);
+						labelWOlit.remove(lit.getName());
 
 						if (max == inputValue && max == v1) {
 							toRemove.add(inputLabel);
@@ -509,8 +541,12 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * Determines whether the value can be represented by any component of the base. A component of the base can represent the labeled value <code>(l,v)</code>
-	 * if <code>l</code> subsumes the component label and the <code>v</code> is greater or equal the component value.
+	 * Determines whether the value can be represented by any component of the base.<br>
+	 * A component of the base can represent the labeled value <code>(l,v)</code> if <code>l</code> subsumes the component label and the <code>v</code> is
+	 * greater or equal the component value.
+	 * 
+	 * <p>
+	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
 	 *
 	 * @param entry
 	 * @return true if <code>v</code> is greater or equal than a base component value that is subsumed by <code>l</code>. False otherwise.
@@ -521,7 +557,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			return false;
 
 		final Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(this.base.size());
-		for (final Label baseLabel : Label.allComponentsOfBaseGenerator(this.base.toArray())) {
+		for (final Label baseLabel : Label.allComponentsOfBaseGenerator(this.base.getPropositions())) {
 			final int baseValue = map1.getInt(baseLabel);
 			// SortedSet<String> nodeSet1 = map1.get(l1).nodeSet;
 
@@ -540,6 +576,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
+	 * If entry (label, value) determines a new (better) base, the base is updated.
+	 * 
+	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
+	 * 
 	 * @param entry
 	 * @return true if (label, value) determine a new (better) base. If true, the base is update. False otherwise.
 	 */
@@ -557,15 +597,15 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		final Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(n);
 		if (map1.size() < Math.pow(2.0, n)) // there are no sufficient elements!
 			return false;
-		final Literal[] baseCandidateColl = entry.getKey().getAllAsStraight();
+		final char[] baseCandidateColl = entry.getKey().getPropositions();
 		for (final Label label1 : Label.allComponentsOfBaseGenerator(baseCandidateColl)) {
 			int value = map1.getInt(label1);
 			if (value == Constants.INT_NULL)
 				return false;
 		}
 		final Label baseCandidate = new Label();
-		for (final Literal l : baseCandidateColl) {
-			baseCandidate.conjunct(l);
+		for (final char l : baseCandidateColl) {
+			baseCandidate.conjunct(l, State.straight);
 		}
 		this.base = baseCandidate;
 		return true;
@@ -605,7 +645,9 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 	/**
 	 * Remove all labeled values having each value greater than all values of base components consistent with it.
-	 *
+	 * 
+	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
+	 * 
 	 * @return true if one element at least has been removed, false otherwise.
 	 */
 	private boolean removeAllValuesGreaterThanBase() {
@@ -614,7 +656,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		final LabeledIntTreeMap newMap = new LabeledIntTreeMap();
 		// build the list of labeled values that form the base
 		final ObjectArraySet<Entry<Label>> baseComponent = new ObjectArraySet<>((int) Math.pow(2, this.base.size()));
-		for (final Label l : Label.allComponentsOfBaseGenerator(this.base.getAllAsStraight())) {
+		for (final Label l : Label.allComponentsOfBaseGenerator(this.base.getPropositions())) {
 			baseComponent.add(new AbstractObject2IntMap.BasicEntry<>(l, this.get(l)));
 		}
 		Label l1, lb;
