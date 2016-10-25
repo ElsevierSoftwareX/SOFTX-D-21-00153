@@ -920,7 +920,7 @@ public class CSTN {
 					g.addEdge(e, node, Z);
 					if (LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING,
-								"It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '" + Z.getName());
+								"It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '" + Z.getName()+"'.");
 					}
 				}
 				e.mergeLabeledValue(node.getLabel(), 0);// in any case, all nodes must be after Z!
@@ -1229,7 +1229,7 @@ public class CSTN {
 	 * - if l1l2 does not contain ¿ literals, the network is not DC
 	 * - if l1l2 contains ¿ literals, the x+y becomes -∞
 	 * 
-	 * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with node A == B!
+	 * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with nodes A == B or B==C!
 	 * </pre>
 	 *
 	 * @param currentGraph the originating graph.
@@ -1256,19 +1256,20 @@ public class CSTN {
 		for (final Object2IntMap.Entry<Label> ABEntry : AB.labeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 
-			/**
+			/** 
 			 * If there is a self loop containing a (-∞, q*), it must be propagated!
 			 */
-			if (A != B && B != C && labelAB.containsUnknown())
-				continue;// TABLE 3 ICAPS paper
-
 			final int x = ABEntry.getIntValue();
 			for (final Object2IntMap.Entry<Label> BCEntry : BC.labeledValueSet()) {
 				final Label labelBC = BCEntry.getKey();
 				final int y = BCEntry.getIntValue();
 				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(x, y);
 
-				final boolean isNegativePath = (x < reactionTime) && (y < 0);
+				/**
+				 * if labelAB is not in P*, then it can be considered only if its value is -infty: labelAB.containsUnknown --> x==-ifty
+				 */
+				final boolean isNegativePath = (x < reactionTime) && (y < 0) && (!labelAB.containsUnknown() || x == Constants.INT_NEG_INFINITE);
+
 				final Label newLabelAC = (isNegativePath) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
 				if (newLabelAC == null) {
 					continue;
@@ -1632,101 +1633,4 @@ public class CSTN {
 		return status;
 	}
 
-	// /**
-	// * Executes one step of the dynamic consistency check: for each possible triangle of the network, label propagation rule is applied and, on the resulting
-	// * edge, all other rules R0--R3 are also applied.
-	// * <p>
-	// * This method differs from {@link #dynamicConsistencyCheckByNode(LabeledIntGraph)} on the fact that it does not check values, by rules R0--R3, on the
-	// * second edge of a triangle before applying label propagation rule.
-	// *
-	// * @param currentGraph the current graph. At the end of the procedure, it will contain the results of reductions.
-	// * @param status the record where to store statistics and exit status of the execution. BE CAREFULL, this procedure cannot verified if the DC is finished
-	// or
-	// * not. So, the status.finished field is not update by this procedure.
-	// * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	// * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
-	// * there is a problem in the rules coding.
-	// */
-	// public CSTNCheckStatus oneStepDynamicConsistencyByNodeOpt(final LabeledIntGraph currentGraph, final CSTNCheckStatus status)
-	// throws WellDefinitionException {
-	//
-	// LabeledNode B, C;
-	// LabeledIntEdge AC;// AB, BC
-	//
-	// final LabeledNode Z = currentGraph.getZ();
-	//
-	// status.cycles++;
-	//
-	// if (LOG.isLoggable(Level.FINER)) {
-	// LOG.log(Level.FINER, "");
-	// LOG.log(Level.FINER, "Start application labeled propagation rule+R0+R3.");
-	// }
-	// /**
-	// * March, 03 2016 I try to apply the rules on all edges making a by-row-visit to the adjacency matrix.
-	// */
-	// for (LabeledNode A : currentGraph.getVertices()) {
-	// if (LOG.isLoggable(Level.FINER)) {
-	// LOG.log(Level.FINER, "Considering edges outgoing from " + A);
-	// }
-	// for (LabeledIntEdge AB : currentGraph.getOutEdges(A)) {
-	// B = currentGraph.getDest(AB);
-	// // Since in some graphs it is possible that there is not BC, we apply R0 and R3 to AB
-	// if (A.isObservator()) {
-	// // R0 on the resulting new values
-	// this.labelModificationR0(currentGraph, A, B, Z, AB, status);
-	// }
-	// this.labelModificationR3(currentGraph, A, B, Z, AB, status);
-	// if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
-	// // R0 on the resulting new values
-	// this.labelModificationR0(currentGraph, A, B, Z, AB, status);
-	// }
-	// for (LabeledIntEdge BC : currentGraph.getOutEdges(B)) {
-	// C = currentGraph.getDest(BC);
-	// if (C.equalsByName(B)) {
-	// continue;// self loop on the second pair in not useful.
-	// }
-	// // Now it is possible to propagate the labels with the standard rules
-	// this.labelPropagationRule(currentGraph, A, B, C, AB, BC, Z, status);
-	// if (!status.consistency)
-	// return status;
-	// AC = currentGraph.findEdge(A, C);
-	// if (AC == null) {
-	// continue;
-	// }
-	//
-	// if (A.isObservator()) {
-	// // R0 on the resulting new values
-	// this.labelModificationR0(currentGraph, A, C, Z, AC, status);
-	// }
-	// // if (!this.excludeR1R2 && C.isObservator()) {
-	// // // R2 on the resulting new values.
-	// // this.labelModificationR2(currentGraph, C, A, AC, status);
-	// // }
-	// // R3 on the resulting new values
-	// this.labelModificationR3(currentGraph, A, C, Z, AC, status);
-	// if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
-	// // R0 on the resulting new values
-	// this.labelModificationR0(currentGraph, A, C, Z, AC, status);
-	// }
-	//
-	// // if (!this.excludeR1R2) {
-	// // // R1 on the resulting new values.
-	// // this.labelModificationR1(currentGraph, A, C, AC, status);
-	// // if (C.isObservator()) {
-	// // this.labelModificationR2(currentGraph, C, A, AC, status);// It should be like R0! To verify
-	// // // experimentally.
-	// // }
-	// // }
-	// }
-	// }
-	// }
-	// if (LOG.isLoggable(Level.FINER)) {
-	// LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3."
-	// + "\nSituation after the labeled propagation rule+R0+R3.");
-	// }
-	// if (LOG.isLoggable(Level.FINER)) {
-	// LOG.log(Level.FINER, "\n");
-	// }
-	// return status;
-	// }
 }
