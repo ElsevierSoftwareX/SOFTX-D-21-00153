@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +56,8 @@ public class CSTN {
 		 * Counters about the # of application of different rules.
 		 */
 		@SuppressWarnings("javadoc")
-		public int cycles = 0, r0calls = 0, r1calls = 0, r2calls = 0, r3calls = 0, labeledValuePropagationcalls = 0;
+		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationcalls = 0, qAllNegLoop = 0, qSemiNegLoop = 0;
+		// r1calls = 0, r2calls = 0,
 
 		/**
 		 * Execution time in nanoseconds.
@@ -81,6 +84,8 @@ public class CSTN {
 					// + "Rule R2 has been applied " + this.r2calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
 					+ "Rule Labeled Propagation has been applied " + this.labeledValuePropagationcalls + " times.\n"
+					+ "Negative qLoops: " + this.qAllNegLoop + "\n"
+					+ "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
 					+ ((executionTimeNS != Constants.INT_NULL)
 							? "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)"
 							: ""));
@@ -101,7 +106,8 @@ public class CSTN {
 	 * Version of the class
 	 */
 	// static final String VERSIONandDATE = "Version 3.1 - Apr, 20 2016";
-	static final String VERSIONandDATE = "Version  3.3 - October, 4 2016";
+	// static final String VERSIONandDATE = "Version 3.3 - October, 4 2016";
+	static final String VERSIONandDATE = "Version  4.0 - October, 25 2016";// added management not all negative edges in a negative qLoop
 
 	/**
 	 * The name for the initial node.
@@ -591,13 +597,12 @@ public class CSTN {
 		int i;
 		// final boolean hierarchyMap = LabeledIntEdge.labeledValueMapFactory.createLabeledIntMap().getClass().equals(LabeledIntHierarchyMap.class);
 
-		final long startTime = System.nanoTime();
+		Instant startInstant = Instant.now();
 		for (i = 1; (i <= maxCycles) && status.consistency && !status.finished; i++) {
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
 			}
 			this.oneStepDynamicConsistencyByEdges(nextGraph, edgesToCheck, status);
-			status.finished = edgesToCheck.isEmpty();
 
 			if (status.consistency && !status.finished) {
 				if (LOG.isLoggable(Level.FINE)) {
@@ -616,7 +621,9 @@ public class CSTN {
 				LOG.log(Level.FINE, "*** End Main Cycle " + i + "/" + maxCycles + " ***\n\n");
 			}
 		}
-		status.executionTimeNS = (System.nanoTime() - startTime);
+
+		Instant endInstant = Instant.now();
+		status.executionTimeNS = Duration.between(startInstant, endInstant).toNanos();
 
 		if (!status.consistency) {
 			if (LOG.isLoggable(Level.INFO)) {
@@ -629,8 +636,8 @@ public class CSTN {
 		}
 
 		if ((i > maxCycles) && !status.finished) {
-			if (LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + status);
+			if (LOG.isLoggable(Level.WARNING)) {
+				LOG.log(Level.WARNING, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + status);
 				LOG.log(Level.FINER, "Last determined graph: " + nextGraph);
 			}
 			status.consistency = status.finished;
@@ -920,7 +927,7 @@ public class CSTN {
 					g.addEdge(e, node, Z);
 					if (LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING,
-								"It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '" + Z.getName()+"'.");
+								"It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '" + Z.getName() + "'.");
 					}
 				}
 				e.mergeLabeledValue(node.getLabel(), 0);// in any case, all nodes must be after Z!
@@ -1222,7 +1229,12 @@ public class CSTN {
 	 * <pre>
 	 * if A --[l1, x]--&gt; B --[l2, y]--&gt; C, then A --[l1l2, x+y]--&gt; C
 	 * 
-	 * l1l2 is the extended conjunction when x&lt;ε AND y&lt;0; standard conjunction otherwise.
+	 * l1l2 is the extended conjunction when 
+	 * <ol> 
+	 * <li> x &ge; 0, y &ge; 0
+	 * <li> x &lt; 0, y anything
+	 * </ol>
+	 * standard conjunction otherwise.
 	 * In case l1l2 contains 'unknown literals' (¿p for example), then l1l2 has to not contain any children of such unknown literals.
 	 * 
 	 * If A==C and x+y &lt; ε, then
@@ -1256,7 +1268,7 @@ public class CSTN {
 		for (final Object2IntMap.Entry<Label> ABEntry : AB.labeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 
-			/** 
+			/**
 			 * If there is a self loop containing a (-∞, q*), it must be propagated!
 			 */
 			final int x = ABEntry.getIntValue();
@@ -1265,16 +1277,16 @@ public class CSTN {
 				final int y = BCEntry.getIntValue();
 				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(x, y);
 
-				/**
-				 * if labelAB is not in P*, then it can be considered only if its value is -infty: labelAB.containsUnknown --> x==-ifty
-				 */
-				final boolean isNegativePath = (x < reactionTime) && (y < 0) && (!labelAB.containsUnknown() || x == Constants.INT_NEG_INFINITE);
-
-				final Label newLabelAC = (isNegativePath) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
+				//The following check allows the propagation of -∞ only through negative edges.
+//				final boolean isQLabelAdmitted = (x < reactionTime && y < 0 && (!labelAB.containsUnknown() || x == Constants.INT_NEG_INFINITE))
+//						|| (sum < 0 && y >= reactionTime && x != Constants.INT_NEG_INFINITE && !labelBC.containsUnknown());
+				final boolean isQLabelAdmitted = (x < reactionTime) && (sum<=0) ;//|| (x >= reactionTime && y >= reactionTime);
+				
+				final Label newLabelAC = (isQLabelAdmitted) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
 				if (newLabelAC == null) {
 					continue;
 				}
-				if (isNegativePath) {
+				if (isQLabelAdmitted) {
 					// newLabelAC can contain ¿ literals
 					// It is necessary to remove all children of unknown literals (TIME15)
 					removeChildrenOfUnknown(currentGraph, newLabelAC);
@@ -1321,6 +1333,12 @@ public class CSTN {
 					ruleApplied = true;
 					status.labeledValuePropagationcalls++;
 					LOG.log(Level.FINER, log);
+					if (sum == Constants.INT_NEG_INFINITE && A == C && x != Constants.INT_NEG_INFINITE && y != Constants.INT_NEG_INFINITE) {
+						if (y >= reactionTime)
+							status.qSemiNegLoop++;
+						else
+							status.qAllNegLoop++;
+					}
 				}
 			}
 		}
@@ -1520,9 +1538,12 @@ public class CSTN {
 			LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3.");
 		}
 		edgesToCheck.clear();
-		if (newEdgesToCheck.size() > 0) {
+		status.finished = newEdgesToCheck.size() == 0;
+		if (!status.finished) {
 			edgesToCheck.addAll(newEdgesToCheck);
 		}
+		if (!status.consistency)
+			status.finished = true;
 		return status;
 	}
 
