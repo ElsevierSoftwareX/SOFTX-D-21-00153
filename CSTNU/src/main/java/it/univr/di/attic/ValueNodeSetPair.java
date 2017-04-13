@@ -1,6 +1,7 @@
 package it.univr.di.labeledvalue;
 
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+import it.univr.di.labeledvalue.Constants;
 
 import java.util.Set;
 import java.util.SortedSet;
@@ -11,7 +12,7 @@ import java.util.SortedSet;
  * The node name set contains internal node names of any negative path starting from Z. <br>
  * It is necessary to use node name (String) instead of LabeledNode (that would be the right representation) because here it is necessary to build
  * set with different nodes in a common sense (i.e., with different names) but the method equals of LabeledNode (method used by Set class to
- * decide whether two nodes are equal/different) does not compare the name but the memory address (see {@link it.univr.di.cstnu.graph.Component#equals(Object)}
+ * decide whether two nodes are equal/different) does not compare the name but the memory address (see {@link it.univr.di.cstnu.graph.AbstractComponent#equals(Object)}
  * for
  * explanation).
  *
@@ -33,13 +34,13 @@ public class ValueNodeSetPair {
 
 	/** 
 	 */
-	public static int defaultReturnValue = LabeledIntNodeSetMap.INT_NULL;
+	public static int defaultReturnValue = Constants.INT_NULL;
 
 	/**
 	 * Contains internal node names of any negative path starting from Z. <br>
 	 * It is necessary to use node name (String) instead of LabeledNode (that would be the right representation) because here it is necessary to build
 	 * set with different nodes in a common sense (i.e., with different names) but the method equals of LabeledNode (method used by Set class to
-	 * decide if two nodes are equal/different) does not compare the name but the memory address (see {@link it.univr.di.cstnu.graph.Component#equals(Object)}
+	 * decide if two nodes are equal/different) does not compare the name but the memory address (see {@link it.univr.di.cstnu.graph.AbstractComponent#equals(Object)}
 	 * for explanation).
 	 */
 	private SortedSet<String> nodeNameSet;
