@@ -61,6 +61,16 @@ public final class Constants implements Serializable {
 	public static final String INFINITY_SYMBOLstring = String.valueOf(Constants.INFINITY_SYMBOL);
 
 	/**
+	 * Char representing labeled-value opening
+	 */
+	public static final String OPEN_PAIR = "(";// '⟨';//It is not possible... to much saved file with (
+
+	/**
+	 * Char representing labeled-value closing
+	 */
+	public static final String CLOSE_PAIR = ")";// '⟩';
+
+	/**
 	 * Default value to represent a no valid int value. It is necessary in the type oriented implementation of Map(Label,int). It has to be different to the
 	 * value {@link Constants#INT_POS_INFINITE}, used to represent an edge with a no bound labeled value.
 	 */
@@ -77,52 +87,73 @@ public final class Constants implements Serializable {
 	public static final int INT_NEG_INFINITE = INT_NULL + 1;
 
 	/**
-	 * Set of chars allowed for proposition name in RE reange format.
+	 * 
 	 */
-	public static final String extraCharRanges = "\u00C0-\u00FF";
+	public static final int PROPOSITIONS_BLOCKS = 3;
+
+	/**
+	 * First proposition
+	 */
+	public static final char[] FIRST_PROPOSITION = { 'A', 'a', 'α' };
+
+	/**
+	 * Last proposition
+	 */
+	public static final char[] LAST_PROPOSITION = { 'Z', 'z', 'μ' };
+
+	/**
+	 * Maximal number of possible proposition in a network.
+	 */
+	public static final int NUMBER_OF_POSSIBLE_PROPOSITION = 64;// LastPossibleProposition - FirstPossibleProposition + 1;
+
 	/**
 	 * Set of char ranges allowed for a proposition name in RE range format.
+	 * For memory and performance issue, we limit the number of possible propositions to be less or equal to 64.
 	 */
-	public static final String propositionLetterRanges = "A-Za-z"+extraCharRanges;
+	public static final String PROPOSITION_RANGES = FIRST_PROPOSITION[0] + "-" + LAST_PROPOSITION[0]
+			+ FIRST_PROPOSITION[1] + "-" + LAST_PROPOSITION[1]
+			+ FIRST_PROPOSITION[2] + "-" + LAST_PROPOSITION[2];
 
 	/**
 	 * Regular expression representing a Label.
+	 * The re checks only that label chars are allowed.
 	 */
-	public static final String labelRE = "(([" + Constants.NOTstring + "|" + Constants.UNKNOWN + "]?[" + propositionLetterRanges + "])*|([" + propositionLetterRanges + "])*)+|"
+	public static final String LABEL_RE = "["
+			+ Constants.NOTstring + "[" + PROPOSITION_RANGES + "]|"
+			+ Constants.UNKNOWN + "[" + PROPOSITION_RANGES + "]|"
+			+ "[" + PROPOSITION_RANGES + "]]+|"
 			+ Constants.EMPTY_LABELstring;
 
 	/**
 	 * Regular expression for an acceptable value in a LabeledValue
 	 */
-	public static final String labeledValueRE = "[-][0-9]+|[0-9]*";
+	public static final String LabeledValueRE = "[-[0-9]|[0-9]]*";
 
 	/**
 	 * Regular expression for an acceptable positive integer
 	 */
-	public static final String nonNegIntValueRE = "[0-9]+";
+	public static final String NonNegIntValueRE = "[0-9]+";
 
 	/**
-	 * Regular expression for positive and not 0 integer 
+	 * Regular expression for positive and not 0 integer
 	 */
-	public static final String strictlyPositiveIntValueRE = "[1-9]+";
+	public static final String StrictlyPositiveIntValueRE = "[1-9]+";
 
 	/**
-	 * <p>
-	 * formatInt.
-	 * </p>
-	 *
-	 * @param n
-	 *            a int.
+	 * @param n a int.
 	 * @return the value of n as String using ∞ for infinitive number and null for not valid int.
 	 */
 	static public String formatInt(int n) {
-		if (n == Constants.INT_NEG_INFINITE)
+		switch (n) {
+		case Constants.INT_NEG_INFINITE:
 			return "-" + Constants.INFINITY_SYMBOLstring;
-		if (n == Constants.INT_POS_INFINITE)
+		case Constants.INT_POS_INFINITE:
 			return Constants.INFINITY_SYMBOLstring;
-		if (n == Constants.INT_NULL)
+		case Constants.INT_NULL:
 			return "null";
-		return String.valueOf(n);
+		default:
+			return String.valueOf(n);
+		}
 	}
 
 }

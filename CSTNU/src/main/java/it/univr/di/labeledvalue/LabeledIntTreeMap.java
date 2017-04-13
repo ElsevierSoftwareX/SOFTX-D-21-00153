@@ -1,25 +1,23 @@
 package it.univr.di.labeledvalue;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.univr.di.labeledvalue.Literal.State;
 
 /**
  * Simple implementation of {@link it.univr.di.labeledvalue.LabeledIntMap} interface.
  * <p>
  * An experimental result on 2016-01-13 showed that using base there is a small improvement in the performance.
- * 
  * <table border="1">
  * <caption>Execution time (ms) for some operations w.r.t the core data structure of the class.</caption>
  * <tr>
@@ -27,10 +25,25 @@ import it.univr.di.labeledvalue.Literal.State;
  * <th>Using all AVL Tree (ms)</th>
  * <th>Using fastUtil.Array (ms)</th>
  * </tr>
- * <tr><td>Create 1st map</td><td>0.181518783</td><td> </td></tr>
- * <tr><td>min value</td><td>0.006420972</td><td> </td></tr>
- * <tr><td>Retrieve value</td><td>0.001024462</td><td> </td></tr>
- * <tr><td>Simplification</td><td>~0.178705</td><td> </td></tr>
+ * <tr>
+ * <td>Create 1st map</td>
+ * <td>0.181518783</td>
+ * <td>0.177455969</td>
+ * </tr>
+ * <tr>
+ * <td>min value</td>
+ * <td>0.006420972</td>
+ * </tr>
+ * <tr>
+ * <td>Retrieve value</td>
+ * <td>0.001024462</td>
+ * <td>0.000253534</td>
+ * </tr>
+ * <tr>
+ * <td>Simplification</td>
+ * <td>~0.178705</td>
+ * <td>~0.136103</td>
+ * </tr>
  * </table>
  * 
  * @author Roberto Posenato
@@ -48,6 +61,11 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 *
 	 */
 	static private final long serialVersionUID = 2L;
+
+	/**
+	 * empty base;
+	 */
+	static private final char[] emptyBase = new char[0];
 
 	/**
 	 * Main.
@@ -143,23 +161,24 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * Label forming a base for the labels of the map. All literal are straight.
+	 * Set of propositions forming a base for the labels of the map.
 	 */
-	private Label base;
+	private char[] base;
 
 	/**
 	 * Design choice: the set of labeled values of this map is organized as a collection of sets each containing labels of the same length. This allows the
 	 * label minimization task to be performed in a more systematic and, possibly, efficient way. The efficiency has been proved comparing this implementation
 	 * with one in which the map has been realized with a standard map and the minimization task determines the same length labels every time it needs it.
+	 * It is worth to use a hash or a tree map because they use a lot of memory. In CSTN(U) it is important to save memory!
 	 */
-	private Int2ObjectAVLTreeMap<Object2IntRBTreeMap<Label>> mainInt2SetMap;
+	private Int2ObjectArrayMap<Object2IntArrayMap<Label>> mainInt2SetMap;
 
 	/**
 	 * Necessary constructor for the factory. The internal structure is built and empty.
 	 */
 	public LabeledIntTreeMap() {
-		this.mainInt2SetMap = new Int2ObjectAVLTreeMap<>();
-		this.base = new Label();
+		this.mainInt2SetMap = new Int2ObjectArrayMap<>();
+		this.base = emptyBase;
 	}
 
 	/**
@@ -171,7 +190,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		this();
 		if (lvm == null)
 			return;
-		base = ((LabeledIntTreeMap) lvm).base;
+		this.base = ((LabeledIntTreeMap) lvm).base;
 		for (final Entry<Label> entry : lvm.entrySet()) {
 			this.putForcibly(entry.getKey(), entry.getIntValue());
 		}
@@ -181,7 +200,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public void clear() {
 		this.mainInt2SetMap.clear();
-		this.base.clear();
+		this.base = emptyBase;
 	}
 
 	@Override
@@ -205,7 +224,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
 		setToReuse.clear();
-		for (final Object2IntRBTreeMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
 			setToReuse.addAll(mapI.object2IntEntrySet());
 		}
 		return setToReuse;
@@ -216,7 +235,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	public int get(final Label l) {
 		if (l == null)
 			return Constants.INT_NULL;
-		final Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(l.size());
+		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(l.size());
 		if (map1 == null)
 			return Constants.INT_NULL;
 		return map1.getInt(l);
@@ -226,11 +245,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public int getMinValue() {
 		int min = Constants.INT_POS_INFINITE;
-		int i;
-		for (final Object2IntRBTreeMap<Label> mapI : this.mainInt2SetMap.values()) {
-			for (IntIterator j = (mapI.values()).iterator(); j.hasNext();)
-				if (min > (i = j.nextInt()))
-					min = i;
+		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
+			for (int j : mapI.values())
+				if (min > j)
+					min = j;
 		}
 		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
@@ -256,7 +274,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
-		for (final Object2IntRBTreeMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
 			setToReuse.addAll(mapI.keySet());
 		}
 		return setToReuse;
@@ -264,18 +282,19 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 	/**
 	 * {@inheritDoc} Adds the pair &lang;l,i&rang;.<br>
-	 * Moreover, tries to eliminate all labels that are redundant.
+	 * Moreover, tries to eliminate all labels that are redundant.<br>
+	 * <b>IMPORTANT!</b><br>
+	 * This version of the method is very redundant but simple to check!
 	 */
 	@Override
 	public boolean put(final Label newLabel, int newValue) {
-		/*
-		 * This version of the method is very redundant but simple to check!
-		 */
 		if ((newLabel == null) || (newValue == Constants.INT_NULL))
 			return false;
-		/*
-		 * 1. Check if there is already a value in the map that represents the new value and the node set (in this case, return false) or if one or more value
-		 * in the map can be removed by the insertion of the new value (in this case remove such values).
+		/**
+		 * Step 1.
+		 * Check if there is already a value in the map that represents the new value (in this case, return false) or if one or more values
+		 * in the map can be removed immediately by the consideration of the new value (in this case remove such values).
+		 * Then, the new value is add in step 2.
 		 */
 		Label l1;
 		int v1;
@@ -283,13 +302,14 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		final int newLabelSize = newLabel.size();
 		int l1Size = 0;
 		ObjectSet<Label> labelToRemove = new ObjectArraySet<>();
-		ObjectSet<Label> labelToAdjust = new ObjectArraySet<>();
-		boolean hasNewLabelToBeInserted = true;
-		for (final Object2IntRBTreeMap<Label> mapAllSameLenghLabels : this.mainInt2SetMap.values()) {
-			for (Entry<Label> entry : mapAllSameLenghLabels.object2IntEntrySet()) {
+		// ObjectSet<Label> labelToAdjust = new ObjectArraySet<>();
+		// boolean hasNewLabelToBeInserted = true;
+		for (final Object2IntArrayMap<Label> mapAllSameLengthLabels : this.mainInt2SetMap.values()) {
+			for (Entry<Label> entry : mapAllSameLengthLabels.object2IntEntrySet()) {
 				l1 = entry.getKey();
 				v1 = entry.getIntValue();
-				if ((newLabelSize >= (l1Size = l1.size())) && newLabel.subsumes(l1) && newValue >= v1) {
+				l1Size = l1.size();
+				if (newLabelSize >= l1Size && newLabel.subsumes(l1) && newValue >= v1) {
 					// if (v1 == Constants.INT_NEG_INFINITE) {
 					// // the input value is not simple because has a node set but the subsume an -infinity labeled value, we can continue to
 					// // check with others but making it simple. It will then not insert. (we continue in order to make a sanity check in the rest of the set)
@@ -298,52 +318,57 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 					// }
 					return false;
 				}
-				if ((newLabelSize <= l1Size) && l1.subsumes(newLabel) && (newValue <= v1)) {
-					if (newValue == v1 && newLabel.equals(l1) && newValue == Constants.INT_NEG_INFINITE) {
-						// the value is already in the set
-						hasNewLabelToBeInserted = false;
-						continue;
-					}
-					if (newLabel.equals(l1)) {
-						labelToRemove.add(l1);
-					} else {
-						// The already labeled value (that it is not simple) has to be adjusted if it has a greater value.
-						if (newValue < v1)
-							labelToAdjust.add(l1);
-					}
+				if (newLabelSize <= l1Size && l1.subsumes(newLabel) && newValue <= v1) {
+					labelToRemove.add(l1);
+					// The following if is related to the previous version of this class where nodeSet are used. I maintain it because nodeset can come back!
+					// the following if condition is already checked in the previous if.
+					// if (newValue == v1 && newLabel.equals(l1) && newValue == Constants.INT_NEG_INFINITE) {
+					// // the value is already in the set
+					// hasNewLabelToBeInserted = false;
+					// continue;
+					// }
+					// if (newLabel.equals(l1) && newValue < v1) {
+					// labelToRemove.add(l1);
+					// } else {
+					// The already present labeled value (that it is not simple) has to be adjusted if it has a greater value.
+					// if (newValue < v1)
+					// labelToAdjust.add(l1);// such adjustment will set to the same newValue label l1. In a following phase such labeled values are
+					// // evaluated for deciding which has to be removed.
+					// }
+
 				}
 			}
 		}
 
 		// The label to remove and to adjust are now ready to be managed.
 		for (Label lr : labelToRemove) {
-			Object2IntRBTreeMap<Label> map = this.mainInt2SetMap.get(lr.size());
+			int old = this.mainInt2SetMap.get(lr.size()).remove(lr);
 			if (LOG.isLoggable(Level.FINEST))
-				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + map.get(lr) + ").");
-			map.remove(lr);
-			checkValidityOfTheBaseAfterRemovingOrAdd(lr);
+				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + old + ").");
+			checkValidityOfTheBaseAfterRemoving(lr);
 		}
-		for (Label lr : labelToAdjust) {
-			Object2IntRBTreeMap<Label> map = this.mainInt2SetMap.get(lr.size());
-			int value = map.getInt(lr);
-			if (LOG.isLoggable(Level.FINEST))
-				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the modification of (" + lr + ", " + value + ") to ("
-						+ lr + ", " + newValue + ")");
-			map.put(lr, newValue);
-		}
+		// for (Label lr : labelToAdjust) {
+		// int old = this.mainInt2SetMap.get(lr.size()).put(lr, newValue);
+		// if (LOG.isLoggable(Level.FINEST))
+		// LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the modification of (" + lr + ", " + old + ") to ("
+		// + lr + ", " + newValue + ")");
+		// }
 
-		if (!hasNewLabelToBeInserted) {
-			if (LOG.isLoggable(Level.FINEST))
-				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") has not to be inserted.");
-			return false;
-		}
-		/*
-		 * 2. Insert the new value and check if it possible to simplify with some other label with same value and only one different literals.
+		// old stuff... maintain it until nodeSet option is not discarded!
+		// if (!hasNewLabelToBeInserted) {
+		// if (LOG.isLoggable(Level.FINEST))
+		// LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") has not to be inserted.");
+		// return false;
+		// }
+
+		/**
+		 * Step 2.
+		 * Insert the new value and check if it possible to simplify with some other labels with same value and only one different literals.
 		 */
-		final Object2IntRBTreeMap<Label> a = new Object2IntRBTreeMap<>();
+		final Object2IntArrayMap<Label> a = new Object2IntArrayMap<>();
 		a.defaultReturnValue(Constants.INT_NULL);
 		a.put(newLabel, newValue);
-		return this.insertAndSimplify(a);
+		return this.insertAndSimplify(a, newLabel.size());
 	}
 
 	/**
@@ -354,14 +379,13 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	public int putForcibly(final Label l, final int i) {
 		if ((l == null) || (i == Constants.INT_NULL))
 			return Constants.INT_NULL;
-		Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(l.size());
+		Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(l.size());
 		if (map1 == null) {
-			map1 = new Object2IntRBTreeMap<>();
+			map1 = new Object2IntArrayMap<>();
 			map1.defaultReturnValue(Constants.INT_NULL);
 			this.mainInt2SetMap.put(l.size(), map1);
 		}
-		int old = map1.put(l, i);
-		return old;
+		return map1.put(l, i);
 	}
 
 	/** {@inheritDoc} */
@@ -370,14 +394,14 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		if (l == null)
 			return Constants.INT_NULL;
 
-		final Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(l.size());
+		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(l.size());
 		if (map1 == null)
 			return Constants.INT_NULL;
 		final int oldValue = map1.removeInt(l);
 		if (oldValue != Constants.INT_NULL) {// && this.optimize) {
 			// The base could have been changed. To keep things simple, for now it is better to rebuild all instead of to try to rebuild a possible damaged
 			// base.
-			if (this.checkValidityOfTheBaseAfterRemovingOrAdd(l)) {
+			if (this.checkValidityOfTheBaseAfterRemoving(l)) {
 				final LabeledIntTreeMap newMap = new LabeledIntTreeMap(this);
 				this.mainInt2SetMap = newMap.mainInt2SetMap;
 				this.base = newMap.base;
@@ -390,7 +414,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public int size() {
 		int n = 0;
-		for (final Object2IntRBTreeMap<Label> map1 : this.mainInt2SetMap.values())
+		for (final Object2IntArrayMap<Label> map1 : this.mainInt2SetMap.values())
 			n += map1.size();
 		return n;
 	}
@@ -399,7 +423,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public IntSet values() {
 		final IntArraySet coll = new IntArraySet();
-		for (final Object2IntRBTreeMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
 			for (Entry<Label> i : mapI.object2IntEntrySet())
 				coll.add(i.getIntValue());
 		}
@@ -407,26 +431,27 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * If the removed label <code>l</code> is a component of the base, then reset the base.
-	 *
+	 * If the removed label <code>l</code> is a component of the base, then the base is reset.
 	 * <p>
 	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
 	 * 
 	 * @param l
 	 * @return true if <code>l</code> is a component of the base, false otherwise.
 	 */
-	private boolean checkValidityOfTheBaseAfterRemovingOrAdd(final Label l) {
-		int bn, ln;
-		if ((l == null) || ((ln = l.size()) == 0) || ((bn = this.base.size()) == 0) || (ln != bn))
+	private boolean checkValidityOfTheBaseAfterRemoving(final Label l) {
+		int baseSize, labelSize;
+		if ((l == null) || ((labelSize = l.size()) == 0) || ((baseSize = this.base.length) == 0) || (labelSize != baseSize))
 			return false;
 
 		if (l.containsUnknown())
 			return false;// removing a label with unknown does not affect a possible base.
 
-		int dimConj = l.conjunctionExtended(this.base).size();
-		if (dimConj > ln)
-			return false;
-		this.base.clear();
+		// l and base have same length.
+		for (char c : this.base) {
+			if (!l.contains(c))
+				return false;
+		}
+		this.base = emptyBase;
 		return true;
 	}
 
@@ -442,18 +467,18 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * labeled values of the same size.
 	 *
 	 * @param inputMap contains all the elements that have to be inserted.
+	 * @param inputMapLabelSize length of labels contained into inputMap
 	 * @return true if any element of inputMap has been inserted into the map.
 	 */
-	private boolean insertAndSimplify(final Object2IntRBTreeMap<Label> inputMap) {
+	private boolean insertAndSimplify(final Object2IntArrayMap<Label> inputMap, int inputMapLabelSize) {
 		if ((inputMap == null) || (inputMap.size() == 0))
 			return false;// recursion basement!
 
 		boolean add = false;
 		// All entries of inputMap should have label of same size.
-		final int n = inputMap.firstKey().size();// a dirty trick to get the size of the label.
-		// currentMapLimitedToLabelOfNSize contains all the labeled values with label size = n;
-		final Object2IntRBTreeMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(n);
-		final Object2IntRBTreeMap<Label> toAdd = new Object2IntRBTreeMap<>();
+		// currentMapLimitedToLabelOfNSize contains all the labeled values with label size = inputMapSize;
+		final Object2IntArrayMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(inputMapLabelSize);
+		final Object2IntArrayMap<Label> toAdd = new Object2IntArrayMap<>();
 		toAdd.defaultReturnValue(Constants.INT_NULL);
 		ObjectArraySet<Label> toRemove = new ObjectArraySet<>();
 
@@ -472,50 +497,59 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 					// Such labels can be reduced in two different way.
 					// 1) If they have the same value, then they can be replaced with one only labeled value (same value) where label does not contain the
 					// different literal.
-					// if they haven't the same value, they are ignored and, in the following, they will constitute a base for the set.
+					// If they haven't the same value, they are ignored and, in the following, they will constitute a base for the set.
 					// 2) The label with the maximum value is always replaced with a labeled value where value is the same but the label does not contain the
 					// different literal.
 					// If both have the same value, the management is equivalent to 1) first part.
 					// The disadvantage of this management is that is quite difficult to build base.
+					//
 					// An experimental test showed that is 2) management makes the algorithm ~30% faster.
-					// Management 1)
-					//					if ((inputValue == v1) && ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null)) {
-					//						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
-					//						toRemove.add(inputLabel);
-					//						toRemove.add(entry.getKey());
-					//						if (LOG.isLoggable(Level.FINEST)) {
-					//							LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
-					//									+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
-					//						}
-					//						l1.removeAllLiteralsWithSameName(lit);
-					//						if (l1.size() < 0)
-					//							throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
-					//						if (LOG.isLoggable(Level.FINEST)) {
-					//							LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
-					//						}
-					//						toAdd.put(l1, v1);
-					//					}
-					// Management 2)
-					if ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
-						int max = (inputValue > v1) ? inputValue : v1;
-						// we can simplify (newLabel, newValue) and (v1,l1)
-						// we maintain the pair with lower value
-						// while we insert the one with greater value removing from its label 'lit'
-						Label labelWOlit = new Label(l1);
-						labelWOlit.remove(lit.getName());
-
-						if (max == inputValue && max == v1) {
-							toRemove.add(inputLabel);
-							toRemove.add(l1);
-						} else {
-							if (max == inputValue) {
-								toRemove.add(inputLabel);
-							} else {
-								toRemove.add(l1);
-							}
+					// On 2016-03-30 I discovered that with Management 2) there is a potential problem in the representation of situations like:
+					// Current set={ (b,-1), (¬b,-2) }. Request to insert (¿b,-3).
+					// Even value (¿b,-3) should not be insert because the base is able to represent it, since ¿b is consistent with b/¬b (extended consistency)
+					// the value (¿b,-3) is insert in both the two management.
+					/**
+					 * Management 1)
+					 */
+					if (inputValue == v1 && (lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
+						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
+						toRemove.add(inputLabel);
+						toRemove.add(entry.getKey());
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
+									+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
 						}
-						toAdd.put(labelWOlit, max);
+						l1.remove(lit.getName());
+						if (l1.size() < 0)
+							throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
+						}
+						toAdd.put(l1, v1);
 					}
+					/**
+					 * Management 2)
+					 */
+					// if ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
+					// int max = (inputValue > v1) ? inputValue : v1;
+					// // we can simplify (newLabel, newValue) and (v1,l1)
+					// // we maintain the pair with lower value
+					// // while we insert the one with greater value removing from its label 'lit'
+					// Label labelWOlit = new Label(l1);
+					// labelWOlit.remove(lit.getName());
+					//
+					// if (max == inputValue && max == v1) {
+					// toRemove.add(inputLabel);
+					// toRemove.add(l1);
+					// } else {
+					// if (max == inputValue) {
+					// toRemove.add(inputLabel);
+					// } else {
+					// toRemove.add(l1);
+					// }
+					// }
+					// toAdd.put(labelWOlit, max);
+					// }
 				}
 			}
 		}
@@ -536,15 +570,18 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 				this.removeAllValuesGreaterThanBase();
 		}
 		if (toAdd.size() > 0)
-			add = this.insertAndSimplify(toAdd) || add;
+			add = this.insertAndSimplify(toAdd, inputMapLabelSize - 1) || add;
 		return add;
 	}
 
 	/**
 	 * Determines whether the value can be represented by any component of the base.<br>
-	 * A component of the base can represent the labeled value <code>(l,v)</code> if <code>l</code> subsumes the component label and the <code>v</code> is
+	 * There are the following cases:
+	 * <ol>
+	 * <li>A component of the base can represent the labeled value <code>(l,v)</code> if <code>l</code> subsumes the component label and the <code>v</code> is
 	 * greater or equal the component value.
-	 * 
+	 * <li>If the entry has value that is greater that any value of the base, then the base can represent it.
+	 * </ol>
 	 * <p>
 	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
 	 *
@@ -553,31 +590,39 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 */
 	private boolean isBaseAbleToRepresent(final Entry<Label> entry) {
 		Label inputLabel = entry.getKey();
-		if ((inputLabel == null) || (this.base == null) || this.base.isEmpty())
+		if ((inputLabel == null) || (this.base == null) || this.base.length == 0)
 			return false;
 
-		final Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(this.base.size());
-		for (final Label baseLabel : Label.allComponentsOfBaseGenerator(this.base.getPropositions())) {
+		int inputValue = entry.getIntValue();
+		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(this.base.length);
+		for (final Label baseLabel : Label.allComponentsOfBaseGenerator(this.base)) {
 			final int baseValue = map1.getInt(baseLabel);
 			// SortedSet<String> nodeSet1 = map1.get(l1).nodeSet;
 
 			if (baseValue == Constants.INT_NULL) {
-				LabeledIntTreeMap.LOG.severe("The base is not sound: base=" + this.base + ". Map1=" + map1);
-				this.base = new Label();
+				LabeledIntTreeMap.LOG.severe("The base is not sound: base=" + Arrays.toString(this.base) + ". Map1=" + map1);
+				this.base = emptyBase;
 				return false;
 				// throw new IllegalStateException("A base component has a null value. It is not possible.");
 			}
-			if (inputLabel.isConsistentWith(baseLabel) && (baseValue < entry.getIntValue())) {
-				// entry.setValue(baseValue);// case 6
-				return true;
+			if (inputLabel.subsumes(baseLabel)) {
+				if (inputValue >= baseValue) {
+					// entry.setValue(baseValue);// case 6
+					return true;
+				}
+				return false;
+			}
+			if (inputLabel.isConsistentWith(baseLabel)) {
+				if (inputValue < baseValue) {
+					return false;
+				}
 			}
 		}
-		return false;
+		return true;
 	}
 
 	/**
-	 * If entry (label, value) determines a new (better) base, the base is updated.
-	 * 
+	 * If entry (label, value) determines a new (better) base, the base is updated.<br>
 	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
 	 * 
 	 * @param entry
@@ -591,10 +636,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 		if (n == 0) {
 			// The new labeled value (l,v) has universal label, the base is not more necessary!
-			this.base.clear();
+			this.base = emptyBase;
 			return true;
 		}
-		final Object2IntRBTreeMap<Label> map1 = this.mainInt2SetMap.get(n);
+		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(n);
 		if (map1.size() < Math.pow(2.0, n)) // there are no sufficient elements!
 			return false;
 		final char[] baseCandidateColl = entry.getKey().getPropositions();
@@ -603,11 +648,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			if (value == Constants.INT_NULL)
 				return false;
 		}
-		final Label baseCandidate = new Label();
-		for (final char l : baseCandidateColl) {
-			baseCandidate.conjunct(l, State.straight);
-		}
-		this.base = baseCandidate;
+		this.base = baseCandidateColl;
 		return true;
 	}
 
@@ -625,48 +666,57 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 		final int n = inputLabel.size();
 		boolean removed = false;
-		for (final Object2IntRBTreeMap<Label> internalMap : this.mainInt2SetMap.tailMap(n).values()) {
-			for (final ObjectIterator<Entry<Label>> currentMapIte = internalMap.object2IntEntrySet().iterator(); currentMapIte.hasNext();) {
-				final Entry<Label> currentEntry = currentMapIte.next();
-				final Label currentLabel = currentEntry.getKey();
-				final int currentValue = currentEntry.getIntValue();
-				if (currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
+
+		for (int i : this.mainInt2SetMap.keySet()) {
+			if (i < n)
+				continue;
+			final Object2IntArrayMap<Label> internalMap = this.mainInt2SetMap.get(i);
+			// BE CAREFUL! Since it is necessary to remove, it is not possible to use internalMap.keySet() directly
+			// because removing an element in the map changes the keyset and it is possible to loose the checking of some label (the following
+			// one a deleted element).
+			// Iterator are not supported!
+			// The last resource is to copy the label set! :-(
+			ObjectArrayList<Label> labels = new ObjectArrayList<>(internalMap.keySet());
+			for (final Label currentLabel : labels) {
+				final int currentValue = internalMap.getInt(currentLabel);
+				if (currentLabel != null && currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
 					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentEntry.getIntValue() + ")");
+						LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentValue + ")");
 					}
-					currentMapIte.remove();
-					this.checkValidityOfTheBaseAfterRemovingOrAdd(currentLabel);
+					internalMap.remove(currentLabel);
+					this.checkValidityOfTheBaseAfterRemoving(currentLabel);
 					removed = true;
 				}
 			}
+
 		}
 		return removed;
 	}
 
 	/**
 	 * Remove all labeled values having each value greater than all values of base components consistent with it.
-	 * 
 	 * An experiment result on 2016-01-13 showed that using base there is a small improvement in the performance.
 	 * 
 	 * @return true if one element at least has been removed, false otherwise.
 	 */
 	private boolean removeAllValuesGreaterThanBase() {
-		if ((this.base == null) || (this.base.size() == 0))
+		if ((this.base == null) || (this.base.length == 0))
 			return false;
 		final LabeledIntTreeMap newMap = new LabeledIntTreeMap();
 		// build the list of labeled values that form the base
-		final ObjectArraySet<Entry<Label>> baseComponent = new ObjectArraySet<>((int) Math.pow(2, this.base.size()));
-		for (final Label l : Label.allComponentsOfBaseGenerator(this.base.getPropositions())) {
+		final ObjectArrayList<Entry<Label>> baseComponent = new ObjectArrayList<>((int) Math.pow(2, this.base.length));
+		for (final Label l : Label.allComponentsOfBaseGenerator(this.base)) {
 			baseComponent.add(new AbstractObject2IntMap.BasicEntry<>(l, this.get(l)));
 		}
 		Label l1, lb;
 		int v1, vb;
 		boolean toInsert = true;
-		for (final Object2IntRBTreeMap<Label> map1 : this.mainInt2SetMap.values()) {
+		for (final Object2IntArrayMap<Label> map1 : this.mainInt2SetMap.values()) {
 			for (final Entry<Label> entry : map1.object2IntEntrySet()) {
 				l1 = entry.getKey();
 				v1 = entry.getIntValue();
 				toInsert = false;
+
 				for (final Entry<Label> baseEntry : baseComponent) {
 					lb = baseEntry.getKey();
 					vb = baseEntry.getIntValue();
@@ -674,7 +724,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						toInsert = true; // a base component has to be always insert!
 						break;
 					}
-					if (l1.isConsistentWith(lb) && ((v1 < vb))) {
+					if (l1.isConsistentWith(lb) && v1 < vb) {// isConsistent is necessary to manage cases like base = {(b,3)(¬b,4)} l1={(a,1)}
 						toInsert = true;
 						break;
 					}

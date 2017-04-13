@@ -25,15 +25,15 @@ import it.univr.di.labeledvalue.Literal.State;
  * <p>
  * The following table represent execution times of some Label operations determined using different implementation of this class.</p>
  * <table border="1">
- * <caption>Execution time for some operations w.r.t the core data structure of
- * the class.</caption>
+ * <caption>Execution time for some operations w.r.t the core data structure of the class.</caption>
  * <tr>
  * <th>Method</th>
  * <th>TreeSet</th>
  * <th>ObjectAVLTreeSet</th>
  * <th>ObjectRBTreeSet</th>
  * <th>byte array</th>
- * <th>two int (Label)</th>
+ * <th>two int</th>
+ * <th>two long</th>
  * </tr>
  * <tr>
  * <td>Simple conjunction of '¬abcd' with '¬adefjs'='¬abcdefjs' (ms)</td>
@@ -42,6 +42,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>0.068798</td>
  * <td>0.001309</td>
  * <td>0.000299</td>
+ * <td>0.000317</td>
  * </tr>
  * <tr>
  * <td>Execution time for an extended conjunction of '¬abcd' with
@@ -51,6 +52,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>0.014627</td>
  * <td>0.000843</td>
  * <td>0.000203</td>
+ * <td>0.000235</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if two (inconsistent) labels are consistent.
@@ -60,6 +62,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>0.00166</td>
  * <td>0.00121</td>
  * <td>0.00075</td>
+ * <td>0.00040</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if two (consistent) labels are consistent.
@@ -69,6 +72,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>0.004099</td>
  * <td>0.000392</td>
  * <td>0.000558</td>
+ * <td>0.000225</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if a literal is present in a label (the
@@ -78,6 +82,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>5.01E-4</td>
  * <td>2.69E-4</td>
  * <td>5.03E-4</td>
+ * <td>7.47E-4</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if a literal is present in a label (the
@@ -87,6 +92,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>5.96E-4</td>
  * <td>1.84E-4</td>
  * <td>3.07E-4</td>
+ * <td>2.33E-4</td>
  * </tr>
  * <tr>
  * <td>Execution time for get the literal in the label with the same proposition
@@ -96,6 +102,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>1.09E-4</td>
  * <td>1.27E-4</td>
  * <td>1.60E-4</td>
+ * <td>1.32E-4</td>
  * </tr>
  * <tr>
  * <td>Execution time for get the literal in the label with the same proposition
@@ -105,6 +112,7 @@ import it.univr.di.labeledvalue.Literal.State;
  * <td>1.0E-4</td>
  * <td>1.04E-4</td>
  * <td>1.60E-4</td>
+ * <td>1.30E-4</td>
  * </tr>
  * </table>
  *
@@ -124,7 +132,7 @@ public class Label implements Comparable<Label> {
 		 */
 		public EmptyLabel() {
 			super();
-		};
+		}
 
 		public final boolean conjunct(char c, State s) {
 			throw new IllegalAccessError("Read only object!");
@@ -204,11 +212,11 @@ public class Label implements Comparable<Label> {
 	 * @return a label copy of label but with literals having indexes corresponding to bits 1 in the parameter 'index' set to negative state.
 	 *         If label is null or empty or contains UNKNOWN literals, returns null;
 	 */
-	private static final Label complementGenerator(final char[] proposition, final int index) {
+	private static final Label complementGenerator(final char[] proposition, final long index) {
 		int n;
 		if (proposition == null || (n = proposition.length) == 0 || index < 0 || index > Math.pow(2, n))
 			return null;
-		int j = 1;
+		long j = 1L;
 		final Label newLabel = new Label();
 		for (int i = 0; i < n; i++, j <<= 1) {
 			// if (lit.contains(labelStraight)) // return null;// l contains two times at least the same proposition letter. Ignore! lit is a set, it manage it!
@@ -221,18 +229,17 @@ public class Label implements Comparable<Label> {
 	/**
 	 * Proposes only some execution time estimates about some class methods.
 	 *
-	 * @param args
-	 *            an array of {@link java.lang.String} objects.
+	 * @param args an array of {@link java.lang.String} objects.
 	 */
 	public static void main(final String[] args) {
 		final int nTest = 1000;
 		final double msNorm = 1.0 / (1000000.0 * nTest);
 
-		final Literal d = Literal.create('d'), z = Literal.create('x');
+		final Literal d = Literal.create('d'), z = Literal.create('z');
 
 		Label empty = Label.emptyLabel;
 		System.out.println("Empty: " + empty);
-		Label result = new Label();
+		Label result;
 		// System.out.println("Empty: " + result);
 		result = new Label('a', State.straight);
 		System.out.println("a: " + result);
@@ -321,7 +328,7 @@ public class Label implements Comparable<Label> {
 
 	/**
 	 * Parse a string representing a label and return an equivalent Label object if no errors are found, null otherwise.<br>
-	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Constants#LabelRE}.
+	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Constants#LABEL_RE}.
 	 *
 	 * @param s a {@link java.lang.String} object.
 	 * @return a Label object corresponding to the label string representation.
@@ -331,7 +338,7 @@ public class Label implements Comparable<Label> {
 			return null;
 		
 		//FIX for past label in mixed case
-		s = s.toLowerCase();
+//		s = s.toLowerCase(); From version > 130 proposition can be also upper case and first eleven greek letters
 		int n = s.length();
 		if (n == 0)
 			return Label.emptyLabel;
@@ -392,10 +399,10 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * One integer has 32 bits.<br>
-	 * Using two integers, it is possible to represent 4 states for each position 1..32.<br>
+	 * One long has 64 bits.<br>
+	 * Using two longs, it is possible to represent 4 states for each position.<br>
 	 * Each position is associated to a proposition.<br>
-	 * Since {@link Constants#LabelRE} declares 26 propositions, only 26 position of the two integer are used.<br>
+	 * Since {@link Constants#LabelRE} declares 64 propositions.
 	 * 
 	 * <pre>
 	 * Status of i-th literal
@@ -407,7 +414,7 @@ public class Label implements Comparable<Label> {
 	 * </pre>
 	 */
 	@SuppressWarnings("javadoc")
-	private int bit1, bit0;
+	private long bit1, bit0;
 
 	/**
 	 * Index of the last significant literal of label w.r.t. lexicographical order.
@@ -426,9 +433,9 @@ public class Label implements Comparable<Label> {
 	 * Default constructor.
 	 */
 	public Label() {
-		bit0 = bit1 = 0;
-		maxIndex = -1;
-		cacheOfSize = 0;
+		this.bit0 = this.bit1 = 0;
+		this.maxIndex = -1;
+		this.cacheOfSize = 0;
 	}
 
 	/**
@@ -443,7 +450,7 @@ public class Label implements Comparable<Label> {
 		if (state != State.absent) {
 			byte index = Literal.index(proposition);
 			this.set(index, state);
-			maxIndex = index;
+			this.maxIndex = index;
 		}
 	}
 
@@ -457,19 +464,19 @@ public class Label implements Comparable<Label> {
 		if (label == null || label == emptyLabel) {
 			return;
 		}
-		bit0 = label.bit0;
-		bit1 = label.bit1;
-		maxIndex = label.maxIndex;
-		cacheOfSize = label.cacheOfSize;
+		this.bit0 = label.bit0;
+		this.bit1 = label.bit1;
+		this.maxIndex = label.maxIndex;
+		this.cacheOfSize = label.cacheOfSize;
 	}
 
 	/**
 	 * Makes the label empty.
 	 */
 	public void clear() {
-		bit1 = bit0 = 0;
-		maxIndex = -1;
-		cacheOfSize = 0;
+		this.bit1 = this.bit0 = 0;
+		this.maxIndex = -1;
+		this.cacheOfSize = 0;
 	}
 
 	/**
@@ -481,8 +488,8 @@ public class Label implements Comparable<Label> {
 			return 1;
 		byte i = 0, j = 0, cmp = 0;
 		State thisState, labelState;
-		while (i <= maxIndex && j <= label.maxIndex) {
-			while ((thisState = get(i)) == State.absent && i <= maxIndex) {
+		while (i <= this.maxIndex && j <= label.maxIndex) {
+			while ((thisState = get(i)) == State.absent && i <= this.maxIndex) {
 				i++;
 			}
 			while ((labelState = label.get(j)) == State.absent && j <= label.maxIndex) {
@@ -496,7 +503,7 @@ public class Label implements Comparable<Label> {
 			i++;
 			j++;
 		}
-		if (i > maxIndex) {
+		if (i > this.maxIndex) {
 			if (j <= label.maxIndex)
 				return -1;
 			return 0;
@@ -524,8 +531,8 @@ public class Label implements Comparable<Label> {
 		if (st == propositionState)
 			return true;
 		set(propIndex, propositionState);
-		if (propIndex > maxIndex)
-			maxIndex = propIndex;
+		if (propIndex > this.maxIndex)
+			this.maxIndex = propIndex;
 		return true;
 	}
 
@@ -556,8 +563,8 @@ public class Label implements Comparable<Label> {
 		if (literalState == State.unknown || st.isComplement(literalState)) {
 			literalState = State.unknown;
 		}
-		if (index > maxIndex)
-			maxIndex = index;
+		if (index > this.maxIndex)
+			this.maxIndex = index;
 		set(index, literalState);
 		return true;
 	}
@@ -583,8 +590,8 @@ public class Label implements Comparable<Label> {
 	public Label conjunction(final Label label) {
 		if (label == null)
 			return null;
-		int unionB0 = this.bit0 | label.bit0;
-		int unionB1 = this.bit1 | label.bit1;
+		long unionB0 = this.bit0 | label.bit0;
+		long unionB1 = this.bit1 | label.bit1;
 		if ((unionB0 & unionB1) != 0) {
 			// there is at least one unknown or a pair of opposite literals
 			return null;
@@ -593,7 +600,7 @@ public class Label implements Comparable<Label> {
 		final Label newLabel = new Label();
 		newLabel.bit0 = unionB0;
 		newLabel.bit1 = unionB1;
-		newLabel.maxIndex = (label.maxIndex > maxIndex) ? label.maxIndex : maxIndex;
+		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
 		newLabel.cacheOfSize = -1;// it has to be calculated... delay the stuff.
 		return newLabel;
 	}
@@ -611,13 +618,13 @@ public class Label implements Comparable<Label> {
 	public Label conjunctionExtended(final Label label) {
 		if (label == null)
 			return null;
-		int unionB0 = this.bit0 | label.bit0;
-		int unionB1 = this.bit1 | label.bit1;
+		long unionB0 = this.bit0 | label.bit0;
+		long unionB1 = this.bit1 | label.bit1;
 
 		final Label newLabel = new Label();
 		newLabel.bit0 = unionB0;
 		newLabel.bit1 = unionB1;
-		newLabel.maxIndex = (label.maxIndex > maxIndex) ? label.maxIndex : maxIndex;
+		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
 		newLabel.cacheOfSize = -1;// it has to be calculated... delay the stuff.
 		return newLabel;
 	}
@@ -645,7 +652,7 @@ public class Label implements Comparable<Label> {
 	 */
 	public boolean containsUnknown() {
 		// optimized version!
-		return (bit0 & bit1) != 0;
+		return (this.bit0 & this.bit1) != 0;
 	}
 
 	/** {@inheritDoc} */
@@ -662,9 +669,9 @@ public class Label implements Comparable<Label> {
 	 * @return the status of literal with index literalIndex. If the literal is not present, it returns {@link Literal.State#absent}.
 	 */
 	private final State get(final byte literalIndex) {
-		int mask = 1 << literalIndex;
-		int b1 = ((bit1 & mask) != 0) ? 2 : 0;
-		int b0 = ((bit0 & mask) != 0) ? 1 : 0;
+		long mask = 1L << literalIndex;
+		int b1 = ((this.bit1 & mask) != 0) ? 2 : 0;
+		int b0 = ((this.bit0 & mask) != 0) ? 1 : 0;
 		return State.values()[b1 + b0];
 	}
 
@@ -672,11 +679,11 @@ public class Label implements Comparable<Label> {
 	 * @return The array of literal with unknown status in this label.
 	 */
 	public char[] getAllUnknown() {
-		if (maxIndex <= 0)
+		if (this.maxIndex <= 0)
 			return new char[0];
 		char[] indexes = new char[size()];
 		int j = 0;
-		for (byte i = 0; i <= maxIndex; i++) {
+		for (byte i = 0; i <= this.maxIndex; i++) {
 			if (get(i) == State.unknown) {
 				indexes[j++] = Literal.charValue(i);
 			}
@@ -691,7 +698,7 @@ public class Label implements Comparable<Label> {
 		Literal[] indexes = new Literal[size()];
 		int j = 0;
 		State state;
-		for (byte i = 0; i <= maxIndex; i++) {
+		for (byte i = 0; i <= this.maxIndex; i++) {
 			if ((state = get(i)) != State.absent) {
 				indexes[j++] = Literal.create(Literal.charValue(i), state);
 			}
@@ -705,7 +712,7 @@ public class Label implements Comparable<Label> {
 	public char[] getPropositions() {
 		char[] indexes = new char[size()];
 		int j = 0;
-		for (byte i = 0; i <= maxIndex; i++) {
+		for (byte i = 0; i <= this.maxIndex; i++) {
 			if (get(i) != State.absent) {
 				indexes[j++] = Literal.charValue(i);
 			}
@@ -741,7 +748,7 @@ public class Label implements Comparable<Label> {
 			return sub;
 		if ((label == null) || label.isEmpty())
 			return (inCommon) ? sub : new Label(this);
-		for (byte i = (byte) (maxIndex + 1); (--i) >= 0;) {
+		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			State thisState = get(i);
 			if (thisState == State.absent)
 				continue;
@@ -782,7 +789,7 @@ public class Label implements Comparable<Label> {
 			return sub;
 		if ((label == null) || label.isEmpty())
 			return (inCommon) ? sub : new Label(this);
-		for (byte i = (byte) (maxIndex + 1); (--i) >= 0;) {
+		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			State thisState = get(i);
 			if (thisState == State.absent)
 				continue;
@@ -820,7 +827,7 @@ public class Label implements Comparable<Label> {
 			return null;
 		byte theDistinguished = -1;
 		State thisState = State.absent;
-		for (byte i = (byte) (maxIndex + 1); (--i) >= 0;) {
+		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			thisState = get(i);
 			State labelState = label.get(i);
 			if (thisState == labelState)
@@ -838,12 +845,14 @@ public class Label implements Comparable<Label> {
 		return null;
 	}
 
-	/** {@inheritDoc} */
+	/** {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
-		return bit1 << maxIndex | bit0;
+		//It is impossible to guarantee a unique hashCode for each possible label.
+		return (int) (this.bit1 << this.maxIndex | this.bit0);
 	}
-
+	
 	/**
 	 * A literal l is consistent with a label if the last one does not contain ¬l.
 	 * 
@@ -877,20 +886,20 @@ public class Label implements Comparable<Label> {
 	 * @return true if the label is consistent with this label.
 	 */
 	public boolean isConsistentWith(final Label label) {
-		if (label == null || label.isEmpty() || this.isEmpty())
+		if (label == null)// || (label.isEmpty() && !this.containsUnknown()) || (this.isEmpty()&& !label.containsUnknown()))
 			return true;
 		/**
 		 * Method 1.
 		 * We consider L<sub>1</sub> &#x2605; L<sub>2</sub>,
 		 */
 		// both this and label have bit0 | bit1 != 0
-		int xBit0 = this.bit0 ^ label.bit0;// each bit=1 corresponds to 1) a negative literal present only in one label
+		long xBit0 = this.bit0 ^ label.bit0;// each bit=1 corresponds to 1) a negative literal present only in one label
 		// or 2) a unknown literal present only in one label
 		// or 3) a negative literal present in one label and the opposite present in the other
-		int xBit1 = this.bit1 ^ label.bit1;// each bit=1 corresponds to 1) a positive literal present only in one label
+		long xBit1 = this.bit1 ^ label.bit1;// each bit=1 corresponds to 1) a positive literal present only in one label
 		// or 2) a unknown literal present only in one label
 		// or 3) a positive literal present in one label and the opposite present in the other
-		int aBit = xBit0 & xBit1;
+		long aBit = xBit0 & xBit1;
 		aBit = aBit & ~(this.bit0 & this.bit1) & ~(label.bit0 & label.bit1);// ~(this.bit0 & this.bit1) contains 0 in correspondence of possible ¿p in this
 		return aBit == 0;
 		/**
@@ -932,7 +941,7 @@ public class Label implements Comparable<Label> {
 	 * @return true if the label contains no literal.
 	 */
 	public boolean isEmpty() {
-		return (bit1 == 0 && bit0 == 0);
+		return (this.bit1 == 0 && this.bit0 == 0);
 	}
 
 	/**
@@ -949,7 +958,7 @@ public class Label implements Comparable<Label> {
 
 		final Literal[] literals = new Literal[size()];
 		int j = 0;
-		for (byte i = 0; i <= maxIndex; i++) {
+		for (byte i = 0; i <= this.maxIndex; i++) {
 			State thisState = get(i);
 			if (thisState == State.absent || thisState == State.unknown)
 				continue;
@@ -1012,48 +1021,48 @@ public class Label implements Comparable<Label> {
 		 * unknown           1 1
 		 * </pre>
 		 */
-		int mask = 1 << literalIndex;
+		long mask = 1L << literalIndex;
 		switch (literalStatus) {
 		case straight:
-			if (((bit1 | bit0) & mask) == 0)
-				cacheOfSize++;
-			bit1 |= mask;
+			if (((this.bit1 | this.bit0) & mask) == 0)
+				this.cacheOfSize++;
+			this.bit1 |= mask;
 			mask = ~mask;
-			bit0 &= mask;
-			if (maxIndex < literalIndex)
-				maxIndex = literalIndex;
+			this.bit0 &= mask;
+			if (this.maxIndex < literalIndex)
+				this.maxIndex = literalIndex;
 			return;
 		case negated:
-			if (((bit1 | bit0) & mask) == 0)
-				cacheOfSize++;
-			bit0 |= mask;
+			if (((this.bit1 | this.bit0) & mask) == 0)
+				this.cacheOfSize++;
+			this.bit0 |= mask;
 			mask = ~mask;
-			bit1 &= mask;
-			if (maxIndex < literalIndex)
-				maxIndex = literalIndex;
+			this.bit1 &= mask;
+			if (this.maxIndex < literalIndex)
+				this.maxIndex = literalIndex;
 			return;
 		case unknown:
-			if (((bit1 | bit0) & mask) == 0)
-				cacheOfSize++;
-			bit1 |= mask;
-			bit0 |= mask;
-			if (maxIndex < literalIndex)
-				maxIndex = literalIndex;
+			if (((this.bit1 | this.bit0) & mask) == 0)
+				this.cacheOfSize++;
+			this.bit1 |= mask;
+			this.bit0 |= mask;
+			if (this.maxIndex < literalIndex)
+				this.maxIndex = literalIndex;
 			return;
 		case absent:
 		default:
-			if (((bit1 | bit0) & mask) != 0)
-				cacheOfSize--;
+			if (((this.bit1 | this.bit0) & mask) != 0)
+				this.cacheOfSize--;
 			mask = ~mask;
-			bit1 &= mask;
-			bit0 &= mask;
-			if (maxIndex == literalIndex) {
-				int u = bit1 | bit0;
+			this.bit1 &= mask;
+			this.bit0 &= mask;
+			if (this.maxIndex == literalIndex) {
+				long u = this.bit1 | this.bit0;
 				mask = ~mask;
 				do {
-					maxIndex--;
+					this.maxIndex--;
 					mask = mask >>> 1;
-				} while ((u & mask) == 0 && maxIndex >= 0);
+				} while ((u & mask) == 0 && this.maxIndex >= 0);
 			}
 			return;
 		}
@@ -1063,16 +1072,16 @@ public class Label implements Comparable<Label> {
 	 * @return Return the number of literals of the label
 	 */
 	public int size() {
-		if (cacheOfSize >= 0) {
-			return cacheOfSize;
+		if (this.cacheOfSize >= 0) {
+			return this.cacheOfSize;
 		}
 		byte _cacheOfSize = 0;
-		int or = bit0 | bit1;
-		for (int i = maxIndex + 1; (--i) >= 0;) {
+		long or = this.bit0 | this.bit1;
+		for (int i = this.maxIndex + 1; (--i) >= 0;) {
 			_cacheOfSize += (or & 1);
 			or = or >>> 1;
 		}
-		cacheOfSize = _cacheOfSize;
+		this.cacheOfSize = _cacheOfSize;
 		return _cacheOfSize;
 	}
 
@@ -1090,7 +1099,7 @@ public class Label implements Comparable<Label> {
 	public boolean subsumes(final Label label) {
 		if ((label == null) || label.isEmpty())
 			return true;
-		int max = (maxIndex > label.maxIndex) ? maxIndex : label.maxIndex;
+		int max = (this.maxIndex > label.maxIndex) ? this.maxIndex : label.maxIndex;
 		for (byte i = (byte) (max + 1); (--i) >= 0;) {
 			State thisState = get(i);
 			State labelState = label.get(i);
@@ -1142,7 +1151,7 @@ public class Label implements Comparable<Label> {
 			return String.valueOf(Constants.EMPTY_LABEL);
 		final StringBuilder s = new StringBuilder();
 		State st;
-		for (byte i = 0; i <= maxIndex; i++) {
+		for (byte i = 0; i <= this.maxIndex; i++) {
 			st = get(i);
 			if (st != State.absent)
 				s.append(Literal.toString(i, st));

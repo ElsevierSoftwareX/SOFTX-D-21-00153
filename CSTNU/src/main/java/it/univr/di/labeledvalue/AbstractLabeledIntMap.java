@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-import it.unimi.dsi.fastutil.ints.IntIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -22,7 +21,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/**
 	 * Admissible chars in a label and associated value.
 	 */
-	static final String labelCharsRE = Constants.propositionLetterRanges + "0-9,\\-" + Constants.NOT + Constants.UNKNOWN + Constants.EMPTY_LABEL;
+	static final String labelCharsRE = Constants.LABEL_RE + "0-9,\\-";
 
 	/**
 	 * logger
@@ -32,7 +31,8 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/**
 	 * Matcher for labeled values.
 	 */
-	static final Pattern patternlabelCharsRE = Pattern.compile("\\{[\\(" + AbstractLabeledIntMap.labelCharsRE + "\\) ]*\\}");
+	static final Pattern patternlabelCharsRE = Pattern
+			.compile("\\{[" + Pattern.quote(Constants.OPEN_PAIR) + labelCharsRE + Pattern.quote(Constants.CLOSE_PAIR) + " ]*\\}");
 
 	/**
 	 *
@@ -42,7 +42,8 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/**
 	 * RE for splitting a list of labeled values.
 	 */
-	static final Pattern splitterEntry = Pattern.compile("\\{\\}|[{(]+|\\) [(}]*");
+	static final Pattern splitterEntry = Pattern
+			.compile("\\{\\}|[{" + Pattern.quote(Constants.OPEN_PAIR) + "]+|" + Pattern.quote(Constants.CLOSE_PAIR) + " [" + Constants.OPEN_PAIR + "}]*");
 
 	/**
 	 *
@@ -67,18 +68,6 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		}
 	};
 
-
-	/**
-	 * Parse and minimize the labels.
-	 *
-	 * @see LabeledIntTreeMap#parse(String, boolean)
-	 * @param inputMap
-	 * @return a LabeledValueTreeMap object if <code>inputMap</code> represents a valid map, null otherwise.
-	 */
-	static public LabeledIntMap parse(final String inputMap) {
-		return AbstractLabeledIntMap.parse(inputMap, true);
-	}
-
 	/**
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
 	 * The format of the string is given by the method {@link #toString()}:<br>
@@ -86,29 +75,37 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 *
 	 * @param inputMap
 	 *            a {@link java.lang.String} object.
-	 * @param withOptimization
-	 *            true if the redundant labeled values have to be removed.
 	 * @return a LabeledValueTreeMap object if <code>inputMap</code> represents a valid map, null otherwise.
 	 */
-	static public LabeledIntMap parse(final String inputMap, final boolean withOptimization) {
+	static public LabeledIntMap parse(final String inputMap) {
 		if (inputMap == null)
 			return null;
 
 		if (!AbstractLabeledIntMap.patternlabelCharsRE.matcher(inputMap).matches()) {
-			AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a proposition");
+			AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a proposition.");
 			return null;
 		}
 
-		final LabeledIntMap newMap = LabeledIntMapFactory.createLabeledIntMap();
+		LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
+		final LabeledIntMap newMap = factory.create();
 
 		final String[] entryPair = AbstractLabeledIntMap.splitterEntry.split(inputMap);
 		// LabeledValueTreeMap.LOG.finest("EntryPairs: " + Arrays.toString(entryPair));
+		Label l;
+		int value;
 		for (final String s : entryPair) {
 			AbstractLabeledIntMap.LOG.finest("s: " + s);
 			if (s.length() != 0) {
 				final String[] labInt = AbstractLabeledIntMap.splitterPair.split(s);
 				// LabeledValueTreeMap.LOG.finest("labInt: " + Arrays.toString(labInt));
-				newMap.put(Label.parse(labInt[0]), Integer.parseInt(labInt[1]));
+				l = Label.parse(labInt[0]);
+				if (l == null) {
+					value = Integer.parseInt(labInt[0]);
+					l = Label.parse(labInt[1]);
+				} else {
+					value = Integer.parseInt(labInt[1]);
+				}
+				newMap.put(l, value);
 			}
 		}
 		return newMap;
@@ -116,23 +113,28 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 
 	/**
 	 * @param entry (label, value)
-	 * @return string representing the labeled value, i.e., "(label, value)"
+	 * @return string representing the labeled value, i.e., "(value, label)"
 	 */
 	static final String entryAsString(final Entry<Label> entry) {
-		if ((entry == null) || (entry.getKey() == null))
+		if (entry == null)
 			return "";
-		final StringBuffer sb = new StringBuffer("(");
-		sb.append(entry.getKey().toString());
+		return entryAsString(entry.getKey(), entry.getIntValue());
+	}
+
+	/**
+	 * @param value
+	 * @param label
+	 * @return string representing the labeled value, i.e., "(value, label)"
+	 */
+	static final public String entryAsString(Label label, int value) {
+		if (label == null)
+			return "";
+		final StringBuilder sb = new StringBuilder();
+		sb.append(Constants.OPEN_PAIR);
+		sb.append(Constants.formatInt(value));
 		sb.append(", ");
-		if ((entry.getIntValue() == Constants.INT_NEG_INFINITE) || (entry.getIntValue() == Constants.INT_POS_INFINITE)) {
-			if (entry.getIntValue() < 0) {
-				sb.append('-');
-			}
-			sb.append(Constants.INFINITY_SYMBOL);
-		} else {
-			sb.append(entry.getIntValue());
-		}
-		sb.append(")");
+		sb.append(label.toString());
+		sb.append(Constants.CLOSE_PAIR);
 		return sb.toString();
 	}
 
@@ -141,15 +143,13 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 * representable by a int, it throw an IllegalStateException because the overflow. I don't use Overflow exception because it requires to use a try{} catch
 	 * section.
 	 *
-	 * @param a
-	 *            a int.
-	 * @param b
-	 *            a int.
+	 * @param a an integer.
+	 * @param b an integer.
 	 * @return the controlled sum.
 	 * @throws java.lang.ArithmeticException
 	 *             if any.
 	 */
-	static final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
+	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
 		if ((a == Constants.INT_NEG_INFINITE) || (b == Constants.INT_NEG_INFINITE))
 			return Constants.INT_NEG_INFINITE;
 		if ((a == Constants.INT_POS_INFINITE) || (b == Constants.INT_POS_INFINITE))
@@ -170,20 +170,18 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		if (this.size() != lvm.size())
 			return false;
 		return this.entrySet().equals(lvm.entrySet());// Two maps are equals if they contain the same set of values.
-		//The internal representation is not important!.
+		// The internal representation is not important!.
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public int getMinValue() {
 		int min = Constants.INT_POS_INFINITE;
-		int i;
-		for (final IntIterator iT = this.values().iterator(); iT.hasNext();) {
-			if (min > (i = iT.nextInt())) {
-				min = i;
-			}
+		for (int value : this.values()) {
+			if (min > value)
+				min = value;
 		}
-		return (min == Constants.INT_POS_INFINITE) ? LabeledIntMap.INT_NULL : min;
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
 
 	/** {@inheritDoc} */
@@ -201,16 +199,16 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 				v = i;
 			}
 		}
-		return (v == Constants.INT_POS_INFINITE) ? LabeledIntMap.INT_NULL : v;
+		return (v == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : v;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public int getMinValueConsistentWith(final Label l) {
 		if (l == null)
-			return LabeledIntMap.INT_NULL;
+			return Constants.INT_NULL;
 		int min = this.get(l);
-		if (min == LabeledIntMap.INT_NULL) {
+		if (min == Constants.INT_NULL) {
 			// the label does not exits, try all consistent labels
 			min = Constants.INT_POS_INFINITE;
 			int v1;
@@ -225,7 +223,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 				}
 			}
 		}
-		return (min == Constants.INT_POS_INFINITE) ? LabeledIntMap.INT_NULL : min;
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
 
 	@Override
@@ -242,7 +240,6 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 			this.put(entry.getKey(), entry.getIntValue());
 		}
 	}
-
 
 	/** {@inheritDoc} */
 	@Override

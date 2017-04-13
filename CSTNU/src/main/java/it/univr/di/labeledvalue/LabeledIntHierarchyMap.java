@@ -21,50 +21,11 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 
 	/**
-	 * Simple class to store some found conditions during a recursion.
-	 * 
-	 * @author posenato
-	 */
-	private static class RecursionStatus {
-		/**
-		 * True if a new labeled value is greater that one already present.
-		 */
-		boolean valueGreaterThanCurrent = false;
-		/**
-		 * True if the new labeled value substitutes one already present.
-		 */
-		boolean updateAPreviousValue = false;
-		/**
-		 * true if a labeled value has to be inserted and there is another equal labeled valued with a label that differs only for one opposite literal.
-		 */
-		boolean foundTwin = false;
-
-		/**
-		 * true if a perfect match has been found
-		 */
-		boolean foundPerfectMatch = false;
-
-		/**
-		 * 
-		 */
-		public RecursionStatus() {
-		}
-
-		@Override
-		public String toString() {
-			return "valueGreaterThanCurrentvalueGreaterThanCurrent: " + valueGreaterThanCurrent
-					+ "\nvalueGreaterThanCurrent: " + valueGreaterThanCurrent
-					+ "\nupdateAPreviousValue: " + updateAPreviousValue
-					+ "\nfoundPerfectMatch: " + foundPerfectMatch;
-		}
-	}
-
-	/**
 	 * Simple class to represent a labeled value in the hierarchy.
 	 * 
 	 * @author posenato
 	 */
-	static class HierarchyNode implements Object2IntMap.Entry<Label> {
+	static class HierarchyNode implements Object2IntMap.Entry<Label>, Comparable<HierarchyNode> {
 		/**
 		 * Labeled values subsumed by this.
 		 */
@@ -88,47 +49,47 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		int visit;
 
 		/**
+		 * 
+		 */
+		private HierarchyNode() {
+			this.label = null;
+			this.value = Constants.INT_NULL;
+			this.visit = 0;
+			this.father = null;
+			this.son = null;
+		}
+
+		/**
 		 * @param l
 		 * @param v
 		 */
 		public HierarchyNode(Label l, int v) {
 			this();
-			label = new Label(l);
-			value = v;
-		}
-
-		/**
-		 * 
-		 */
-		private HierarchyNode() {
-			label = null;
-			value = Constants.INT_NULL;
-			visit = 0;
-			father = null;
-			son = null;
+			this.label = new Label(l);
+			this.value = v;
 		}
 
 		/**
 		 * Clear all internal objects nullyfing them.
 		 */
 		public void clear() {
-			if (son != null) {
-				son.clear();
-				son = null;
+			if (this.son != null) {
+				this.son.clear();
+				this.son = null;
 			}
-			if (father != null) {
-				father.clear();
-				father = null;
+			if (this.father != null) {
+				this.father.clear();
+				this.father = null;
 			}
-			if (label != null) {
-				if (label.equals(Label.emptyLabel)) {
-					value = Constants.INT_POS_INFINITE;
+			if (this.label != null) {
+				if (this.label.equals(Label.emptyLabel)) {
+					this.value = Constants.INT_POS_INFINITE;
 					return;
 				}
-				label.clear();
-				label = null;// It is fundamental for checking if a HirearchyNode has been deleted.
+				this.label.clear();
+				this.label = null;// It is fundamental for checking if a HirearchyNode has been deleted.
 			}
-			value = Constants.INT_NULL;
+			this.value = Constants.INT_NULL;
 		}
 
 		// @Override
@@ -152,34 +113,27 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 				return false;
 			@SuppressWarnings("unchecked")
 			Entry<Label> o1 = (Entry<Label>) o;
-			return label.equals(o1.getKey()) && value == o1.getIntValue();
+			return this.label.equals(o1.getKey()) && this.value == o1.getIntValue();
 		}
 
 		@Override
-		public int hashCode() {
-			return label.hashCode() + value;
-		}
-
-		@Override
-		public String toString() {
-			if (label == null)
-				return "";
-			return entryAsString(this);
+		public int getIntValue() {
+			return this.value;
 		}
 
 		@Override
 		public Label getKey() {
-			return label;
+			return this.label;
 		}
 
 		@Override
 		public Integer getValue() {
-			return value;
+			return this.value;
 		}
 
 		@Override
-		public Integer setValue(Integer value) {
-			return setValue(value.intValue());
+		public int hashCode() {
+			return this.label.hashCode() + this.value;
 		}
 
 		@Override
@@ -190,8 +144,65 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 
 		@Override
-		public int getIntValue() {
-			return value;
+		public Integer setValue(Integer value) {
+			return setValue(value.intValue());
+		}
+
+		@Override
+		public String toString() {
+			if (this.label == null)
+				return "";
+			return entryAsString(this);
+		}
+
+		/**
+		 * * In order to minimize the number of insertions, it is better to have sons ordered in inverted lexicographical order.
+		 */
+		@Override
+		public int compareTo(HierarchyNode o) {
+			if (o == null || o.label == null)
+				return -1;
+
+			return o.label.compareTo(this.label);
+		}
+	}
+
+	/**
+	 * Simple class to store some found conditions during a recursion.
+	 * 
+	 * @author posenato
+	 */
+	private static class RecursionStatus {
+		/**
+		 * True if a new labeled value is greater that one already present.
+		 */
+		boolean valueGreaterThanCurrent = false;
+		/**
+		 * True if the new labeled value substitutes one already present.
+		 */
+		boolean updateAPreviousValue = false;
+		/**
+		 * true if a labeled value has to be inserted and there is another equal labeled valued with a label that differs only for one opposite literal.
+		 */
+		// boolean foundTwin = false;
+
+		/**
+		 * true if a perfect match has been found
+		 */
+		boolean foundPerfectMatch = false;
+
+		/**
+		 * 
+		 */
+		public RecursionStatus() {
+		}
+
+		@Override
+		public String toString() {
+			return "valueGreaterThanCurrentvalueGreaterThanCurrent: " + this.valueGreaterThanCurrent
+					+ "\nvalueGreaterThanCurrent: " + this.valueGreaterThanCurrent
+					+ "\nupdateAPreviousValue: " + this.updateAPreviousValue
+					+ "\nfoundPerfectMatch: " + this.foundPerfectMatch;
 		}
 	}
 
@@ -204,6 +215,54 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	 *
 	 */
 	static private final long serialVersionUID = 3L;
+
+	/**
+	 * When a father has to be add a set of father, it is necessary to check that there is no other father that subsumes the new one.
+	 * 
+	 * @param newFather
+	 * @param nodeWhereToAddFather
+	 */
+	private static void addFatherTo(HierarchyNode newFather, HierarchyNode nodeWhereToAddFather) {
+		if (newFather == null || nodeWhereToAddFather == null)
+			return;
+
+		if (nodeWhereToAddFather.father == null) {
+			nodeWhereToAddFather.father = new ObjectArraySet<>();
+		}
+		if (nodeWhereToAddFather.father.size() == 0) {
+			nodeWhereToAddFather.father.add(newFather);
+			return;
+		}
+		// iterator remove is not implemented in iterator of ObjectArraySet.
+		HierarchyNode[] fatherA = nodeWhereToAddFather.father.toArray(new HierarchyNode[1]);
+		for (HierarchyNode fatherInSet : fatherA) {
+			if (fatherInSet == null)
+				continue;
+			if (fatherInSet.label.subsumes(newFather.label))
+				return;
+			if (newFather.label.subsumes(fatherInSet.label)) {
+				nodeWhereToAddFather.father.remove(fatherInSet);
+				addFatherTo(fatherInSet, newFather);
+			}
+		}
+		nodeWhereToAddFather.father.add(newFather);
+	}
+
+	/**
+	 * This helper method checks if newSon has nodeWhereToAddSon as father and, in positive case, adds newSon as so to nodeWhereToAddSon.
+	 * 
+	 * @param newSon
+	 * @param nodeWhereToAddSon
+	 */
+	private static void addSonTo(HierarchyNode newSon, HierarchyNode nodeWhereToAddSon) {
+		if (newSon == null || nodeWhereToAddSon == null || newSon.father == null || !newSon.father.contains(nodeWhereToAddSon))
+			return;
+
+		if (nodeWhereToAddSon.son == null) {
+			nodeWhereToAddSon.son = new ObjectArraySet<>();
+		}
+		nodeWhereToAddSon.son.add(newSon);
+	}
 
 	/**
 	 * main.
@@ -296,6 +355,68 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	}
 
 	/**
+	 * Remove the given node from the hierarchy adjusting possible its sons w.r.t. its father(s).
+	 * 
+	 * @param nodeToRemove
+	 *            node to remove
+	 */
+	private static void removeNode(HierarchyNode nodeToRemove) {
+		if (nodeToRemove == null || nodeToRemove.label == null || nodeToRemove.father == null || nodeToRemove.father.size() == 0)
+			return;
+
+		// It is efficient to remove nodeToRemove as father in each son as first action!
+		if (nodeToRemove.son != null && nodeToRemove.son.size() > 0) {
+			for (HierarchyNode sonOfNodeToRemove : nodeToRemove.son) {
+				sonOfNodeToRemove.father.remove(nodeToRemove);
+			}
+		}
+
+		// for each father gFather of nodeToRemove,
+		// 1. remove nodeToRemove as son
+		// 2. check if each nodeToRemove's son X has to become son of gFather
+		for (HierarchyNode gFather : nodeToRemove.father) {
+			assert (gFather.son != null && gFather.son.size() > 0);
+			gFather.son.remove(nodeToRemove);
+
+			if (nodeToRemove.son == null || nodeToRemove.son.size() == 0)
+				continue;
+
+			for (HierarchyNode sonOfNodeToRemove : nodeToRemove.son) {
+				// Each nodeToRemove's son X becomes son of gFather if and only if no other X's father subsumes gFather.
+				if (sonOfNodeToRemove.value >= gFather.value)// sanity check
+					continue;
+				addFatherTo(gFather, sonOfNodeToRemove);// sonOfNodeToRemove.father.add(gFather);
+				addSonTo(sonOfNodeToRemove, gFather);
+			}
+		}
+		nodeToRemove.clear();
+	}
+
+	/**
+	 * Removes 'nodeToRemove' because it has been made redundant by 'newNode' and adjusts nodeToRemove's sons w.r.t. newNode as a possible father.
+	 * 
+	 * @param nodeToRemove
+	 * @param newNode
+	 */
+	private static void removeNodeAndAddFather(HierarchyNode nodeToRemove, HierarchyNode newNode) {
+		if (nodeToRemove == null || nodeToRemove.label == null || nodeToRemove.father == null || nodeToRemove.father.size() == 0 || newNode == null)
+			return;
+
+		// Maintain a copy of son set of nodeToRemove
+		ObjectArraySet<HierarchyNode> grandChildren = (nodeToRemove.son != null) ? new ObjectArraySet<>(nodeToRemove.son) : null;
+
+		removeNode(nodeToRemove);
+
+		if (grandChildren == null || grandChildren.size() == 0)
+			return;
+
+		for (HierarchyNode son : grandChildren) {
+			addFatherTo(newNode, son);
+			addSonTo(son, newNode);
+		}
+	}
+
+	/**
 	 * Replace currentNode with newNode.
 	 * 
 	 * @param currentNode
@@ -333,10 +454,11 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	private String putHistory = "";
 
 	/**
-	 * Simple constructor. The internal structure is built and empty.
+	 * Necessary constructor for the factory.
+	 * The internal structure is built and empty.
 	 */
 	LabeledIntHierarchyMap() {
-		root = new HierarchyNode(Label.emptyLabel, Constants.INT_POS_INFINITE);
+		this.root = new HierarchyNode(Label.emptyLabel, Constants.INT_POS_INFINITE);
 	}
 
 	/**
@@ -360,7 +482,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	public void clear() {
 		recursiveClear(this.root, this.root.visit + 1);
 		this.root.visit++;
-		putHistory = "";
+		this.putHistory = "";
 	}
 
 	@Override
@@ -377,9 +499,16 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	@Override
 	public ObjectSet<Entry<Label>> entrySet() {
 		final ObjectSet<Entry<Label>> coll = new ObjectArraySet<>();
-		recursiveBuildingSet(this.root, coll, (this.root.visit + 1));
+		return entrySet(coll);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
+		setToReuse.clear();
+		recursiveBuildingSet(this.root, setToReuse, (this.root.visit + 1));
 		this.root.visit++;
-		return coll;
+		return setToReuse;
 	}
 
 	/** {@inheritDoc} */
@@ -410,14 +539,72 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * @return a set view of all labels present into this map.
 	 */
+	@Override
 	public ObjectSet<Label> keySet() {
 		ObjectSet<Label> coll = new ObjectArraySet<>();
+		return keySet(coll);
+	}
+
+	/**
+	 * @return a set view of all labels present into this map.
+	 */
+	@Override
+	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
+		setToReuse.clear();
 		for (final Entry<Label> entry : this.entrySet()) {
 			if (entry.getKey() == Label.emptyLabel && entry.getIntValue() == Constants.INT_POS_INFINITE)
 				continue;
-			coll.add(entry.getKey());
+			setToReuse.add(entry.getKey());
 		}
-		return coll;
+		return setToReuse;
+	}
+
+	/**
+	 * Check and manage the case that currentNode has a label that differs from newNode one by only one literal. This procedure can determine a removing cascade
+	 * of element that cannot be controlled in a safe way during a recursion (this procedure is called during a recursion insert).
+	 * Therefore, for now, it is disabled.
+	 * 
+	 * @param currentNode
+	 * @param newNode
+	 * @param sonOfSpin
+	 * @param status
+	 * @return true if a labeled value with only one opposite literal w.r.t. literals in newNode label and with same value has been found; false otherwise.
+	 */
+	@SuppressWarnings("static-method")
+	private boolean manageSpin(HierarchyNode currentNode, HierarchyNode newNode, ObjectArraySet<HierarchyNode> sonOfSpin, RecursionStatus status) {
+		if (currentNode == null || newNode == null)
+			return false;
+
+		Literal p = newNode.label.getUniqueDifferentLiteral(currentNode.label);
+		if (p == null)
+			return false;
+		int max = newNode.value > currentNode.value ? newNode.value : currentNode.value;
+
+		// if (max == newNode.value && max == currentNode.value) {
+		// // Both nodes have to be replaced!
+		// removeNode(currentNode);
+		// removeNode(newNode);
+		// } else {
+		// if (max == newNode.value) {
+		// // Only the newNode have to be adjusted!
+		// removeNode(newNode);
+		// } else {
+		// // currentNode has to be replaced by the shorten one, but it cannot be removed because its sons could be lost.
+		// removeNode(currentNode);
+		// // newNode has to be inserted!
+		// // I prefer to insert again from root!
+		// if (newNode.father == null)// newNode has not yet inserted!
+		// put(newNode.label, newNode.value);
+		// }
+		// }
+		Label labelWOp = new Label(newNode.label);
+		labelWOp.remove(p.getName());
+		if (labelWOp.isEmpty())
+			labelWOp = Label.emptyLabel;
+		// status.foundTwin = true;
+		HierarchyNode spin = new HierarchyNode(labelWOp, max);
+		sonOfSpin.add(spin);
+		return true;
 	}
 
 	/** {@inheritDoc} */
@@ -428,58 +615,33 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 
 		HierarchyNode newNode = new HierarchyNode(newLabel, newValue);
 		RecursionStatus status = new RecursionStatus();
-		if (wellFormatCheck) {
-			putHistory += newNode + " ";
+		if (this.wellFormatCheck) {
+			this.putHistory += newNode + " ";
 		}
-		boolean st = recursivePut(root, newNode, status);
-		if (wellFormatCheck && root != null && root.son != null) {
-			for (HierarchyNode son : root.son) {
-				for (HierarchyNode son1 : root.son) {
+		ObjectArraySet<HierarchyNode> sonOfSpin = new ObjectArraySet<>();
+		boolean st = recursivePut(this.root, newNode, sonOfSpin, status);
+		// TODO
+		if (sonOfSpin.size() > 0) {
+			// there is new element determined by simplification of labels with one opposite literal (e.g., (¬ab,3) (ab,4) --> (b,4) has to be added).
+			for (HierarchyNode newNodeSpin : sonOfSpin) {
+				if (newNodeSpin.label != null)
+					st = put(newNodeSpin.label, newNodeSpin.value) || st;
+			}
+		}
+		// TODO
+		if (this.wellFormatCheck && this.root != null && this.root.son != null) {
+			for (HierarchyNode son : this.root.son) {
+				for (HierarchyNode son1 : this.root.son) {
 					if (son != null && son1 != null && son != son1 && (son.label.subsumes(son1.label) || son1.label.subsumes(son.label))) {
 						LOG.severe("Hierarchy: " + this.toString());
-						LOG.severe("Son: " + root.son);
-						LOG.severe("Put history: " + putHistory);
+						LOG.severe("Son: " + this.root.son);
+						LOG.severe("Put history: " + this.putHistory);
 						throw new IllegalStateException("Hirearchy is not in a right format.");
 					}
 				}
 			}
 		}
 		return st;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int remove(final Label l) {
-		if (l == null)
-			return Constants.INT_NULL;
-		HierarchyNode node = recursiveGet(this.root, l);
-		if (node == null || node.label == null)
-			return Constants.INT_NULL;
-		int v = node.value;
-		removeNode(node);
-		return v;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int size() {
-		if (root == null)
-			return 0;
-		int sum = recursiveCount(root, root.visit + 1);
-		root.visit++;
-		return sum;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public IntSet values() {
-		final IntArraySet coll = new IntArraySet(this.size());
-		for (final Entry<Label> entry : this.entrySet()) {
-			if (entry.getKey() == Label.emptyLabel && entry.getIntValue() == Constants.INT_POS_INFINITE)
-				continue;
-			coll.add(entry.getIntValue());
-		}
-		return coll;
 	}
 
 	/**
@@ -535,7 +697,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 			}
 		}
 		node.visit = visit;
-		if (node != root) {
+		if (node != this.root) {
 			return sum + 1;
 		}
 		if (node.label != Label.emptyLabel && node.value != Constants.INT_POS_INFINITE) {
@@ -550,6 +712,10 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	 * @return the value associated to label l if it exists, {@link Constants#INT_NULL} otherwise.
 	 */
 	private HierarchyNode recursiveGet(final HierarchyNode node, final Label l) {
+		if (node.label == null) {
+			LOG.severe("A removed node is still present as son!");
+			return null;
+		}
 		if (node.label.equals(l))
 			return node;
 		if (node.son == null || node.son.size() == 0)
@@ -602,10 +768,12 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * @param current
 	 * @param newNode
+	 * @param sonOfSpin
+	 *            TODO
 	 * @param recursionStatus
 	 * @return true if the newNode has been inserted; false otherwise.
 	 */
-	private boolean recursivePut(HierarchyNode current, HierarchyNode newNode, RecursionStatus recursionStatus) {
+	private boolean recursivePut(HierarchyNode current, HierarchyNode newNode, ObjectArraySet<HierarchyNode> sonOfSpin, RecursionStatus recursionStatus) {
 		if (current == null || newNode == null || newNode.label == null) {
 			String msg = "Something wrong. newNode: " + newNode + ", current:" + current;
 			LOG.severe(msg);
@@ -615,7 +783,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		boolean status = false;
 
 		// 1. Manage possible spin label
-		// status = manageSpin(current, newNode, recursionStatus);
+		manageSpin(current, newNode, sonOfSpin, recursionStatus);
 		// if (recursionStatus.foundTwin) {
 		// return status;
 		// }
@@ -647,8 +815,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 			for (HierarchyNode son : sonsReferenceCopy) {
 				if (son.label == null) // === !currentNode.son.contains(son))
 					continue;
-				status = recursivePut(son, newNode, recursionStatus) || status;
-				if (recursionStatus.foundTwin || recursionStatus.updateAPreviousValue) {
+				status = recursivePut(son, newNode, sonOfSpin, recursionStatus) || status;
+				if (recursionStatus.updateAPreviousValue) {
 					return status;
 				}
 				if (recursionStatus.valueGreaterThanCurrent) {
@@ -692,7 +860,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 				}
 			} else {
 				if (son.son != null && son.son.size() > 0) {
-					recursiveUpdateSiblingSons(son.son.toArray(new HierarchyNode[1]), 0, newNode, recursionStatus);
+					recursiveUpdateSiblingSons(son.son.toArray(new HierarchyNode[1]), 0, newNode, sonOfSpin, recursionStatus);
 				}
 				if (newNode.father != null && newNode.father.size() > 0) {// newNode is still valid
 					if (newNode.label.subsumes(son.label)) {
@@ -707,168 +875,34 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * Check and manage the case that currentNode has a label that differs from newNode one by only one literal. This procedure can determine a removing cascade
-	 * of element that cannot be controlled in a safe way during a recursion (this procedure is called during a recursion insert).
-	 * 
-	 * Therefore, for now, it is disabled.
-	 * 
-	 * @param currentNode
-	 * @param newNode
-	 * @param status
-	 * @return true if a labeled value with only one opposite literal w.r.t. literals in newNode label and with same value has been found; false otherwise.
-	 */
-	@SuppressWarnings({ "static-method", "unused" })
-	private boolean manageSpin(HierarchyNode currentNode, HierarchyNode newNode, RecursionStatus status) {
-		// if (currentNode == null || newNode == null)
-		// return false;
-		//
-		// Literal p = newNode.label.getUniqueDifferentLiteral(currentNode.label);
-		// if (p != null) {
-		// int max = newNode.value > currentNode.value ? newNode.value : currentNode.value;
-		//
-		// if (max == newNode.value && max == currentNode.value) {
-		// // Both nodes have to be replaced!
-		// removeNode(currentNode);
-		// removeNode(newNode);
-		// } else {
-		// if (max == newNode.value) {
-		// // Only the newNode have to be adjusted!
-		// removeNode(newNode);
-		// } else {
-		// // currentNode has to be replaced by the shorten one, but it cannot be removed because its sons could be lost.
-		// removeNode(currentNode);
-		// // newNode has to be inserted!
-		// // I prefer to insert again from root!
-		// if (newNode.father == null)// newNode has not yet inserted!
-		// put(newNode.label, newNode.value);
-		// }
-		// }
-		// Label labelWOp = new Label(newNode.label);
-		// labelWOp.remove(p);
-		// if (labelWOp.isEmpty())
-		// labelWOp = Label.emptyLabel;
-		// status.foundTwin = true;
-		// return put(labelWOp, max);
-		// }
-		return false;
-	}
-
-	/**
-	 * Remove the given node from the hierarchy adjusting possible its sons w.r.t. its father(s).
-	 * 
-	 * @param nodeToRemove
-	 *            node to remove
-	 */
-	private static void removeNode(HierarchyNode nodeToRemove) {
-		if (nodeToRemove == null || nodeToRemove.label == null || nodeToRemove.father == null || nodeToRemove.father.size() == 0)
-			return;
-		// for each father gFather of nodeToRemove,
-		// 1. remove nodeToRemove as son
-		// 2. check if each nodeToRemove's son X has to become son of gFather
-		for (HierarchyNode gFather : nodeToRemove.father) {
-			if (gFather.son != null && gFather.son.size() > 0) {// It should be always != null
-				gFather.son.remove(nodeToRemove);
-			}
-			if (nodeToRemove.son != null && nodeToRemove.son.size() > 0) {
-				for (HierarchyNode sonOfNodeToRemove : nodeToRemove.son) {
-					// Each nodeToRemove's son X becomes son of gFather if and only if no other X's father subsumes gFather.
-					sonOfNodeToRemove.father.remove(nodeToRemove);
-					if (sonOfNodeToRemove.value >= gFather.value)// sanity check
-						continue;
-					if (sonOfNodeToRemove.father.size() > 0) {
-						boolean add = true;
-						for (HierarchyNode fatherOfsonOfNodeToRemove : sonOfNodeToRemove.father) {
-							if (fatherOfsonOfNodeToRemove.label.subsumes(gFather.label)) {
-								add = false;
-								break;
-							}
-						}
-						if (add) {
-							addFatherTo(gFather, sonOfNodeToRemove);// sonOfNodeToRemove.father.add(gFather);
-							addSonTo(sonOfNodeToRemove, gFather);
-						}
-					} else {
-						addFatherTo(gFather, sonOfNodeToRemove);// sonOfNodeToRemove.father.add(gFather);
-						addSonTo(sonOfNodeToRemove, gFather);
-					}
-				}
-			}
-		}
-		nodeToRemove.clear();
-	}
-
-	/**
-	 * When a father has to be add a set of father, it is necessary to check that there is no other father that subsumes the new one.
-	 * 
-	 * @param newFather
-	 * @param nodeWhereToAddFather
-	 */
-	private static void addFatherTo(HierarchyNode newFather, HierarchyNode nodeWhereToAddFather) {
-		if (newFather == null || nodeWhereToAddFather == null)
-			return;
-
-		if (nodeWhereToAddFather.father == null) {
-			nodeWhereToAddFather.father = new ObjectArraySet<>();
-		}
-		if (nodeWhereToAddFather.father.size() == 0) {
-			nodeWhereToAddFather.father.add(newFather);
-			return;
-		}
-		// iterator remove is not implemented in iterator of ObjectArraySet.
-		HierarchyNode[] fatherA = nodeWhereToAddFather.father.toArray(new HierarchyNode[1]);
-		for (HierarchyNode fatherInSet : fatherA) {
-			if (fatherInSet == null)
-				continue;
-			if (fatherInSet.label.subsumes(newFather.label))
-				return;
-			if (newFather.label.subsumes(fatherInSet.label)) {
-				nodeWhereToAddFather.father.remove(fatherInSet);
-			}
-		}
-		nodeWhereToAddFather.father.add(newFather);
-	}
-	
-	/**
-	 * This helper method checks if newSon has nodeWhereToAddSon as father and, in positive case, adds newSon as so to nodeWhereToAddSon.
-	 * 
-	 * @param newSon
-	 * @param nodeWhereToAddSon
-	 */
-	private static void addSonTo(HierarchyNode newSon, HierarchyNode nodeWhereToAddSon) {
-		if (newSon == null || nodeWhereToAddSon == null || newSon.father == null || !newSon.father.contains(nodeWhereToAddSon))
-			return;
-		
-		if (nodeWhereToAddSon.son==null) {
-			nodeWhereToAddSon.son = new ObjectArraySet<>();
-		}
-		nodeWhereToAddSon.son.add(newSon);
-	}
-	
-
-
-	/**
 	 * After the insertion of newNode, it can occur that siblings' sons has to be update with respect to newNode.
 	 *
 	 * @param siblingsSons
+	 * @param index
 	 * @param newNode
+	 * @param sonOfSpin
 	 * @param recursionStatus
 	 */
-	private void recursiveUpdateSiblingSons(HierarchyNode[] siblingsSons, int index, HierarchyNode newNode, RecursionStatus recursionStatus) {
+	private void recursiveUpdateSiblingSons(HierarchyNode[] siblingsSons, int index, HierarchyNode newNode, ObjectArraySet<HierarchyNode> sonOfSpin,
+			RecursionStatus recursionStatus) {
 		if (siblingsSons == null || siblingsSons.length == 0 || index == siblingsSons.length)
 			return;
 		// go to the last son
 		if (index < siblingsSons.length) {
-			recursiveUpdateSiblingSons(siblingsSons, index + 1, newNode, recursionStatus);
+			recursiveUpdateSiblingSons(siblingsSons, index + 1, newNode, sonOfSpin, recursionStatus);
 		}
 		HierarchyNode currentSiblingSon = siblingsSons[index];
 		if (currentSiblingSon == null)
 			return;
 		// goto the last grand-son
+		// boolean consistent = newNode.label.isConsistentWith(currentSiblingSon.label); NOOO because there could be ¿ literal!!!
 		if (currentSiblingSon.son != null && currentSiblingSon.son.size() > 0) {
-			recursiveUpdateSiblingSons(currentSiblingSon.son.toArray(new HierarchyNode[1]), 0, newNode, recursionStatus);
+			// Remember that it is necessary to go down even if newNode label is not consistent with currenSiblingSon one
+			// because some sons can contain ¿ literals
+			recursiveUpdateSiblingSons(currentSiblingSon.son.toArray(new HierarchyNode[1]), 0, newNode, sonOfSpin, recursionStatus);
 		}
 		// last son unchecked.
-		// manageSpin(currentSiblingSon, newNode, recursionStatus);// possible case: ¬ab-->¬abc and new node is ¬a¬bc
+		manageSpin(currentSiblingSon, newNode, sonOfSpin, recursionStatus);// possible case: ¬ab-->¬abc and new node is ¬a¬bc
 		// if (recursionStatus.foundTwin) {
 		// return;
 		// }
@@ -876,8 +910,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 			if (currentSiblingSon.value >= newNode.value) {
 				// It could that a label with ? can be nullified by a label with a smaller value and without ?
 				// LOG.warning("CurrentNode: " + currentNode + "; NewNode: " + newNode);
-				// replace(currentSiblingSon, newNode); ????
-				removeNode(currentSiblingSon);
+				removeNodeAndAddFather(currentSiblingSon, newNode);
 				return;
 			}
 			addFatherTo(newNode, currentSiblingSon);// currentSiblingSon.father.add(newNode);
@@ -888,7 +921,9 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * Recursive removing all sons having a value greater than the given one.
 	 * 
-	 * @param currentNode
+	 * @param son
+	 * @param index
+	 * @param newValue
 	 */
 	private void recursiveUpdateSons(HierarchyNode[] son, int index, int newValue) {
 		if (son == null || son.length == 0 || index == son.length)
@@ -908,5 +943,40 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		if (current.value >= newValue) {
 			removeNode(current);
 		}
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int remove(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		HierarchyNode node = recursiveGet(this.root, l);
+		if (node == null || node.label == null)
+			return Constants.INT_NULL;
+		int v = node.value;
+		removeNode(node);
+		return v;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int size() {
+		if (this.root == null)
+			return 0;
+		int sum = recursiveCount(this.root, this.root.visit + 1);
+		this.root.visit++;
+		return sum;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public IntSet values() {
+		final IntArraySet coll = new IntArraySet(this.size());
+		for (final Entry<Label> entry : this.entrySet()) {
+			if (entry.getKey() == Label.emptyLabel && entry.getIntValue() == Constants.INT_POS_INFINITE)
+				continue;
+			coll.add(entry.getIntValue());
+		}
+		return coll;
 	}
 }
