@@ -118,7 +118,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	 * @see edu.uci.ics.jung.visualization.control.EditingGraphMousePlugin
 	 */
 	protected EditingGraphMousePlugin<V, E> editingPlugin;
-	protected LabelEditingGraphMousePlugin<? extends LabeledNode, ? extends LabeledIntEdge> labelEditingPlugin;
+	protected LabelEditingGraphMousePlugin<? extends LabeledNode, ? extends AbstractLabeledIntEdge> labelEditingPlugin;
 	protected EditingPopupGraphMousePlugin<V, E> popupEditingPlugin;
 	protected AnnotatingGraphMousePlugin<V, E> annotatingPlugin;
 	protected MultiLayerTransformer basicTransformer;
@@ -315,7 +315,6 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	/**
 	 * {@inheritDoc} Create the plugins, and load the plugins for TRANSFORMING mode
 	 */
-	@SuppressWarnings("unused")
 	@Override
 	protected void loadPlugins() {
 		this.pickingPlugin = new PickingGraphMousePlugin<V, E>();
@@ -325,7 +324,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 		this.rotatingPlugin = new RotatingGraphMousePlugin();
 		this.shearingPlugin = new ShearingGraphMousePlugin();
 		this.editingPlugin = new EditingGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
-		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<LabeledNode, LabeledIntEdge>();
+		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<LabeledNode, AbstractLabeledIntEdge>();
 		this.annotatingPlugin = new AnnotatingGraphMousePlugin<V, E>(this.rc);
 		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
 		this.add(this.scalingPlugin);

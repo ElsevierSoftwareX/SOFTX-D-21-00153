@@ -5,14 +5,6 @@
  */
 package it.univr.di.cstnu.graph;
 
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.univr.di.cstnu.CSTNUEditor;
-import it.univr.di.labeledvalue.Constants;
-import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntNodeSetMap;
-import it.univr.di.labeledvalue.LabeledIntNodeSetTreeMap;
-import it.univr.di.labeledvalue.Literal;
-
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.InputEvent;
@@ -38,6 +30,12 @@ import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.univr.di.cstnu.CSTNEditor;
+import it.univr.di.labeledvalue.Constants;
+import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntMap;
+import it.univr.di.labeledvalue.LabeledIntMapFactory;
 
 /**
  * Allows to edit vertex or edge attributes.
@@ -47,8 +45,7 @@ import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
  * @param <E> edge type
  * @version $Id: $Id
  */
-public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends LabeledIntEdge> extends AbstractGraphMousePlugin implements
-		MouseListener {
+public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends LabeledIntEdge> extends AbstractGraphMousePlugin implements MouseListener {
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -58,8 +55,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 	 * @param g graph
 	 * @return true if one attribute at least has been modified
 	 */
-	@SuppressWarnings("unchecked")
-	private static boolean edgeAttributesEditor(final LabeledIntEdge e, final String viewerName, final LabeledIntGraph g) {
+	@SuppressWarnings({ "static-method", "unchecked" })
+	private boolean edgeAttributesEditor(final LabeledIntEdge e, final String viewerName, final LabeledIntGraph g) {
 
 		// LabeledIntEdge has a name, a default value (label for this value is determined by the conjunction of labels of its end-points and a type.
 
@@ -82,7 +79,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: ["+Constants.propositionLetterRanges+"0-9_]"));
+		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
 		// Default Value
@@ -98,26 +95,26 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		// group.add(value, StringValidators.regexp(Constants.labeledValueRE, "Check the syntax!", false));
 
 		// Type
-		final JRadioButton normalButton = new JRadioButton(LabeledIntEdge.Type.normal.toString());
+		final JRadioButton normalButton = new JRadioButton(LabeledIntEdge.ConstraintType.normal.toString());
 		normalButton.setSelected(false);
-		final JRadioButton contingentButton = new JRadioButton(LabeledIntEdge.Type.contingent.toString());
+		final JRadioButton contingentButton = new JRadioButton(LabeledIntEdge.ConstraintType.contingent.toString());
 		contingentButton.setSelected(false);
-		final JRadioButton constraintButton = new JRadioButton(LabeledIntEdge.Type.constraint.toString());
+		final JRadioButton constraintButton = new JRadioButton(LabeledIntEdge.ConstraintType.constraint.toString());
 		constraintButton.setSelected(false);
 		jp.add(new JLabel("LabeledIntEdge type: "));
-		normalButton.setActionCommand(LabeledIntEdge.Type.normal.toString());
-		normalButton.setSelected(e.getType() == LabeledIntEdge.Type.normal);
+		normalButton.setActionCommand(LabeledIntEdge.ConstraintType.normal.toString());
+		normalButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.normal);
 		jp.add(normalButton);
 		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
 
-		contingentButton.setActionCommand(LabeledIntEdge.Type.contingent.toString());
+		contingentButton.setActionCommand(LabeledIntEdge.ConstraintType.contingent.toString());
 		contingentButton.setSelected(e.isContingentEdge());
 		jp.add(contingentButton);
 		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
 
 		jp.add(new JLabel(""));
-		constraintButton.setActionCommand(LabeledIntEdge.Type.constraint.toString());
-		constraintButton.setSelected(e.getType() == LabeledIntEdge.Type.constraint);
+		constraintButton.setActionCommand(LabeledIntEdge.ConstraintType.constraint.toString());
+		constraintButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.constraint);
 		jp.add(constraintButton);
 		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
 		jp.add(new JLabel(""));
@@ -131,11 +128,11 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		// Show possible labeled values
 		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.labeledValueSet();
 		JTextField jt;
-		jp.add(new JLabel("Syntax:"));
-		jt = new JTextField(Constants.labelRE);
+		jp.add(new JLabel("Labeled value syntax:"));
+		jt = new JTextField(Constants.LABEL_RE);
 		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, false);
 		jp.add(jt);
-		jt = new JTextField(Constants.labeledValueRE);
+		jt = new JTextField(Constants.LabeledValueRE);
 		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, false);
 		jp.add(jt);
 
@@ -155,14 +152,14 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 				jl.setLabelFor(jtLabel);
 				jp.add(jl);
 				jp.add(jtLabel);
-				group.add(jtLabel, StringValidators.regexp(Constants.labelRE + "|", "Check the syntax!", false), Label.labelValidator);
+				group.add(jtLabel, StringValidators.regexp(Constants.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
 
 				oldIntInputs[i] = entry.getValue();
-				jtValue = new JTextField(oldIntInputs[i].toString());
+				jtValue = new JTextField(Constants.formatInt(oldIntInputs[i]));
 				newIntInputs[i] = jtValue;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtValue, viewerName, false);
 				jp.add(jtValue);
-				group.add(jtValue, StringValidators.regexp(Constants.labeledValueRE + "|", "Integer please or let it empty!", false));
+				group.add(jtValue, StringValidators.regexp(Constants.LabeledValueRE + "|", "Integer please or let it empty!", false));
 
 				i++;
 			}
@@ -176,14 +173,14 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 			jl.setLabelFor(jtLabel);
 			jp.add(jl);
 			jp.add(jtLabel);
-			group.add(jtLabel, StringValidators.regexp(Constants.labelRE + "|", "Check the syntax!", false), Label.labelValidator);
+			group.add(jtLabel, StringValidators.regexp(Constants.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
 
 			jtValue = new JTextField();
 			newIntInputs[i] = jtValue;
 			oldIntInputs[i] = null;
 			LabelEditingGraphMousePlugin.setConditionToEnable(jtValue, viewerName, false);
 			jp.add(jtValue);
-			group.add(jtValue, StringValidators.regexp(Constants.labeledValueRE + "|", "Integer please or let it empty!", false));
+			group.add(jtValue, StringValidators.regexp(Constants.LabeledValueRE + "|", "Integer please or let it empty!", false));
 		}
 
 		// Show all upper and lower case values allowing also the possibility of insertion.
@@ -199,8 +196,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		// Show additional label
 
 		jp.add(new JLabel("Syntax:"));
-		jt = new JTextField("");
-		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, false);
+		jt = new JTextField("Label (read-only)");
+		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, true);
 		jp.add(jt);
 		jt = new JTextField("<node Name>: <value>");
 		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, true);
@@ -283,16 +280,17 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 			// modified = true;
 			// }
 
-			final LabeledIntEdge.Type t = (normalButton.isSelected()) ? LabeledIntEdge.Type.normal
-					: (contingentButton.isSelected()) ? LabeledIntEdge.Type.contingent : LabeledIntEdge.Type.constraint;
+			final LabeledIntEdge.ConstraintType t = (normalButton.isSelected()) ? LabeledIntEdge.ConstraintType.normal
+					: (contingentButton.isSelected()) ? LabeledIntEdge.ConstraintType.contingent : LabeledIntEdge.ConstraintType.constraint;
 
 			// manage edge type
-			if (e.getType() != t) {
-				e.setType(t);
+			if (e.getConstraintType() != t) {
+				e.setConstraintType(t);
 				modified = true;
 			}
 
-			final LabeledIntNodeSetMap comp = new LabeledIntNodeSetTreeMap(e.optimize);
+			LabeledIntMapFactory<LabeledIntMap> mapFactory = new LabeledIntMapFactory<>();
+			final LabeledIntMap comp = mapFactory.create();
 			Label l;
 			String s, is;
 			// It is more safe to build a new Label set and put substitute the old one with the present.
@@ -301,7 +299,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 				is = newIntInputs[i].getText();
 				v = (is.length() > 0) ? Integer.valueOf(is) : null;
 				LabelEditingGraphMousePlugin.LOG.finest("Label value" + i + ": (" + s + ", " + is + " [old:" + oldIntInputs[i] + "])");
-				if (v == null) continue; // if label is null or empty, the value is the default value!
+				if (v == null)
+					continue; // if label is null or empty, the value is the default value!
 				l = ((s == null) || (s.length() == 0)) ? Label.emptyLabel : Label.parse(s);
 				comp.put(l, v);
 			}
@@ -408,8 +407,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 	 * @param g graph
 	 * @return true if one attribute at least has been modified
 	 */
-	@SuppressWarnings("unchecked")
-	private static boolean nodeAttributesEditor(final LabeledNode node, final String viewerName, final LabeledIntGraph g) {
+	@SuppressWarnings({ "unchecked", "static-method" })
+	private boolean nodeAttributesEditor(final LabeledNode node, final String viewerName, final LabeledIntGraph g) {
 
 		// Planning a possible extension, a node could contains more labels with associated integers.
 		// For now, we use only one entry and only the label part.
@@ -434,20 +433,20 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: ["+Constants.propositionLetterRanges+"0-9_]"));
+		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
 		// Observed proposition
 		JTextField observedProposition = new JTextField(1);
-		Literal p = node.getPropositionObserved();
-		observedProposition = new JTextField((p == null) ? "" : p.toString());
+		char p = node.getPropositionObserved();
+		observedProposition = new JTextField((p == Constants.UNKNOWN) ? "" : "" + p);
 		jl = new JLabel("Observed proposition:");
 		jl.setLabelFor(observedProposition);
 		jp.add(jl);
 		jp.add(observedProposition);
 		LabelEditingGraphMousePlugin.setConditionToEnable(observedProposition, viewerName, false);
-		jp.add(new JLabel("Syntax: ["+Constants.propositionLetterRanges+"]| "));
-		group.add(observedProposition, StringValidators.regexp("["+Constants.propositionLetterRanges+"]|", "Only One Char!", false),
+		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "]| "));
+		group.add(observedProposition, StringValidators.regexp("[" + Constants.PROPOSITION_RANGES + "]|", "Must be a single char in the range!", false),
 				new ObservableValidator(g, node));
 
 		// Label
@@ -458,9 +457,9 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(label);
 		LabelEditingGraphMousePlugin.setConditionToEnable(label, viewerName, false);
-		final JTextField jtf = new JTextField("Syntax: " + Constants.labelRE);
+		final JTextField jtf = new JTextField("Syntax: " + Constants.LABEL_RE);
 		jp.add(jtf);
-		group.add(label, StringValidators.regexp(Constants.labelRE, "Check the syntax!", false), Label.labelValidator);
+		group.add(label, StringValidators.regexp(Constants.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
 
 		// Build the new object from the return values.
 		boolean modified = false;
@@ -477,15 +476,15 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 			// Observable
 			newValue = observedProposition.getText();
 			if (newValue != null) {
-				final Literal oldP = node.getPropositionObserved();
+				final char oldP = node.getPropositionObserved();
 				if (newValue.length() > 0) {
-					p = new Literal(newValue.charAt(0));
-					if ((oldP == null) || !oldP.equals(p)) {
+					p = newValue.charAt(0);
+					if ((oldP == Constants.UNKNOWN) || oldP != p) {
 						node.setObservable(p);
 						modified = true;
 					}
-				} else if (oldP != null) {
-					node.setObservable(null);
+				} else if (oldP != Constants.UNKNOWN) {
+					node.setObservable(Constants.UNKNOWN);
 					modified = true;
 				}
 			}
@@ -550,7 +549,6 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 
 	/**
 	 * {@inheritDoc}
-	 *
 	 * For primary modifiers (default, MouseButton1):
 	 * <ol>
 	 * <li>Pick a single Vertex or LabeledIntEdge that is under the mouse pointer.<br>
@@ -572,11 +570,11 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 			final VisualizationViewer<N, E> vv = (VisualizationViewer<N, E>) e.getSource();
 			JPanel jp2;
 			final JTextArea mesg2 = (JTextArea) ((JPanel) vv.getParent().getParent().getParent().getComponent(0)).getComponent(0);
-//			mesg2.setIcon(null);
+			// mesg2.setIcon(null);
 			mesg2.setText("");
 			mesg2.setOpaque(false);
 
-			if (!vv.getName().equals(CSTNUEditor.distanceViewerName)) {
+			if (!vv.getName().equals(CSTNEditor.distanceViewerName)) {
 				// I didn't find a better way to determine the VisualizationViewer of distance graphs inside this method.
 				jp2 = (JPanel) (((JPanel) vv.getParent().getParent().getComponent(1)).getComponent(0));
 			} else {
@@ -591,7 +589,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 
 				this.vertex = pickSupport.getVertex(layout, p.getX(), p.getY());
 				if (this.vertex != null) {
-					if (LabelEditingGraphMousePlugin.nodeAttributesEditor(this.vertex, viewerName, g)) {
+					if (nodeAttributesEditor(this.vertex, viewerName, g)) {
 						jp2.setVisible(false);
 						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
 						g.clearCache();
@@ -604,7 +602,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 				// Point2D ip = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
 				this.edge = pickSupport.getEdge(layout, p.getX(), p.getY());
 				if (this.edge != null) {
-					if (LabelEditingGraphMousePlugin.edgeAttributesEditor(this.edge, viewerName, g)) {
+					if (edgeAttributesEditor(this.edge, viewerName, g)) {
 						jp2.setVisible(false);
 						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
 						g.clearCache();
@@ -631,7 +629,6 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 
 	/**
 	 * {@inheritDoc}
-	 *
 	 * If the mouse is over a picked vertex, drag all picked vertices with the mouse. If the mouse is not over a Vertex,
 	 * draw the rectangle to select multiple
 	 * Vertices
@@ -643,7 +640,6 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 
 	/**
 	 * {@inheritDoc}
-	 *
 	 * If the mouse is dragging a rectangle, pick the Vertices contained in that rectangle clean up settings from
 	 * mousePressed
 	 */
