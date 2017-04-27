@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
+import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.ALabelAlphabet.State;
 
@@ -116,6 +117,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 		@Override
 		public int compareTo(ALabel l) {
+			if (l == null)
+				return 1;
 			if (l.isEmpty())
 				return 0;
 			return -1;
@@ -123,18 +126,22 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 		@Override
 		public ALabel conjunction(final ALabel label) {
+			if (label.isEmpty())
+				return this;
 			return new ALabel(label);
 		}
 
 		@Override
 		public boolean contains(final ALabel label) {
-			if (label.isEmpty())
+			if (label == null || label.isEmpty())
 				return true;
 			return false;
 		}
 
 		@Override
 		public boolean contains(final ALetter letter) {
+			if (letter == null)
+				return true;
 			return false;
 		}
 
@@ -162,7 +169,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		public int size() {
 			return 0;
 		}
-		
+
 		@Override
 		public String toString() {
 			return String.valueOf(Constants.EMPTY_UPPER_CASE_LABEL);
@@ -411,7 +418,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			throw new IllegalArgumentException("Comparison is not possible because the input label has a different alphabet!");
 		byte i = 0, j = 0, cmp = 0;
 		State thisState, labelState;
-		
+
 		while (i <= this.maxIndex && j <= label.maxIndex) {
 			while ((thisState = getState(i)) == State.absent && i <= this.maxIndex) {
 				i++;
@@ -541,6 +548,18 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * Compare the letter with a node name.
+	 * 
+	 * @param node
+	 * @return true if the letter represents the node name.
+	 */
+	public boolean equals(final LabeledNode node) {
+		if (node == null)
+			return false;
+		return this.toString().equals(node.getName());
+	}
+
+	/**
 	 * @return The array of a-letters of present literals in this label in alphabetic order.
 	 */
 	public ALetter[] getAllLetter() {
@@ -573,7 +592,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * @param letterIndex the index of the literal to retrieve.
 	 * @return the letter with index literalIndex.
 	 */
-	private final ALetter getLetter(final byte letterIndex) {
+	final ALetter getLetter(final byte letterIndex) {
 		return this.alphabet.get(letterIndex);
 	}
 
@@ -581,7 +600,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * @param letterIndex the index of the literal to retrieve.
 	 * @return the status of literal with index literalIndex. If the literal is not present, it returns {@link State#absent}, otherwise .{@link State#present}.
 	 */
-	private final State getState(final byte letterIndex) {
+	final State getState(final byte letterIndex) {
 		long mask = 1L << letterIndex;
 		return ((this.bit0 & mask) != 0) ? State.present : State.absent;
 	}
@@ -642,7 +661,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * @param index the index of the letter to remove.
 	 */
-	private final void remove(final byte index) {
+	final void remove(final byte index) {
 		set(index, State.absent);
 	}
 
@@ -713,7 +732,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
-		if (this.isEmpty()) 
+		if (this.isEmpty())
 			return emptyLabel.toString();
 		final StringBuilder s = new StringBuilder();
 		State st;
