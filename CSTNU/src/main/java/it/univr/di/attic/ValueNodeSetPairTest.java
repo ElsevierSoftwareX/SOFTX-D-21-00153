@@ -5,6 +5,7 @@ package it.univr.di.labeledvalue;
 
 import static org.junit.Assert.*;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.univr.di.attic.ValueNodeSetPair;
 
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ import org.junit.Test;
 public class ValueNodeSetPairTest {
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.ValueNodeSetPair#ValueNodeSetPair(int, java.util.Set)}.
+	 * Test method for {@link it.univr.di.attic.ValueNodeSetPair#ValueNodeSetPair(int, java.util.Set)}.
 	 */
 	@SuppressWarnings("static-method")
 	@Test

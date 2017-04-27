@@ -30,7 +30,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	 * 
 	 */
 	private Class<C> labeledIntValueMapImpl;
-
+	
 	/**
 	 * @param labeledIntMapImplementation
 	 */

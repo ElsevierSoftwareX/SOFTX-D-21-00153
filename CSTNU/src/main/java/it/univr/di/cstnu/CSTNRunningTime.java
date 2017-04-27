@@ -163,14 +163,20 @@ public class CSTNRunningTime {
 	/**
 	 * Parameter for asking reaction time.
 	 */
-	@Option(required = false, name = "-reactionTime", usage = "Reaction time. It must be >= 0.")
-	private int reactionTime = 0;
+	@Option(required = false, name = "-reactionTime", usage = "Reaction time. It must be > 0.")
+	private int reactionTime = 1;
 
 	/**
 	 * Parameter for asking DC semantics.
 	 */
 	@Option(required = false, name = "-semantics", usage = "DC semantics. Default is the std one.")
 	private DCSemantics dcSemantics = DCSemantics.Std;
+
+	/**
+	 * Parameter for asking DC semantics.
+	 */
+	@Option(required = false, name = "-woNodeLabel", usage = "Check DC transforming the netwrok in an equivalente CSTN without node labels.")
+	private boolean woNodeLabels = false;
 
 	/**
 	 * Output stream to fOutput
@@ -314,19 +320,23 @@ public class CSTNRunningTime {
 		LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(g.getInternalLabeledValueMapImplementationClass());
 		GraphMLReader<LabeledIntGraph> graphMLReader;
 
-		CSTN cstn;
-		switch (tester.dcSemantics) {
-		case ε:
-			cstn = new CSTNepsilon(tester.reactionTime, g);
-			break;
-		case IR:
-			cstn = new CSTNir(g);
-			break;
-		default:
-			cstn = new CSTN(g);
-			break;
+		CSTN cstn = null;
+		if (tester.woNodeLabels) {
+			cstn = new CSTNwoNodeLabel(g);
+		} else {
+			switch (tester.dcSemantics) {
+			case ε:
+				cstn = new CSTNepsilon(tester.reactionTime, g);
+				break;
+			case IR:
+				cstn = new CSTNir(g);
+				break;
+			default:
+				cstn = new CSTN(g);
+				break;
+			}
 		}
-
+		
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
 		// For each graph, solve it, save its times in an array
 		for (File file : tester.inputCSTNFile) {

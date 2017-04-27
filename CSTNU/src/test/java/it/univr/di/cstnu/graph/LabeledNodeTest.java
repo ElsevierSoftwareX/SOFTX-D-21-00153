@@ -22,7 +22,7 @@ public class LabeledNodeTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		
+		//nothing for now
 	}
 
 

@@ -33,6 +33,7 @@ import edu.uci.ics.jung.io.graphml.NodeMetadata;
 import edu.uci.ics.jung.io.graphml.parser.ElementParserRegistry;
 import edu.uci.ics.jung.io.graphml.parser.GraphMLEventFilter;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
+import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
@@ -61,9 +62,66 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	private static Logger LOG = Logger.getLogger(GraphMLReader.class.getName());
 
 	/**
+	 * ALabel alphabet
+	 */
+	ALabelAlphabet aLabelAlphabet;
+
+	/**
 	 * 
 	 */
 	final protected GraphMLDocument document = new GraphMLDocument();
+
+	/**
+	 * LabeledIntEdge transformer
+	 */
+	Transformer<EdgeMetadata, LabeledIntEdge> edgeTransformer = new Transformer<EdgeMetadata, LabeledIntEdge>() {
+		Pattern pattern = Pattern.compile("^e[0-9]+$");
+
+		@Override
+		public LabeledIntEdge transform(final EdgeMetadata metaData) {
+			// final boolean optimized =
+			// Boolean.getBoolean(metaData.getProperty("Optimized"));
+			LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(GraphMLReader.this.mapTypeImplementation);
+			final LabeledIntEdge e = edgeFactory.create();
+			final String name = metaData.getId();
+			e.setName(metaData.getId());
+			if (this.pattern.matcher(name).matches()) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the mouse
+													// in the app.
+				final int n = Integer.parseInt(name.substring(1));
+				if (AbstractLabeledIntEdge.idSeq <= n) {
+					AbstractLabeledIntEdge.idSeq = n + 1;
+				}
+			}
+			e.setConstraintType(ConstraintType.valueOf(metaData.getProperty("Type")));
+
+			String data = metaData.getProperty("LabeledValues");
+			if (data != null) {
+				LabeledIntMap map = AbstractLabeledIntMap.parse(data);
+				if (data.length() > 2 && map == null) {
+					throw new IllegalArgumentException("Labeled values in a wrong format: " + data + " in edge " + name);
+				}
+				e.setLabeledValue(map);
+			}
+
+			data = metaData.getProperty("LowerCaseLabeledValues");
+			LabeledContingentIntTreeMap map1 = LabeledContingentIntTreeMap.parse(data, GraphMLReader.this.aLabelAlphabet);
+			if (data != null && data.length() > 2 && map1 == null)
+				throw new IllegalArgumentException("Lower Labeled values in a wrong format: " + data + " in edge " + name);
+			e.setLabeledLowerCaseValue(map1);
+			data = metaData.getProperty("UpperCaseLabeledValues");
+			map1 = LabeledContingentIntTreeMap.parse(data, GraphMLReader.this.aLabelAlphabet);
+			if (data != null && data.length() > 2 && map1 == null)
+				throw new IllegalArgumentException("Upper Labeled values in a wrong format: " + data + " in edge " + name);
+			e.setLabeledUpperCaseValue(map1);
+			// I parse also value parameter that was present in the first version of the graph file
+			String v = metaData.getProperty("Value");
+			if (v != null && !v.isEmpty()) {
+				// e.setInitialValue(Integer.parseInt(v));
+				e.putLabeledValue(Label.emptyLabel, Integer.parseInt(v));
+			}
+			return e;
+		}
+	};
 
 	/**
 	 * 
@@ -77,19 +135,34 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 		public LabeledIntGraph transform(final GraphMetadata metaData) {
 			final String name = metaData.getProperty("Name");
 			// final boolean optimized = Boolean.getBoolean(metaData.getProperty("Optimized"));
-			return new LabeledIntGraph(name, GraphMLReader.this.mapTypeImplementation);
+			LabeledIntGraph graph = new LabeledIntGraph(name, GraphMLReader.this.mapTypeImplementation, GraphMLReader.this.aLabelAlphabet);
+			return graph;
 		}
 	};
-
+	/**
+	 * HyperEdgeMetadata transformer that it is necessary to GraphMLreader2 but it not used.
+	 */
+	Transformer<HyperEdgeMetadata, LabeledIntEdge> hyperEdgeTransformer = new Transformer<HyperEdgeMetadata, LabeledIntEdge>() {
+		@Override
+		public LabeledIntEdge transform(final HyperEdgeMetadata metadata) {
+			LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(GraphMLReader.this.mapTypeImplementation);
+			final LabeledIntEdge e = edgeFactory.create();
+			return e;
+		}
+	};
 	/**
 	 * 
 	 */
 	protected boolean initialized;
-
+	/**
+	 * it is necessary for creating the right factory (reflection doesn't work due to reification!)
+	 */
+	Class<? extends LabeledIntMap> mapTypeImplementation;
 	/**
 	 * 
 	 */
 	final protected ElementParserRegistry<LabeledIntGraph, LabeledNode, LabeledIntEdge> parserRegistry;
+
 	/**
 	 * Vertex Transformer
 	 */
@@ -121,77 +194,20 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 			return v;
 		}
 	};
+	
 	/**
 	 * 
 	 */
 	protected XMLEventReader xmlEventReader;
 	/**
-	 * LabeledIntEdge transformer
+	 * @param graphFile
+	 * @param labeledValueSetImplementationClass
+	 * @throws FileNotFoundException
 	 */
-	Transformer<EdgeMetadata, LabeledIntEdge> edgeTransformer = new Transformer<EdgeMetadata, LabeledIntEdge>() {
-		Pattern pattern = Pattern.compile("^e[0-9]+$");
-
-		@Override
-		public LabeledIntEdge transform(final EdgeMetadata metaData) {
-			// final boolean optimized =
-			// Boolean.getBoolean(metaData.getProperty("Optimized"));
-			LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(GraphMLReader.this.mapTypeImplementation);
-			final LabeledIntEdge e = edgeFactory.create();
-			final String name = metaData.getId();
-			e.setName(metaData.getId());
-			if (this.pattern.matcher(name).matches()) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the mouse
-													// in the app.
-				final int n = Integer.parseInt(name.substring(1));
-				if (AbstractLabeledIntEdge.idSeq <= n) {
-					AbstractLabeledIntEdge.idSeq = n + 1;
-				}
-			}
-			e.setConstraintType(ConstraintType.valueOf(metaData.getProperty("Type")));
-
-			String data = metaData.getProperty("LabeledValues");
-			if (data != null) {
-				LabeledIntMap map = AbstractLabeledIntMap.parse(data);
-				if (data.length() > 2 && map == null) {
-					throw new IllegalArgumentException("Labeled values in a wrong format: " + data + " in edge " + name);
-				}
-				e.setLabeledValue(AbstractLabeledIntMap.parse(data));
-			}
-
-			data = metaData.getProperty("LowerCaseLabeledValues");
-			LabeledContingentIntTreeMap map1 = LabeledContingentIntTreeMap.parse(data);
-			if (data != null && data.length() > 2 && map1 == null)
-				throw new IllegalArgumentException("Lower Labeled values in a wrong format: " + data + " in edge " + name);
-			e.setLabeledLowerCaseValue(map1);
-			data = metaData.getProperty("UpperCaseLabeledValues");
-			map1 = LabeledContingentIntTreeMap.parse(data);
-			if (data != null && data.length() > 2 && map1 == null)
-				throw new IllegalArgumentException("Upper Labeled values in a wrong format: " + data + " in edge " + name);
-			e.setLabeledUpperCaseValue(LabeledContingentIntTreeMap.parse(data));
-			// I parse also value parameter that was present in the first version of the graph file
-			String v = metaData.getProperty("Value");
-			if (v != null && !v.isEmpty()) {
-				// e.setInitialValue(Integer.parseInt(v));
-				e.putLabeledValue(Label.emptyLabel, Integer.parseInt(v));
-			}
-			return e;
-		}
-	};
-	/**
-	 * HyperEdgeMetadata transformer that it is necessary to GraphMLreader2 but it not used.
-	 */
-	Transformer<HyperEdgeMetadata, LabeledIntEdge> hyperEdgeTransformer = new Transformer<HyperEdgeMetadata, LabeledIntEdge>() {
-		@Override
-		public LabeledIntEdge transform(final HyperEdgeMetadata metadata) {
-			LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(GraphMLReader.this.mapTypeImplementation);
-			final LabeledIntEdge e = edgeFactory.create();
-			return e;
-		}
-	};
-
-	/**
-	 * it is necessary for creating the right factory (reflection doesn't work due to reification!)
-	 */
-	Class<? extends LabeledIntMap> mapTypeImplementation;
+	@SuppressWarnings("resource")
+	public GraphMLReader(final File graphFile, Class<? extends LabeledIntMap> labeledValueSetImplementationClass) throws FileNotFoundException {
+		this(new FileReader(graphFile), labeledValueSetImplementationClass);
+	}
 
 	/**
 	 * <p>
@@ -208,17 +224,8 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	public GraphMLReader(final FileReader fileReader, Class<? extends LabeledIntMap> labeledValueSetImplementationClass) {
 		this.fileReader = fileReader;
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
+		this.aLabelAlphabet = new ALabelAlphabet();
 		this.parserRegistry = new ElementParserRegistry<>(this.document.getKeyMap(), this.graphTransformer, this.vertexTransformer, this.edgeTransformer, this.hyperEdgeTransformer);
-	}
-
-	/**
-	 * @param graphFile
-	 * @param labeledValueSetImplementationClass
-	 * @throws FileNotFoundException
-	 */
-	@SuppressWarnings("resource")
-	public GraphMLReader(final File graphFile, Class<? extends LabeledIntMap> labeledValueSetImplementationClass) throws FileNotFoundException {
-		this(new FileReader(graphFile), labeledValueSetImplementationClass);
 	}
 
 	/**

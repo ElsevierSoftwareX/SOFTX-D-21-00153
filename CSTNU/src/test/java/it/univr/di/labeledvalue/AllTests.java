@@ -6,10 +6,11 @@ import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * @author Roberto Posenato
- *
  */
 @RunWith(Suite.class)
-@SuiteClasses({ LabeledIntTreeMapTest.class, LabeledIntHierarchyMapTest.class, LabeledContingentIntTreeMapTest.class, LabeledIntNodeSetTreeMapTest.class, LabelTest.class, LiteralTest.class, ValueNodeSetPairTest.class })
+@SuiteClasses({ LabeledContingentIntTreeMapTest.class, LabeledIntTreeMapTest.class, LabeledIntHierarchyMapTest.class, LabelTest.class, LiteralTest.class
+//		,ValueNodeSetPairTest.class
+})
 public class AllTests {
-
+	//annotation is sufficient!
 }

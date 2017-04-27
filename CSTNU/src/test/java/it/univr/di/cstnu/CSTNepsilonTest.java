@@ -25,7 +25,7 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
 /**
  * @author posenato
  */
-public class CSTNTest {
+public class CSTNepsilonTest {
 
 	@SuppressWarnings("javadoc")
 	final Class<? extends LabeledIntMap> labeledIntValueMapClass = (new LabeledIntTreeMap()).getClass();
@@ -39,6 +39,12 @@ public class CSTNTest {
 	 * 
 	 */
 	CSTN cstn;
+
+	/**
+	 * Reaction time ε
+	 */
+	int reactionTime = 1;
+
 	/**
 	 * 
 	 */
@@ -60,7 +66,7 @@ public class CSTNTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTN(new LabeledIntGraph(LabeledIntTreeMap.class));
+		this.cstn = new CSTNepsilon(this.reactionTime, new LabeledIntGraph(LabeledIntTreeMap.class));
 	}
 
 	/**
@@ -68,6 +74,7 @@ public class CSTNTest {
 	 */
 	private final void wellDefinition(LabeledIntGraph g) {
 		this.cstn.setG(g);
+		
 		try {
 			this.cstn.checkWellDefinitionProperties();
 		} catch (WellDefinitionException e) {
@@ -90,13 +97,12 @@ public class CSTNTest {
 		g.addEdge(px, this.P, this.X);
 		g.setZ(this.Z);
 		// wellDefinition(g);
-
 		this.cstn.setG(g);
 		this.cstn.labelModificationR0(this.P, this.X, this.Z, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
-		pxOK.mergeLabeledValue(Label.parse("¬A¬B"), 0);// std semantics
+		pxOK.mergeLabeledValue(Label.parse("¬A¬B"), 0);// epsilon semantics
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
 
 		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
@@ -117,19 +123,13 @@ public class CSTNTest {
 		g.setZ(this.X);
 		g.addVertex(new LabeledNode("A", 'A'));
 		g.addVertex(new LabeledNode("B", 'B'));
-
 		this.cstn.setG(g);
-		try {
-			this.cstn.initAndCheck();
-		} catch (WellDefinitionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 		this.cstn.labelModificationR0(this.P, this.X, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
-		pxOK.mergeLabeledValue(Label.emptyLabel, 0);
+		pxOK.mergeLabeledValue(Label.parse("¬A¬B"), 0);
 
 		assertEquals("R0: P?Z labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 	}
@@ -285,7 +285,7 @@ public class CSTNTest {
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
 		yxOK.mergeLabeledValue(Label.parse("abc"), -10);
 		yxOK.mergeLabeledValue(Label.parse("abg"), -4);
-		yxOK.mergeLabeledValue(Label.parse("¬bc"), 0);// std semantics R3 rule with reaction time
+		yxOK.mergeLabeledValue(Label.parse("¬bc"), -1);// epsilon semantics R3 rule with reaction time
 		yxOK.mergeLabeledValue(Label.parse("bgp"), -4);
 		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
 		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
@@ -328,10 +328,16 @@ public class CSTNTest {
 		g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 		this.cstn.setG(g);
-
 		this.cstn.labelModificationR3(this.X, this.Z, this.Z, xz);
 
-		assertEquals("R3: yx labeled values.", "{abc¬p->-11, ab¿p->-15, ab¿c->-11, ab->-10}", xz.labeledValueSet().toString());
+		LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		// EqLP+
+		//"{abc¬p->-11, ab¿p->-15, ab¿c->-11, ab->-10}"
+		xyOK.mergeLabeledValue(Label.parse("ab"), -11);
+		xyOK.mergeLabeledValue(Label.parse("ab¿p"), -15);
+		xyOK.mergeLabeledValue(Label.parse("ab¿c"), -12);//epsilon semantics
+		
+		assertEquals("R3: yx labeled values.", xyOK.labeledValueSet(), xz.labeledValueSet());
 	}
 
 	/**
@@ -363,7 +369,6 @@ public class CSTNTest {
 		PY.mergeLabeledValue(Label.parse("b"), -10);
 
 		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		
 		g.addEdge(XP, this.X, this.P);
 		g.addEdge(XY, this.X, Y);
 		g.addEdge(PY, this.P, Y);
@@ -375,16 +380,16 @@ public class CSTNTest {
 		// System.out.println(XP);
 		// System.out.println(PY);
 
-		LabeledIntEdgePluggable XYok = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		// xyOK.mergeLabeledValue(Label.parse("¬A¬B"), 17);
 		// EqLP+
 		// xyOK.mergeLabeledValue(Label.parse("¬b"), 8);
-		XYok.mergeLabeledValue(Label.parse("¬ab"), -2);
-		XYok.mergeLabeledValue(Label.parse("b"), -1);
-		XYok.mergeLabeledValue(Label.parse("¿b"), -11);
+		xyOK.mergeLabeledValue(Label.parse("¬ab"), -2);
+		xyOK.mergeLabeledValue(Label.parse("b"), -1);
+		xyOK.mergeLabeledValue(Label.parse("¿b"), -11);
 
 
-		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
+		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
 		XP.clearLabels();
 		XP.mergeLabeledValue(Label.parse("b"), -1);
@@ -393,10 +398,10 @@ public class CSTNTest {
 		this.cstn.labeledPropagationRule(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
 
 		// EqLP+ rule no positive value
-		XYok.clearLabels();
+		xyOK.clearLabels();
 		// xyOK.mergeLabeledValue(Label.parse("¬b"), 10);
-		XYok.mergeLabeledValue(Label.parse("b"), -11);
-		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
+		xyOK.mergeLabeledValue(Label.parse("b"), -11);
+		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
 		XP.clearLabels();
 		// System.out.println("xp: " +XP);
@@ -413,10 +418,10 @@ public class CSTNTest {
 
 		// System.out.println("xy: " +xy);
 
-		XYok.mergeLabeledValue(Label.parse("¿b"), -20);
-		XYok.mergeLabeledValue(Label.parse("¬b"), -1);
+		xyOK.mergeLabeledValue(Label.parse("¿b"), -20);
+		xyOK.mergeLabeledValue(Label.parse("¬b"), -1);
 
-		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
+		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 	}
 
 	/**
@@ -453,18 +458,18 @@ public class CSTNTest {
 		g.addEdge(XY, this.X, Y);
 		g.addEdge(XZ, this.X, this.Z);
 		g.addEdge(YZ, Y, this.Z);
-		// wellDefinition(g);
+		wellDefinition(g);
 
 		// System.out.println(g);
 		// System.out.println(g1);
-		this.cstn.setG(g);
+		LabeledIntEdgePluggable XZnew = (LabeledIntEdgePluggable) g.findEdge(this.X, this.Z);
 
-		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
+		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZnew);
 		this.ok.clear();
 		this.ok.mergeLabeledValue("¬p", -1);
 		this.ok.mergeLabeledValue("p", -2);
 		this.ok.mergeLabeledValue("¿p", -5);
-		assertEquals("Label propagation rule with particular values", this.ok.getLabeledValueMap(), XZ.getLabeledValueMap());
+		assertEquals("Label propagation rule with particular values", this.ok.getLabeledValueMap(), XZnew.getLabeledValueMap());
 		// (¬p, -1, {X, Y}) nel caso in cui accettiamo la propagazione dei node set con valori di edge positivi
 
 		// ❮XZ; normal; {(¬p, -1) (p, -2) (¿p, -5, {X, Y}) }; ❯
@@ -497,20 +502,17 @@ public class CSTNTest {
 		YX.mergeLabeledValue(Label.parse("p"), 3);
 		YX.mergeLabeledValue(Label.parse("¬p"), -1);
 
-		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
-
-		g.addEdge(XX, this.X, this.X);
 		g.addEdge(XY, this.X, Y);
 		g.addEdge(YX, Y, this.X);
 		// System.out.println(g);
-
 		this.cstn.setG(g);
 		try {
 			this.cstn.initAndCheck();
 		} catch (WellDefinitionException e) {
 			e.printStackTrace();
 		}
-
+		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
+		g.addEdge(XX, this.X, this.X);
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
 		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
@@ -693,19 +695,16 @@ public class CSTNTest {
 		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
-		XZ.mergeLabeledValue(Label.emptyLabel, 0);
-
 		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.parse("¬p"), -1);
 		XY.mergeLabeledValue(Label.emptyLabel, 0);
+		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		XZ.mergeLabeledValue(Label.emptyLabel, 0);
 
 		g.addEdge(XY, this.X, Y);
 		g.addEdge(YZ, Y, this.Z);
 		g.addEdge(XZ, this.X, this.Z);
-
-		this.cstn.setG(g);
 		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
 
 		assertEquals("Label propagation rule with particular values", "{(-1, ¬p) (-2, p) }", XZ.getLabeledValueMap().toString());
@@ -742,13 +741,12 @@ public class CSTNTest {
 		LabeledIntEdgePluggable YY = new LabeledIntEdgePluggable("YY", this.labeledIntValueMapClass);
 
 		g.addEdge(XY, this.X, Y);
+		g.addEdge(YY, Y, Y);
 		g.addEdge(YX, Y, this.X);
 		g.addEdge(YZ, Y, this.Z);
 		g.addEdge(XZ, this.X, this.Z);
 		g.addEdge(XX, this.X, this.X);
-		g.addEdge(YY, Y, Y);
 
-		this.cstn.setG(g);
 		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
@@ -791,15 +789,15 @@ public class CSTNTest {
 
 		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
 		LabeledIntEdgePluggable YY = new LabeledIntEdgePluggable("YY", this.labeledIntValueMapClass);
-
+		
+		
 		g.addEdge(XY, this.X, Y);
+		g.addEdge(YY, Y, Y);
 		g.addEdge(YX, Y, this.X);
 		g.addEdge(YZ, Y, this.Z);
 		g.addEdge(XZ, this.X, this.Z);
 		g.addEdge(XX, this.X, this.X);
-		g.addEdge(YY, Y, Y);
 
-		this.cstn.setG(g);
 		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
 		// assertEquals("XZ", "{(0, ⊡) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
 		assertEquals("XZ", "{(0, ⊡) (-2, ¿p) }", XZ.getLabeledValueMap().toString());// if negative sum value are q-propagate
@@ -853,7 +851,7 @@ public class CSTNTest {
 		g.addEdge(YZ, Y, this.Z);
 		g.addEdge(XZ, this.X, this.Z);
 		g.addEdge(XX, this.X, this.X);
-		this.cstn.setG(g);
+
 		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
@@ -897,10 +895,10 @@ public class CSTNTest {
 		this.cstn.dynamicConsistencyCheck();
 
 		LabeledIntEdgePluggable RZnew = (LabeledIntEdgePluggable) g.findEdge(R.getName(), this.Z.getName());
-		// Std semantics
+		// espilon semantics
 		this.ok.clear();
-		this.ok.mergeLabeledValue("⊡", -12);
-		this.ok.mergeLabeledValue("p", -14);
+		this.ok.mergeLabeledValue("⊡", -13);
+		this.ok.mergeLabeledValue("p", -15);
 		this.ok.mergeLabeledValue("p¬q", -16);
 		// assertEquals("Qstar check"okRZ; normal; {(⊡, -12) (p, -14) (p¬q -16) }; ❯", RZnew.toString()); std semantics
 		// assertEquals("Qstar check"okRZ; normal; {(⊡, -13) (p, -15) (p¬q -16) }; ❯", RZnew.toString()); epsilon semantics
@@ -908,7 +906,7 @@ public class CSTNTest {
 
 		LabeledIntEdgePluggable QZnew = (LabeledIntEdgePluggable) g.findEdge(Q.getName(), this.Z.getName());
 		this.ok.clear();
-		this.ok.mergeLabeledValue("⊡", -12);
+		this.ok.mergeLabeledValue("⊡", -13);//espsilon semantics
 		this.ok.mergeLabeledValue("p", -14);
 		assertEquals("Qstar check", this.ok.getLabeledValueMap(), QZnew.getLabeledValueMap());
 

@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import edu.uci.ics.jung.visualization.RenderContext;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
@@ -123,7 +124,7 @@ public interface LabeledIntEdge extends Component {
 	 * The ordinary labeled values have Constants.EMPTY_UPPER_CASE_LABELstring as Upper-case letter.
 	 * @return the set of all ordinary labeled values and upper case ones.
 	 */
-	public ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> getAllUpperCaseAndOrdinaryLabeledValuesSet();
+	public ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getAllUpperCaseAndOrdinaryLabeledValuesSet();
 
 	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
@@ -138,16 +139,16 @@ public interface LabeledIntEdge extends Component {
 	/**
 	 * @return the map of Lower Case Labels of the edge.
 	 */
-	public ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> getLowerLabelSet();
+	public ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getLowerLabelSet();
 
 	/**
-	 * Returns the value associated to the lower label of the occurrence of node n if it exists, null otherwise;
+	 * Returns the value associated to the lower label of the occurrence of node nodeName if it exists, null otherwise;
 	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param n a {@link it.univr.di.cstnu.graph.LabeledNode} object.
+	 * @param nodeName a {@link ALabel} object.
 	 * @return the value associated to the labeled wait if it exists.
 	 */
-	public int getLowerLabelValue(final Label l, final LabeledNode n);
+	public int getLowerLabelValue(final Label l, final ALabel nodeName);
 
 	/**
 	 * @return the minimal value among all Lower Case Label if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
@@ -183,7 +184,7 @@ public interface LabeledIntEdge extends Component {
 	 *         among the labels
 	 *         subsumed by l if one exists, null otherwise.
 	 */
-	public int getMinValueConsistentWith(final Label l, final String upperL);
+	public int getMinValueConsistentWith(final Label l, final ALabel upperL);
 
 	/**
 	 * @return the labeled values that cannot be further added to the labeled value set of this edge
@@ -208,21 +209,14 @@ public interface LabeledIntEdge extends Component {
 	/**
 	 * @return The map of Upper Case Labels of the edge.
 	 */
-	public ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> getUpperLabelSet();
+	public ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getUpperLabelSet();
 
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param n a {@link it.univr.di.cstnu.graph.LabeledNode} object.
+	 * @param name a {@link ALabel} node name.
 	 * @return the value associated to the upper label of the occurrence of node n if it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
-	public int getUpperLabelValue(final Label l, final LabeledNode n);
-
-	/**
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param name a {@link java.lang.String} object.
-	 * @return the value associated to the upper label of the occurrence of node n if it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
-	 */
-	public int getUpperLabelValue(final Label l, final String name);
+	public int getUpperLabelValue(final Label l, final ALabel name);
 
 	/**
 	 * @param label label
@@ -264,7 +258,7 @@ public interface LabeledIntEdge extends Component {
 	/**
 	 * @return the representation of all Lower Case Labels as a string.
 	 */
-	public String lowerLabelsToString();
+	public String lowerLabelsAsString();
 
 	/**
 	 * Merges the labeled value i to the set of labeled values of this edge.
@@ -273,8 +267,8 @@ public interface LabeledIntEdge extends Component {
 	 * @param i an integer.
 	 * @param s the node set to add.
 	 * @return true if the operation was successful, false otherwise.
+	public boolean mergeLabeledValue(final Label l, final int i, ObjectSet<ALabel> s);
 	 */
-	public boolean mergeLabeledValue(final Label l, final int i, ObjectSet<String> s);
 
 	/**
 	 * Merges the labeled value i to the set of labeled values of this edge.
@@ -309,33 +303,11 @@ public interface LabeledIntEdge extends Component {
 	 * If a lower label with label l for node n is already present, it is overwritten.
 	 *
 	 * @param l It cannot be null or empty.
-	 * @param n the node. It cannot be null.
+	 * @param nodeName the node. It cannot be null.
 	 * @param i It cannot be null.
 	 * @return true if the merge has been successful.
 	 */
-	public boolean mergeLowerLabelValue(final Label l, final LabeledNode n, final int i);
-
-	/**
-	 * Set a lower label constraint with delay i for the node n with label l.<br>
-	 * If a lower label with label l for node n is already present, it is overwritten.
-	 *
-	 * @param l It cannot be null or empty.
-	 * @param nodeName the node. It cannot be null. It must be the unmodified name of the node. 
-	 * @param i It cannot be null.
-	 * @return true if the merge has been successful.
-	 */
-	public boolean mergeLowerLabelValue(final Label l, String nodeName, final int i);
-
-	/**
-	 * Set a upper label constraint with delay i for the node n with label l.<br>
-	 * If a upper label with label l for node n is already present, it is overwritten.
-	 *
-	 * @param l It cannot be null or empty.
-	 * @param n the node. It cannot be null.
-	 * @param i It cannot be null.
-	 * @return true if the merge has been successful.
-	 */
-	public boolean mergeUpperLabelValue(final Label l, final LabeledNode n, final int i);
+	public boolean mergeLowerLabelValue(final Label l, ALabel nodeName, final int i);
 
 	/**
 	 * Set a upper label constraint with delay i for the node name n with label l.<br>
@@ -346,7 +318,7 @@ public interface LabeledIntEdge extends Component {
 	 * @param i It cannot be nullInt.
 	 * @return true if the merge has been successful.
 	 */
-	public boolean mergeUpperLabelValue(final Label l, String nodeName, final int i);
+	public boolean mergeUpperLabelValue(final Label l, ALabel nodeName, final int i);
 
 	/**
 	 * <p>
@@ -378,7 +350,7 @@ public interface LabeledIntEdge extends Component {
 	 * @param i an int.
 	 * @return the old value
 	 */
-	public int putUpperLabeledValueToRemovedList(final Label l, final LabeledNode n, final int i);
+//	public int putUpperLabeledValueToRemovedList(final Label l, final LabeledNode n, final int i);
 
 	/**
 	 * Put the labeled value (l, n, i) to the list of removed labeled values in order to avoid possible future put/merge
@@ -389,7 +361,7 @@ public interface LabeledIntEdge extends Component {
 	 * @param i a int.
 	 * @return the previous value.
 	 */
-	public int putUpperLabeledValueToRemovedList(final Label l, final String n, final int i);
+	public int putUpperLabeledValueToRemovedList(final Label l, final ALabel n, final int i);
 
 	/**
 	 * Remove the label l from the map. If the label is not present, it does nothing.
@@ -403,10 +375,10 @@ public interface LabeledIntEdge extends Component {
 	 * Remove the lower label for node n with label l.
 	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param n a {@link it.univr.di.cstnu.graph.LabeledNode} object.
+	 * @param n a {@link ALabel} object.
 	 * @return the value of the removed labeled value
 	 */
-	public int removeLowerLabel(final Label l, final LabeledNode n);
+	public int removeLowerLabel(final Label l, final ALabel n);
 
 	/**
 	 * Remove the upper label for node n with label l.
@@ -415,16 +387,16 @@ public interface LabeledIntEdge extends Component {
 	 * @param n a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 * @return the value of the removed element.
 	 */
-	public int removeUpperLabel(final Label l, final LabeledNode n);
+//	public int removeUpperLabel(final Label l, final LabeledNode n);
 
 	/**
 	 * Remove the upper label for node name n with label l.
 	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param n a {@link java.lang.String} object.
+	 * @param n a {@link ALabel} node name
 	 * @return the old value
 	 */
-	public int removeUpperLabel(final Label l, final String n);
+	public int removeUpperLabel(final Label l, final ALabel n);
 
 	/**
 	 * <p>
@@ -469,6 +441,6 @@ public interface LabeledIntEdge extends Component {
 	/**
 	 * @return the representation of all Upper Case Labels of the edge.
 	 */
-	public String upperLabelsToString();
+	public String upperLabelsAsString();
 
 }

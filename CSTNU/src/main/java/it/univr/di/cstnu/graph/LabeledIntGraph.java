@@ -29,6 +29,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+import it.univr.di.labeledvalue.ALabel;
+import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
@@ -123,6 +125,18 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 */
 	Class<? extends LabeledIntMap> internalMapImplementationClass;
 
+	/** 
+	 * Alphabet for A-Label
+	 */
+	private ALabelAlphabet aLabelAlphabet;
+	
+	/**
+	 * @return the aLabelAlphabet
+	 */
+	public ALabelAlphabet getALabelAlphabet() {
+		return this.aLabelAlphabet;
+	}
+
 	/**
 	 * Set of edges with lower case label set not empty
 	 */
@@ -174,6 +188,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.nodeName2index.defaultReturnValue(Constants.INT_NULL);
 		this.index2node = new Int2ObjectOpenHashMap<>();
 		this.edge2index = new Object2ObjectRBTreeMap<>();
+		this.aLabelAlphabet = new ALabelAlphabet();
 	}
 
 	/**
@@ -188,6 +203,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		if (g == null)
 			return;
 		this.name = g.name;
+		this.aLabelAlphabet = g.aLabelAlphabet;
 
 		// clone all nodes
 		LabeledNode vNew;
@@ -228,6 +244,20 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	public <C extends LabeledIntMap> LabeledIntGraph(final String name, Class<C> internalMapImplementationClass) {
 		this(internalMapImplementationClass);
 		this.name = name;
+	}
+
+	/**
+	 * Constructor for LabeledIntGraph.
+	 *
+	 * @param name a name for the graph
+	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
+	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
+	 * @param alphabet alfabet for upper case letter used to label values in the edges.
+	 */
+	public <C extends LabeledIntMap> LabeledIntGraph(final String name, Class<C> internalMapImplementationClass, ALabelAlphabet alphabet) {
+		this(internalMapImplementationClass);
+		this.name = name;
+		this.aLabelAlphabet=alphabet;
 	}
 
 	/**
@@ -461,10 +491,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					continue;
 				eNew.mergeLabeledValue(entry.getKey(), value);
 			}
-			for (Object2IntMap.Entry<Entry<Label, String>> entry : e.getUpperLabelSet()) {
+			for (Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getUpperLabelSet()) {
 				eNew.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
 			}
-			for (Object2IntMap.Entry<Entry<Label, String>> entry : e.getLowerLabelSet()) {
+			for (Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getLowerLabelSet()) {
 				eNew.mergeLowerLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
 			}
 			addEdge((AbstractLabeledIntEdge) eNew, g.getSource(e).getName(), g.getDest(e).getName());
@@ -1102,8 +1132,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		for (final LabeledIntEdge e : this.getEdges()) {
 			sb.append("<" + e.getName() + ",\t" + e.getConstraintType() + ",\t" + this.getSource(e).getName() + ",\t"
 					+ this.getDest(e).getName() + ",\tL:" + e.getLabeledValueMap().toString() + ", LL:"
-					+ e.lowerLabelsToString()
-					+ ", UL:" + e.upperLabelsToString() + ">\n");
+					+ e.lowerLabelsAsString()
+					+ ", UL:" + e.upperLabelsAsString() + ">\n");
 		}
 		return sb.toString();
 	}

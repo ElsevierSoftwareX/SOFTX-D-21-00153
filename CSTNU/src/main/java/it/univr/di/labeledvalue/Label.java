@@ -19,9 +19,9 @@ import it.univr.di.labeledvalue.Literal.State;
  * <p>
  * Design assumptions
  * Since in CSTN(U) project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
- * to represent a label is to limit the possible propositions to the range [a...z] and to use two ints for representing the state of literals composing a label:
- * the two int are used in pair; each position of them is associated to a possible literal (position 0 to 'a',...,position 25 to 'z'); given a position,
- * the two corresponding bits in the two ints can represent all possible four states ({@link Literal.State} of the literal associated to the position.</p>
+ * to represent a label is to limit the possible propositions to the range [A-Z,a-z,α-μ] and to use two <code>long</code> for representing the state of literals composing a label:
+ * the two long are used in pair; each position of them is associated to a possible literal (position 0 to 'A',...,position 63 to 'μ'); given a position,
+ * the two corresponding bits in the two long can represent all possible four states ({@link Literal.State} of the literal associated to the position.</p>
  * <p>
  * The following table represent execution times of some Label operations determined using different implementation of this class.</p>
  * <table border="1">
@@ -950,11 +950,11 @@ public class Label implements Comparable<Label> {
 	 * The negation operator returns a set of all negative literals of this label.<br>
 	 * Bear in mind that the complement of a literal with unknown state is a null object.
 	 *
-	 * @return the set of all negative literal of this. If this is empty, returns null;
+	 * @return the set of all negative literal of this as an array. If this is empty, returns an empty array.;
 	 */
 	public Literal[] negation() {
 		if (this.isEmpty())
-			return null;
+			return new Literal[0];
 
 		final Literal[] literals = new Literal[size()];
 		int j = 0;

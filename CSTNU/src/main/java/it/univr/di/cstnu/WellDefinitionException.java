@@ -4,8 +4,8 @@
 package it.univr.di.cstnu;
 
 /**
- * <p>WellDefinitionException class.</p>
- *
+ * Some common types of unsatisfied property for well defined CSTN.
+ * 
  * @author posenato
  * @version $Id: $Id
  */
@@ -20,8 +20,9 @@ public class WellDefinitionException extends Exception {
 		LabelInconsistent,
 		LabelNotSubsumes,
 		ObservationNodeDoesNotExist,
+		@Deprecated
 		ObservationNodeDoesNotOccurBefore
-	};
+	}
 	
 	/**
 	 * Type of exception.
@@ -37,7 +38,7 @@ public class WellDefinitionException extends Exception {
 	 */
 	public WellDefinitionException() {
 		super();
-		type = null;
+		this.type = null;
 	}
 
 	/**
@@ -47,7 +48,7 @@ public class WellDefinitionException extends Exception {
 	 */
 	public WellDefinitionException(String message) {
 		super(message);
-		type = null;
+		this.type = null;
 	}
 
 	/**
@@ -58,7 +59,7 @@ public class WellDefinitionException extends Exception {
 	 */
 	public WellDefinitionException(String message, Type t) {
 		super(message);
-		type = t;
+		this.type = t;
 	}
 
 	/**
@@ -99,6 +100,6 @@ public class WellDefinitionException extends Exception {
 	 * @return the subtype of exception.
 	 */
 	Type getType() {
-		return type;
+		return this.type;
 	}
 }

@@ -3,23 +3,20 @@
  */
 package it.univr.di.labeledvalue;
 
-import static org.junit.Assert.*;
-import it.univr.di.labeledvalue.Literal.State;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.Before;
 import org.junit.Test;
+
+import it.univr.di.labeledvalue.Literal.State;
 
 /**
  * @author posenato
  *
  */
 public class LiteralTest {
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@Before
-	public void setUp() throws Exception {}
 
 	/**
 	 * Test method for {@link it.univr.di.labeledvalue.Literal#parse(java.lang.String)}.
@@ -29,7 +26,7 @@ public class LiteralTest {
 	public final void testParse() {
 		Literal a = Literal.parse("a");
 		Literal notA = Literal.parse("¬a");
-		Literal aOk = new Literal('a');
+		Literal aOk = Literal.create('a');
 		
 		assertArrayEquals("Verifica del parser: ", new Literal[] {aOk, aOk.getComplement()}, new Literal[]{a, notA} );
 	}
@@ -43,7 +40,7 @@ public class LiteralTest {
 	public final void testCompareTo() {
 		Literal a = Literal.parse("a");
 		Literal notA = Literal.parse("¬a");
-		Literal unkA = new Literal('a', State.unknown);
+		Literal unkA = Literal.create('a', State.unknown);
 		
 		assertTrue(a.compareTo(notA)>0);
 		assertTrue(a.compareTo(a)==0);
@@ -77,7 +74,7 @@ public class LiteralTest {
 		Literal a = Literal.parse("a");
 		Literal notA = a.getComplement();
 
-		Literal unA = new Literal('a', State.unknown);
+		Literal unA = Literal.create('a', State.unknown);
 		
 		assertFalse(notA.equals(a));
 		assertTrue(unA.getComplement()==null);
@@ -91,11 +88,15 @@ public class LiteralTest {
 	public final void testToString() {
 		Literal a = Literal.parse("a");
 		Literal notA = Literal.parse("¬a");
-		Literal unkA = new Literal('a', State.unknown);
+		Literal unkA = Literal.create('a', State.unknown);
 
 		assertEquals("a", a.toString());
 		assertEquals("¬a", notA.toString());
 		assertEquals("¿a", unkA.toString());
+		assertEquals(1, State.negated.ordinal());
+		assertEquals(2, State.straight.ordinal());
+		assertEquals(3, State.unknown.ordinal());
+		
 	}
 
 }

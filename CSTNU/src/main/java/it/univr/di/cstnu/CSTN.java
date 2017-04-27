@@ -29,6 +29,7 @@ import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.StaticLayout;
+import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -241,8 +242,8 @@ public class CSTN {
 				}
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 			}
-			//Checks if label subsumes all observation time point labels of involved obs t.p.
-			//WD3 property.
+			// Checks if label subsumes all observation time point labels of involved obs t.p.
+			// WD3 property.
 			Label currentLabelModified = new Label(currentLabel);
 			for (final char l : currentLabel.getPropositions()) {
 				LabeledNode obs = this.g.getObservator(l);
@@ -725,6 +726,30 @@ public class CSTN {
 		}
 		this.g.clearCache();
 
+		// Checks the presence of Z node!
+		LabeledNode Z = this.g.getZ();
+		if (Z == null) {
+			Z = this.g.getNode(this.ZeroNodeName);
+			if (Z == null) {
+				// We add by authority!
+				Z = new LabeledNode(this.ZeroNodeName);
+				Z.setX(0.0);
+				Z.setY(0.0);
+				this.g.addVertex(Z);
+				if (LOG.isLoggable(Level.WARNING))
+					LOG.log(Level.WARNING, "No " + this.ZeroNodeName + " node found: added!");
+			}
+			this.g.setZ(Z);
+		} else {
+			if (!Z.getLabel().isEmpty()) {
+				if (LOG.isLoggable(Level.WARNING))
+					LOG.log(Level.WARNING, "In the graph, Z node has not empty label. Label removed!");
+				Z.setLabel(Label.emptyLabel);
+			}
+			this.ZeroNodeName = Z.getName();
+		}
+
+		// Checks well definiteness of edges
 		this.maxWeight = 0;
 		for (final LabeledIntEdge e : this.g.getEdges()) {
 			if (LOG.isLoggable(Level.FINEST)) {
@@ -769,9 +794,11 @@ public class CSTN {
 		// Init two useful structures
 		this.g.getPropositions();
 
+		// Checks well definiteness of nodes 
 		final Collection<LabeledNode> nodeSet = this.g.getVertices();
 		for (final LabeledNode node : nodeSet) {
-			// Check that observation node has no in the proposition observed its label!
+
+			// 1. Checks that observation node doesn't have the observed proposition in its label!
 			final char obs = node.getPropositionObserved();
 			final Label label = node.getLabel();
 			if (obs != Constants.UNKNOWN) {
@@ -790,46 +817,20 @@ public class CSTN {
 			} catch (final WellDefinitionException ex) {
 				throw new WellDefinitionException("WellDefinition 2 problem found at node " + node + ": " + ex.getMessage());
 			}
-		}
-
-		// Start of well definition and properties about nodes (w.r.t. the Z node)!
-		LabeledNode Z = this.g.getZ();
-		if (Z == null) {
-			Z = this.g.getNode(this.ZeroNodeName);
-			if (Z == null) {
-				// We add by authority!
-				Z = new LabeledNode(this.ZeroNodeName);
-				Z.setX(0.0);
-				Z.setY(0.0);
-				this.g.addVertex(Z);
-				if (LOG.isLoggable(Level.WARNING))
-					LOG.log(Level.WARNING, "No " + this.ZeroNodeName + " node found: added!");
-			}
-			this.g.setZ(Z);
-		} else {
-			if (!Z.getLabel().isEmpty()) {
-				if (LOG.isLoggable(Level.WARNING))
-					LOG.log(Level.WARNING, "In the graph, Z node has not empty label. Label removed!");
-				Z.setLabel(Label.emptyLabel);
-			}
-			this.ZeroNodeName = Z.getName();
-		}
-
-		// Now I assuring that each node has an edge to Z.
-		for (final LabeledNode node : nodeSet) {
-			if (node != Z) {
-				LabeledIntEdge e = this.g.findEdge(node, Z);
-				if (e == null) {
-					e = makeNewEdge(node.getName() + "_" + this.ZeroNodeName, LabeledIntEdge.ConstraintType.derived);
-					this.g.addEdge(e, node, Z);
-					if (LOG.isLoggable(Level.WARNING)) {
-						LOG.log(Level.WARNING,
-								"It is necessary to add a constraint to guarantee that node '" + node.getName() + "' occurs after node '" + this.ZeroNodeName
-										+ "'.");
-					}
+			
+			// 3. Checks that each node has an edge to Z.
+			if (node == Z) continue;
+			LabeledIntEdge edgeToZ = this.g.findEdge(node, Z);
+			if (edgeToZ == null) {
+				edgeToZ = makeNewEdge(node.getName() + "_" + this.ZeroNodeName, ConstraintType.internal);
+				this.g.addEdge(edgeToZ, node, Z);
+				if (LOG.isLoggable(Level.WARNING)) {
+					LOG.log(Level.WARNING,
+							"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs after '" + this.ZeroNodeName + "'.");
 				}
-				e.mergeLabeledValue(node.getLabel(), 0);// in any case, all nodes must be after Z!
 			}
+			edgeToZ.mergeLabeledValue(node.getLabel(), 0);// in any case, all nodes must be after Z!
+
 		}
 
 		// It is better to normalize with respect to the label modification rules before starting the DC check.
@@ -1107,11 +1108,10 @@ public class CSTN {
 	 * @param eAB CANNOT BE NULL! This parameter is necessary only to speed up the method!
 	 * @param eBC CANNOT BE NULL! This parameter is necessary only to speed up the method!
 	 * @param eAC CANNOT BE NULL! This parameter is necessary only to speed up the method!
-	 * @param nZ the Z node in currentGraph (only to speed-up)
 	 * @return true if a reduction has been applied.
 	 */
 	boolean labeledPropagationRule(final LabeledNode nA, final LabeledNode nB, final LabeledNode nC, final LabeledIntEdge eAB,
-			final LabeledIntEdge eBC, LabeledIntEdge eAC, final LabeledNode nZ) {
+			final LabeledIntEdge eBC, LabeledIntEdge eAC) {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false;
@@ -1145,17 +1145,17 @@ public class CSTN {
 						continue;
 					}
 					// sum is negative!
-					if (!newLabelAC.containsUnknown()) {
+					if (!qLabel) {
 						eAC.mergeLabeledValue(newLabelAC, sum);
 						if (LOG.isLoggable(Level.FINER)) {
 							String log = "Label Propagation Rule applied to edge " + eAC.getName()
-							+ ":\nsource: "
-							+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
-							+ "---> "
-							+ nC.getName()
-							+ "\nresult: "
-							+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
-							+ "; old value: " + Constants.formatInt(oldValue);
+									+ ":\nsource: "
+									+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
+									+ "---> "
+									+ nC.getName()
+									+ "\nresult: "
+									+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
+									+ "; old value: " + Constants.formatInt(oldValue);
 							LOG.log(Level.FINER, log + "\n***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
 						}
 						this.checkStatus.consistency = false;
@@ -1536,7 +1536,7 @@ public class CSTN {
 					edgeCopy = null;
 				}
 
-				this.labeledPropagationRule(A, B, C, AB, BC, AC, Z);
+				this.labeledPropagationRule(A, B, C, AB, BC, AC);
 
 				if (!this.checkStatus.consistency)
 					return this.checkStatus;
@@ -1598,7 +1598,7 @@ public class CSTN {
 					edgeCopy = null;
 				}
 
-				this.labeledPropagationRule(C, A, B, CA, AB, CB, Z);
+				this.labeledPropagationRule(C, A, B, CA, AB, CB);
 				if (!this.checkStatus.consistency)
 					return this.checkStatus;
 
@@ -1688,7 +1688,7 @@ public class CSTN {
 						AC = makeNewEdge(A.getName() + "_" + C.getName(), LabeledIntEdge.ConstraintType.derived);
 					}
 
-					this.labeledPropagationRule(A, B, C, AB, BC, AC, Z);
+					this.labeledPropagationRule(A, B, C, AB, BC, AC);
 
 					if (!this.checkStatus.consistency)
 						return this.checkStatus;

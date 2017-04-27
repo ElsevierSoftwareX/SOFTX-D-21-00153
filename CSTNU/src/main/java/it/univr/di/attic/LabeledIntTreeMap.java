@@ -1,4 +1,3 @@
-import it.univr.di.labeledvalue.Constants;
 
 //package it.univr.di.labeledvalue;
 //

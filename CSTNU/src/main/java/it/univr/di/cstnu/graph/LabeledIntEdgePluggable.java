@@ -11,7 +11,9 @@ import java.util.logging.Logger;
 import org.apache.commons.lang.NotImplementedException;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
@@ -222,7 +224,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @return the value associated to the upper label of the occurrence of node n if it exists or the minimal values among the labels subsumed by l if one
 	 *         exists, null otherwise.
 	 */
-	public int getMinValueConsistentWith(final Label l, final String upperL) {
+	public int getMinValueConsistentWith(final Label l, final ALabel upperL) {
 		return this.upperLabel.getMinValueConsistentWith(l, upperL);
 	}
 
@@ -276,21 +278,35 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 			return false;
 		}
 		this.removedLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again
-		boolean exit = this.labeledValue.put(l, i);
-		return exit;
+		boolean added = this.labeledValue.put(l, i);
+		if (added) {// I try to clean UPPER values
+			ObjectSet<Entry<java.util.Map.Entry<Label, ALabel>>> upperLabelValueSet = this.getUpperLabelSet();
+			if (upperLabelValueSet.size() > 0) {
+				for (Entry<java.util.Map.Entry<Label, ALabel>> entry : upperLabelValueSet) {
+					Label label = entry.getKey().getKey();
+					int value = entry.getIntValue();
+					if (label.subsumes(l) && value >= i) {
+						ALabel alabel = entry.getKey().getValue();
+						this.putUpperLabeledValueToRemovedList(label, alabel, value);
+						this.removeUpperLabel(label, alabel);
+					}
+				}
+			}
+		}
+		return added;
 	}
 
-	/**
-	 * <b>This method is defined for making easier the management of nodeSet for some kinds of internal labeled value maps.</b>
-	 * Merges the labeled value i to the set of labeled values of this edge.
-	 * [2017-04-07] Posenato<br>
-	 * NodeSet are not more necessary thanks to EqLP+ rule!<br>
-	 * 
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param i an integer.
-	 * @param s the node set to add.
-	 * @return true if the operation was successful, false otherwise.
-	 */
+	// /**
+	// * <b>This method is defined for making easier the management of nodeSet for some kinds of internal labeled value maps.</b>
+	// * Merges the labeled value i to the set of labeled values of this edge.
+	// * [2017-04-07] Posenato<br>
+	// * NodeSet are not more necessary thanks to EqLP+ rule!<br>
+	// *
+	// * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	// * @param i an integer.
+	// * @param s the node set to add.
+	// * @return true if the operation was successful, false otherwise.
+	// */
 	// @Override
 	// public boolean mergeLabeledValue(final Label l, final int i, ObjectSet<String> s) {
 	// if ((l == null) || (i == Constants.INT_NULL)) || this.labeledValueMapFactory.getReturnedObjectClass() != LabeledIntNodeSetTreeMap.class)
@@ -308,18 +324,18 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	// return exit;
 	// }
 
-	/**
-	 * This method is defined for making easier the management of nodeSet for some kinds of internal labeled value maps.
-	 * 
-	 * [2017-04-07] Posenato<br>
-	 * NodeSet are not more necessary thanks to EqLP+ rule!<br>
-	 * 
-	 * param label label
-	 * return the node set associated to label it it exists, null otherwise.
-	 */
-	// public SortedSet<String> getNodeSet(final Label label) {
-	// return ((LabeledIntNodeSetTreeMap) this.labeledValue).getNodeSet(label);
-	// }
+	// /**
+	// * This method is defined for making easier the management of nodeSet for some kinds of internal labeled value maps.
+	// *
+	// * [2017-04-07] Posenato<br>
+	// * NodeSet are not more necessary thanks to EqLP+ rule!<br>
+	// *
+	// * param label label
+	// * return the node set associated to label it it exists, null otherwise.
+	// */
+	// // public SortedSet<String> getNodeSet(final Label label) {
+	// // return ((LabeledIntNodeSetTreeMap) this.labeledValue).getNodeSet(label);
+	// // }
 
 	@Override
 	public void mergeLabeledValue(LabeledIntMap map) {

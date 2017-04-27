@@ -21,7 +21,9 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/**
 	 * Admissible chars in a label and associated value.
 	 */
-	static final String labelCharsRE = Constants.LABEL_RE + "0-9,\\-";
+	static final String valueRE = "[ ,0-9∞" + Pattern.quote("-") + "]+";
+	@SuppressWarnings("javadoc")
+	static final String labeledValueRE = "(" + Constants.LABEL_RE + valueRE + "|" + valueRE + Constants.LABEL_RE + ")";
 
 	/**
 	 * logger
@@ -31,8 +33,12 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/**
 	 * Matcher for labeled values.
 	 */
-	static final Pattern patternlabelCharsRE = Pattern
-			.compile("\\{[" + Pattern.quote(Constants.OPEN_PAIR) + labelCharsRE + Pattern.quote(Constants.CLOSE_PAIR) + " ]*\\}");
+	static final Pattern patternLabelCharsRE = Pattern
+			.compile(Pattern.quote("{")
+					+ "(" 
+					+ Pattern.quote(Constants.OPEN_PAIR) + labeledValueRE + Pattern.quote(Constants.CLOSE_PAIR) 
+					+ "[ ]*)*"
+					+ Pattern.quote("}"));
 
 	/**
 	 *
@@ -43,7 +49,8 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 * RE for splitting a list of labeled values.
 	 */
 	static final Pattern splitterEntry = Pattern
-			.compile("\\{\\}|[{" + Pattern.quote(Constants.OPEN_PAIR) + "]+|" + Pattern.quote(Constants.CLOSE_PAIR) + " [" + Constants.OPEN_PAIR + "}]*");
+			.compile(Pattern.quote("{") + Pattern.quote("}") + "|[{" + Pattern.quote(Constants.OPEN_PAIR) + "]+|" + Pattern.quote(Constants.CLOSE_PAIR) + " ["
+					+ Constants.OPEN_PAIR + "} ]*");
 
 	/**
 	 *
@@ -70,19 +77,18 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 
 	/**
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
-	 * The format of the string is given by the method {@link #toString()}:<br>
-	 * {\[(&lt;key&gt;, &lt;value&gt;) \]*}
+	 * The format of the string is given by the method {@link #toString()}: {\[(&lt;value&gt;, &lt;key&gt;) \]*}
+	 * This method is also capable to parse the old format: {\[(&lt;key&gt;, &lt;value&gt;) \]*}
 	 *
-	 * @param inputMap
-	 *            a {@link java.lang.String} object.
+	 * @param inputMap a {@link java.lang.String} object.
 	 * @return a LabeledValueTreeMap object if <code>inputMap</code> represents a valid map, null otherwise.
 	 */
 	static public LabeledIntMap parse(final String inputMap) {
 		if (inputMap == null)
 			return null;
 
-		if (!AbstractLabeledIntMap.patternlabelCharsRE.matcher(inputMap).matches()) {
-			AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a proposition.");
+		if (!AbstractLabeledIntMap.patternLabelCharsRE.matcher(inputMap).matches()) {
+			AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a set of labeled values: " + patternLabelCharsRE);
 			return null;
 		}
 
@@ -99,11 +105,18 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 				final String[] labInt = AbstractLabeledIntMap.splitterPair.split(s);
 				// LabeledValueTreeMap.LOG.finest("labInt: " + Arrays.toString(labInt));
 				l = Label.parse(labInt[0]);
+				// Manage old and new format!
 				if (l == null) {
-					value = Integer.parseInt(labInt[0]);
+					if (labInt[0].equals("-" + Constants.INFINITY_SYMBOL))
+						value = Constants.INT_NEG_INFINITE;
+					else
+						value = Integer.parseInt(labInt[0]);
 					l = Label.parse(labInt[1]);
 				} else {
-					value = Integer.parseInt(labInt[1]);
+					if (labInt[1].equals("-" + Constants.INFINITY_SYMBOL))
+						value = Constants.INT_NEG_INFINITE;
+					else
+						value = Integer.parseInt(labInt[1]);
 				}
 				newMap.put(l, value);
 			}

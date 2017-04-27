@@ -1,17 +1,10 @@
 /**
-// * Translator to the Time Game Automata (TIGA) model.
+ * // * Translator to the Time Game Automata (TIGA) model.
  */
 package it.univr.di.cstnu;
 
-import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
-import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.labeledvalue.Constants;
-import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.Literal;
-
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -43,6 +36,17 @@ import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
+import edu.uci.ics.jung.io.GraphIOException;
+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+import it.univr.di.cstnu.graph.GraphMLReader;
+import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.labeledvalue.Constants;
+import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.Literal;
+
 /**
  * <p>
  * CSTNU2UppaalTiga class.
@@ -55,8 +59,9 @@ public class CSTNU2UppaalTiga {
 	/**
 	 * Version
 	 */
-//	static final String VERSIONandDATE = "1.6.1, April, 30 2014";
-	static final String VERSIONandDATE = "1.6.2, April, 30 2015";
+	// static final String VERSIONandDATE = "1.6.1, April, 30 2014";
+	// static final String VERSIONandDATE = "1.6.2, April, 30 2015";
+	static final String VERSIONandDATE = "1.6.3, December, 30 2015";
 
 	/**
 	 * Utility class to represent a contingent link parameters.
@@ -67,45 +72,49 @@ public class CSTNU2UppaalTiga {
 		LabeledNode source, dest;
 
 		/**
-		 * 
 		 * @param s
 		 * @param l
 		 * @param u
 		 * @param d
 		 */
 		Contingent(LabeledNode s, int l, int u, LabeledNode d) {
-			if (l == Constants.INT_NULL || u == Constants.INT_NULL) throw new IllegalArgumentException("Integer values cannot be null!");
-			source = s;
-			dest = d;
-			lower = l;
-			upper = u;
+			if (l == Constants.INT_NULL || u == Constants.INT_NULL)
+				throw new IllegalArgumentException("Integer values cannot be null!");
+			this.source = s;
+			this.dest = d;
+			this.lower = l;
+			this.upper = u;
 		}
 
 		@Override
 		public int compareTo(Contingent o) {
-			int v = source.compareTo(o.source);
-			if (v != 0) return v;
-			v = dest.compareTo(o.dest);
-			if (v != 0) return v;
-			v = lower - o.lower;
-			if (v != 0) return v;
-			v = upper - o.upper;
+			int v = this.source.compareTo(o.source);
+			if (v != 0)
+				return v;
+			v = this.dest.compareTo(o.dest);
+			if (v != 0)
+				return v;
+			v = this.lower - o.lower;
+			if (v != 0)
+				return v;
+			v = this.upper - o.upper;
 			return v;
 		}
 
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof Contingent)) return false;
+			if (o == null || !(o instanceof Contingent))
+				return false;
 			Contingent c = (Contingent) o;
-			return source.equalsByName(c.source)
-					&& dest.equalsByName(c.dest)
-					&& lower==c.lower
-					&& upper==c.upper;
+			return this.source.equalsByName(c.source)
+					&& this.dest.equalsByName(c.dest)
+					&& this.lower == c.lower
+					&& this.upper == c.upper;
 		}
 
 		@Override
 		public int hashCode() {
-			String s = source.getName() + '-' + dest.getName() + lower + '-' + upper;
+			String s = this.source.getName() + '-' + this.dest.getName() + this.lower + '-' + this.upper;
 			return s.hashCode();
 		}
 	}
@@ -119,39 +128,47 @@ public class CSTNU2UppaalTiga {
 		LabeledNode source, dest;
 
 		Constraint(LabeledNode d, LabeledNode s, int l) {
-			if (l == Constants.INT_NULL) throw new IllegalArgumentException("Integer values cannot be null!");
-			source = s;
-			dest = d;
-			value = l;
+			if (l == Constants.INT_NULL)
+				throw new IllegalArgumentException("Integer values cannot be null!");
+			this.source = s;
+			this.dest = d;
+			this.value = l;
 		}
 
 		@Override
 		public int compareTo(Constraint o) {
-			if (o == null) return 1;
-			if (this.equals(o)) return 0;
+			if (o == null)
+				return 1;
+			if (this.equals(o))
+				return 0;
 			int b = 0;
-			if ((b = this.dest.compareTo(o.dest)) != 0) return b;
-			if ((b = this.source.compareTo(o.source)) != 0) return b;
+			if ((b = this.dest.compareTo(o.dest)) != 0)
+				return b;
+			if ((b = this.source.compareTo(o.source)) != 0)
+				return b;
 			return this.value - o.value;
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			if (!(obj instanceof Constraint)) return false;
+			if (!(obj instanceof Constraint))
+				return false;
 			Constraint cons = (Constraint) obj;
-			return cons.source != null && cons.source.equalsByName(source)
-					&& cons.dest != null && cons.dest.equalsByName(dest)
-					&& cons.value != Constants.INT_NULL && cons.value == value;
+			return cons.source != null && cons.source.equalsByName(this.source)
+					&& cons.dest != null && cons.dest.equalsByName(this.dest)
+					&& cons.value != Constants.INT_NULL && cons.value == this.value;
 		}
 
 		@Override
 		public String toString() {
-			return "(" + getClockName(dest) + " - " + getClockName(source) + " <= " + value + ")";
+			// Be careful!
+			// A constraint (D-S≤v) has to be translated as (tS-tD≤v) when tS and tD are clock names, because node clock will be reset when node is executed!
+			return "(" + getClockName(this.dest) + " - " + getClockName(this.source) + " <= " + this.value + ")";
 		}
 
 		@Override
 		public int hashCode() {
-			return (dest != null ? dest.hashCode() : 0) + (source != null ? source.hashCode() : 0) + (value != Constants.INT_NULL ? value : 0);
+			return (this.dest != null ? this.dest.hashCode() : 0) + (this.source != null ? this.source.hashCode() : 0) + (this.value != Constants.INT_NULL ? this.value : 0);
 		}
 	}
 
@@ -186,11 +203,15 @@ public class CSTNU2UppaalTiga {
 	 * @return Jbool_expression represents Expression using identifiers escaped by `, not as '!', and as '&amp;' and or as '!'.
 	 */
 	private static String jbool2TigaExpr(String expr, String not, String and, String or) {
-		if (expr == null || expr.isEmpty()) return "";
+		if (expr == null || expr.isEmpty())
+			return "";
 
-		if (not == null) not = NOT;
-		if (and == null) and = AND;
-		if (or == null) or = OR;
+		if (not == null)
+			not = NOT;
+		if (and == null)
+			and = AND;
+		if (or == null)
+			or = OR;
 
 		expr = expr.replaceAll("!", not);
 		expr = expr.replaceAll(" & ", and);
@@ -229,7 +250,8 @@ public class CSTNU2UppaalTiga {
 	 * @return the proposition associated to the l.
 	 */
 	private static String getPropositionName(LabeledNode n) {
-		if (n == null || n.getPropositionObserved() == null) return "";
+		if (n == null || n.getPropositionObserved() == Constants.UNKNOWN)
+			return "";
 		return "" + n.getPropositionObserved();
 	}
 
@@ -262,8 +284,10 @@ public class CSTNU2UppaalTiga {
 	 * Reads a CSTNU file and converts it into <a href="http://people.cs.aau.dk/~adavid/tiga/index.html">UPPAAL TIGA</a> format.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws GraphIOException
+	 * @throws FileNotFoundException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException, GraphIOException {
 		LOG.finest("Start...");
 		CSTNU2UppaalTiga translator = new CSTNU2UppaalTiga();
 
@@ -277,7 +301,8 @@ public class CSTNU2UppaalTiga {
 		}
 
 		LOG.finest("Loading graph...");
-		if (!translator.loadCSTNU(translator.fInput)) return;
+		if (!translator.loadCSTNU(translator.fInput))
+			return;
 		LOG.finest("LabeledIntGraph loaded!");
 
 		LOG.finest("Translating graph...");
@@ -328,9 +353,7 @@ public class CSTNU2UppaalTiga {
 	/**
 	 * Output file where to write the XML representing UPPAAL TIGA automata.
 	 */
-	@Option(required = false, name = "-o", aliases = "--output"
-			, usage = "output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output."
-			, metaVar = "UPPAALTIGA_file_name")
+	@Option(required = false, name = "-o", aliases = "--output", usage = "output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output.", metaVar = "UPPAALTIGA_file_name")
 	private File fOutput = null;
 
 	/**
@@ -406,8 +429,8 @@ public class CSTNU2UppaalTiga {
 	/**
 	 * To verify if a cstn has syntax ok!
 	 */
-	private CSTNU cstnuCheck; 
-	
+	private CSTNU cstnuCheck;
+
 	/**
 	 * In a TGA, a location element contains the declaration of a node.
 	 * In the CSTNU translation, there are three constants location: controller (id={@link #VERA}), environment (id={@link #AGNES}) and goal (id={@link #GOAL}).
@@ -416,12 +439,12 @@ public class CSTNU2UppaalTiga {
 	 * @param template
 	 */
 	private void addLocationElements(Element template) {
-		Document doc = template.getOwnerDocument();
+		Document localDoc = template.getOwnerDocument();
 
-		template.appendChild(buildLocationElement(AGNES, true));
-		template.appendChild(buildLocationElement(VERA, false));
-		template.appendChild(buildLocationElement(GOAL, false));
-		template.appendChild(buildLocationElement(GO, true));
+		template.appendChild(buildLocationElement(this.AGNES, true));
+		template.appendChild(buildLocationElement(this.VERA, false));
+		template.appendChild(buildLocationElement(this.GOAL, false));
+		template.appendChild(buildLocationElement(this.GO, true));
 
 		// Add a urgent location for each proposition
 		// 13/06/2014: No more!
@@ -429,18 +452,18 @@ public class CSTNU2UppaalTiga {
 		// template.appendChild(buildLocationElement(getObsNodeName(node), true));
 		// }
 
-		if (!compact) {
+		if (!this.compact) {
 			// we add as many intermediate node GO_i as the number of significant label is.
-			int n = allConstraintsByLabel.size() - 1;// the empty label does not count!
+			int n = this.allConstraintsByLabel.size() - 1;// the empty label does not count!
 			if (n > 0) {
 				for (int i = 1; i < n; i++) {
-					template.appendChild(buildLocationElement(GO + i, true));
+					template.appendChild(buildLocationElement(this.GO + i, true));
 				}
 			}
 		}
 		// The declaration of the initial node
-		Element init = doc.createElement("init");
-		init.setAttribute("ref", AGNES);
+		Element init = localDoc.createElement("init");
+		init.setAttribute("ref", this.AGNES);
 		template.appendChild(init);
 	}
 
@@ -452,45 +475,45 @@ public class CSTNU2UppaalTiga {
 	 */
 	private void addTransitionElements(Element template) {
 		// first of all, the always present transitions
-		template.appendChild(doc.createComment("GAIN transition"));
+		template.appendChild(this.doc.createComment("GAIN transition"));
 		// c1) The transition to guarantee to Agnes to gain the control (GAIN)
 		// It is only one: (vera, tDelta > 0, gain, "", agnes)
-		template.appendChild(buildTransitionElement(VERA, tDelta + " > 0", "gain", "", AGNES, false));
+		template.appendChild(buildTransitionElement(this.VERA, this.tDelta + " > 0", "gain", "", this.AGNES, false));
 
-		template.appendChild(doc.createComment("PASS transition"));
+		template.appendChild(this.doc.createComment("PASS transition"));
 		// c2) The transition to return the control to Vera
 		// It is only one: (vera, tDelta > 0, pass, "", agnes)
-		template.appendChild(buildTransitionElement(AGNES, "", "pass", tDelta + " := 0", VERA, false));
+		template.appendChild(buildTransitionElement(this.AGNES, "", "pass", this.tDelta + " := 0", this.VERA, false));
 
-		template.appendChild(doc.createComment("Transitions for clock setting"));
+		template.appendChild(this.doc.createComment("Transitions for clock setting"));
 		// 1) Set of transaction
 		// For each free time-point X there is a non controllable transaction (agnes, !xX, set_X, xX:=true, tX:=0, agnes)
-		for (final LabeledNode n : freeNode) {
+		for (final LabeledNode n : this.freeNode) {
 			String exec = getExecutedName(n);
-			template.appendChild(buildTransitionElement(AGNES, "!" + exec, "set_" + exec, exec + " := true," + getClockName(n) + " := 0", AGNES, false));
+			template.appendChild(buildTransitionElement(this.AGNES, "!" + exec, "set_" + exec, exec + " := true," + getClockName(n) + " := 0", this.AGNES, false));
 		}
 
-		template.appendChild(doc.createComment("Transitions for proposition setting"));
+		template.appendChild(this.doc.createComment("Transitions for proposition setting"));
 		// 2) Set of transaction
 		// For each Observation node P, there are four transactions
 		// 2.1) (agnes, !xP, set_P, xP:=true, tP:=0, agnes) not controllable, for the clock
 		// 2.2) (vera, xP && P == 0, set_P_false, P := -1, vera) controllable, to allow ENV to decide the value
 		// 2.3) (vera, xP && P == 0, set_P_true, P := 1, agnes) controllable, to allow ENV to decide the value
 		// 2.4) (agnes, xP && P == 0 && tDelta > 0, P_not_set, "", goal) not controllable, to force ENV to decide the value
-		for (final LabeledNode n : obsNode) {
+		for (final LabeledNode n : this.obsNode) {
 			String exec = getExecutedName(n);
 			String prop = getPropositionName(n);
-			template.appendChild(buildTransitionElement(AGNES, "!" + exec + AND + prop + " == 0", "set_" + prop, exec + " := true, " + getClockName(n)
-					+ " := 0", AGNES, false));
-			template.appendChild(buildTransitionElement(VERA, exec + AND + prop + " == 0", "set_" + prop + "_false", prop + " := -1, " + tDelta + " := 0",
-					VERA,
+			template.appendChild(buildTransitionElement(this.AGNES, "!" + exec + AND + prop + " == 0", "set_" + prop, exec + " := true, " + getClockName(n)
+					+ " := 0", this.AGNES, false));
+			template.appendChild(buildTransitionElement(this.VERA, exec + AND + prop + " == 0", "set_" + prop + "_false", prop + " := -1, " + this.tDelta + " := 0",
+					this.VERA,
 					true));
-			template.appendChild(buildTransitionElement(VERA, exec + AND + prop + " == 0", "set_" + prop + "_true", prop + " := 1, " + tDelta + " := 0", VERA,
+			template.appendChild(buildTransitionElement(this.VERA, exec + AND + prop + " == 0", "set_" + prop + "_true", prop + " := 1, " + this.tDelta + " := 0", this.VERA,
 					true));
-			template.appendChild(buildTransitionElement(AGNES, exec + AND + prop + " == 0" + AND + tDelta + " > 0", prop + "not_set", "", GOAL, false));
+			template.appendChild(buildTransitionElement(this.AGNES, exec + AND + prop + " == 0" + AND + this.tDelta + " > 0", prop + "not_set", "", this.GOAL, false));
 		}
 
-		template.appendChild(doc.createComment("Transitions for contingent-constraint setting"));
+		template.appendChild(this.doc.createComment("Transitions for contingent-constraint setting"));
 		// 3) Set of transaction
 		// For each contingent link (A,l,u,C) there is
 		// 3.1) a transaction (vera, Sigma(tC,tA,tG), set_C, "xC:=true, tC:=0, tDelta:=0", vera) where Sigma(tC,tA,tG) := xA && !xC && (tA >= l) && (tA <=
@@ -498,20 +521,20 @@ public class CSTNU2UppaalTiga {
 		// 3.2) a transition (agnes, Phi(tA,tC,tG), cvC, "", goal) where Phi(tA,tC,tG) := xA && !xC && tA>u //the contingent has violated its upper bound!
 		// Remember that in TGA contingent point are chosen by a controllable transaction that can be 'blocked' by tDelta. So, if a controllable transaction for
 		// tC cannot be executed, then the system verifies later with 3.2 the violation.
-		for (final Contingent c : contingentEdge) {
+		for (final Contingent c : this.contingentEdge) {
 			String tA = getClockName(c.source);
 			String tC = getClockName(c.dest);
 			String xA = getExecutedName(c.source);
 			String xC = getExecutedName(c.dest);
 
 			String sigma = xA + AND + "!" + xC + AND + "(" + tA + " >= " + c.lower + ")" + AND + "(" + tA + " <= " + c.upper + ")";
-			template.appendChild(buildTransitionElement(VERA, sigma, "set_" + xC, xC + " := true, " + tC + " := 0, " + tDelta + " := 0", VERA, true));
+			template.appendChild(buildTransitionElement(this.VERA, sigma, "set_" + xC, xC + " := true, " + tC + " := 0, " + this.tDelta + " := 0", this.VERA, true));
 
 			String phi = xA + AND + "!" + xC + AND + "(" + tA + " > " + c.upper + ")";
-			template.appendChild(buildTransitionElement(AGNES, phi, "cv_" + tC, "", GOAL, false));
+			template.appendChild(buildTransitionElement(this.AGNES, phi, "cv_" + tC, "", this.GOAL, false));
 		}
 
-		template.appendChild(doc.createComment("WIN transitions"));
+		template.appendChild(this.doc.createComment("WIN transitions"));
 		/**
 		 * 4) The transition for the end of the game.
 		 * We split the win transition into two sets:
@@ -519,35 +542,32 @@ public class CSTNU2UppaalTiga {
 		 * where Psi1 = AND_{X timepoint} xX && AND_{unlabeled non-contingent constraint Y-X<k} (tY-tX <= k)
 		 * It represents the event that all timepoints are executed and all unlabeled constraints are satisfied.
 		 * Such constraint is always present.
-		 * 
 		 * 2) other set is made considering all labeled constraints.
 		 * There are two possible set constructions according to the value of 'compact' value.
 		 * Before showing how to build them, remember that allLabeledConstraint is a Map that, for each label, returns all constraints with the given label.
-		 * 
 		 * If compact is false, then for each label l (assume l is the i-th one in the lexicographical order),
-		 * we put a transition for each of its literal with guard the negated literal and one transition with guard the conjunction of all associated constraints
+		 * we put a transition for each of its literal with guard the negated literal and one transition with guard the conjunction of all associated
+		 * constraints
 		 * between state GO_i and GO_{i+1}, where GO_0 = GO and GO_{m} = GOAL (m=#labels)
-		 * 
 		 * If compact is true, for each label l, the implicant "l => conjunction of all associated constraints" is built.
 		 * Then, we define \Psi2 = conjunction of all obtained implicants.
 		 * Then, we determine \Psi2DNF := the DNF of \Psi2
 		 * Then, for each disjunct d_i of \Phi2DNF, we add the following controllable transition (go, d_i, win_labelled, "", goal)
 		 * If there is no labeled constraints, we add only (go, "", win_labelled, "", goal).
-		 * 
 		 * All this transitions have to be uncontrollable.
 		 */
 
 		// First set
 		StringBuffer psi1dirty = new StringBuffer();
-		for (final LabeledNode n : freeNode) {
+		for (final LabeledNode n : this.freeNode) {
 			String exec = getExecutedName(n);
 			psi1dirty.append(exec + AND);
 		}
-		for (final LabeledNode n : contingentNode) {
+		for (final LabeledNode n : this.contingentNode) {
 			String exec = getExecutedName(n);
 			psi1dirty.append(exec + AND);
 		}
-		for (final LabeledNode n : obsNode) {
+		for (final LabeledNode n : this.obsNode) {
 			String exec = getExecutedName(n);
 			psi1dirty.append(exec + AND);
 		}
@@ -560,14 +580,14 @@ public class CSTNU2UppaalTiga {
 		int labelOrdinal = 0;
 		String sourceState = null;
 		String destState = null;
-		for (Entry<Label, HashSet<Constraint>> entry : allConstraintsByLabel.entrySet()) {
+		for (Entry<Label, HashSet<Constraint>> entry : this.allConstraintsByLabel.entrySet()) {
 			Label label = entry.getKey();
 			HashSet<Constraint> constSet = entry.getValue();
 
-			if (!compact && !label.isEmpty()) {
-				sourceState = (labelOrdinal == 0) ? GO : GO + labelOrdinal;
+			if (!this.compact && !label.isEmpty()) {
+				sourceState = (labelOrdinal == 0) ? this.GO : this.GO + labelOrdinal;
 				labelOrdinal++;
-				destState = (labelOrdinal == allConstraintsByLabel.size() - 1) ? GOAL : GO + labelOrdinal;
+				destState = (labelOrdinal == this.allConstraintsByLabel.size() - 1) ? this.GOAL : this.GO + labelOrdinal;
 				for (Literal lit : label.negation()) {
 					template.appendChild(buildTransitionElement(sourceState, "(" + lit.getName() + " == " + ((lit.isNegated()) ? "-1" : "1") + ")",
 							"win_labelled" + labelOrdinal + lit.getName(), "", destState, false));
@@ -582,10 +602,14 @@ public class CSTNU2UppaalTiga {
 				Integer value = constr.value;
 				if (label.isEmpty()) {
 					// First set
-					psi1dirty.append("(" + destClock + " - " + sourceClock + " <= " + value + ")" + AND);
+					// Be careful!
+					// A constraint (D-S≤v) has to be translated as (tS-tD≤v) because node clock will be reset when node is executed!
+					psi1dirty.append("(" + sourceClock + " - " + destClock + " <= " + value + ")" + AND);
 				} else {
-					if (!compact) {
-						psi2dirty.append("(" + destClock + " - " + sourceClock + " <= " + value + ")" + AND);
+					if (!this.compact) {
+						// Be careful!
+						// A constraint (D-S≤v) has to be translated as (tS-tD≤v) because node clock will be reset when node is executed!
+						psi2dirty.append("(" + sourceClock + " - " + destClock + " <= " + value + ")" + AND);
 					} else {
 						// psi2 will be transformed into DNF.
 						// To convert into DNF I will use an external library: com.bpodgursky.jbool_expressions
@@ -600,13 +624,13 @@ public class CSTNU2UppaalTiga {
 						// So, (a¬b => (A-B <= t)) has to be represented as (!`a` | 'b' | `(A-B <= t)`)
 						String labelNegatedandEscaped = label.toLogicalExpr(true, jboolNot, jboolAnd, jboolOr);
 
-						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("(["+Constants.propositionLetterRanges+"])", "`$1`");// tutto a 1
+						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("([" + Constants.PROPOSITION_RANGES + "])", "`$1`");// tutto a 1
 						// LOG.finest("labelNegatedandEscaped= " + labelNegatedandEscaped);
-						psi2dirty.append("(" + labelNegatedandEscaped + jboolOr + "`((" + destClock + " - " + sourceClock + ") <= " + value + ")`)" + jboolAnd);
+						psi2dirty.append("(" + labelNegatedandEscaped + jboolOr + "`((" + sourceClock + " - " + destClock + ") <= " + value + ")`)" + jboolAnd);
 					}
 				}
 			}
-			if (!compact && !label.isEmpty()) {
+			if (!this.compact && !label.isEmpty()) {
 				final String psi2clean = psi2dirty.substring(0, psi2dirty.length() - AND.length());
 				// LOG.finest("psi2" + labelOrdinal + "= " + psi2clean);
 				template.appendChild(buildTransitionElement(sourceState, psi2clean, "win_labelled" + labelOrdinal, "", destState, false));
@@ -617,15 +641,15 @@ public class CSTNU2UppaalTiga {
 
 		// First set
 		String psi1 = psi1dirty.substring(0, psi1dirty.length() - AND.length());
-		template.appendChild(buildTransitionElement(VERA, psi1, "win_unlabelled", "", GO, false));
+		template.appendChild(buildTransitionElement(this.VERA, psi1, "win_unlabelled", "", this.GO, false));
 
 		// Second set when !useStatesForScenarios
 		LOG.finest("psi2dirty= " + psi2dirty);
-		if (allConstraintsByLabel.size() == 1) {
+		if (this.allConstraintsByLabel.size() == 1) {
 			// there are no labeled constraints!
-			template.appendChild(buildTransitionElement(GO, "", "win_labelled", "", GOAL, false));
+			template.appendChild(buildTransitionElement(this.GO, "", "win_labelled", "", this.GOAL, false));
 		} else {
-			if (compact) {
+			if (this.compact) {
 				String psi2 = psi2dirty.substring(0, psi2dirty.length() - jboolAnd.length());
 				String psi2DNF = "";
 				LOG.finest("psi2= " + psi2);
@@ -639,15 +663,16 @@ public class CSTNU2UppaalTiga {
 
 				// A literal "`l`" has to be transformed to "(l == 1)"
 				// while "!`l`" to "(l == -1)"
-				psi2DnfJbool = psi2DnfJbool.replaceAll("`(["+Constants.propositionLetterRanges+"])`", "\\($1 == 1\\)");// tutto a 1
-				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\((["+Constants.propositionLetterRanges+"]) == 1", "\\($1 == -1");// mentre si mette a -1 chi è negato!
+				psi2DnfJbool = psi2DnfJbool.replaceAll("`([" + Constants.PROPOSITION_RANGES + "])`", "\\($1 == 1\\)");// tutto a 1
+				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\(([" + Constants.PROPOSITION_RANGES + "]) == 1", "\\($1 == -1");// mentre si mette a -1 chi è
+																																// negato!
 
 				psi2DNF = jbool2TigaExpr(psi2DnfJbool, null, null, " | ");
 				LOG.finest("psi2DNF= " + psi2DNF);
 
 				int i = 0;
 				for (String psi2Disjunct : psi2DNF.split(" \\| ")) {
-					template.appendChild(buildTransitionElement(GO, psi2Disjunct, "win_labelled_" + i++, "", GOAL, false));
+					template.appendChild(buildTransitionElement(this.GO, psi2Disjunct, "win_labelled_" + i++, "", this.GOAL, false));
 				}
 			}
 		}
@@ -665,20 +690,20 @@ public class CSTNU2UppaalTiga {
 	 * @return the element representing the clock declaration.
 	 */
 	private Element buildDeclarationElement() {
-		Element declaration = doc.createElement("declaration");
+		Element declaration = this.doc.createElement("declaration");
 
-		StringBuffer clocks = new StringBuffer("clock " + tG + ", " + tDelta);
+		StringBuffer clocks = new StringBuffer("clock " + this.tG + ", " + this.tDelta);
 		StringBuffer executed = new StringBuffer();
 		StringBuffer obs = new StringBuffer();
-		for (LabeledNode node : freeNode) {
+		for (LabeledNode node : this.freeNode) {
 			clocks.append(", " + getClockName(node));
 			executed.append(", " + getExecutedName(node));
 		}
-		for (LabeledNode node : contingentNode) {
+		for (LabeledNode node : this.contingentNode) {
 			clocks.append(", " + getClockName(node));
 			executed.append(", " + getExecutedName(node));
 		}
-		for (LabeledNode node : obsNode) {
+		for (LabeledNode node : this.obsNode) {
 			clocks.append(", " + getClockName(node));
 			executed.append(", " + getExecutedName(node));
 			obs.append(", " + getPropositionName(node) + " = 0");
@@ -689,11 +714,11 @@ public class CSTNU2UppaalTiga {
 			executed.append(';');
 		}
 		if (obs.length() > 0) {
-			obs.replace(0, 1, "int [-1,1]"); // remove first , and put "int [-1,1]  " declaration
+			obs.replace(0, 1, "int [-1,1]"); // remove first , and put "int [-1,1] " declaration
 			obs.append(';');
 		}
 
-		declaration.appendChild(doc.createTextNode(clocks + "\n" + executed + "\n" + obs));
+		declaration.appendChild(this.doc.createTextNode(clocks + "\n" + executed + "\n" + obs));
 		return declaration;
 	}
 
@@ -705,13 +730,13 @@ public class CSTNU2UppaalTiga {
 	 * @return the location element
 	 */
 	private Element buildLocationElement(String id, Boolean urgent) {
-		Element location = doc.createElement("location");
+		Element location = this.doc.createElement("location");
 		location.setAttribute("id", id);
-		Element name = doc.createElement("name");
-		name.appendChild(doc.createTextNode(id));
+		Element name = this.doc.createElement("name");
+		name.appendChild(this.doc.createTextNode(id));
 		location.appendChild(name);
 		if (urgent) {
-			location.appendChild(doc.createElement("urgent"));
+			location.appendChild(this.doc.createElement("urgent"));
 		}
 		return location;
 	}
@@ -722,25 +747,25 @@ public class CSTNU2UppaalTiga {
 	 * @return the element representing all clock, node, and transition declaration.
 	 */
 	private Element buildTemplateElement() {
-		Element template = doc.createElement("template");
+		Element template = this.doc.createElement("template");
 
 		// name
-		Element name = doc.createElement("name");
-		name.appendChild(doc.createTextNode(getTgaName(cstnu)));
+		Element name = this.doc.createElement("name");
+		name.appendChild(this.doc.createTextNode(getTgaName(this.cstnu)));
 		template.appendChild(name);
 
 		// local declaration
-		template.appendChild(doc.createComment("Clock and proposition declarations"));
+		template.appendChild(this.doc.createComment("Clock and proposition declarations"));
 		template.appendChild(buildDeclarationElement());
 
-		template.appendChild(doc.createComment("LabeledNode declarations"));
+		template.appendChild(this.doc.createComment("LabeledNode declarations"));
 		addLocationElements(template);
-		
-		template.appendChild(doc.createComment("Transition declarations"));
+
+		template.appendChild(this.doc.createComment("Transition declarations"));
 		addTransitionElements(template);
 
-		Element system = doc.createElement("system");
-		system.appendChild(doc.createTextNode("_processMain = " + getTgaName(cstnu) + "();\n\t\tsystem _processMain;"));
+		Element system = this.doc.createElement("system");
+		system.appendChild(this.doc.createTextNode("_processMain = " + getTgaName(this.cstnu) + "();\n\t\tsystem _processMain;"));
 		template.appendChild(system);
 		return template;
 	}
@@ -757,35 +782,37 @@ public class CSTNU2UppaalTiga {
 	 * @return the location element
 	 */
 	private Element buildTransitionElement(String source, String guard, String action, String assignment, String target, boolean controllable) {
-		Element transition = doc.createElement("transition");
+		Element transition = this.doc.createElement("transition");
 		transition.setAttribute("controllable", controllable ? "true" : "false");
 		transition.setAttribute("action", action);
 
-		Element sourceE = doc.createElement("source");
+		Element sourceE = this.doc.createElement("source");
 		sourceE.setAttribute("ref", source);
 		transition.appendChild(sourceE);
 
-		Element targetE = doc.createElement("target");
+		Element targetE = this.doc.createElement("target");
 		targetE.setAttribute("ref", target);
 		transition.appendChild(targetE);
 
-		Element label = doc.createElement("label");
+		Element label = this.doc.createElement("label");
 		label.setAttribute("kind", "guard");
-		label.appendChild(doc.createTextNode(guard));
+		label.appendChild(this.doc.createTextNode(guard));
 		transition.appendChild(label);
 
-		label = doc.createElement("label");
+		label = this.doc.createElement("label");
 		label.setAttribute("kind", "assignment");
-		label.appendChild(doc.createTextNode(assignment));
+		label.appendChild(this.doc.createTextNode(assignment));
 		transition.appendChild(label);
 
 		return transition;
-	};
+	}
 
 	/**
 	 * Default constructor not accessible
 	 */
-	private CSTNU2UppaalTiga() {}
+	private CSTNU2UppaalTiga() {
+		this.cstnuCheck = new CSTNU(null);
+	}
 
 	/**
 	 * Constructor for CSTNU2UppaalTiga.
@@ -794,11 +821,13 @@ public class CSTNU2UppaalTiga {
 	 * @param o a {@link java.io.PrintStream} object.
 	 */
 	public CSTNU2UppaalTiga(LabeledIntGraph g, PrintStream o) {
-		if (o == null || g == null) throw new IllegalArgumentException("One parameter is null!");
-		output = o;
-		cstnu = g;
-		cstnuCheck = new CSTNU(true);
-		if (!checkCSTNUSyntax()) throw new IllegalArgumentException("CSTNU is not well formed!");
+		this();
+		if (o == null || g == null)
+			throw new IllegalArgumentException("One parameter is null!");
+		this.output = o;
+		this.cstnu = g;
+		if (!checkCSTNUSyntax())
+			throw new IllegalArgumentException("CSTNU is not well formed!");
 	}
 
 	/**
@@ -806,9 +835,12 @@ public class CSTNU2UppaalTiga {
 	 * 
 	 * @param fileName
 	 * @return graph if the file was load successfully; null otherwise.
+	 * @throws GraphIOException
+	 * @throws FileNotFoundException
 	 */
-	private boolean loadCSTNU(File fileName) {
-		cstnu = LabeledIntGraph.load(fileName);
+	private boolean loadCSTNU(File fileName) throws GraphIOException, FileNotFoundException {
+		GraphMLReader<LabeledIntGraph> graphMLReader = new GraphMLReader<>(fileName, LabeledIntTreeMap.class);
+		this.cstnu = graphMLReader.readGraph();
 		return checkCSTNUSyntax();
 	}
 
@@ -818,9 +850,8 @@ public class CSTNU2UppaalTiga {
 	private boolean checkCSTNUSyntax() {
 		LOG.finest("Checking graph...");
 		try {
-			cstnuCheck.initUpperLowerLabelDataStructure(cstnu);
-		}
-		catch (IllegalArgumentException e) {
+			this.cstnuCheck.initUpperLowerLabelDataStructure();
+		} catch (IllegalArgumentException | WellDefinitionException e) {
 			System.err.println(e.getMessage());
 			return false;
 		}
@@ -841,27 +872,29 @@ public class CSTNU2UppaalTiga {
 			// parse the arguments.
 			parser.parseArgument(args);
 
-			if (!fInput.exists()) throw new CmdLineException(parser, "Input file does not exist.");
+			if (!this.fInput.exists())
+				throw new CmdLineException(parser, "Input file does not exist.");
 
-			if (fOutput != null) {
-				if (fOutput.isDirectory()) throw new CmdLineException(parser, "Output file is a directory.");
-				if (!fOutput.getName().endsWith(".xml"))
-					fOutput.renameTo(new File(fOutput.getAbsolutePath() + ".xml"));
-				if (fOutput.exists()) {
-					fOutput.delete();
+			if (this.fOutput != null) {
+				if (this.fOutput.isDirectory())
+					throw new CmdLineException(parser, "Output file is a directory.");
+				if (!this.fOutput.getName().endsWith(".xml")) {
+					String name = this.fOutput.getAbsolutePath() + ".xml";
+					this.fOutput = new File(name);
+				}
+				if (this.fOutput.exists()) {
+					this.fOutput.delete();
 				}
 				try {
-					fOutput.createNewFile();
-					output = new PrintStream(fOutput);
-				}
-				catch (IOException e) {
+					this.fOutput.createNewFile();
+					this.output = new PrintStream(this.fOutput);
+				} catch (IOException e) {
 					throw new CmdLineException(parser, "Output file cannot be created.");
 				}
 			} else {
-				output = System.out;
+				this.output = System.out;
 			}
-		}
-		catch (CmdLineException e) {
+		} catch (CmdLineException e) {
 			// if there's a problem in the command line, you'll get this exception. this will reportan error message.
 			System.err.println(e.getMessage());
 			System.err.println("java CSTNU2UppaalTiga [options...] arguments...");
@@ -881,48 +914,52 @@ public class CSTNU2UppaalTiga {
 	 */
 	private void prepareAxuliaryCSTNUData() {
 
-		freeNode = new ObjectRBTreeSet<>();
-		contingentNode = new ObjectRBTreeSet<>();
-		contingentEdge = new ObjectRBTreeSet<>();
-		obsNode = new ObjectRBTreeSet<>();
-		allConstraintsByLabel = new TreeMap<>();
+		this.freeNode = new ObjectRBTreeSet<>();
+		this.contingentNode = new ObjectRBTreeSet<>();
+		this.contingentEdge = new ObjectRBTreeSet<>();
+		this.obsNode = new ObjectRBTreeSet<>();
+		this.allConstraintsByLabel = new TreeMap<>();
 		// I put the entry for all constraints not labeled
 		HashSet<Constraint> constr = new HashSet<>();
-		allConstraintsByLabel.put(Label.emptyLabel, constr);
+		this.allConstraintsByLabel.put(Label.emptyLabel, constr);
 
 		// This cycle is redundant, but to avoid to consider an already considered node is more expensive that consider it more times
-		SortedSet<LabeledIntEdge> edges = new ObjectRBTreeSet<>(cstnu.getEdges());
+		SortedSet<LabeledIntEdge> edges = new ObjectRBTreeSet<>(this.cstnu.getEdges());
 		for (LabeledIntEdge e : edges) {
-			LabeledNode s = cstnu.getSource(e);
-			LabeledNode d = cstnu.getDest(e);
+			LabeledNode s = this.cstnu.getSource(e);
+			LabeledNode d = this.cstnu.getDest(e);
 			if (e.isContingentEdge()) {
 				LOG.fine("Found a contingent link: " + e);
-				int lower = e.getMinLowerLabeledValue(), upper;// TODO This works only for CSTNU without guarded link.
+				int lower = e.getMinLowerLabeledValue(), upper;// TODO This works only for CSTNU without guarded links.
 				if (lower != Constants.INT_NULL) {
 					LOG.fine("Add contingent node: " + d);
-					contingentNode.add(d);
-					upper = -cstnu.findEdge(d, s).getMinUpperLabeledValue();
+					this.contingentNode.add(d);
+					upper = -this.cstnu.findEdge(d, s).getMinUpperLabeledValue();
 					if (upper == Constants.INT_NULL)
-						throw new IllegalArgumentException("There is no a companion upper case value in edge " + cstnu.findEdge(d, s) + " w.r.t. the edge" + e);
+						throw new IllegalArgumentException("There is no a companion upper case value in edge " + this.cstnu.findEdge(d, s) + " w.r.t. the edge" + e);
 					LOG.fine("Add contingent edge: (" + s.getName() + ", " + lower + ", " + upper + ", " + d.getName() + ").");
-					contingentEdge.add(new Contingent(s, lower, upper, d));
+					this.contingentEdge.add(new Contingent(s, lower, upper, d));
 				}
 			} else {
 				// normal or constraint edge
-				if (s.getPropositionObserved() != null) obsNode.add(s);
-				else freeNode.add(s);
+				if (s.getPropositionObserved() != Constants.UNKNOWN)
+					this.obsNode.add(s);
+				else
+					this.freeNode.add(s);
 
-				if (d.getPropositionObserved() != null) obsNode.add(d);
-				else freeNode.add(d);
+				if (d.getPropositionObserved() != Constants.UNKNOWN)
+					this.obsNode.add(d);
+				else
+					this.freeNode.add(d);
 				for (Entry<Label, Integer> entry : e.getLabeledValueMap().entrySet()) {
 					// Since CSTNU has been initialized, the default value is represented as labeled value with ⊡ label.
 					Label label = entry.getKey().conjunction(s.getLabel()).conjunction(d.getLabel());// IT IS NECESSSARY for guaranteeing all possible scenario
 																										// are represented.
 					Integer value = entry.getValue();
-					constr = allConstraintsByLabel.get(label);
+					constr = this.allConstraintsByLabel.get(label);
 					if (constr == null) {
 						constr = new HashSet<>();
-						allConstraintsByLabel.put(label, constr);
+						this.allConstraintsByLabel.put(label, constr);
 					}
 					constr.add(new Constraint(d, s, value));
 				}
@@ -930,11 +967,11 @@ public class CSTNU2UppaalTiga {
 		}
 		// Free node contains contingent nodes if these last ones are destination of normal edge.
 		// It is necessary to remove them.
-		freeNode.removeAll(contingentNode);
-		LOG.finest("freeNode set: " + freeNode.toString());
-		LOG.finest("contingentNode set: " + contingentNode.toString());
-		LOG.finest("obsNode set: " + obsNode.toString());
-		LOG.finest("all Label set: " + allConstraintsByLabel.toString());
+		this.freeNode.removeAll(this.contingentNode);
+		LOG.finest("freeNode set: " + this.freeNode.toString());
+		LOG.finest("contingentNode set: " + this.contingentNode.toString());
+		LOG.finest("obsNode set: " + this.obsNode.toString());
+		LOG.finest("all Label set: " + this.allConstraintsByLabel.toString());
 	}
 
 	/**
@@ -955,9 +992,9 @@ public class CSTNU2UppaalTiga {
 					"nta",
 					"-//Uppaal Team//DTD Flat System 1.1//EN",
 					"http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd");
-			doc = docBuilder.getDOMImplementation().createDocument(null, "nta", docType);
+			this.doc = docBuilder.getDOMImplementation().createDocument(null, "nta", docType);
 
-			Element rootElement = doc.getDocumentElement();
+			Element rootElement = this.doc.getDocumentElement();
 
 			// global declaration element
 			// rootElement.appendChild(buildDeclarationElement(doc, g));
@@ -967,12 +1004,12 @@ public class CSTNU2UppaalTiga {
 
 			// Get the implementations
 			DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
-			;
+
 			DOMImplementationLS implLS = (DOMImplementationLS) registry.getDOMImplementation("LS");
 			// Prepare the output
 			LSOutput domOutput = implLS.createLSOutput();
 			domOutput.setEncoding(StandardCharsets.UTF_8.name());
-			domOutput.setByteStream(output);
+			domOutput.setByteStream(this.output);
 			// Prepare the serialization
 			LSSerializer domWriter = implLS.createLSSerializer();
 			domWriter.setNewLine("\r\n");
@@ -981,35 +1018,30 @@ public class CSTNU2UppaalTiga {
 			domConfig.setParameter("element-content-whitespace", true);
 			domConfig.setParameter("cdata-sections", Boolean.TRUE);
 			// And finally, write
-			domWriter.write(doc, domOutput);
+			domWriter.write(this.doc, domOutput);
 
-			if (fOutput != null) {
-				output.close();
-				output = new PrintStream(fOutput.getAbsolutePath().replace(".xml", ".q"));
+			if (this.fOutput != null) {
+				this.output.close();
+				String name = this.fOutput.getAbsolutePath().replace(".xml", ".q");
+				this.output = new PrintStream(name);
 			}
-			output.println("control: A[] not _processMain." + GOAL);
-		}
-		catch (ParserConfigurationException pce) {
+			this.output.println("control: A[] not _processMain." + this.GOAL);
+		} catch (ParserConfigurationException pce) {
 			pce.printStackTrace();
 			return false;
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
-		}
-		catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			return false;
-		}
-		catch (InstantiationException e) {
+		} catch (InstantiationException e) {
 			e.printStackTrace();
 			return false;
-		}
-		catch (IllegalAccessException e) {
+		} catch (IllegalAccessException e) {
 			e.printStackTrace();
 			return false;
-		}
-		catch (ClassCastException e) {
+		} catch (ClassCastException e) {
 			e.printStackTrace();
 			return false;
 		}

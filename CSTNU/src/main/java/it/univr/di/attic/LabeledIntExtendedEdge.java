@@ -3,7 +3,7 @@
 // */
 //package it.univr.di.attic;
 //
-//import it.univr.di.cstnu.graph.Component;
+//import it.univr.di.cstnu.graph.AbstractComponent;
 //import it.univr.di.cstnu.graph.LabeledNode;
 //import it.univr.di.labeledvalue.Constants;
 //import it.univr.di.labeledvalue.Label;

@@ -32,6 +32,8 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.cstnu.CSTNEditor;
+import it.univr.di.labeledvalue.ALabel;
+import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
@@ -204,14 +206,14 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jt);
 		i = 0;
 		if (nUpperLabels > 0) {
-			for (final java.util.Map.Entry<java.util.Map.Entry<Label, String>, Integer> pair : e.getUpperLabelSet()) {
+			for (Entry<java.util.Map.Entry<Label, ALabel>> pair : e.getUpperLabelSet()) {
 				// It should be only one! I put a cycle in order to verify
 				jp.add(new JLabel("Upper Label"));
 				jtLabel = new JTextField(pair.getKey().getKey().toString());
 				labelUpperInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
 				jp.add(jtLabel);
-				jtLabel = new JTextField(pair.getKey().getValue().toUpperCase() + ": " + pair.getValue());
+				jtLabel = new JTextField(pair.getKey().getValue().toUpperCase() + ": " + Constants.formatInt(pair.getIntValue()));
 				newUpperValueInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, distanceViewer);
 				jp.add(jtLabel);
@@ -231,14 +233,14 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		}
 		i = 0;
 		if (nLowerLabels > 0) {
-			for (final java.util.Map.Entry<java.util.Map.Entry<Label, String>, Integer> pair : e.getLowerLabelSet()) {
+			for (Entry<java.util.Map.Entry<Label, ALabel>> pair : e.getLowerLabelSet()) {
 				// It should be only one! I put a cycle in order to verify
 				jp.add(new JLabel("Lower Label"));
 				jtLabel = new JTextField(pair.getKey().getKey().toString());
 				labelLowerInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
 				jp.add(jtLabel);
-				jtLabel = new JTextField(pair.getKey().getValue().toLowerCase() + ": " + pair.getValue());
+				jtLabel = new JTextField(pair.getKey().getValue().toLowerCase() + ": " + Constants.formatInt(pair.getIntValue()));
 				newLowerValueInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
 				jp.add(jtLabel);
@@ -341,11 +343,12 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 					final LabeledNode source = g.getSource(e);
 					final LabeledNode dest = g.getDest(e);
 					final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
-					if (source.getName().equalsIgnoreCase(nodeName)) {
+					ALabel alabel = new ALabel(new ALetter(source.getName()), g.getALabelAlphabet());
+					if (alabel.toString().equalsIgnoreCase(nodeName)) {
 						e.clearUpperLabels();
-						e.mergeUpperLabelValue(endpointsLabel, source, v);// Temporally I ignore the label specified by user because an upper/lower case
+						e.mergeUpperLabelValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 						// value of a contingent must have the label of its endpoints.
-						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + nodeName + ": " + v + ".");
+						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel.toUpperCase() + ": " + v + ".");
 					}
 				}
 				// lower case
@@ -373,9 +376,10 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 						final LabeledNode source = g.getSource(e);
 						final LabeledNode dest = g.getDest(e);
 						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
-						if (dest.getName().equalsIgnoreCase(nodeName)) {
+						ALabel alabel = new ALabel(new ALetter(dest.getName()), g.getALabelAlphabet());
+						if (alabel.toString().equalsIgnoreCase(nodeName)) {
 							e.clearLowerLabels();
-							e.mergeLowerLabelValue(endpointsLabel, dest, v);// Temporally I ignore the label specified by user because an upper/lower case
+							e.mergeLowerLabelValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 							// value of a contingent must have the label of its endpoints.
 						}
 					}
@@ -433,8 +437,8 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "0-9_]"));
-		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
+		jp.add(new JLabel("Syntax: [" + Constants.ALETTER+"?]+"));
+		group.add(name, StringValidators.regexp("["+Constants.ALETTER+"?]+", "Must be a well format name", false), new ObservableValidator(g, node));
 
 		// Observed proposition
 		JTextField observedProposition = new JTextField(1);

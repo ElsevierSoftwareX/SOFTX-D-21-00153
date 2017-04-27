@@ -100,7 +100,7 @@ public class CSTNir extends CSTN {
 	/**
 	 * Default constructor. Label optimization.
 	 */
-	private CSTNir() {
+	CSTNir() {
 		super();
 		this.wd2epsilon = 0;
 	}

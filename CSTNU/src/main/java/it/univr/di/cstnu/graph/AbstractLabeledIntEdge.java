@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
@@ -41,20 +42,20 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * Represents a pair (Label, String). 
 	 * @author posenato
 	 */
-	static class InternalEntry implements Object2ObjectMap.Entry<Label, String>, Comparable<Object2ObjectMap.Entry<Label, String>> {
+	static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
 
 		@SuppressWarnings("javadoc")
-		Label label = null;
+		Label label;
 		@SuppressWarnings("javadoc")
-		String s = null;
+		ALabel aLabel;
 
 		/**
-		 * @param l
-		 * @param s
+		 * @param label
+		 * @param aLabel
 		 */
-		public InternalEntry(Label l, String s) {
-			this.label = l;
-			this.s = s;
+		public InternalEntry(Label label, ALabel aLabel) {
+			this.label = label;
+			this.aLabel = aLabel;
 		}
 
 		@Override
@@ -63,25 +64,38 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		}
 
 		@Override
-		public String getValue() {
-			return this.s;
+		public ALabel getValue() {
+			return this.aLabel;
 		}
 
 		@Override
-		public String setValue(String value) {
-			String old = new String(this.s);
-			this.s = value;
+		public ALabel setValue(ALabel value) {
+			ALabel old = new ALabel(this.aLabel);
+			this.aLabel = value;
 			return old;
 		}
 
 		@Override
-		public int compareTo(it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<Label, String> o) {
+		public int compareTo(Object2ObjectMap.Entry<Label, ALabel> o) {
 			if (o == null)
 				return 1;
 			int i = this.label.compareTo(o.getKey());
 			if (i != 0)
 				return i;
-			return this.s.compareTo(o.getValue());
+			return this.aLabel.compareTo(o.getValue());
+		}
+		
+		@Override
+		public boolean equals(Object o) {
+			if (o==null || !(o instanceof InternalEntry))
+				return false;
+			InternalEntry e = (InternalEntry) o;
+			return this.label.equals(e.label) && this.aLabel.equals(e.aLabel);
+		}
+		
+		@Override
+		public String toString() {
+			return "("+this.aLabel+", "+this.label+")";
 		}
 
 	}
@@ -109,11 +123,11 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			}
 			if (e.getUpperLabelSet().size() > 0) {
 				sb.append("; UL: ");
-				sb.append(e.upperLabelsToString());
+				sb.append(e.upperLabelsAsString());
 			}
 			if (e.getLowerLabelSet().size() > 0) {
 				sb.append("; LL:");
-				sb.append(e.lowerLabelsToString());
+				sb.append(e.lowerLabelsAsString());
 			}
 
 			return sb.toString();
@@ -255,7 +269,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * Removed Upper Case Labeled value.<br>
 	 * The CSTNU controllability check algorithm needs to know if a labeled value has been removed in the past in order to avoid to add it a second time.
 	 */
-	Object2IntMap<Entry<Label, String>> removedUpperLabel;
+	Object2IntMap<Entry<Label, ALabel>> removedUpperLabel;
 
 	/**
 	 * The type of the edge.
@@ -351,11 +365,11 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> getAllUpperCaseAndOrdinaryLabeledValuesSet() {
+	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getAllUpperCaseAndOrdinaryLabeledValuesSet() {
 		// Merge all possible labeled values and Upper Case labeled values of edges between Y and X in a single set.
-		final ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> globalLabeledValueSet = new ObjectArraySet<>(this.getUpperLabelSet());
+		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> globalLabeledValueSet = new ObjectArraySet<>(this.getUpperLabelSet());
 		for (final Object2IntMap.Entry<Label> entry : this.labeledValueSet()) {
-			final Entry<Label, String> e = new AbstractObject2ObjectMap.BasicEntry<>(entry.getKey(), Constants.EMPTY_UPPER_CASE_LABELstring);
+			final Entry<Label, ALabel> e = new AbstractObject2ObjectMap.BasicEntry<>(entry.getKey(), ALabel.emptyLabel);
 			globalLabeledValueSet.add(new AbstractObject2IntMap.BasicEntry<>(e, entry.getIntValue()));
 		}
 		return globalLabeledValueSet;
@@ -372,13 +386,13 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> getLowerLabelSet() {
+	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getLowerLabelSet() {
 		return this.lowerLabel.labeledTripleSet();
 	}
 
 	@Override
-	public final int getLowerLabelValue(final Label l, final LabeledNode n) {
-		return this.lowerLabel.getValue(l, n.getName());
+	public final int getLowerLabelValue(final Label l, final ALabel nodeName) {
+		return this.lowerLabel.getValue(l, nodeName);
 	}
 
 	@Override
@@ -407,7 +421,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public int getMinValueConsistentWith(Label l, String upperL) {
+	public int getMinValueConsistentWith(Label l, ALabel upperL) {
 		throw new NotImplementedException("Core class.");
 	}
 
@@ -427,17 +441,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final ObjectSet<Object2IntMap.Entry<Entry<Label, String>>> getUpperLabelSet() {
+	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getUpperLabelSet() {
 		return this.upperLabel.labeledTripleSet();
 	}
 
 	@Override
-	public final int getUpperLabelValue(final Label l, final LabeledNode n) {
-		return this.upperLabel.getValue(l, n.getName());
-	}
-
-	@Override
-	public final int getUpperLabelValue(final Label l, final String name1) {
+	public final int getUpperLabelValue(final Label l, final ALabel name1) {
 		return this.upperLabel.getValue(l, name1);
 	}
 
@@ -468,7 +477,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final String lowerLabelsToString() {
+	public final String lowerLabelsAsString() {
 		return this.lowerLabel.toString(true);
 	}
 
@@ -477,10 +486,10 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		throw new NotImplementedException("Core class.");
 	}
 
-	@Override
-	public boolean mergeLabeledValue(Label l, int i, ObjectSet<String> s) {
-		throw new NotImplementedException("Core class.");
-	}
+//	@Override
+//	public boolean mergeLabeledValue(Label l, int i, ObjectSet<ALabel> s) {
+//		throw new NotImplementedException("Core class.");
+//	}
 
 	@Override
 	public void mergeLabeledValue(LabeledIntMap map) {
@@ -504,12 +513,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final boolean mergeLowerLabelValue(final Label l, final LabeledNode n, final int i) {
-		return this.lowerLabel.mergeTriple(l, n.getName(), i, false);
-	}
-
-	@Override
-	public final boolean mergeLowerLabelValue(final Label l, String nodeName, final int i) {
+	public final boolean mergeLowerLabelValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
 			throw new IllegalArgumentException("The label or the value has a not admitted value");
 		final int value = this.getValue(l);
@@ -522,12 +526,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final boolean mergeUpperLabelValue(final Label l, final LabeledNode n, final int i) {
-		return this.mergeUpperLabelValue(l, n.getName(), i);
-	}
-
-	@Override
-	public final boolean mergeUpperLabelValue(final Label l, String nodeName, final int i) {
+	public final boolean mergeUpperLabelValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
 			throw new IllegalArgumentException("The label or the value has a not admitted value: (" + l +", " + nodeName +", "+ Constants.formatInt(i)+").");
 		InternalEntry se = new InternalEntry(l, nodeName);
@@ -539,6 +538,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 					+ oldValue + ") is in the removed list");
 			return false;
 		}
+		this.putUpperLabeledValueToRemovedList(l, nodeName, i);//once it has been added, it is useless to add it again!
 		final int value = getValue(l);
 		if ((value != Constants.INT_NULL) && (value <= i)) {
 			LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value
@@ -557,12 +557,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		return this.removedLabeledValue.put(l, i);
 	}
 
-	public final int putUpperLabeledValueToRemovedList(final Label l, final LabeledNode n, final int i) {
-		return this.putUpperLabeledValueToRemovedList(l, n.getName(), i);
-	}
-
 	@Override
-	public final int putUpperLabeledValueToRemovedList(final Label l, final String n, final int i) {
+	public final int putUpperLabeledValueToRemovedList(final Label l, final ALabel n, final int i) {
 		return this.removedUpperLabel.put(new InternalEntry(l, n), i);
 	}
 
@@ -572,19 +568,14 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final int removeLowerLabel(final Label l, final LabeledNode n) {
+	public final int removeLowerLabel(final Label l, final ALabel n) {
 		this.hasChanged();
 		notifyObservers("LowerLabel:" + l.toString());
-		return this.lowerLabel.remove(l, n.getName());
+		return this.lowerLabel.remove(l, n);
 	}
 
 	@Override
-	public final int removeUpperLabel(final Label l, final LabeledNode n) {
-		return this.upperLabel.remove(l, n.getName());
-	}
-
-	@Override
-	public final int removeUpperLabel(final Label l, final String n) {
+	public final int removeUpperLabel(final Label l, final ALabel n) {
 		return this.upperLabel.remove(l, n);
 	}
 
@@ -626,7 +617,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final String upperLabelsToString() {
+	public final String upperLabelsAsString() {
 		return this.upperLabel.toString();
 	}
 }

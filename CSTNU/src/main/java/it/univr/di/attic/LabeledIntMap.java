@@ -1,11 +1,11 @@
-package it.univr.di.labeledvalue;
+//package it.univr.di.labeledvalue;
 
-import it.unimi.dsi.fastutil.ints.IntCollection;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-
-import java.util.Map;
-import java.util.Set;
+//import it.unimi.dsi.fastutil.ints.IntCollection;
+//import it.unimi.dsi.fastutil.objects.Object2IntMap;
+//import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+//
+//import java.util.Map;
+//import java.util.Set;
 
 /**
  * Declare all methods necessary to manage a set of values (of type int) each labeled by label of type {@link Label}.
@@ -22,7 +22,7 @@ import java.util.Set;
  *
  * @author Robert Posenato
  */
-public interface LabeledIntMap {// I do not extend Object2IntMap<Label> because I want to avoid a lot of nonsensical declarations.
+//public interface LabeledIntMap {// I do not extend Object2IntMap<Label> because I want to avoid a lot of nonsensical declarations.
 
 //	/**
 //	 * Default value to represent a no valid int value. It is necessary in the type oriented implementation of Map(Label,int).

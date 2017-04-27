@@ -13,6 +13,7 @@ import org.junit.Test;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -36,7 +37,7 @@ public class LabeledIntTreeMapTest {
 		 * 
 		 */
 		public LabeledIntMapStub() {
-			map = new Object2IntRBTreeMap<>();
+			this.map = new Object2IntRBTreeMap<>();
 		}
 
 		@Override
@@ -54,18 +55,18 @@ public class LabeledIntTreeMapTest {
 
 		@Override
 		public int size() {
-			return map.size();
+			return this.map.size();
 		}
 
 		@Override
 		public boolean put(Label l, int i) {
-			map.put(l, i);
+			this.map.put(l, i);
 			return false;
 		}
 
 		@Override
 		public void clear() {
-			map.clear();
+			this.map.clear();
 		}
 
 		@Override
@@ -80,6 +81,7 @@ public class LabeledIntTreeMapTest {
 
 		@Override
 		public void putAll(LabeledIntMap inputMap) {
+			// not implemented
 		}
 
 		@Override
@@ -131,23 +133,52 @@ public class LabeledIntTreeMapTest {
 
 		@Override
 		public ObjectSet<Label> keySet() {
-			return null;//this.map.keySet();
+			return null;// this.map.keySet();
 		}
-	};
+
+		@Override
+		public LabeledIntMap createLabeledIntMap() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public LabeledIntMap createLabeledIntMap(LabeledIntMap lim) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	}
 
 	/**
 	 * 
 	 */
-	LabeledIntMap actual = new LabeledIntTreeMap(true);
-	/**
-	 * 
-	 */
-	LabeledIntMap actual1 = new LabeledIntTreeMap(true);
+	LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
 
 	/**
 	 * 
 	 */
-	LabeledIntMap expected = new LabeledIntTreeMap(true);
+	LabeledIntMap actual = this.factory.create();
+	/**
+	 * 
+	 */
+	LabeledIntMap actual1 = this.factory.create();
+
+	/**
+	 * 
+	 */
+	LabeledIntMap expected = this.factory.create();
 
 	/**
 	 * Check if the management of the base is correct.
@@ -155,18 +186,18 @@ public class LabeledIntTreeMapTest {
 	@Test
 	public final void eliminazione() {
 		Label l1 = Label.parse("¬a¬b");
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(l1, 21);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(l1, 21);
 
-		actual.remove(l1);
-		actual.remove(l1);
-		actual.remove(Label.emptyLabel);
-		actual.remove(Label.parse("a"));
+		this.actual.remove(l1);
+		this.actual.remove(l1);
+		this.actual.remove(Label.emptyLabel);
+		this.actual.remove(Label.parse("a"));
 
-		expected.clear();
+		this.expected.clear();
 
-		assertEquals("Test cancellazione ripetuta, di empty label e di una label inesistente:\n", expected, actual);
+		assertEquals("Test cancellazione ripetuta, di empty label e di una label inesistente:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -174,16 +205,16 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void semplificazione1Test() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("¬a¬b"), 21);
-		actual.put(Label.parse("¬ab"), 21);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("¬a¬b"), 21);
+		this.actual.put(Label.parse("¬ab"), 21);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 109);
-		expected.put(Label.parse("¬a"), 21);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 109);
+		this.expected.put(Label.parse("¬a"), 21);
 
-		assertEquals("Test inserimento due label di pari valore con un letterale opposto:\n", expected, actual);
+		assertEquals("Test inserimento due label di pari valore con un letterale opposto:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -191,16 +222,16 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void semplificazioneRicorsivaTest() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("a"), 21);
-		actual.put(Label.parse("¬a¬b"), 21);
-		actual.put(Label.parse("¬ab"), 21);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("a"), 21);
+		this.actual.put(Label.parse("¬a¬b"), 21);
+		this.actual.put(Label.parse("¬ab"), 21);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 21);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 21);
 
-		assertEquals("Test inserimento due label di pari valore con un letterale opposto con ricorsione:\n", expected, actual);
+		assertEquals("Test inserimento due label di pari valore con un letterale opposto con ricorsione:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -208,22 +239,23 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void semplificazioneBase1Test() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("ab"), 10);
-		actual.put(Label.parse("a"), 25);
-		actual.put(Label.parse("¬b"), 23);
-		actual.put(Label.parse("b"), 22);
-		actual.put(Label.parse("a¬b"), 23);
-		actual.put(Label.parse("ab"), 20);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("ab"), 10);
+		this.actual.put(Label.parse("a"), 25);
+		this.actual.put(Label.parse("¬b"), 23);
+		this.actual.put(Label.parse("b"), 22);
+		this.actual.put(Label.parse("a¬b"), 23);
+		this.actual.put(Label.parse("ab"), 20);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 23);
-		expected.put(Label.parse("a"), 25);
-		expected.put(Label.parse("b"), 22);
-		expected.put(Label.parse("ab"), 10);
+		this.expected.clear();
+		// expected.put(Label.emptyLabel, 23);
+		this.expected.put(Label.parse("¬b"), 23);
+		this.expected.put(Label.parse("a"), 25);
+		this.expected.put(Label.parse("b"), 22);
+		this.expected.put(Label.parse("ab"), 10);
 
-		assertEquals("Test su creazione base A INIZIO e gestione semplificazioni:\n", expected, actual);
+		assertEquals("Test su creazione base A INIZIO e gestione semplificazioni:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -231,21 +263,21 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void semplificazioneBase2Test() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("ab"), 10);
-		actual.put(Label.parse("a¬b"), 23);
-		actual.put(Label.parse("¬b"), 23);
-		actual.put(Label.parse("b"), 22);
-		actual.put(Label.parse("ab"), 20);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("ab"), 10);
+		this.actual.put(Label.parse("a¬b"), 23);
+		this.actual.put(Label.parse("¬b"), 23);
+		this.actual.put(Label.parse("b"), 22);
+		this.actual.put(Label.parse("ab"), 20);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 109);
-		expected.put(Label.parse("¬b"), 23);
-		expected.put(Label.parse("b"), 22);
-		expected.put(Label.parse("ab"), 10);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 109);
+		this.expected.put(Label.parse("¬b"), 23);
+		this.expected.put(Label.parse("b"), 22);
+		this.expected.put(Label.parse("ab"), 10);
 
-		assertEquals("Test su creazione base IN MEZZO e gestione semplificazioni:\n", expected, actual);
+		assertEquals("Test su creazione base IN MEZZO e gestione semplificazioni:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -253,18 +285,18 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void semplificazioneBase3Test() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("A¬b"), 23);
-		actual.put(Label.parse("ab"), 20);
-		actual.put(Label.parse("¬b"), 23);
-		actual.put(Label.parse("b"), 23);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("A¬b"), 23);
+		this.actual.put(Label.parse("ab"), 20);
+		this.actual.put(Label.parse("¬b"), 23);
+		this.actual.put(Label.parse("b"), 23);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 23);
-		expected.put(Label.parse("ab"), 20);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 23);
+		this.expected.put(Label.parse("ab"), 20);
 
-		assertEquals("Test su creazione base IN FINE e gestione semplificazioni:\n", expected, actual);
+		assertEquals("Test su creazione base IN FINE e gestione semplificazioni:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -272,26 +304,26 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void semplificazioneBase4Test() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("a¬b"), 19);
-		actual.put(Label.parse("¬a¬b"), 19);
-		actual.put(Label.parse("¬ab"), 10);
-		actual.put(Label.parse("ab"), 10);
-		// Map: {⊡, 109 (a, 19) (b, 10) (¬a¬b, 19) }
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("a¬b"), 19);
+		this.actual.put(Label.parse("¬a¬b"), 19);
+		this.actual.put(Label.parse("¬ab"), 10);
+		this.actual.put(Label.parse("ab"), 10);
+		// Map: {⊡, 109 (19, a) (10, b) (19, ¬a¬b) }
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 109);
-		expected.put(Label.parse("b"), 10);
-		expected.put(Label.parse("¬b"), 19);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 109);
+		this.expected.put(Label.parse("b"), 10);
+		this.expected.put(Label.parse("¬b"), 19);
 
-		assertEquals("Test su creazione e gestione semplificazioni:\n", expected, actual);
+		assertEquals("Test su creazione e gestione semplificazioni:\n", this.expected, this.actual);
 
-		actual.put(Label.parse("¬b"), 10);
-		expected.clear();
-		expected.put(Label.emptyLabel, 10);
+		this.actual.put(Label.parse("¬b"), 10);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 10);
 
-		assertEquals("Test su creazione e gestione semplificazioni:\n", expected, actual);
+		assertEquals("Test su creazione e gestione semplificazioni:\n", this.expected, this.actual);
 
 	}
 
@@ -300,12 +332,12 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void insert0() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 0);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 0);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 0);
-		assertEquals("Test su aggiunta di (empty,0):\n", expected, actual);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 0);
+		assertEquals("Test su aggiunta di (empty,0):\n", this.expected, this.actual);
 	}
 
 	/**
@@ -313,18 +345,18 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void distruzioneBase() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 100);
-		actual.put(Label.parse("ab"), 50);
-		actual.put(Label.parse("a¬b"), 59);
-		actual.put(Label.parse("¬aB"), 60);
-		actual.put(Label.parse("¬a¬b"), 69);
-		actual.put(Label.parse("¬a"), 30);
-		actual.put(Label.parse("a"), 30);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 100);
+		this.actual.put(Label.parse("ab"), 50);
+		this.actual.put(Label.parse("a¬b"), 59);
+		this.actual.put(Label.parse("¬ab"), 60);
+		this.actual.put(Label.parse("¬a¬b"), 69);
+		this.actual.put(Label.parse("¬a"), 30);
+		this.actual.put(Label.parse("a"), 30);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, 30);
-		assertEquals("Test di distruzione base:\n", expected, actual);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 30);
+		assertEquals("Test di distruzione base:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -332,17 +364,17 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void distruzioneBase2() {
-		actual.clear();
-		actual.put(Label.parse("b"), -12);
-		actual.put(Label.parse("¬b"), -1);
-		actual.put(Label.parse("¬a"), -10);
+		this.actual.clear();
+		this.actual.put(Label.parse("b"), -12);
+		this.actual.put(Label.parse("¬b"), -1);
+		this.actual.put(Label.parse("¬a"), -10);
 
-		actual.put(Label.emptyLabel, -10);
+		this.actual.put(Label.emptyLabel, -10);
 
-		expected.clear();
-		expected.put(Label.emptyLabel, -10);
-		expected.put(Label.parse("b"), -12);
-		assertEquals("Test di distruzione base 2:\n", expected, actual);
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, -10);
+		this.expected.put(Label.parse("b"), -12);
+		assertEquals("Test di distruzione base 2:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -350,26 +382,31 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void caso20141021() {
-		actual.clear();
-		actual.put(Label.parse("¬b"), 29);
-		actual.put(Label.parse("a"), 26);
-		actual.put(Label.parse("ab"), 24);
-		actual.put(Label.emptyLabel, 30);
-		actual.put(Label.parse("¬ab"), 28);
-		actual.put(Label.parse("¬a"), 25);
-		actual.put(Label.parse("¬aB"), 23);
-		actual.put(Label.parse("a¬b"), 24);
+		this.actual.clear();
+		this.actual.put(Label.parse("¬b"), 29);
+		this.actual.put(Label.parse("a"), 26);
+		this.actual.put(Label.parse("ab"), 24);
+		this.actual.put(Label.emptyLabel, 30);
+		this.actual.put(Label.parse("¬ab"), 28);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.parse("¬ab"), 23);
+		this.actual.put(Label.parse("a¬b"), 24);
 
-		expected.clear();
-		expected.put(Label.parse("a"), 24);
-		expected.put(Label.parse("¬a"), 25);
-		expected.put(Label.parse("¬aB"), 23);
-		expected.put(Label.emptyLabel, 30);
-		expected.put(Label.parse("¬b"), 29);
+		this.expected.clear();
+		// expected.put(Label.emptyLabel, 26);
+		// expected.put(Label.parse("¬a"), 25);
+		// expected.put(Label.parse("¬ab"), 23);
+		// expected.put(Label.parse("a¬b"), 24);
+		// expected.put(Label.parse("b"), 24);
+		this.expected.put(Label.parse("ab"), 24);
+		this.expected.put(Label.parse("¬ab"), 23);
+		this.expected.put(Label.parse("a¬b"), 24);
+		this.expected.put(Label.parse("a"), 26);
+		this.expected.put(Label.parse("¬a"), 25);
 
 		// System.out.println("map:"+map);
 		// System.out.println("result:"+result);
-		assertEquals("Rimuovo componenti maggiori con elementi consistenti della base:\n", expected, actual);
+		assertEquals("Rimuovo componenti maggiori con elementi consistenti della base:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -377,12 +414,12 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void caso20141128() {
-		actual.clear();
-		actual.put(Label.parse("bgp"), 10);
-		actual.put(Label.parse("cp"), -1);
+		this.actual.clear();
+		this.actual.put(Label.parse("bgp"), 10);
+		this.actual.put(Label.parse("cp"), -1);
 		// System.out.println(map);
 
-		assertEquals("{(bgp, 10) (cp, -1) }", actual.toString());
+		assertEquals("{(10, bgp) (-1, cp) }", this.actual.toString());
 	}
 
 	/**
@@ -390,23 +427,23 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void casoBaseConValoriDistinti() {
-		actual.clear();
-		actual.put(Label.parse("a"), 30);
-		actual.put(Label.parse("¬a"), 25);
-		actual.put(Label.emptyLabel, 31);
-		actual.put(Label.parse("¬ab"), 24);
-		actual.put(Label.parse("¬a¬b"), 30);
-		actual.put(Label.parse("ab"), 23);
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.emptyLabel, 31);
+		this.actual.put(Label.parse("¬ab"), 24);
+		this.actual.put(Label.parse("¬a¬b"), 30);
+		this.actual.put(Label.parse("ab"), 23);
 
-		expected.clear();
-		expected.put(Label.parse("a"), 30);
-		expected.put(Label.parse("¬a"), 25);
-		expected.put(Label.parse("ab"), 23);
-		expected.put(Label.parse("¬ab"), 24);
-		expected.put(Label.emptyLabel, 31);
+		this.expected.clear();
+		this.expected.put(Label.parse("a"), 30);
+		this.expected.put(Label.parse("¬a"), 25);
+		this.expected.put(Label.parse("ab"), 23);
+		this.expected.put(Label.parse("¬ab"), 24);
+		this.expected.put(Label.emptyLabel, 31);
 
 		// System.out.printf("map:"+map);
-		assertEquals("Base con valori differenti:\n", expected, actual);
+		assertEquals("Base con valori differenti:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -414,23 +451,48 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void equals() {
-		actual.clear();
-		actual.put(Label.parse("¬a¬b"), 30);
-		actual.put(Label.parse("¬ab"), 24);
-		actual.put(Label.parse("ab"), 23);
-		actual.put(Label.parse("¬a"), 25);
-		actual.put(Label.parse("a"), 30);
-		actual.put(Label.emptyLabel, 31);
+		this.actual.clear();
+		this.actual.put(Label.parse("¬a¬b"), 30);
+		this.actual.put(Label.parse("¬ab"), 24);
+		this.actual.put(Label.parse("ab"), 23);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.emptyLabel, 31);
 
-		LabeledIntMap expected = new LabeledIntMapStub();
-		expected.clear();
-		// ⊡, 30, ¬a,25 b,24 ab,23
-		expected.put(Label.emptyLabel, 30);
-		expected.put(Label.parse("¬a"), 25);
-		expected.put(Label.parse("ab"), 23);
-		expected.put(Label.parse("b"), 24);
+		this.expected = new LabeledIntMapStub();
+		// in case of algorithm simplifies always two labels that differ for only one opposite literal, then the expected is ⊡, 30, ¬a,25 b,24 ab,23
+		// in case of algorithm simplifies two labels that differ for only one opposite literal only when they have same value, then the expected is ¬a,25 ¬ab,
+		// 24 a,30 ab,23
+		this.expected.put(Label.emptyLabel, 30);
+		// expected.put(Label.parse("a"), 30);
+		this.expected.put(Label.parse("¬a"), 25);
+		this.expected.put(Label.parse("ab"), 23);
+		this.expected.put(Label.parse("b"), 24);
+		// expected.put(Label.parse("¬ab"), 24);
 
-		assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual, expected.equals(actual));
+		assertEquals("Base con valori differenti:\n", "{(25, ¬a) (24, ¬ab) (30, a) (23, ab) }", this.actual.toString());
+		// assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual,
+		// expected.equals(actual));
+	}
+
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
+	public final void unknown() {
+		this.actual.clear();
+		this.actual.put(Label.parse("¬a¬b"), 30);
+		this.actual.put(Label.parse("¬ab"), 24);
+		this.actual.put(Label.parse("¿ab"), 24);
+		this.actual.put(Label.parse("¿a¬b"), 21);
+		this.actual.put(Label.parse("ab"), 23);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.parse("a"), 24);
+		this.actual.put(Label.emptyLabel, 31);
+
+		assertEquals("Base con valori differenti:\n", "{(25, ¬a) (24, ¬ab) (24, a) (23, ab) (21, ¿a¬b) }", this.actual.toString());
+		// assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual,
+		// expected.equals(actual));
 	}
 
 	/**
@@ -438,23 +500,33 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void equals1() {
-		actual.clear();
-		actual.put(Label.parse("¬a¬b"), 30);
-		actual.put(Label.parse("¬ab"), 24);
-		actual.put(Label.parse("ab"), 23);
-		actual.put(Label.parse("¬a"), 25);
-		actual.put(Label.parse("a"), 30);
-		actual.put(Label.emptyLabel, 31);
+		this.actual.clear();
+		this.actual.put(Label.parse("¬a¬b"), 30);
+		this.actual.put(Label.parse("¬ab"), 24);
+		this.actual.put(Label.parse("ab"), 23);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.parse("c"), 32);
+		this.actual.put(Label.emptyLabel, 31);
 
-		expected.clear();
-		// expected.put(Label.emptyLabel, 31);
-		expected.put(Label.parse("a"), 30);
-		expected.put(Label.parse("¬a"), 25);
-		expected.put(Label.parse("ab"), 23);
-		expected.put(Label.parse("¬ab"), 24);
+		assertEquals("{(25, ¬a) (24, ¬ab) (30, a) (23, ab) }", this.actual.toString());
+	}
 
-		// System.out.printf("expected:"+expected +" actual:"+actual);
-		assertTrue("Test di equals:\n", expected.equals(actual));
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
+	public final void differentValuesWithBase() {
+		this.actual.clear();
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.parse("b"), 2);
+		this.actual.put(Label.parse("c"), 25);
+		this.actual.put(Label.parse("¬ae"), 4);
+		this.actual.put(Label.parse("¿ac"), 4);
+		this.actual.put(Label.parse("d"), 31);
+
+		assertEquals("{(25, ¬a) (4, ¬ae) (30, a) (4, ¿ac) (2, b) (25, c) }", this.actual.toString());
 	}
 
 	/**
@@ -462,21 +534,26 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void checkIntSet() {
-		actual.clear();
-		actual.put(Label.parse("a"), 30);
-		actual.put(Label.parse("¬a"), 25);
-		actual.put(Label.emptyLabel, 31);
-		actual.put(Label.parse("¬ab"), 24);
-		actual.put(Label.parse("¬a¬b"), 30);
-		actual.put(Label.parse("ab"), 23);
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.emptyLabel, 31);
+		this.actual.put(Label.parse("¬ab"), 24);
+		this.actual.put(Label.parse("¬a¬b"), 30);
+		this.actual.put(Label.parse("ab"), 23);
 
-		ObjectSet<Entry<Label>> set = actual.entrySet();
+		ObjectArraySet<Entry<Label>> set = (ObjectArraySet<Entry<Label>>) this.actual.entrySet();
 		// System.out.println(set);
-		for (Iterator<Entry<Label>> ite = set.iterator(); ite.hasNext();) {
-			Entry<Label> e = ite.next();
-			e.setValue(1);
+		try {
+			for (Iterator<Entry<Label>> ite = set.iterator(); ite.hasNext();) {
+				Entry<Label> e = ite.next();
+				e.setValue(1);
+			}
+		} catch (java.lang.UnsupportedOperationException e) {
+			assertTrue(e != null);
+			return;
 		}
-		assertEquals(set, actual.entrySet());
+		assertEquals(set, this.actual.entrySet());
 		// System.out.println("Map: "+map);
 		// System.out.println("Set: "+set);
 	}
@@ -486,23 +563,23 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void putAllTest() {
-		actual.clear();
-		actual.put(Label.parse("a"), 30);
-		actual.put(Label.parse("¬a"), 25);
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.parse("¬a"), 25);
 
 		LabeledIntMapStub result = new LabeledIntMapStub();
 		result.clear();
 		result.put(Label.parse("b"), 30);
 		result.put(Label.parse("¬b"), 25);
 
-		actual1.clear();
-		actual1.put(Label.parse("c"), 30);
-		actual1.put(Label.parse("¬c"), 25);
+		this.actual1.clear();
+		this.actual1.put(Label.parse("c"), 30);
+		this.actual1.put(Label.parse("¬c"), 25);
 
-		actual.putAll(result);
+		this.actual.putAll(result);
 		assertEquals("Put all da un oggetto di una classe diversa che implementa la stessa interfaccia",
-				AbstractLabeledIntMap.parse("{(a, 30) (¬a, 25) (b, 30) (¬b, 25) }"), actual);
-		actual.putAll(actual1);
+				AbstractLabeledIntMap.parse("{(30, a) (25, ¬a) (30, b) (25, ¬b) }"), this.actual);
+		this.actual.putAll(this.actual1);
 	}
 
 	/**
@@ -510,15 +587,15 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void putACleaningValueTest() {
-		actual.clear();
-		actual.put(Label.parse("a"), 30);
-		actual.put(Label.parse("¬a"), 25);
-		actual.put(Label.emptyLabel, 0);
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 30);
+		this.actual.put(Label.parse("¬a"), 25);
+		this.actual.put(Label.emptyLabel, 0);
 
-		actual1 = new LabeledIntTreeMap(actual, true);
-		actual1.put(Label.emptyLabel, 0);
+		this.actual1 = new LabeledIntTreeMap(this.actual);
+		this.actual1.put(Label.emptyLabel, 0);
 
-		assertEquals("Put forcibly with a base", actual, actual1);
+		assertEquals("Put forcibly with a base", this.actual, this.actual1);
 	}
 
 	/**
@@ -526,14 +603,14 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void parseTest() {
-		actual = AbstractLabeledIntMap.parse("{(a, 30) (¬a, 25) (b, 30) (¬b, 25) }");
+		this.actual = AbstractLabeledIntMap.parse("{(30, a) (25, ¬a) (30, b) (25, ¬b) }");
 
-		expected.clear();
-		expected.put(Label.parse("a"), 30);
-		expected.put(Label.parse("¬a"), 25);
-		expected.put(Label.parse("b"), 30);
-		expected.put(Label.parse("¬b"), 25);
-		assertEquals("Parse test", expected, actual);
+		this.expected.clear();
+		this.expected.put(Label.parse("a"), 30);
+		this.expected.put(Label.parse("¬a"), 25);
+		this.expected.put(Label.parse("b"), 30);
+		this.expected.put(Label.parse("¬b"), 25);
+		assertEquals("Parse test", this.expected, this.actual);
 	}
 
 	/**
@@ -541,29 +618,29 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void minValue() {
-		actual.clear();
-		actual.put(Label.parse("a"), 0);
-		actual.put(Label.parse("¬a"), 1);
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 0);
+		this.actual.put(Label.parse("¬a"), 1);
 
 		// System.out.println(map.toString());
-		assertTrue("Test min value", actual.getMinValue() == 0);
-		actual1.clear();
+		assertTrue("Test min value", this.actual.getMinValue() == 0);
+		this.actual1.clear();
 
-		assertTrue(actual1.getMinValue() == LabeledIntNodeSetMap.INT_NULL);
+		assertTrue(this.actual1.getMinValue() == Constants.INT_NULL);
 
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("ab"), 10);
-		actual.put(Label.parse("a"), Constants.INT_POS_INFINITE);
-		actual.put(Label.parse("¬b"), 23);
-		actual.put(Label.parse("b"), 22);
-		actual.put(Label.parse("a¬b"), Constants.INT_NULL);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("ab"), 10);
+		this.actual.put(Label.parse("a"), Constants.INT_POS_INFINITE);
+		this.actual.put(Label.parse("¬b"), 23);
+		this.actual.put(Label.parse("b"), 22);
+		this.actual.put(Label.parse("a¬b"), Constants.INT_NULL);
 
-		assertEquals("Min value: ", 10, actual.getMinValue());
+		assertEquals("Min value: ", 10, this.actual.getMinValue());
 
-		actual.put(Label.parse("ab"), Constants.INT_NEG_INFINITE);
+		this.actual.put(Label.parse("ab"), Constants.INT_NEG_INFINITE);
 
-		assertEquals("Min value: ", Constants.INT_NEG_INFINITE, actual.getMinValue());
+		assertEquals("Min value: ", Constants.INT_NEG_INFINITE, this.actual.getMinValue());
 	}
 
 	/**
@@ -571,11 +648,11 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void minValueConsistentWithTest() {
-		actual.clear();
-		actual.put(Label.parse("a"), 0);
-		actual.put(Label.parse("¬a"), 1);
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 0);
+		this.actual.put(Label.parse("¬a"), 1);
 
-		assertTrue(actual.getMinValueConsistentWith(Label.parse("¬a")) == 1);
+		assertTrue(this.actual.getMinValueConsistentWith(Label.parse("¬a")) == 1);
 	}
 
 	/**
@@ -583,20 +660,20 @@ public class LabeledIntTreeMapTest {
 	 */
 	@Test
 	public final void simplificationWithInfinite() {
-		actual.clear();
-		actual.put(Label.emptyLabel, 109);
-		actual.put(Label.parse("ab"), 10);
-		actual.put(Label.parse("a"), Constants.INT_POS_INFINITE);
-		actual.put(Label.parse("¬b"), 23);
-		actual.put(Label.parse("b"), 22);
-		actual.put(Label.parse("a¬b"), Constants.INT_NULL);
-		actual.put(Label.parse("ab"), Constants.INT_NEG_INFINITE);
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("ab"), 10);
+		this.actual.put(Label.parse("a"), Constants.INT_POS_INFINITE);
+		this.actual.put(Label.parse("¬b"), 23);
+		this.actual.put(Label.parse("b"), 22);
+		this.actual.put(Label.parse("a¬b"), Constants.INT_NULL);
+		this.actual.put(Label.parse("ab"), Constants.INT_NEG_INFINITE);
 
 		// System.out.println(map);
-		expected = AbstractLabeledIntMap.parse("{(¬b, 23) (b, 22) }");
-		expected.put(Label.parse("ab"), Constants.INT_NEG_INFINITE);
-		expected.put(Label.emptyLabel, 109);
-		assertEquals("Test about simplification with infinity numbers:\n", expected, actual);
+		this.expected = AbstractLabeledIntMap.parse("{(23, ¬b) (22, b) }");
+		this.expected.put(Label.parse("ab"), Constants.INT_NEG_INFINITE);
+		this.expected.put(Label.emptyLabel, 109);
+		assertEquals("Test about simplification with infinity numbers:\n", this.expected, this.actual);
 	}
 
 	/**
@@ -609,42 +686,42 @@ public class LabeledIntTreeMapTest {
 		Label abNp = Label.parse("ab¬p");
 		Label abUp = Label.parse("ab¿p");
 
-		actual.clear();
-		actual.put(ab, 10);
-		actual.put(abUp, 10);
-		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(ab, 10) }"), actual);
+		this.actual.clear();
+		this.actual.put(ab, 10);
+		this.actual.put(abUp, 10);
+		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(10, ab) }"), this.actual);
 
-		actual.clear();
-		actual.put(abp, 10);
-		actual.put(abUp, 10);
-		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(abp, 10) }"), actual);
+		this.actual.clear();
+		this.actual.put(abp, 10);
+		this.actual.put(abUp, 10);
+		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(10, abp) }"), this.actual);
 
-		actual.clear();
-		actual.put(abp, Constants.INT_NEG_INFINITE);
-		actual.put(abUp, Constants.INT_NEG_INFINITE);
-		actual1.clear();
-		actual1.put(abp, Constants.INT_NEG_INFINITE);
-		assertEquals("Test about simplification with unknown labeled numbers:\n", actual1, actual);
+		this.actual.clear();
+		this.actual.put(abp, Constants.INT_NEG_INFINITE);
+		this.actual.put(abUp, Constants.INT_NEG_INFINITE);
+		this.actual1.clear();
+		this.actual1.put(abp, Constants.INT_NEG_INFINITE);
+		assertEquals("Test about simplification with unknown labeled numbers:\n", this.actual1, this.actual);
 
-		actual.clear();
-		actual.put(abp, 10);
-		actual.put(abNp, 9);
-		actual.put(abUp, 9);
-		expected = AbstractLabeledIntMap.parse("{(abp, 10) (ab¬p, 9) }");
-		assertEquals("Test about simplification with unknown labeled numbers:\n", expected, actual);
+		this.actual.clear();
+		this.actual.put(abp, 10);
+		this.actual.put(abNp, 9);
+		this.actual.put(abUp, 9);
+		this.expected = AbstractLabeledIntMap.parse("{(10, abp) (9, ab¬p) }");
+		assertEquals("Test about simplification with unknown labeled numbers:\n", this.expected, this.actual);
 
-		actual.clear();
-		actual.put(abUp, 9);
-		actual.put(abp, 10);
-		actual.put(abNp, 9);
-		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(abp, 10) (ab¬p, 9) }"), actual);
+		this.actual.clear();
+		this.actual.put(abUp, 9);
+		this.actual.put(abp, 10);
+		this.actual.put(abNp, 9);
+		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(10, abp) (9, ab¬p) }"), this.actual);
 
-		actual.clear();
-		actual.put(abp, 10);
-		actual.put(abNp, 9);
-		actual.put(abUp, 8);
-		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(abp, 10) (ab¬p, 9) (ab¿p, 8) }"),
-				actual);
+		this.actual.clear();
+		this.actual.put(abp, 10);
+		this.actual.put(abNp, 9);
+		this.actual.put(abUp, 8);
+		assertEquals("Test about simplification with unknown labeled numbers:\n", AbstractLabeledIntMap.parse("{(10, abp) (9, ab¬p) (8, ab¿p) }"),
+				this.actual);
 	}
 
 	/**
@@ -656,11 +733,81 @@ public class LabeledIntTreeMapTest {
 		Label Upr = Label.parse("¿pr");
 		Label UpNr = Label.parse("¿p¬r");
 
-		actual.clear();
-		actual.put(Upab, -24);
-		actual.put(Upr, Constants.INT_NEG_INFINITE);
+		this.actual.clear();
+		this.actual.put(Upab, -24);
+		this.actual.put(Upr, Constants.INT_NEG_INFINITE);
 		// System.out.println("Before introduction UpNr: "+ map);
-		actual.put(UpNr, Constants.INT_NEG_INFINITE);
-		assertEquals("Test about simplification with unknown labeled infinity:\n", "{(¿p, -∞) }", actual.toString());
+		this.actual.put(UpNr, Constants.INT_NEG_INFINITE);
+		assertEquals("Test about simplification with unknown labeled infinity:\n", "{(-∞, ¿p) }", this.actual.toString());
+	}
+
+	/**
+	 * Test merge 20160320
+	 */
+	@Test
+	public final void testMerge20160320() {
+		this.actual.clear();
+		this.actual.put(Label.parse("¬b"), 8);
+		this.actual.put(Label.parse("¬ab"), -2);
+		this.actual.put(Label.parse("b"), -1);
+		this.actual.put(Label.parse("¿b"), -11);
+
+		this.expected.clear();
+		// assertEquals("{(8, ⊡) (-2, ¬ab) (-1, b) (-11, ¿b) }", actual.toString());
+		assertEquals("{(-2, ¬ab) (8, ¬b) (-1, b) (-11, ¿b) }", this.actual.toString());
+	}
+
+	/**
+	 * Test merge 20160408
+	 */
+	@Test
+	public final void testMerge20160408() {
+
+		this.actual.clear();
+		this.actual.put(Label.emptyLabel, 109);
+		this.actual.put(Label.parse("abc¬f"), 10);
+		this.actual.put(Label.parse("abcdef"), 20);
+		this.actual.put(Label.parse("a¬bc¬de¬f"), 25);
+		assertEquals("{(109, ⊡) (25, a¬bc¬de¬f) (20, abcdef) (10, abc¬f) }", this.actual.toString());
+
+		this.actual.put(Label.parse("¬b¬d¬f"), 23);// toglie (25, a¬bc¬de¬f)
+		this.actual.put(Label.parse("ec"), 22);
+		this.actual.put(Label.parse("¬fedcba"), 23);// non serve a nulla
+		assertEquals("{(109, ⊡) (20, abcdef) (10, abc¬f) (23, ¬b¬d¬f) (22, ce) }", this.actual.toString());
+
+		this.actual.put(Label.parse("ae¬f"), 20);
+		this.actual.put(Label.parse("¬af¿b"), 20);
+		this.actual.put(Label.parse("¬af¿b"), 21);
+		assertEquals("{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (20, ae¬f) (23, ¬b¬d¬f) (22, ce) }", this.actual.toString());
+
+		this.actual.put(Label.parse("¬ec"), 11);
+		this.actual.put(Label.parse("abd¿f"), 11);
+		this.actual.put(Label.parse("a¿d¬f"), 11);
+		assertEquals("{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¬f) (11, c¬e) (22, ce) }",
+				this.actual.toString());
+
+		this.actual.put(Label.parse("¬b¿d¿f"), 24);// non inserito perché c'è (23, ¬b¬d¬f)
+		this.actual.put(Label.parse("b¬df¿e"), 22);
+		this.actual.put(Label.parse("e¬c"), 23);
+		assertEquals(
+				"{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¬f) (22, b¬d¿ef) (23, ¬ce) (11, c¬e) (22, ce) }",
+				this.actual.toString());
+
+		this.actual.put(Label.parse("ab¿d¿f"), 20);// non iserito perché c'è (11, abd¿f)
+		this.actual.put(Label.parse("ad¬f"), 23);
+		this.actual.put(Label.parse("b¿d¿f"), 23);
+		assertEquals(
+				"{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¬f) (22, b¬d¿ef) (23, b¿d¿f) (23, ¬ce) (11, c¬e) (22, ce) }",
+				this.actual.toString());
+
+		this.actual.put(Label.parse("¬b¬d¿ef"), 23);
+		assertEquals(
+				"{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¿ef) (23, ¬b¬d¬f) (22, b¬d¿ef) (23, b¿d¿f) (23, ¬ce) (11, c¬e) (22, ce) }",
+				this.actual.toString());
+
+		this.actual.put(Label.parse("¬e¬c"), 19);
+
+		assertEquals("{(20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (22, b¬d¿ef) (19, ¬c¬e) (23, ¬ce) (11, c¬e) (22, ce) }",
+				this.actual.toString());
 	}
 }
