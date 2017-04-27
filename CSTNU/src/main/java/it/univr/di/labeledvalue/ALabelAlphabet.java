@@ -61,7 +61,7 @@ public class ALabelAlphabet {
 			if (s == null || s.isEmpty())
 				throw new IllegalArgumentException("A ALetter cannot be null or empty");
 			if (!Pattern.matches(Constants.ALETTER_RANGE, s))
-				throw new IllegalArgumentException("A ALetter must be in the regula-expression range: " + Constants.ALETTER_RANGE);
+				throw new IllegalArgumentException("The argoment " + s + " must be in the regular-expression range: " + Constants.ALETTER_RANGE);
 			this.name = s;
 		}
 
@@ -247,7 +247,7 @@ public class ALabelAlphabet {
 		this.value[k] = v;
 		this.size++;
 		// Arrays.sort(this.value, 0, this.size); NON SI POSSONO ordinare!
-//		return this.index(v);
+		// return this.index(v);
 		return k;
 	}
 
