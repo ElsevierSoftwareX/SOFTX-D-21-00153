@@ -13,7 +13,7 @@ public final class Constants implements Serializable {
 	/**
 	 * A-Letter
 	 */
-	public static final String ALETTER = "A-Za-z0-9_Α-ω?";
+	public static final String ALETTER = "A-Za-z0-9α-μ_ ωΩ?";
 
 	/**
 	 * A-Letter range

@@ -290,7 +290,7 @@ public class CSTNepsilon extends CSTN {
 				// }
 				continue;
 			}
-			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.labeledValueSet()) {
+			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.getLabeledValueSet()) {
 				final int w = entryObsD.getIntValue();
 				if (w > this.reactionTime) { // Table 2 ICAPS
 					// (w == 0 && nD==Z), it means that P? is executed at 0. So, even if v==0 (it cannot be v>0),

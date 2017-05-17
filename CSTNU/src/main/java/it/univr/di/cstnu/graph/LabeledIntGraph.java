@@ -482,7 +482,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			eNew = this.edgeFactory.create();
 			eNew.setName(e.getName());
 			eNew.setConstraintType(e.getConstraintType());
-			for (Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
+			for (Object2IntMap.Entry<Label> entry : e.getLabeledValueSet()) {
 				value = entry.getIntValue();
 				if (value == Constants.INT_NEG_INFINITE)
 					continue;

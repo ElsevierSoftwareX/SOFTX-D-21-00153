@@ -45,9 +45,9 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
 
 		@SuppressWarnings("javadoc")
-		Label label;
-		@SuppressWarnings("javadoc")
 		ALabel aLabel;
+		@SuppressWarnings("javadoc")
+		Label label;
 
 		/**
 		 * @param label
@@ -59,23 +59,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		}
 
 		@Override
-		public Label getKey() {
-			return this.label;
-		}
-
-		@Override
-		public ALabel getValue() {
-			return this.aLabel;
-		}
-
-		@Override
-		public ALabel setValue(ALabel value) {
-			ALabel old = new ALabel(this.aLabel);
-			this.aLabel = value;
-			return old;
-		}
-
-		@Override
 		public int compareTo(Object2ObjectMap.Entry<Label, ALabel> o) {
 			if (o == null)
 				return 1;
@@ -84,7 +67,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 				return i;
 			return this.aLabel.compareTo(o.getValue());
 		}
-		
+
 		@Override
 		public boolean equals(Object o) {
 			if (o==null || !(o instanceof InternalEntry))
@@ -92,13 +75,53 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			InternalEntry e = (InternalEntry) o;
 			return this.label.equals(e.label) && this.aLabel.equals(e.aLabel);
 		}
+
+		@Override
+		public Label getKey() {
+			return this.label;
+		}
+
+		@Override
+		public ALabel getValue() {
+			return this.aLabel;
+		}
 		
+		@Override
+		public int hashCode() {
+			return this.label.hashCode()+1000*this.aLabel.hashCode();
+		}
+		
+		@Override
+		public ALabel setValue(ALabel value) {
+			ALabel old = new ALabel(this.aLabel);
+			this.aLabel = value;
+			return old;
+		}
+
 		@Override
 		public String toString() {
 			return "("+this.aLabel+", "+this.label+")";
 		}
 
 	}
+
+	/**
+	 * Simple stroke object to draw a 'standard' type edge.
+	 */
+	static final Stroke constraintEdgeStroke = RenderContext.DASHED;
+
+	/**
+	 * Simple stroke object to draw a 'standard' type edge.
+	 */
+	static final Stroke contingentEdgeStroke = new BasicStroke(1.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
+
+	// GRAPHICS & VISUALIZATION STUFF
+	// Set up a new stroke Transformer for the edges
+	/**
+	 * Simple stroke object to draw a 'derived' type edge.
+	 */
+	static final Stroke derivedEdgeStroke = RenderContext.DOTTED;
+	// new BasicStroke(0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	/**
 	 * A transformer to return a font for edge label.
@@ -152,24 +175,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			}
 		}
 	};
-
-	/**
-	 * Simple stroke object to draw a 'standard' type edge.
-	 */
-	static final Stroke constraintEdgeStroke = RenderContext.DASHED;
-
-	/**
-	 * Simple stroke object to draw a 'standard' type edge.
-	 */
-	static final Stroke contingentEdgeStroke = new BasicStroke(1.2f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
-
-	// GRAPHICS & VISUALIZATION STUFF
-	// Set up a new stroke Transformer for the edges
-	/**
-	 * Simple stroke object to draw a 'derived' type edge.
-	 */
-	static final Stroke derivedEdgeStroke = RenderContext.DOTTED;
-	// new BasicStroke(0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	/**
 	 * To provide a unique id for the default creation of component.
@@ -255,6 +260,11 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	/**
+	 * The type of the edge.
+	 */
+	ConstraintType constraintType;
+
+	/**
 	 * Lower case Morris Labels. The name of node HAS TO be preserved as the original. The name of this map says that has to be considered as lower-case letter.
 	 */
 	LabeledContingentIntTreeMap lowerLabel;
@@ -270,11 +280,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * The CSTNU controllability check algorithm needs to know if a labeled value has been removed in the past in order to avoid to add it a second time.
 	 */
 	Object2IntMap<Entry<Label, ALabel>> removedUpperLabel;
-
-	/**
-	 * The type of the edge.
-	 */
-	ConstraintType constraintType;
 
 	/**
 	 * Upper case Morris Labels. The name of node HAS TO be preserved as the original. The name of this map says that has to be considered as upper-case letter.
@@ -368,7 +373,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getAllUpperCaseAndOrdinaryLabeledValuesSet() {
 		// Merge all possible labeled values and Upper Case labeled values of edges between Y and X in a single set.
 		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> globalLabeledValueSet = new ObjectArraySet<>(this.getUpperLabelSet());
-		for (final Object2IntMap.Entry<Label> entry : this.labeledValueSet()) {
+		for (final Object2IntMap.Entry<Label> entry : this.getLabeledValueSet()) {
 			final Entry<Label, ALabel> e = new AbstractObject2ObjectMap.BasicEntry<>(entry.getKey(), ALabel.emptyLabel);
 			globalLabeledValueSet.add(new AbstractObject2IntMap.BasicEntry<>(e, entry.getIntValue()));
 		}
@@ -376,7 +381,17 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
+	public final ConstraintType getConstraintType() {
+		return this.constraintType;
+	}
+
+	@Override
 	public LabeledIntMap getLabeledValueMap() {
+		throw new NotImplementedException("Core class.");
+	}
+
+	@Override
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
 		throw new NotImplementedException("Core class.");
 	}
 
@@ -431,11 +446,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final ConstraintType getConstraintType() {
-		return this.constraintType;
-	}
-
-	@Override
 	public final LabeledContingentIntTreeMap getUpperLabelMap() {
 		return this.upperLabel;
 	}
@@ -467,18 +477,13 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public ObjectSet<Object2IntMap.Entry<Label>> labeledValueSet() {
-		throw new NotImplementedException("Core class.");
+	public final String lowerLabelsAsString() {
+		return this.lowerLabel.toString(true);
 	}
 
 	@Override
 	public final int lowerLabelSize() {
 		return this.lowerLabel.size();
-	}
-
-	@Override
-	public final String lowerLabelsAsString() {
-		return this.lowerLabel.toString(true);
 	}
 
 	@Override
@@ -580,6 +585,11 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
+	public void setConstraintType(final ConstraintType type) {
+		this.constraintType = type;
+	}
+
+	@Override
 	public final void setLabeledLowerCaseValue(final LabeledContingentIntTreeMap labeledValue) {
 		this.lowerLabel = (labeledValue == null) ? new LabeledContingentIntTreeMap() : labeledValue;
 	}
@@ -592,11 +602,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	@Override
 	public void setLabeledValue(LabeledIntMap labeledValue) {
 		throw new NotImplementedException("Core class.");
-	}
-
-	@Override
-	public void setConstraintType(final ConstraintType type) {
-		this.constraintType = type;
 	}
 
 	// /**
@@ -612,12 +617,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final int upperLabelSize() {
-		return this.upperLabel.size();
+	public final String upperLabelsAsString() {
+		return this.upperLabel.toString();
 	}
 
 	@Override
-	public final String upperLabelsAsString() {
-		return this.upperLabel.toString();
+	public final int upperLabelSize() {
+		return this.upperLabel.size();
 	}
 }

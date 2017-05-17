@@ -242,7 +242,7 @@ public class Luke2GraphML {
 			int value = Integer.valueOf(labelParts[1]);
 			edge.mergeLabeledValue(label, value);
 		}
-		if (edge.labeledValueSet().size() > 0) {
+		if (edge.getLabeledValueSet().size() > 0) {
 			g.addEdge(edge, sourceNode, destNode);
 		}
 	}

@@ -247,14 +247,14 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * @return the labeled values as a set
 	 */
-	public ObjectSet<Object2IntMap.Entry<Label>> labeledValueSet() {
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
 		return this.labeledValue.entrySet();
 	}
 
 	/**
 	 * @return the labeled values as a set
 	 */
-	public ObjectSet<Object2IntMap.Entry<Label>> labeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse) {
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse) {
 		return this.labeledValue.entrySet(setToReuse);
 	}
 

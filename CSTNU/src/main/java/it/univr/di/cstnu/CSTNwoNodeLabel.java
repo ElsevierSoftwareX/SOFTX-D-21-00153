@@ -18,7 +18,6 @@ import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.StaticLayout;
-import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -45,6 +44,46 @@ public class CSTNwoNodeLabel extends CSTN {
 	 */
 	@SuppressWarnings("hiding")
 	static final String VERSIONandDATE = "Version  1.2 - April, 25 2017";
+
+	/**
+	 * Determines the sum of 'a' and 'b'. If any of them is already INFINITY, returns INFINITY.
+	 * If the sum is greater/lesser than the maximum/minimum integer representable by a int,
+	 * it throws an ArithmeticException because the overflow.
+	 *
+	 * @param a an integer.
+	 * @param b an integer.
+	 * @param horizon maximum positive value!
+	 * @return the controlled sum.
+	 * @throws java.lang.ArithmeticException
+	 *             if any.
+	 */
+	static public final int sumWithOverflowCheck(final int a, final int b, int horizon) throws ArithmeticException {
+		int max, min;
+		if (a >= b) {
+			max = a;
+			min = b;
+		} else {
+			min = a;
+			max = b;
+		}
+		if (min == Constants.INT_NEG_INFINITE) {
+			if (max == Constants.INT_POS_INFINITE)
+				return -1;
+			return Constants.INT_NEG_INFINITE;
+		}
+		if (max == Constants.INT_POS_INFINITE) {
+			if (min == Constants.INT_NEG_INFINITE)
+				return -1;
+			return Constants.INT_POS_INFINITE;
+		}
+
+		final long sum = (long) a + (long) b;
+		if (sum > horizon)
+			return horizon;
+		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
+			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+		return (int) sum;
+	}
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -110,6 +149,11 @@ public class CSTNwoNodeLabel extends CSTN {
 	int horizon;
 
 	/**
+	 * Auxiliary constraints switch
+	 */
+	boolean addAuxiliaryConstraints = false;
+
+	/**
 	 * Default constructor.
 	 */
 	private CSTNwoNodeLabel() {
@@ -147,28 +191,29 @@ public class CSTNwoNodeLabel extends CSTN {
 		this.horizon = (int) (this.maxWeight * nodeSet.size() * Math.pow(2.0, this.g.getPropositions().size()));
 		LabeledNode Z = this.g.getZ();
 		for (final LabeledNode node : nodeSet) {
-			Label nodeLabel = node.getLabel();
-			LabeledIntEdge edgeToZ = this.g.findEdge(node, Z);
-
-			// Now, it removes label from node and adds equivalent constraints as shown in TIME17
+			if (this.addAuxiliaryConstraints) {
+				Label nodeLabel = node.getLabel();
+				LabeledIntEdge edgeToZ = this.g.findEdge(node, Z);
+				// Now, it removes label from node and adds equivalent constraints as shown in TIME17
+				// Add lower bounds
+				for (Literal l : nodeLabel.negation()) {
+					/**
+					 * [2017-04-25] After an experimentation, it has been proved that the lower bound must be -∞ to avoid a lot of useless labeled value
+					 * propagations.
+					 * The theoretical bound is (-this.horizon - 1).
+					 */
+					edgeToZ.mergeLabeledValue(new Label(l.getName(), l.getState()), Constants.INT_NEG_INFINITE);
+				}
+				// Add the upper bound
+				LabeledIntEdge edgeFromZ = this.g.findEdge(Z, node);
+				if (edgeFromZ == null) {
+					edgeFromZ = makeNewEdge(this.ZeroNodeName + "_" + node.getName(), ConstraintType.internal);
+					this.g.addEdge(edgeFromZ, Z, node);
+				}
+				edgeFromZ.mergeLabeledValue(nodeLabel, this.horizon);
+			}
 			node.setLabel(Label.emptyLabel);
-			// Add lower bounds
-			for (Literal l : nodeLabel.negation()) {
-				/**
-				 * [2017-04-25] After an experimentation, it has been proved that the lower bound must be -∞ to avoid a lot of useless labeled value propagations.
-				 * The theoretical bound is (-this.horizon - 1).
-				 */
-				edgeToZ.mergeLabeledValue(new Label(l.getName(), l.getState()), Constants.INT_NEG_INFINITE);
-			}
-			// Add the upper bound
-			LabeledIntEdge edgeFromZ = this.g.findEdge(Z, node);
-			if (edgeFromZ == null) {
-				edgeFromZ = makeNewEdge(this.ZeroNodeName + "_" + node.getName(), ConstraintType.internal);
-				this.g.addEdge(edgeFromZ, Z, node);
-			}
-			edgeFromZ.mergeLabeledValue(nodeLabel, this.horizon);
 		}
-
 		// It is better to normalize with respect to the label modification rules before starting the DC check.
 		// Such normalization assures only that redundant labels are removed (w.r.t. R0)
 		// Q* are not solved by this normalization!
@@ -304,7 +349,7 @@ public class CSTNwoNodeLabel extends CSTN {
 				continue;
 			final char p = nObs.getPropositionObserved();
 
-			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.labeledValueSet()) {
+			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.getLabeledValueSet()) {
 				final int w = entryObsD.getIntValue();
 				if (w > 0 || (w == 0 && nD == nZ)) { // Table 1 ICAPS
 					// (w == 0 && nD==Z), it means that P? is executed at 0. So, even if v==0 (it cannot be v>0),
@@ -361,7 +406,8 @@ public class CSTNwoNodeLabel extends CSTN {
 	}
 
 	/**
-	 * As {@link CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge)} but without check of node labels and children!
+	 * As {@link CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge)} but without check of node
+	 * labels and children!
 	 * 
 	 * @param nA CANNOT BE NULL!
 	 * @param nB CANNOT BE NULL!
@@ -377,36 +423,33 @@ public class CSTNwoNodeLabel extends CSTN {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false;
-		for (final Object2IntMap.Entry<Label> ABEntry : eAB.labeledValueSet()) {
+		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 
 			/**
 			 * If there is a self loop containing a (-∞, q*), it must be propagated!
 			 */
 			final int u = ABEntry.getIntValue();
-			for (final Object2IntMap.Entry<Label> BCEntry : eBC.labeledValueSet()) {
+			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
 				final Label labelBC = BCEntry.getKey();
 				final int v = BCEntry.getIntValue();
-				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
+				int sum = sumWithOverflowCheck(u, v, this.horizon);
 
 				final Label newLabelAC = labelAB.conjunctionExtended(labelBC);
 				final boolean qLabel = newLabelAC.containsUnknown();
 				if (qLabel) {
-					if (!((u < 0) && (sum <= 0)))
-						continue;
-				} else {
-					if (!(sum <= 0))
+					if (u >= 0)
 						continue;
 				}
-
 				int oldValue = eAC.getValue(newLabelAC);
 				if (nA == nC) {
-					if (sum == 0) {
+					if (sum >= 0) {
 						// it would be a redundant edge
 						continue;
 					}
-					// sum is negative!
+					// here sum is negative
 					if (!qLabel) {
+						// sum is negative!
 						eAC.mergeLabeledValue(newLabelAC, sum);
 						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER, "***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
@@ -451,6 +494,7 @@ public class CSTNwoNodeLabel extends CSTN {
 			}
 		}
 		return ruleApplied;
+
 	}
 
 	/**
@@ -459,5 +503,19 @@ public class CSTNwoNodeLabel extends CSTN {
 	void setG(LabeledIntGraph g) {
 		super.setG(g);
 		this.horizon = Constants.INT_NEG_INFINITE;
+	}
+
+	/**
+	 * @return the addAuxiliaryConstraints
+	 */
+	public boolean isAddAuxiliaryConstraints() {
+		return addAuxiliaryConstraints;
+	}
+
+	/**
+	 * @param addAuxiliaryConstraints the addAuxiliaryConstraints to set
+	 */
+	public void setAddAuxiliaryConstraints(boolean addAuxiliaryConstraints) {
+		this.addAuxiliaryConstraints = addAuxiliaryConstraints;
 	}
 }

@@ -30,4 +30,13 @@ if [ "x$IN" == "x" ]; then
     exit 1
 fi
 
-java -Djava.util.logging.config.file=$DIR/logging.properties -Xmx1g -cp $CSTN it.univr.di.cstnu.CSTNRunningTime $IN 
+java -Djava.util.logging.config.file=$DIR/logging.properties \
+	-d64 \
+	-Xms4g \
+	-Xmx4g \
+	-XX:-UseAdaptiveSizePolicy \
+	-XX:+UseConcMarkSweepGC \
+	-cp $CSTN it.univr.di.cstnu.CSTNRunningTime_NodeSet $IN 
+
+#	-XX:NewSize=1g \
+#	-XX:MaxNewSize=1g \

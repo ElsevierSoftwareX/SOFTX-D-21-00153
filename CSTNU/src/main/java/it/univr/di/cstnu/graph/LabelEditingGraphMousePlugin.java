@@ -128,7 +128,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		buttonGroup.add(constraintButton);
 
 		// Show possible labeled values
-		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.labeledValueSet();
+		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.getLabeledValueSet();
 		JTextField jt;
 		jp.add(new JLabel("Labeled value syntax:"));
 		jt = new JTextField(Constants.LABEL_RE);

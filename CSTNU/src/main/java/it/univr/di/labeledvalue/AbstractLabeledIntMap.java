@@ -35,8 +35,8 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 */
 	static final Pattern patternLabelCharsRE = Pattern
 			.compile(Pattern.quote("{")
-					+ "(" 
-					+ Pattern.quote(Constants.OPEN_PAIR) + labeledValueRE + Pattern.quote(Constants.CLOSE_PAIR) 
+					+ "("
+					+ Pattern.quote(Constants.OPEN_PAIR) + labeledValueRE + Pattern.quote(Constants.CLOSE_PAIR)
 					+ "[ ]*)*"
 					+ Pattern.quote("}"));
 
@@ -152,9 +152,9 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	}
 
 	/**
-	 * Determines the sum of 'a' and 'b'. If any of them is already INFINITY, returns INFINITY. If the sum is greater/lesser than the maximum/minimum integer
-	 * representable by a int, it throw an IllegalStateException because the overflow. I don't use Overflow exception because it requires to use a try{} catch
-	 * section.
+	 * Determines the sum of 'a' and 'b'. If any of them is already INFINITY, returns INFINITY.
+	 * If the sum is greater/lesser than the maximum/minimum integer representable by a int,
+	 * it throws an ArithmeticException because the overflow.
 	 *
 	 * @param a an integer.
 	 * @param b an integer.
@@ -163,12 +163,26 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 *             if any.
 	 */
 	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
-		if ((a == Constants.INT_NEG_INFINITE) || (b == Constants.INT_NEG_INFINITE))
+		int max, min;
+		if (a >= b) {
+			max = a;
+			min = b;
+		} else {
+			min = a;
+			max = b;
+		}
+		if (min == Constants.INT_NEG_INFINITE) {
+			if (max == Constants.INT_POS_INFINITE)
+				return -1;
 			return Constants.INT_NEG_INFINITE;
-		if ((a == Constants.INT_POS_INFINITE) || (b == Constants.INT_POS_INFINITE))
+		}
+		if (max == Constants.INT_POS_INFINITE) {
+			if (min == Constants.INT_NEG_INFINITE)
+				return -1;
 			return Constants.INT_POS_INFINITE;
+		}
 
-		final long sum = (long) a + (long) b;// CAST IS NECESSARY!
+		final long sum = (long) a + (long) b;
 		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
 			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
 		return (int) sum;

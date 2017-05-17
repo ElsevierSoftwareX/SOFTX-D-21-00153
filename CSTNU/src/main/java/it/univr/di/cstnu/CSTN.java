@@ -756,7 +756,7 @@ public class CSTN {
 				LOG.log(Level.FINEST, "Initial Checking edge e: " + e);
 			}
 			// Determines the absolute max weight value
-			for (Object2IntMap.Entry<Label> entry : e.labeledValueSet()) {
+			for (Object2IntMap.Entry<Label> entry : e.getLabeledValueSet()) {
 				int v = entry.getIntValue();
 				if (v < -this.maxWeight)
 					this.maxWeight = -v;
@@ -794,7 +794,7 @@ public class CSTN {
 		// Init two useful structures
 		this.g.getPropositions();
 
-		// Checks well definiteness of nodes 
+		// Checks well definiteness of nodes
 		final Collection<LabeledNode> nodeSet = this.g.getVertices();
 		for (final LabeledNode node : nodeSet) {
 
@@ -817,9 +817,10 @@ public class CSTN {
 			} catch (final WellDefinitionException ex) {
 				throw new WellDefinitionException("WellDefinition 2 problem found at node " + node + ": " + ex.getMessage());
 			}
-			
+
 			// 3. Checks that each node has an edge to Z.
-			if (node == Z) continue;
+			if (node == Z)
+				continue;
 			LabeledIntEdge edgeToZ = this.g.findEdge(node, Z);
 			if (edgeToZ == null) {
 				edgeToZ = makeNewEdge(node.getName() + "_" + this.ZeroNodeName, ConstraintType.internal);
@@ -857,9 +858,9 @@ public class CSTN {
 			LOG.severe(logMsg);
 			throw new WellDefinitionException(logMsg);
 		}
-		if (LOG.isLoggable(Level.INFO)) {
-			LOG.log(Level.INFO, "A preliminary application of label modification rules has been done: " + this.checkStatus.toString());
-		}
+		// if (LOG.isLoggable(Level.FINEST)) {
+		// LOG.log(Level.FINEST, "A preliminary application of label modification rules has been done: " + this.checkStatus.toString());
+		// }
 		if (LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "Initial well definition check done!");
 		}
@@ -1028,7 +1029,7 @@ public class CSTN {
 				}
 				continue;
 			}
-			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.labeledValueSet()) {
+			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.getLabeledValueSet()) {
 				final int w = entryObsD.getIntValue();
 				if (w > 0 || (w == 0 && nD == nZ)) { // Table 1 ICAPS
 					// (w == 0 && nD==Z), it means that P? is executed at 0. So, even if v==0 (it cannot be v>0),
@@ -1115,32 +1116,40 @@ public class CSTN {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false;
-		for (final Object2IntMap.Entry<Label> ABEntry : eAB.labeledValueSet()) {
+		Label nAnCLabel = nA.getLabel().conjunctionExtended(nC.getLabel());
+		
+		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 
 			/**
 			 * If there is a self loop containing a (-∞, q*), it must be propagated!
 			 */
 			final int u = ABEntry.getIntValue();
-			for (final Object2IntMap.Entry<Label> BCEntry : eBC.labeledValueSet()) {
+			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
 				final Label labelBC = BCEntry.getKey();
 				final int v = BCEntry.getIntValue();
+				/**
+				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
+				 */
 				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
 
-				final Label newLabelAC = labelAB.conjunctionExtended(labelBC);
+				Label newLabelAC = labelAB.conjunctionExtended(labelBC);
 				final boolean qLabel = newLabelAC.containsUnknown();
 				if (qLabel) {
-					if (!((u < 0) && (sum <= 0)))
+					if (u>=0) //rule condition!
 						continue;
 					removeChildrenOfUnknown(newLabelAC);
-				} else {
-					if (!(sum <= 0))
-						continue;
+				}
+
+				if (!newLabelAC.subsumes(nAnCLabel)) {
+					LOG.log(Level.FINEST, "New alphaBeta label "+newLabelAC+ " does not subsume node labels "+nAnCLabel+". New value cannot be added.");
+					continue;
 				}
 
 				int oldValue = eAC.getValue(newLabelAC);
+				
 				if (nA == nC) {
-					if (sum == 0) {
+					if (sum >= 0) {
 						// it would be a redundant edge
 						continue;
 					}
@@ -1170,7 +1179,7 @@ public class CSTN {
 						continue;
 					}
 				}
-				// here sum has to be insert!
+				// here sum has to be add!
 				// I have to prepare the log before the execution of the merge!
 				String log = null;
 				if (LOG.isLoggable(Level.FINER)) {
@@ -1749,8 +1758,15 @@ public class CSTN {
 	 * @return the label modified.
 	 */
 	Label removeChildrenOfUnknown(Label label) {
+		Label old = null;
+		if (LOG.isLoggable(Level.FINEST)) {
+			old = new Label(label);
+		}
 		for (final char unknownLit : label.getAllUnknown()) {
 			label.remove(this.g.getChildrenOf(this.g.getObservator(unknownLit)));
+		}
+		if (LOG.isLoggable(Level.FINEST) && !label.equals(old)) {
+			LOG.log(Level.FINEST, "Remove children of unknown has changed label " + old + " to " + label);
 		}
 		return label;
 	}

@@ -87,6 +87,7 @@ public class LabeledIntEdgeSimpleTest {
 
 	/**
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public final void testMergeUpperLabeledValues() {
 		LabeledIntEdgePluggable e = edgeFactory.create();

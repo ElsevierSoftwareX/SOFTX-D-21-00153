@@ -290,7 +290,7 @@ public class CSTNepsilonTest {
 		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
 		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
 
-		assertEquals("R3: yx labeled values.", yxOK.labeledValueSet(), yx.labeledValueSet());
+		assertEquals("R3: yx labeled values.", yxOK.getLabeledValueSet(), yx.getLabeledValueSet());
 	}
 
 	/**
@@ -337,7 +337,7 @@ public class CSTNepsilonTest {
 		xyOK.mergeLabeledValue(Label.parse("ab¿p"), -15);
 		xyOK.mergeLabeledValue(Label.parse("ab¿c"), -12);//epsilon semantics
 		
-		assertEquals("R3: yx labeled values.", xyOK.labeledValueSet(), xz.labeledValueSet());
+		assertEquals("R3: yx labeled values.", xyOK.getLabeledValueSet(), xz.getLabeledValueSet());
 	}
 
 	/**
@@ -381,9 +381,8 @@ public class CSTNepsilonTest {
 		// System.out.println(PY);
 
 		LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		// xyOK.mergeLabeledValue(Label.parse("¬A¬B"), 17);
 		// EqLP+
-		// xyOK.mergeLabeledValue(Label.parse("¬b"), 8);
+		xyOK.mergeLabeledValue(Label.parse("¬b"), 8);
 		xyOK.mergeLabeledValue(Label.parse("¬ab"), -2);
 		xyOK.mergeLabeledValue(Label.parse("b"), -1);
 		xyOK.mergeLabeledValue(Label.parse("¿b"), -11);
@@ -399,7 +398,7 @@ public class CSTNepsilonTest {
 
 		// EqLP+ rule no positive value
 		xyOK.clearLabels();
-		// xyOK.mergeLabeledValue(Label.parse("¬b"), 10);
+		xyOK.mergeLabeledValue(Label.parse("¬b"), 10);
 		xyOK.mergeLabeledValue(Label.parse("b"), -11);
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 

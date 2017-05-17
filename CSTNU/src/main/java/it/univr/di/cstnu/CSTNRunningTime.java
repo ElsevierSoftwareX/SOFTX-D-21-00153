@@ -93,7 +93,7 @@ public class CSTNRunningTime {
 	/**
 	 * CSV separator
 	 */
-	static final String CSVSep = ";\t";
+	static final String CSVSep = ";";
 
 	/**
 	 * The input file names. Each file has to contain a CSTN graph in GraphML format.
@@ -144,12 +144,6 @@ public class CSTNRunningTime {
 	private boolean timeInS = false;
 
 	/**
-	 * Parameter for asking to not use Ω
-	 */
-	@Option(required = false, name = "-noUseΩ", usage = "Do not add and use Ω node.")
-	private boolean noUseΩ = false;
-
-	/**
 	 * Parameter for asking timeout in sec.
 	 */
 	@Option(required = false, name = "-timeOut", usage = "Time in seconds. Default is 1200 s = 20 m")
@@ -173,10 +167,16 @@ public class CSTNRunningTime {
 	private DCSemantics dcSemantics = DCSemantics.Std;
 
 	/**
-	 * Parameter for asking DC semantics.
+	 * Parameter for asking whether to consider node labels during the DC check.
 	 */
-	@Option(required = false, name = "-woNodeLabel", usage = "Check DC transforming the netwrok in an equivalente CSTN without node labels.")
-	private boolean woNodeLabels = false;
+	@Option(required = false, name = "-woOnlyNodeLabel", usage = "Check DC transforming the netwrok in an equivalent CSTN without node labels and with auxiliary constraints.")
+	private boolean woOnlyNodeLabels = false;
+
+	/**
+	 * Parameter for asking whether to add auxiliary constraints when node labels are not considered during the DC check.
+	 */
+	@Option(required = false, name = "-woNodeLabelandAuxConstraints", usage = "Check DC transforming the netwrok in an equivalent CSTN without node labels and without auxiliary constraints.")
+	private boolean woNodeLabelsAuxConstraints = false;
 
 	/**
 	 * Output stream to fOutput
@@ -321,8 +321,11 @@ public class CSTNRunningTime {
 		GraphMLReader<LabeledIntGraph> graphMLReader;
 
 		CSTN cstn = null;
-		if (tester.woNodeLabels) {
+		if (tester.woOnlyNodeLabels || tester.woNodeLabelsAuxConstraints) {
 			cstn = new CSTNwoNodeLabel(g);
+			if (tester.woOnlyNodeLabels) {
+				((CSTNwoNodeLabel) cstn).setAddAuxiliaryConstraints(true);
+			}
 		} else {
 			switch (tester.dcSemantics) {
 			case ε:
@@ -336,7 +339,7 @@ public class CSTNRunningTime {
 				break;
 			}
 		}
-		
+
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
 		// For each graph, solve it, save its times in an array
 		for (File file : tester.inputCSTNFile) {
@@ -361,7 +364,7 @@ public class CSTNRunningTime {
 					if (tester.cuttingEdgeFactor > 1) {
 						for (LabeledIntEdge e : g.getEdgesArray()) {
 							LabeledIntEdgePluggable e1 = edgeFactory.create(e);
-							for (Entry<Label> entry : e.labeledValueSet()) {
+							for (Entry<Label> entry : e.getLabeledValueSet()) {
 								int v = entry.getIntValue() / tester.cuttingEdgeFactor;
 								e1.mergeLabeledValue(entry.getKey(), v);
 							}
@@ -378,7 +381,7 @@ public class CSTNRunningTime {
 						int value = tester.removeValue;
 						for (LabeledIntEdge e : g.getEdgesArray()) {
 							LabeledIntEdge e1 = edgeFactory.create(e);
-							for (Entry<Label> entry : e.labeledValueSet()) {
+							for (Entry<Label> entry : e.getLabeledValueSet()) {
 								int v = entry.getIntValue();
 								if (v == value)
 									continue;
@@ -404,7 +407,7 @@ public class CSTNRunningTime {
 			int min = Constants.INT_POS_INFINITE;
 			int max = Constants.INT_NEG_INFINITE;
 			for (LabeledIntEdge e : g.getEdgesArray()) {
-				for (Entry<Label> entry : e.labeledValueSet()) {
+				for (Entry<Label> entry : e.getLabeledValueSet()) {
 					int v = entry.getIntValue();
 					if (v > max)
 						max = v;
@@ -423,7 +426,7 @@ public class CSTNRunningTime {
 				String msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
 						+ " repeating DC check for " + tester.nDCRepetition + " times.";
 				System.out.println(msg);
-				LOG.fine(msg);
+				LOG.info(msg);
 				boolean cstnOK = true;
 				localSummaryStat.clear();
 				localAvg = Double.NaN;
@@ -457,7 +460,7 @@ public class CSTNRunningTime {
 				}
 				msg = (new Time(System.currentTimeMillis())).toString() + ": done!";
 				System.out.println(msg);
-				LOG.fine(msg);
+				LOG.info(msg);
 				if (!cstnOK)
 					continue;
 				localAvg = localSummaryStat.getMean();
@@ -466,46 +469,43 @@ public class CSTNRunningTime {
 					localAvg = localAvg / 1E9;
 					localStdDev = localStdDev / 1E9;
 				}
-				LOG.fine(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
-				LOG.fine(file.getName() + " is " + status.consistency);
-				LOG.fine(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
-				LOG.fine(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
+				LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
+				LOG.info(file.getName() + " is " + status.consistency);
+				LOG.info(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
+				LOG.info(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
 				// executor.shutdownNow();
 			}
-			if (tester.output != null) {
-				tester.output.printf("%s"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						+ CSVSep + "%E"
-						+ CSVSep + "%E"
-						+ CSVSep + "%s"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						// + CSVSep +"%d"
-						// + CSVSep +"%d"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						+ CSVSep + "%d"
-						+ "\n", file.getName(), g.getVertexCount(), nEdges, g.getPropositions().size(), min, max,
-						localAvg,
-						localStdDev,
-						((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
-						status.labeledValuePropagationcalls,
-						status.r0calls,
-						// , status.r1calls
-						// , status.r2calls
-						status.r3calls,
-						status.qAllNegLoop,
-						status.qSemiNegLoop);
-			}
-			if (tester.output != null)
-				globalSummaryStat.addValue(localSummaryStat.getMean());
+			tester.output.printf("%s"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					+ CSVSep + "%E"
+					+ CSVSep + "%E"
+					+ CSVSep + "%s"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					// + CSVSep +"%d"
+					// + CSVSep +"%d"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					+ "\n", file.getName(), g.getVertexCount(), nEdges, g.getPropositions().size(), min, max,
+					localAvg,
+					localStdDev,
+					((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
+					status.labeledValuePropagationcalls,
+					status.r0calls,
+					// , status.r1calls
+					// , status.r2calls
+					status.r3calls,
+					status.qAllNegLoop,
+					status.qSemiNegLoop);
+			globalSummaryStat.addValue(localSummaryStat.getMean());
 		}
 
-		if (tester.output != null && !tester.convertToNewFormat) {
+		if (!tester.convertToNewFormat) {
 			System.out.println("\nFINAL REPORT\nNumber of CSTN checked: " + globalSummaryStat.getN());
 			System.out.println("Average execution time: " + globalSummaryStat.getMean() + " ns (" + (globalSummaryStat.getMean() / 1E9) + " s)");
 			System.out.println("Std. Deviation execution time: " + globalSummaryStat.getStandardDeviation() + " ns ("
@@ -516,5 +516,4 @@ public class CSTNRunningTime {
 			tester.output.close();
 		}
 	}
-
 }

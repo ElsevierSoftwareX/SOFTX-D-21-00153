@@ -78,21 +78,6 @@ public interface LabeledIntEdge extends Component {
 	static final Stroke normalEdgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	/**
-	 * Public method to enable a Factory class.
-	 * 
-	 * @return an object of type LabeledIntEdge.
-	 */
-	public LabeledIntEdge createLabeledIntEdge();
-
-	/**
-	 * Public method to enable a Factory class.
-	 * 
-	 * @param e an object to clone.
-	 * @return an object of type LabeledIntEdge.
-	 */
-	public LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e);
-
-	/**
 	 * Clear (remove) all labeled values associated to this edge.
 	 */
 	public void clear();
@@ -113,6 +98,21 @@ public interface LabeledIntEdge extends Component {
 	public void clearUpperLabels();
 
 	/**
+	 * Public method to enable a Factory class.
+	 * 
+	 * @return an object of type LabeledIntEdge.
+	 */
+	public LabeledIntEdge createLabeledIntEdge();
+
+	/**
+	 * Public method to enable a Factory class.
+	 * 
+	 * @param e an object to clone.
+	 * @return an object of type LabeledIntEdge.
+	 */
+	public LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e);
+
+	/**
 	 * A different kind of equals. It allows one to compare two edges with respect to ALL their labeled values (ordinary, upper- and lower-case ones).
 	 *
 	 * @param e a not null edge
@@ -127,9 +127,30 @@ public interface LabeledIntEdge extends Component {
 	public ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getAllUpperCaseAndOrdinaryLabeledValuesSet();
 
 	/**
+	 * @return the type
+	 */
+	public ConstraintType getConstraintType();
+
+	/**
+	 * @return the factory for building the internal labeled value map.
+	 */
+	public LabeledIntMapFactory<? extends LabeledIntMap> getLabeledIntValueMapFactory();
+
+	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */
 	public LabeledIntMap getLabeledValueMap();
+
+	/**
+	 * @return the labeled values as a set
+	 */
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet();
+
+	/**
+	 * @param setToReuse
+	 * @return the labeled values as a set
+	 */
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse);
 
 	/**
 	 * @return the lower-Case labeled Value map
@@ -192,16 +213,6 @@ public interface LabeledIntEdge extends Component {
 	public Object2IntMap<Label> getRemovedLabeledValuesMap();
 
 	/**
-	 * @return the type
-	 */
-	public ConstraintType getConstraintType();
-
-	/**
-	 * @return the factory for building the internal labeled value map.
-	 */
-	public LabeledIntMapFactory<? extends LabeledIntMap> getLabeledIntValueMapFactory();
-
-	/**
 	 * @return the Upper-Case labeled Value
 	 */
 	public LabeledContingentIntTreeMap getUpperLabelMap();
@@ -228,6 +239,11 @@ public interface LabeledIntEdge extends Component {
 	 * @return true if the edge represent a contingent edge.
 	 */
 	public boolean isContingentEdge();
+	
+	/**
+	 * @return true is it does not contain any values
+	 */
+	public boolean isEmpty();
 
 	/**
 	 * @return true if the edge represent a normal edge or a derived one or a constraint one.
@@ -235,30 +251,14 @@ public interface LabeledIntEdge extends Component {
 	public boolean isRequirementEdge();
 
 	/**
-	 * @return true is it does not contain any values
+	 * @return the representation of all Lower Case Labels as a string.
 	 */
-	public boolean isEmpty();
-	
-	/**
-	 * @return the labeled values as a set
-	 */
-	public ObjectSet<Object2IntMap.Entry<Label>> labeledValueSet();
-
-	/**
-	 * @param setToReuse
-	 * @return the labeled values as a set
-	 */
-	public ObjectSet<Object2IntMap.Entry<Label>> labeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse);
+	public String lowerLabelsAsString();
 
 	/**
 	 * @return the number of Lower Case Labels of the edge.
 	 */
 	public int lowerLabelSize();
-
-	/**
-	 * @return the representation of all Lower Case Labels as a string.
-	 */
-	public String lowerLabelsAsString();
 
 	/**
 	 * Merges the labeled value i to the set of labeled values of this edge.
@@ -399,6 +399,13 @@ public interface LabeledIntEdge extends Component {
 	public int removeUpperLabel(final Label l, final ALabel n);
 
 	/**
+	 * Setter for the field <code>type</code>.
+	 *
+	 * @param type the type to set
+	 */
+	public void setConstraintType(final ConstraintType type);
+
+	/**
 	 * <p>
 	 * setLabeledLowerCaseValue.
 	 * </p>
@@ -422,25 +429,18 @@ public interface LabeledIntEdge extends Component {
 	public void setLabeledValue(final LabeledIntMap labeledValue);
 
 	/**
-	 * Setter for the field <code>type</code>.
-	 *
-	 * @param type the type to set
-	 */
-	public void setConstraintType(final ConstraintType type);
-
-	/**
 	 * @return the number of labeled values associated to this edge.
 	 */
 	public int size();
 
 	/**
-	 * @return the number of Upper Case Labels of the edge.
-	 */
-	public int upperLabelSize();
-
-	/**
 	 * @return the representation of all Upper Case Labels of the edge.
 	 */
 	public String upperLabelsAsString();
+
+	/**
+	 * @return the number of Upper Case Labels of the edge.
+	 */
+	public int upperLabelSize();
 
 }
