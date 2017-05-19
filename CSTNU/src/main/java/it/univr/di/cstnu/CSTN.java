@@ -22,6 +22,7 @@ import edu.uci.ics.jung.io.GraphIOException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
@@ -160,7 +161,7 @@ public class CSTN {
 	static public boolean isNewLabeledValueANegativeLoop(final Label newLabel, final int value, final LabeledNode source, final LabeledNode dest,
 			final LabeledIntEdge newEdge) {
 		if (source.equalsByName(dest) && value < 0 && !newLabel.containsUnknown()) {
-			if (LOG.isLoggable(Level.FINER)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, "Found a negative loop in the edge " + newEdge);
 			}
 			return true;
@@ -196,7 +197,7 @@ public class CSTN {
 			throws WellDefinitionException {
 
 		final Label conjunctedLabel = nS.getLabel().conjunction(nD.getLabel());
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST, "Source label: " + nS.getLabel() + "; dest label: " + nD.getLabel() + " conjuncted label: " + conjunctedLabel);
 		}
 		if (conjunctedLabel == null) {
@@ -204,7 +205,7 @@ public class CSTN {
 					+ "\nHead node: " + nD
 					+ "\nTail node: " + nS
 					+ "\nConnecting edge: " + eSN;
-			if (LOG.isLoggable(Level.WARNING)) {
+			if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 				LOG.log(Level.WARNING, msg);
 			}
 			throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelInconsistent);
@@ -217,7 +218,7 @@ public class CSTN {
 						+ conjunctedLabel + ".";
 				if (hasToBeFixed) {
 					eSN.removeLabel(currentLabel);
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, msg + " Labeled value '" + currentLabel + "' removed.");
 					}
 					continue;
@@ -227,7 +228,7 @@ public class CSTN {
 			if (!currentLabel.subsumes(conjunctedLabel)) {
 				final String msg = "Labeled value " + pairAsString(currentLabel, entry.getIntValue()) + " of edge " + eSN.getName()
 						+ " does not subsume the endpoint labels '" + conjunctedLabel + "'.";
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, msg);
 				}
 				if (hasToBeFixed) {
@@ -235,7 +236,7 @@ public class CSTN {
 					eSN.removeLabel(currentLabel);
 					currentLabel = currentLabel.conjunction(conjunctedLabel);
 					eSN.putLabeledValue(currentLabel, v);
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, "Fixed as required!");
 					}
 					continue;
@@ -249,7 +250,7 @@ public class CSTN {
 				LabeledNode obs = this.g.getObservator(l);
 				if (obs == null) {
 					final String msg = "Observation node of literal " + l + " of label " + currentLabel + " in edge " + eSN + " does not exist.";
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, msg);
 					}
 					throw new WellDefinitionException(msg, WellDefinitionException.Type.ObservationNodeDoesNotExist);
@@ -258,7 +259,7 @@ public class CSTN {
 				final Label obsLabel = obs.getLabel();
 				if (!currentLabel.subsumes(obsLabel)) {
 					final String msg = "Label " + currentLabel + " of edge " + eSN + " does not subsume label of obs node " + obs + ". It has been fixed.";
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, msg);
 					}
 					currentLabelModified = currentLabelModified.conjunction(obsLabel);
@@ -310,7 +311,7 @@ public class CSTN {
 			obs = this.g.getObservator(l);
 			if (obs == null) {
 				msg = "Observation node of literal " + l + " of node " + node + " does not exist.";
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, msg);
 				}
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.ObservationNodeDoesNotExist);
@@ -331,7 +332,7 @@ public class CSTN {
 				if (hasToBeFixed)
 					node.setLabel(newNodeLabel);
 				msg = "Label of node " + node + " does not subsume label of obs node " + obs + ((hasToBeFixed) ? ". It has been adjusted!" : ".");
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, msg);
 				}
 				// it is necessary to restart because the set of propositions has been changed!
@@ -350,7 +351,7 @@ public class CSTN {
 				// WD2.2 has been proved to be redundant. So, it can be removed. Here we maintain a light version of it.
 				// Light version: a node with label having 'p' has to be just after P?, i.e., P?<---[0,p]---X_p.
 				msg = "WD2.2 simplified: There is no constraint to execute obs node " + obs + " before node " + node;
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, msg);
 				}
 				if (hasToBeFixed) {
@@ -359,7 +360,7 @@ public class CSTN {
 						this.g.addEdge(e, node, obs);
 					}
 					e.mergeLabeledValue(nodeLabel, -this.wd2epsilon);// this is not necessary, but it can speed up the DC checking.
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, "Fixed adding " + pairAsString(nodeLabel, -this.wd2epsilon) + " to " + e);
 					}
 					continue;
@@ -387,7 +388,7 @@ public class CSTN {
 	@Deprecated
 	boolean checkWellDefinition3Property(final LabeledIntEdge e) throws WellDefinitionException {
 		if (e == null) {
-			if (LOG.isLoggable(Level.WARNING)) {
+			if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 				LOG.log(Level.WARNING, "Edge is null. Please, check parameter.");
 			}
 			return false;
@@ -405,7 +406,7 @@ public class CSTN {
 				if (obs == null) {
 					final String msg = "Observation node of proposition '" + l + "' present in label '" + edgeLabel + "' of edge " + e
 							+ " does not exist.";
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, msg);
 					}
 					throw new WellDefinitionException(msg, WellDefinitionException.Type.ObservationNodeDoesNotExist);
@@ -414,7 +415,7 @@ public class CSTN {
 				final Label obsLabel = obs.getLabel();
 				if (!edgeLabel.subsumes(obsLabel)) {
 					final String msg = "Label " + edgeLabel + " of edge " + e + " does not subsume label of obs node " + obs + ". It has been fixed.";
-					if (LOG.isLoggable(Level.WARNING)) {
+					if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 						LOG.log(Level.WARNING, msg);
 					}
 					throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
@@ -559,7 +560,7 @@ public class CSTN {
 	 */
 	public boolean checkWellDefinitionProperties() throws WellDefinitionException {
 		boolean flag = false;
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "Checking if graph is well defined...");
 		}
 		for (final LabeledIntEdge e : this.g.getEdges()) {
@@ -568,7 +569,7 @@ public class CSTN {
 		for (final LabeledNode node : this.g.getNodes()) {
 			flag = flag && checkWellDefinitionProperty2(node, false);
 		}
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, ((flag) ? "done: all is well defined.\n" : "done: something is wrong. Not well-defined graph!\n"));
 		}
 		return flag;
@@ -607,7 +608,7 @@ public class CSTN {
 		final int nodeN = this.g.getVertexCount();
 		// TODO: trovare il numero giusto di iterazioni
 		final int maxCycles = (int) (Math.pow(nodeN, 3) * Math.pow(2, propositionN));
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 		}
 
@@ -615,13 +616,13 @@ public class CSTN {
 		int i;
 		Instant startInstant = Instant.now();
 		for (i = 1; (i <= maxCycles) && this.checkStatus.consistency && !this.checkStatus.finished; i++) {
-			if (LOG.isLoggable(Level.FINE)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINE)) {
 				LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
 			}
 			this.oneStepDynamicConsistencyByEdges(edgesToCheck);
 
 			if (this.checkStatus.consistency && !this.checkStatus.finished) {
-				if (LOG.isLoggable(Level.FINER)) {
+				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 					StringBuilder log = new StringBuilder();
 					log.append("During the check n. " + i + ", " + edgesToCheck.size()
 							+ " edges have been add/modified. Check has to continue.\nDetails of only modified edges having values:\n");
@@ -633,7 +634,7 @@ public class CSTN {
 					LOG.log(Level.FINER, log.toString());
 				}
 			}
-			if (LOG.isLoggable(Level.FINE)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINE)) {
 				LOG.log(Level.FINE, "*** End Main Cycle " + i + "/" + maxCycles + " ***\n\n");
 			}
 		}
@@ -641,7 +642,7 @@ public class CSTN {
 		this.checkStatus.executionTimeNS = Duration.between(startInstant, endInstant).toNanos();
 
 		if (!this.checkStatus.consistency) {
-			if (LOG.isLoggable(Level.INFO)) {
+			if (Debug.ON && LOG.isLoggable(Level.INFO)) {
 				LOG.log(Level.INFO, "After " + (i - 1) + " cycle, found an inconsistency.\nStatus: " + this.checkStatus);
 				LOG.log(Level.FINER, "Final inconsistent graph: " + this.g);
 			}
@@ -649,7 +650,7 @@ public class CSTN {
 		}
 
 		if ((i > maxCycles) && !this.checkStatus.finished) {
-			if (LOG.isLoggable(Level.WARNING)) {
+			if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 				LOG.log(Level.WARNING, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + this.checkStatus);
 				LOG.log(Level.FINER, "Last determined graph: " + this.g);
 			}
@@ -658,7 +659,7 @@ public class CSTN {
 		}
 
 		// consistent && finished
-		if (LOG.isLoggable(Level.INFO)) {
+		if (Debug.ON && LOG.isLoggable(Level.INFO)) {
 			LOG.log(Level.INFO,
 					"Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles + ".\nStatus: " + this.checkStatus);
 		}
@@ -721,7 +722,7 @@ public class CSTN {
 	 * @throws WellDefinitionException if the initial graph is not well defined.
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "Starting initial well definition check.");
 		}
 		this.g.clearCache();
@@ -736,13 +737,13 @@ public class CSTN {
 				Z.setX(0.0);
 				Z.setY(0.0);
 				this.g.addVertex(Z);
-				if (LOG.isLoggable(Level.WARNING))
+				if (Debug.ON && LOG.isLoggable(Level.WARNING))
 					LOG.log(Level.WARNING, "No " + this.ZeroNodeName + " node found: added!");
 			}
 			this.g.setZ(Z);
 		} else {
 			if (!Z.getLabel().isEmpty()) {
-				if (LOG.isLoggable(Level.WARNING))
+				if (Debug.ON && LOG.isLoggable(Level.WARNING))
 					LOG.log(Level.WARNING, "In the graph, Z node has not empty label. Label removed!");
 				Z.setLabel(Label.emptyLabel);
 			}
@@ -752,7 +753,7 @@ public class CSTN {
 		// Checks well definiteness of edges
 		this.maxWeight = 0;
 		for (final LabeledIntEdge e : this.g.getEdges()) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, "Initial Checking edge e: " + e);
 			}
 			// Determines the absolute max weight value
@@ -777,14 +778,14 @@ public class CSTN {
 			if (e.isEmpty()) {
 				// The merge removed labels...
 				this.g.removeEdge(e);
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, "Labels fixing on edge " + e + " removed all labels. Edge " + e + " has been removed.");
 				}
 				continue;
 			}
 
 			if (e.isContingentEdge()) {
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING,
 							"Found a contingent edge: " + e + ". The consistency check does not difference between ordinary and contingent edges.");
 				}
@@ -801,12 +802,10 @@ public class CSTN {
 			// 1. Checks that observation node doesn't have the observed proposition in its label!
 			final char obs = node.getPropositionObserved();
 			final Label label = node.getLabel();
-			if (obs != Constants.UNKNOWN) {
-				if (label.contains(obs)) {
-					if (LOG.isLoggable(Level.WARNING)) {
-						LOG.log(Level.WARNING, "Literal '" + obs + "' cannot be part of the label '" + label + "' of the observation node '" + node.getName()
-								+ "'. Removed!");
-					}
+			if (obs != Constants.UNKNOWN && label.contains(obs)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
+					LOG.log(Level.WARNING, "Literal '" + obs + "' cannot be part of the label '" + label + "' of the observation node '" + node.getName()
+							+ "'. Removed!");
 				}
 				label.remove(obs);
 			}
@@ -825,7 +824,7 @@ public class CSTN {
 			if (edgeToZ == null) {
 				edgeToZ = makeNewEdge(node.getName() + "_" + this.ZeroNodeName, ConstraintType.internal);
 				this.g.addEdge(edgeToZ, node, Z);
-				if (LOG.isLoggable(Level.WARNING)) {
+				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING,
 							"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs after '" + this.ZeroNodeName + "'.");
 				}
@@ -858,10 +857,10 @@ public class CSTN {
 			LOG.severe(logMsg);
 			throw new WellDefinitionException(logMsg);
 		}
-		// if (LOG.isLoggable(Level.FINEST)) {
+		// if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 		// LOG.log(Level.FINEST, "A preliminary application of label modification rules has been done: " + this.checkStatus.toString());
 		// }
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "Initial well definition check done!");
 		}
 		this.checkStatus.initialized = true;
@@ -874,9 +873,9 @@ public class CSTN {
 	 * 
 	 * <pre>
 	 * R0:
-	 * P? --[α p, w]--&gt; X 
+	 * P? --[w, α p]--&gt; X 
 	 * changes in 
-	 * P? --[α', w]--&gt; X when w &le; 0
+	 * P? --[w, α']--&gt; X when w &le; 0
 	 * where:
 	 * p is the positive or the negative literal associated to proposition observed in P?,
 	 * α is a label,
@@ -896,17 +895,17 @@ public class CSTN {
 		boolean ruleApplied = false, mergeStatus;
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
-			if (LOG.isLoggable(Level.FINER)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
 			}
 			return false;
 		}
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST, "Label Modification R0: start.");
 		}
 		if (nX.getLabel().contains(p)) {
 			// Table 1 ICAPS
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST,
 						"R0: Proposition " + p + " is present in the X label '" + nX.getLabel() + ". WD1 must be preserved, so R0 cannot be applied.");
 			}
@@ -937,7 +936,7 @@ public class CSTN {
 			}
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
 			String logMessage = null;
-			if (LOG.isLoggable(Level.FINER)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 				logMessage = "R0 simplifies a label of edge " + eObsX.getName()
 						+ ":\nsource: " + nObs.getName() + " ---" + pairAsString(l, w) + "---> " + nX.getName()
 						+ "\nresult: " + nObs.getName() + " ---" + pairAsString(alphaPrime, w) + "---> " + nX.getName();
@@ -957,7 +956,7 @@ public class CSTN {
 				return ruleApplied;
 			}
 		}
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST, "Label Modification R0: end.");
 		}
 		return ruleApplied;
@@ -1005,7 +1004,7 @@ public class CSTN {
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
 
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST, "Label Modification R3: start.");
 		}
 		boolean ruleApplied = false;
@@ -1023,7 +1022,7 @@ public class CSTN {
 			final char p = nObs.getPropositionObserved();
 
 			if (nS.getLabel().contains(p) || nD.getLabel().contains(p)) {// WD1 must be preserved!
-				if (LOG.isLoggable(Level.FINEST)) {
+				if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 					LOG.log(Level.FINEST, "R3: Proposition " + p + " is present in the nS label '" + nS.getLabel() + " or nD label " + nD.getLabel()
 							+ ". WD1 must be preserved, so R3 cannot be applied.");
 				}
@@ -1061,7 +1060,7 @@ public class CSTN {
 					eSD.putLabeledValueToRemovedList(SDLabel, v);
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 					if (ruleApplied) {
-						if (LOG.isLoggable(Level.FINER)) {
+						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
 									+ "source: " + nObs.getName() + " ---" + pairAsString(ObsDLabel, w) + "---> " + nD.getName()
 									+ " <---" + pairAsString(SDLabel, v) + "--- " + nS.getName()
@@ -1078,7 +1077,7 @@ public class CSTN {
 				}
 			}
 		}
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST, "Label Modification R3: end.");
 		}
 		return ruleApplied;
@@ -1117,7 +1116,7 @@ public class CSTN {
 
 		boolean ruleApplied = false;
 		Label nAnCLabel = nA.getLabel().conjunctionExtended(nC.getLabel());
-		
+
 		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 
@@ -1136,18 +1135,19 @@ public class CSTN {
 				Label newLabelAC = labelAB.conjunctionExtended(labelBC);
 				final boolean qLabel = newLabelAC.containsUnknown();
 				if (qLabel) {
-					if (u>=0) //rule condition!
+					if (u >= 0) // rule condition!
 						continue;
 					removeChildrenOfUnknown(newLabelAC);
 				}
 
 				if (!newLabelAC.subsumes(nAnCLabel)) {
-					LOG.log(Level.FINEST, "New alphaBeta label "+newLabelAC+ " does not subsume node labels "+nAnCLabel+". New value cannot be added.");
+					if (Debug.ON)
+						LOG.log(Level.FINEST, "New alphaBeta label " + newLabelAC + " does not subsume node labels " + nAnCLabel + ". New value cannot be added.");
 					continue;
 				}
 
 				int oldValue = eAC.getValue(newLabelAC);
-				
+
 				if (nA == nC) {
 					if (sum >= 0) {
 						// it would be a redundant edge
@@ -1156,7 +1156,7 @@ public class CSTN {
 					// sum is negative!
 					if (!qLabel) {
 						eAC.mergeLabeledValue(newLabelAC, sum);
-						if (LOG.isLoggable(Level.FINER)) {
+						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 							String log = "Label Propagation Rule applied to edge " + eAC.getName()
 									+ ":\nsource: "
 									+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
@@ -1182,7 +1182,7 @@ public class CSTN {
 				// here sum has to be add!
 				// I have to prepare the log before the execution of the merge!
 				String log = null;
-				if (LOG.isLoggable(Level.FINER)) {
+				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 					log = "Label Propagation Rule applied to edge " + eAC.getName()
 							+ ":\nsource: "
 							+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
@@ -1196,7 +1196,8 @@ public class CSTN {
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
 					ruleApplied = true;
 					this.checkStatus.labeledValuePropagationcalls++;
-					LOG.log(Level.FINER, log);
+					if (Debug.ON)
+						LOG.log(Level.FINER, log);
 					if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
 						if (v >= 0)
 							this.checkStatus.qSemiNegLoop++;
@@ -1241,10 +1242,10 @@ public class CSTN {
 			final Label labelFromObs, Label labelToClean) {
 
 		final StringBuilder slog = new StringBuilder();
-		if (LOG.isLoggable(Level.FINEST))
+		if (Debug.ON && LOG.isLoggable(Level.FINEST))
 			slog.append("labelEdgeFromObs = " + labelFromObs);
 		if (labelFromObs.contains(observed) || nS.getLabel().contains(observed) || nD.getLabel().contains(observed)) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST,
 						slog.toString() + " αβγ' cannot be calculated because labelFromObs or lables of nodes contain the prop " + observed
 								+ " that has to be removed.");
@@ -1257,7 +1258,7 @@ public class CSTN {
 
 		final Label alpha = labelFromObs.getSubLabelIn(labelToCleanWOp, false);
 		if (alpha.containsUnknown()) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST,
 						slog.toString() + " α contains unknow: " + alpha);
 			}
@@ -1265,28 +1266,28 @@ public class CSTN {
 		}
 		final Label beta = labelFromObs.getSubLabelIn(labelToCleanWOp, true);
 		if (beta.containsUnknown()) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST,
 						slog.toString() + " β contains unknow " + beta);
 			}
 			return null;
 		}
 		final Label gamma = labelToCleanWOp.getSubLabelIn(labelFromObs, false);
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST,
 					slog.toString() + " γ: " + gamma + "\n.");
 		}
 		gamma.remove(this.g.getChildrenOf(nObs));
 
 		Label alphaBetaGamma = alpha.conjunction(beta).conjunction(gamma);
-		if (LOG.isLoggable(Level.FINEST))
+		if (Debug.ON && LOG.isLoggable(Level.FINEST))
 			slog.append(", αβγ'=" + alphaBetaGamma);
 
 		if (alphaBetaGamma == null)
 			return null;
 
 		if (!alphaBetaGamma.subsumes(nD.getLabel().conjunction(nS.getLabel()))) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, slog.toString() + " αβγ' does not subsume labels from nodes:" + nD.getLabel().conjunction(nS.getLabel()));
 			}
 			return null;
@@ -1315,23 +1316,23 @@ public class CSTN {
 			return null;
 
 		final StringBuilder logStr = new StringBuilder();
-		if (LOG.isLoggable(Level.FINEST))
+		if (Debug.ON && LOG.isLoggable(Level.FINEST))
 			logStr.append("labelEdgeFromObs = " + labelFromObs);
 
 		Label alphaPrime = new Label(labelFromObs);
 		alphaPrime.remove(observed);
 		alphaPrime.remove(this.g.getChildrenOf(nObs));
-		if (LOG.isLoggable(Level.FINEST))
+		if (Debug.ON && LOG.isLoggable(Level.FINEST))
 			logStr.append(", labelWithoutPandChildren=" + alphaPrime);
 
 		if (nX == nZ) {
 			removeChildrenOfUnknown(alphaPrime);
 		}
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			logStr.append(", α'=" + alphaPrime);
 		}
 		if (!alphaPrime.subsumes(nX.getLabel().conjunction(nObs.getLabel()))) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, logStr.toString() + " α' does not subsume labels from nodes:" + nX.getLabel().conjunction(nObs.getLabel()));
 			}
 			return null;
@@ -1371,31 +1372,33 @@ public class CSTN {
 			final Label labelFromObs, Label labelToClean) {
 
 		final StringBuilder slog = new StringBuilder();
-		if (LOG.isLoggable(Level.FINEST))
+		if (Debug.ON && LOG.isLoggable(Level.FINEST))
 			slog.append("labelEdgeFromObs = " + labelFromObs);
 		if (labelFromObs.contains(observed)) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST,
 						slog.toString() + " (β*γ)† cannot be calculated because labelFromObs contains the prop " + observed + " that has to be removed.");
 			}
 			return null;
 		}
-		char[] childrenOfP = this.g.getChildrenOf(nObs);
-		if (childrenOfP != null) {
-			for (char c : childrenOfP) {
-				if (labelFromObs.contains(c)) {
-					if (LOG.isLoggable(Level.FINEST)) {
-						LOG.log(Level.FINEST,
-								slog.toString() + " (β*γ)† cannot be calculated because labelFromObs contains a child of " + observed
-										+ " that has to be removed: " + c);
-					}
-					return null;
-				}
-			}
-		}
+		
 		final Label beta = new Label(labelToClean);
 		beta.remove(observed);
-		beta.remove(childrenOfP);
+
+		Label childrenOfP = this.g.getChildrenOf(nObs);
+		if (childrenOfP != null && !childrenOfP.isEmpty()) {
+			Label test = new Label(labelFromObs);
+			test.remove(childrenOfP);
+			if (!labelFromObs.equals(test)) {
+				if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST,
+							slog.toString() + " (β*γ)† cannot exist because labelFromObs contains a child of " + observed
+									+ " that has to be removed. The children are " + childrenOfP);
+				}
+				return null;
+			}
+			beta.remove(childrenOfP);
+		}
 
 		Label betaGamma = labelFromObs.conjunctionExtended(beta);
 
@@ -1403,7 +1406,7 @@ public class CSTN {
 		removeChildrenOfUnknown(betaGamma);
 
 		if (!betaGamma.subsumes(nS.getLabel())) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, slog.toString() + "(β*γ)† does not subsume labels from nodes:" + nS.getLabel());
 			}
 			return null;
@@ -1497,7 +1500,7 @@ public class CSTN {
 
 		this.checkStatus.cycles++;
 
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "\nStart application labeled propagation rule+R0+R3.");
 		}
 		/**
@@ -1506,7 +1509,7 @@ public class CSTN {
 		ObjectArraySet<LabeledIntEdge> newEdgesToCheck = new ObjectArraySet<>();
 		int i = 1, n = edgesToCheck.size();
 		for (LabeledIntEdge AB : edgesToCheck) {
-			if (LOG.isLoggable(Level.FINER)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, "\n***Considering edge " + (i++) + "/" + n + ": " + AB + "\n");
 			}
 			A = this.g.getSource(AB);
@@ -1621,7 +1624,7 @@ public class CSTN {
 				}
 			}
 		}
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3.");
 		}
 		edgesToCheck.clear();
@@ -1651,7 +1654,7 @@ public class CSTN {
 
 		this.checkStatus.cycles++;
 
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "");
 			LOG.log(Level.FINER, "Start application labeled propagation rule+R0+R3.");
 		}
@@ -1659,7 +1662,7 @@ public class CSTN {
 		 * March, 03 2016 I try to apply the rules on all edges making a by-row-visit to the adjacency matrix.
 		 */
 		for (LabeledNode A : this.g.getVertices()) {
-			if (LOG.isLoggable(Level.FINER)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, "Considering edges outgoing from " + A);
 			}
 			for (LabeledIntEdge AB : this.g.getOutEdges(A)) {
@@ -1741,12 +1744,9 @@ public class CSTN {
 				}
 			}
 		}
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3."
-					+ "\nSituation after the labeled propagation rule+R0+R3.");
-		}
-		if (LOG.isLoggable(Level.FINER)) {
-			LOG.log(Level.FINER, "\n");
+					+ "\nSituation after the labeled propagation rule+R0+R3.\n");
 		}
 		return this.checkStatus;
 	}
@@ -1759,13 +1759,13 @@ public class CSTN {
 	 */
 	Label removeChildrenOfUnknown(Label label) {
 		Label old = null;
-		if (LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 			old = new Label(label);
 		}
 		for (final char unknownLit : label.getAllUnknown()) {
 			label.remove(this.g.getChildrenOf(this.g.getObservator(unknownLit)));
 		}
-		if (LOG.isLoggable(Level.FINEST) && !label.equals(old)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINEST) && !label.equals(old)) {
 			LOG.log(Level.FINEST, "Remove children of unknown has changed label " + old + " to " + label);
 		}
 		return label;
