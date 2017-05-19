@@ -70,7 +70,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 
 		/**
-		 * Clear all internal objects nullyfing them.
+		 * Clear all internal objects making them empty.
 		 */
 		public void clear() {
 			if (this.son != null) {
@@ -83,6 +83,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 			}
 			if (this.label != null) {
 				if (this.label.equals(Label.emptyLabel)) {
+					this.label = Label.emptyLabel; //this is necessary to restore the original empty root node 
 					this.value = Constants.INT_POS_INFINITE;
 					return;
 				}
@@ -438,6 +439,22 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	}
 
 	/**
+	 * @param label 
+	 * @param value 
+	 * @return true if the node is the original emptyRoot node.
+	 */
+	private static final boolean isEmptyRootNode(Label label, int value) {
+		if (label == null || value == Constants.INT_NULL)
+			return false;
+		return (label == Label.emptyLabel && value == Constants.INT_POS_INFINITE);
+	}
+
+	/**
+	 * emptyRoot necessary to initialize the tree. If the definition is changed, then {@link #isEmptyRootNode(Label, int)} and {@link HierarchyNode#clear()} have to be updated!
+	 */
+	private HierarchyNode emptyRootNode = new HierarchyNode(Label.emptyLabel, Constants.INT_POS_INFINITE);
+
+	/**
 	 * Root of hierarchy Design choice: the set of labeled values of this map is organized as a double linked hierarchy of labeled values. A labeled value
 	 * (label, value) is father of another labeled value (label1, value1) if label1 subsumes label and value1 &lt; value.
 	 */
@@ -458,7 +475,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	 * The internal structure is built and empty.
 	 */
 	LabeledIntHierarchyMap() {
-		this.root = new HierarchyNode(Label.emptyLabel, Constants.INT_POS_INFINITE);
+		// Root has to be set. I choose to use (+infty, emptyLabel) as root of an empty hierarchy
+		this.root = this.emptyRootNode;
 	}
 
 	/**
@@ -552,7 +570,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
 		for (final Entry<Label> entry : this.entrySet()) {
-			if (entry.getKey() == Label.emptyLabel && entry.getIntValue() == Constants.INT_POS_INFINITE)
+			if (isEmptyRootNode(entry.getKey(),entry.getIntValue()))
 				continue;
 			setToReuse.add(entry.getKey());
 		}
@@ -657,7 +675,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 				recursiveBuildingSet(n, coll, visit);
 			}
 		}
-		if (node.label != null && node.value != Constants.INT_NULL && node.label != Label.emptyLabel && node.value != Constants.INT_POS_INFINITE)
+		if (node.label != null && node.value != Constants.INT_NULL && !isEmptyRootNode(node.label, node.value))
 			coll.add(node);
 		node.visit = visit;
 	}
@@ -700,7 +718,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		if (node != this.root) {
 			return sum + 1;
 		}
-		if (node.label != Label.emptyLabel && node.value != Constants.INT_POS_INFINITE) {
+		if (!isEmptyRootNode(node.label, node.value)) {
 			return sum + 1;
 		}
 		return sum;
@@ -973,7 +991,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	public IntSet values() {
 		final IntArraySet coll = new IntArraySet(this.size());
 		for (final Entry<Label> entry : this.entrySet()) {
-			if (entry.getKey() == Label.emptyLabel && entry.getIntValue() == Constants.INT_POS_INFINITE)
+			if (isEmptyRootNode(entry.getKey(), entry.getIntValue())) 
 				continue;
 			coll.add(entry.getIntValue());
 		}
