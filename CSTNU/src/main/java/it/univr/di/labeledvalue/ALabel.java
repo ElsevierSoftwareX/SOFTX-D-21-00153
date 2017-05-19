@@ -356,7 +356,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 */
 	public ALabel(final ALabel label) {
 		this();
-		if (label == null || label == emptyLabel) {
+		if (label == null || label.equals(emptyLabel)) {
 			return;
 		}
 		this.alphabet = label.alphabet;// alphabet has to be shared!

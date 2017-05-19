@@ -15,15 +15,19 @@ import it.univr.di.labeledvalue.Literal.State;
  * A label without literals is called <em>empty label</em> and it is represented graphically as {@link it.univr.di.labeledvalue.Constants#EMPTY_LABEL}.<br>
  * A labels is <em>consistent</em> when it does not contains opposite literals.
  * A label <code>L'</code> subsumes a label <code>L</code> iff <code>L'</code> implies <code>L</code> (<code>⊨ L' ⇒ L</code>).<br>
- * In other words, if <code>L</code> is a sub-label of <code>L'</code>.</p>
+ * In other words, if <code>L</code> is a sub-label of <code>L'</code>.
+ * </p>
  * <p>
  * Design assumptions
  * Since in CSTN(U) project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
- * to represent a label is to limit the possible propositions to the range [A-Z,a-z,α-μ] and to use two <code>long</code> for representing the state of literals composing a label:
+ * to represent a label is to limit the possible propositions to the range [A-Z,a-z,α-μ] and to use two <code>long</code> for representing the state of literals
+ * composing a label:
  * the two long are used in pair; each position of them is associated to a possible literal (position 0 to 'A',...,position 63 to 'μ'); given a position,
- * the two corresponding bits in the two long can represent all possible four states ({@link Literal.State} of the literal associated to the position.</p>
+ * the two corresponding bits in the two long can represent all possible four states ({@link Literal.State} of the literal associated to the position.
+ * </p>
  * <p>
- * The following table represent execution times of some Label operations determined using different implementation of this class.</p>
+ * The following table represent execution times of some Label operations determined using different implementation of this class.
+ * </p>
  * <table border="1">
  * <caption>Execution time for some operations w.r.t the core data structure of the class.</caption>
  * <tr>
@@ -149,6 +153,16 @@ public class Label implements Comparable<Label> {
 		public final boolean conjunctExtended(Literal l) {
 			throw new IllegalAccessError("Read only object!");
 		}
+		
+		public final void remove(char c) {
+			return;
+		}
+		public final void remove(Label l) {
+			return;
+		}
+		public final boolean remove(Literal l) {
+			return false;
+		}
 	}
 
 	/**
@@ -170,7 +184,7 @@ public class Label implements Comparable<Label> {
 			if ((model == null) || (model.length() == 0))
 				return;
 			final Label l = Label.parse(model);
-			
+
 			if (l == null) {
 				problems.append("Highlighted label is not well-formed.");
 				return;
@@ -336,9 +350,9 @@ public class Label implements Comparable<Label> {
 	public static final Label parse(String s) {
 		if (s == null)
 			return null;
-		
-		//FIX for past label in mixed case
-//		s = s.toLowerCase(); From version > 130 proposition can be also upper case and first eleven greek letters
+
+		// FIX for past label in mixed case
+		// s = s.toLowerCase(); From version > 130 proposition can be also upper case and first eleven greek letters
 		int n = s.length();
 		if (n == 0)
 			return Label.emptyLabel;
@@ -375,7 +389,8 @@ public class Label implements Comparable<Label> {
 			c = s.charAt(i);
 			if (c == Constants.NOT || c == Constants.UNKNOWN) {
 				char sign = c;
-				if (++i>=n) return null;
+				if (++i >= n)
+					return null;
 				c = s.charAt(i);
 				if (!Literal.check(c))
 					return null;
@@ -461,7 +476,7 @@ public class Label implements Comparable<Label> {
 	 */
 	public Label(final Label label) {
 		this();
-		if (label == null || label == emptyLabel) {
+		if (label == null || label.equals(emptyLabel)) {
 			return;
 		}
 		this.bit0 = label.bit0;
@@ -572,7 +587,7 @@ public class Label implements Comparable<Label> {
 	/**
 	 * Helper method {@link #conjunctExtended(char, State)}
 	 * 
-	 * @param literal a literal 
+	 * @param literal a literal
 	 * @return true if literal has been added.
 	 */
 	public boolean conjunctExtended(final Literal literal) {
@@ -810,7 +825,7 @@ public class Label implements Comparable<Label> {
 		}
 		return sub;
 	}
-	
+
 	/**
 	 * Finds and returns the unique different literal between <code>this</code> and <code>lab</code> if it exists. If label <code>this</code> and
 	 * <code>lab</code> differs in more than one literals, it returns null.
@@ -845,14 +860,15 @@ public class Label implements Comparable<Label> {
 		return null;
 	}
 
-	/** {@inheritDoc}
+	/**
+	 * {@inheritDoc}
 	 */
 	@Override
 	public int hashCode() {
-		//It is impossible to guarantee a unique hashCode for each possible label.
+		// It is impossible to guarantee a unique hashCode for each possible label.
 		return (int) (this.bit1 << this.maxIndex | this.bit0);
 	}
-	
+
 	/**
 	 * A literal l is consistent with a label if the last one does not contain ¬l.
 	 * 
@@ -872,15 +888,19 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * <p>A label L<sub>1</sub> is consistent with a label L<sub>2</sub> if L<sub>1</sub> &wedge; L<sub>2</sub> is satisfiable.<br>
-	 * L<sub>1</sub> subsumes L<sub>2</sub> implies L<sub>1</sub> is consistent with L<sub>2</sub> but not vice-versa.</p>
+	 * <p>
+	 * A label L<sub>1</sub> is consistent with a label L<sub>2</sub> if L<sub>1</sub> &wedge; L<sub>2</sub> is satisfiable.<br>
+	 * L<sub>1</sub> subsumes L<sub>2</sub> implies L<sub>1</sub> is consistent with L<sub>2</sub> but not vice-versa.
+	 * </p>
 	 * <p>
 	 * If L<sub>1</sub> contains an unknown literal ¿p, and L<sub>2</sub> contains p/¬p, then the conjunction L<sub>1</sub> &wedge; L<sub>2</sub>
-	 * is not defined while ¿p subsumes p/¬p is true.</p>
+	 * is not defined while ¿p subsumes p/¬p is true.
+	 * </p>
 	 * <p>
 	 * In order to considering also labels with unknown literals, this method considers the {@link #conjunctionExtended(Label)}:
 	 * L<sub>1</sub> &#x2605; L<sub>2</sub>, where ¿p are used for represent the conjunction of opposite literals p and ¬p or literals like ¿p and p/¬p.<br>
-	 * Now, it holds ¿p &#x2605; p = ¿p is satisfiable.</p>
+	 * Now, it holds ¿p &#x2605; p = ¿p is satisfiable.
+	 * </p>
 	 * 
 	 * @param label the label to check
 	 * @return true if the label is consistent with this label.
@@ -978,16 +998,26 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * It removes all literals with names in <b>inputSet</b> from the current label.
+	 * It removes all literals with names in <b>inputLabel</b> from the current label.
 	 *
-	 * @param inputSet names of literals to remove.
+	 * @param inputLabel names of literals to remove.
 	 */
-	public void remove(char[] inputSet) {
-		if (inputSet == null)
+	public void remove(Label inputLabel) {
+		if (inputLabel == null)
 			return;
-		for (int i = inputSet.length; (--i) >= 0;) {
-			set(Literal.index(inputSet[i]), State.absent);
+
+		long inputPropositions = inputLabel.bit0 | inputLabel.bit1;
+		inputPropositions = ~inputPropositions;
+		this.bit0 = this.bit0 & inputPropositions;
+		this.bit1 = this.bit1 & inputPropositions;
+
+		long mask = 1L << this.maxIndex;
+		long u = this.bit1 | this.bit0;
+		while ((u & mask) == 0 && this.maxIndex >= 0) {
+			this.maxIndex--;
+			mask = mask >>> 1;
 		}
+		this.cacheOfSize = -1;
 	}
 
 	/**
