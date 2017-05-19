@@ -24,6 +24,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -523,7 +524,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			throw new IllegalArgumentException("The label or the value has a not admitted value");
 		final int value = this.getValue(l);
 		if ((value != Constants.INT_NULL) && (value <= i)) {
-			LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains ("
+			if (Debug.ON)
+				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains ("
 					+ l + ", " + value + ").");
 			return false;
 		}
@@ -539,14 +541,16 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
 			// the labeled value (l,i) was already removed by label modification rule.
 			// A labeled value with a value equal or smaller will be modified again.
-			LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the previous (" + l + ", " + nodeName + ", "
+			if (Debug.ON)
+				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the previous (" + l + ", " + nodeName + ", "
 					+ oldValue + ") is in the removed list");
 			return false;
 		}
 		this.putUpperLabeledValueToRemovedList(l, nodeName, i);//once it has been added, it is useless to add it again!
 		final int value = getValue(l);
 		if ((value != Constants.INT_NULL) && (value <= i)) {
-			LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value
+			if (Debug.ON)
+				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value
 					+ ").");
 			return false;
 		}
@@ -574,7 +578,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public final int removeLowerLabel(final Label l, final ALabel n) {
-		this.hasChanged();
+		this.setChanged();
 		notifyObservers("LowerLabel:" + l.toString());
 		return this.lowerLabel.remove(l, n);
 	}
