@@ -10,6 +10,7 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.univr.di.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -343,7 +344,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		// The label to remove and to adjust are now ready to be managed.
 		for (Label lr : labelToRemove) {
 			int old = this.mainInt2SetMap.get(lr.size()).remove(lr);
-			if (LOG.isLoggable(Level.FINEST))
+			if (Debug.ON && LOG.isLoggable(Level.FINEST))
 				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + old + ").");
 			checkValidityOfTheBaseAfterRemoving(lr);
 		}
@@ -515,14 +516,14 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
 						toRemove.add(inputLabel);
 						toRemove.add(entry.getKey());
-						if (LOG.isLoggable(Level.FINEST)) {
+						if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 							LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
 									+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
 						}
 						l1.remove(lit.getName());
 						if (l1.size() < 0)
 							throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
-						if (LOG.isLoggable(Level.FINEST)) {
+						if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 							LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
 						}
 						toAdd.put(l1, v1);
@@ -554,7 +555,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			}
 		}
 		for (Label l : toRemove) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, "Label " + l + " is removed from inputMap.");
 			}
 			inputMap.remove(l);
@@ -600,7 +601,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			// SortedSet<String> nodeSet1 = map1.get(l1).nodeSet;
 
 			if (baseValue == Constants.INT_NULL) {
-				LabeledIntTreeMap.LOG.severe("The base is not sound: base=" + Arrays.toString(this.base) + ". Map1=" + map1);
+				if (Debug.ON)
+					LabeledIntTreeMap.LOG.severe("The base is not sound: base=" + Arrays.toString(this.base) + ". Map1=" + map1);
 				this.base = emptyBase;
 				return false;
 				// throw new IllegalStateException("A base component has a null value. It is not possible.");
@@ -680,7 +682,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			for (final Label currentLabel : labels) {
 				final int currentValue = internalMap.getInt(currentLabel);
 				if (currentLabel != null && currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
-					if (LOG.isLoggable(Level.FINEST)) {
+					if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 						LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentValue + ")");
 					}
 					internalMap.remove(currentLabel);
@@ -735,7 +737,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			}
 		}
 		if (!newMap.equals(this)) {
-			if (LOG.isLoggable(Level.FINEST)) {
+			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
 				LOG.finest("Base changed: the old map " + this.toString() + " is subsituted by " + newMap.toString());
 			}
 			this.mainInt2SetMap = newMap.mainInt2SetMap;
