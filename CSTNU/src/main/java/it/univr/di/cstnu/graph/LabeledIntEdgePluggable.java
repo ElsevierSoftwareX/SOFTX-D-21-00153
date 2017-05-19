@@ -13,6 +13,7 @@ import org.apache.commons.lang.NotImplementedException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -272,7 +273,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
 			// The new value is greater or equal the old one, the new value can be ignored.
 			// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
-			if (LOG.isLoggable(Level.FINEST))
+			if (Debug.ON && LOG.isLoggable(Level.FINEST))
 				LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
 						+ oldValue + ") is in the removed list");
 			return false;
@@ -355,7 +356,8 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @return the old value if it exists, null otherwise.
 	 */
 	public int removeLabel(final Label l) {
-		LabeledIntEdgePluggable.LOG.finer("Removing label '" + l + "' from the edge " + this.toString());
+		if (Debug.ON)
+			LabeledIntEdgePluggable.LOG.finer("Removing label '" + l + "' from the edge " + this.toString());
 		return this.labeledValue.remove(l);
 	}
 
