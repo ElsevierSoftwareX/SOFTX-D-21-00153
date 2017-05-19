@@ -180,7 +180,7 @@ public class LabeledNode extends AbstractComponent {
 	public void setLabel(final Label label) {
 		String old = this.label.toString();
 		this.label = (label == null || label.isEmpty()) ? Label.emptyLabel : label;
-		this.hasChanged();
+		this.setChanged();
 		notifyObservers("Label:" + old);
 	}
 
