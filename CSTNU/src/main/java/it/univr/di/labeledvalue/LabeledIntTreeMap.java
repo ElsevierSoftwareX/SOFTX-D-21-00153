@@ -5,45 +5,53 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.univr.di.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.Debug;
 
 /**
  * Simple implementation of {@link it.univr.di.labeledvalue.LabeledIntMap} interface.
  * <p>
  * An experimental result on 2016-01-13 showed that using base there is a small improvement in the performance.
  * <table border="1">
- * <caption>Execution time (ms) for some operations w.r.t the core data structure of the class.</caption>
+ * <caption>Execution time (ms) for some operations w.r.t the core data structure of the class (Object2IntMap).</caption>
  * <tr>
  * <th>Operation</th>
- * <th>Using all AVL Tree (ms)</th>
+ * <th>Using AVL or RB Tree (ms)</th>
+ * <th>Using OpenHash (ms)</th>
  * <th>Using fastUtil.Array (ms)</th>
  * </tr>
  * <tr>
  * <td>Create 1st map</td>
- * <td>0.181518783</td>
- * <td>0.177455969</td>
+ * <td>0.236499088</td>
+ * <td>0.15073823</td>
+ * <td>0.140981928</td>
  * </tr>
  * <tr>
  * <td>min value</td>
- * <td>0.006420972</td>
+ * <td>0.004523044</td>
+ * <td>0.005419635</td>
+ * <td>0.007725364</td>
  * </tr>
  * <tr>
  * <td>Retrieve value</td>
- * <td>0.001024462</td>
- * <td>0.000253534</td>
+ * <td>0.000697368</td>
+ * <td>0.000216167E</td>
+ * <td>0.000172576</td>
  * </tr>
  * <tr>
  * <td>Simplification</td>
- * <td>~0.178705</td>
- * <td>~0.136103</td>
+ * <td>~1.275382</td>
+ * <td>~1.221648</td>
+ * <td>~0.328194</td>
  * </tr>
  * </table>
  * 
@@ -101,6 +109,27 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		final Label l19 = Label.parse("¬b¬df¿e");
 		final Label l20 = Label.parse("¬e¬c");
 
+		final Label ll1 = Label.parse("gabc¬f");
+		final Label ll2 = Label.parse("gabcdef");
+		final Label ll3 = Label.parse("ga¬bc¬de¬f");
+		final Label ll4 = Label.parse("g¬b¬d¬f");
+		final Label ll5 = Label.parse("gec");
+		final Label ll6 = Label.parse("g¬fedcba");
+		final Label ll7 = Label.parse("gae¬f");
+		final Label ll8 = Label.parse("g¬af¿b");
+		final Label ll9 = Label.parse("g¬af¿b");
+		final Label ll0 = Label.parse("g¬ec");
+		final Label ll21 = Label.parse("gabd¿f");
+		final Label ll22 = Label.parse("ga¿d¬f");
+		final Label ll23 = Label.parse("g¬b¿d¿f");
+		final Label ll24 = Label.parse("gb¬df¿e");
+		final Label ll25 = Label.parse("ge¬c");
+		final Label ll26 = Label.parse("gab¿d¿f");
+		final Label ll27 = Label.parse("gad¬f");
+		final Label ll28 = Label.parse("gb¿d¿f");
+		final Label ll29 = Label.parse("g¬b¬df¿e");
+		final Label ll20 = Label.parse("g¬e¬c");
+
 		long startTime = System.nanoTime();
 		for (int i = 0; i < nTest; i++) {
 			map.clear();
@@ -125,6 +154,27 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			map.put(l18, 23);
 			map.put(l19, 23);
 			map.put(l20, 23);
+			map.put(ll1, 10);
+			map.put(ll2, 20);
+			map.put(ll3, 25);
+			map.put(ll4, 23);
+			map.put(ll5, 22);
+			map.put(ll6, 23);
+			map.put(ll7, 20);
+			map.put(ll8, 20);
+			map.put(ll9, 21);
+			map.put(ll0, 11);
+			map.put(ll21, 11);
+			map.put(ll22, 11);
+			map.put(ll23, 24);
+			map.put(ll24, 22);
+			map.put(ll25, 23);
+			map.put(ll26, 20);
+			map.put(ll27, 23);
+			map.put(ll28, 23);
+			map.put(ll29, 23);
+			map.put(ll20, 23);
+
 		}
 		long endTime = System.nanoTime();
 		System.out.println("LABELED VALUE SET-TREE MANAGED\nExecution time for some merge operations (mean over " + nTest + " tests).\nFirst map: " + map
@@ -160,6 +210,21 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		System.out.println("Execution time for simplification (ms): "
 				+ ((endTime - startTime) / 1.0E6));
 	}
+	
+	/**
+	 * @return an Object2IntMap<Label> object
+	 */
+	private static final Object2IntMap<Label> makeObject2IntMap() {
+		return new Object2IntArrayMap<>();
+	}
+	
+	/**
+	 * @return an Object2IntMap<Label> object
+	 */
+	private static final Int2ObjectMap<Object2IntMap<Label>> makeInt2ObjectMap() {
+		return new Int2ObjectArrayMap<>();
+	}
+	
 
 	/**
 	 * Set of propositions forming a base for the labels of the map.
@@ -168,17 +233,16 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 	/**
 	 * Design choice: the set of labeled values of this map is organized as a collection of sets each containing labels of the same length. This allows the
-	 * label minimization task to be performed in a more systematic and, possibly, efficient way. The efficiency has been proved comparing this implementation
+	 * label minimization task to be performed in a more systematic and efficient way. The efficiency has been proved comparing this implementation
 	 * with one in which the map has been realized with a standard map and the minimization task determines the same length labels every time it needs it.
-	 * It is worth to use a hash or a tree map because they use a lot of memory. In CSTN(U) it is important to save memory!
 	 */
-	private Int2ObjectArrayMap<Object2IntArrayMap<Label>> mainInt2SetMap;
+	private Int2ObjectMap<Object2IntMap<Label>> mainInt2SetMap;
 
 	/**
 	 * Necessary constructor for the factory. The internal structure is built and empty.
 	 */
 	public LabeledIntTreeMap() {
-		this.mainInt2SetMap = new Int2ObjectArrayMap<>();
+		this.mainInt2SetMap = makeInt2ObjectMap();
 		this.base = emptyBase;
 	}
 
@@ -225,7 +289,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
 		setToReuse.clear();
-		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntMap<Label> mapI : this.mainInt2SetMap.values()) {
 			setToReuse.addAll(mapI.object2IntEntrySet());
 		}
 		return setToReuse;
@@ -236,7 +300,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	public int get(final Label l) {
 		if (l == null)
 			return Constants.INT_NULL;
-		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(l.size());
+		final Object2IntMap<Label> map1 = this.mainInt2SetMap.get(l.size());
 		if (map1 == null)
 			return Constants.INT_NULL;
 		return map1.getInt(l);
@@ -246,7 +310,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public int getMinValue() {
 		int min = Constants.INT_POS_INFINITE;
-		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntMap<Label> mapI : this.mainInt2SetMap.values()) {
 			for (int j : mapI.values())
 				if (min > j)
 					min = j;
@@ -275,7 +339,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
-		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntMap<Label> mapI : this.mainInt2SetMap.values()) {
 			setToReuse.addAll(mapI.keySet());
 		}
 		return setToReuse;
@@ -305,7 +369,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		ObjectSet<Label> labelToRemove = new ObjectArraySet<>();
 		// ObjectSet<Label> labelToAdjust = new ObjectArraySet<>();
 		// boolean hasNewLabelToBeInserted = true;
-		for (final Object2IntArrayMap<Label> mapAllSameLengthLabels : this.mainInt2SetMap.values()) {
+		for (final Object2IntMap<Label> mapAllSameLengthLabels : this.mainInt2SetMap.values()) {
 			for (Entry<Label> entry : mapAllSameLengthLabels.object2IntEntrySet()) {
 				l1 = entry.getKey();
 				v1 = entry.getIntValue();
@@ -366,7 +430,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		 * Step 2.
 		 * Insert the new value and check if it possible to simplify with some other labels with same value and only one different literals.
 		 */
-		final Object2IntArrayMap<Label> a = new Object2IntArrayMap<>();
+		final Object2IntMap<Label> a = makeObject2IntMap();
 		a.defaultReturnValue(Constants.INT_NULL);
 		a.put(newLabel, newValue);
 		return this.insertAndSimplify(a, newLabel.size());
@@ -380,9 +444,9 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	public int putForcibly(final Label l, final int i) {
 		if ((l == null) || (i == Constants.INT_NULL))
 			return Constants.INT_NULL;
-		Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(l.size());
+		Object2IntMap<Label> map1 = this.mainInt2SetMap.get(l.size());
 		if (map1 == null) {
-			map1 = new Object2IntArrayMap<>();
+			map1 = makeObject2IntMap();
 			map1.defaultReturnValue(Constants.INT_NULL);
 			this.mainInt2SetMap.put(l.size(), map1);
 		}
@@ -395,7 +459,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		if (l == null)
 			return Constants.INT_NULL;
 
-		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(l.size());
+		final Object2IntMap<Label> map1 = this.mainInt2SetMap.get(l.size());
 		if (map1 == null)
 			return Constants.INT_NULL;
 		final int oldValue = map1.removeInt(l);
@@ -415,7 +479,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public int size() {
 		int n = 0;
-		for (final Object2IntArrayMap<Label> map1 : this.mainInt2SetMap.values())
+		for (final Object2IntMap<Label> map1 : this.mainInt2SetMap.values())
 			n += map1.size();
 		return n;
 	}
@@ -424,7 +488,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	@Override
 	public IntSet values() {
 		final IntArraySet coll = new IntArraySet();
-		for (final Object2IntArrayMap<Label> mapI : this.mainInt2SetMap.values()) {
+		for (final Object2IntMap<Label> mapI : this.mainInt2SetMap.values()) {
 			for (Entry<Label> i : mapI.object2IntEntrySet())
 				coll.add(i.getIntValue());
 		}
@@ -471,15 +535,15 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @param inputMapLabelSize length of labels contained into inputMap
 	 * @return true if any element of inputMap has been inserted into the map.
 	 */
-	private boolean insertAndSimplify(final Object2IntArrayMap<Label> inputMap, int inputMapLabelSize) {
+	private boolean insertAndSimplify(final Object2IntMap<Label> inputMap, int inputMapLabelSize) {
 		if ((inputMap == null) || (inputMap.size() == 0))
 			return false;// recursion basement!
 
 		boolean add = false;
 		// All entries of inputMap should have label of same size.
 		// currentMapLimitedToLabelOfNSize contains all the labeled values with label size = inputMapSize;
-		final Object2IntArrayMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(inputMapLabelSize);
-		final Object2IntArrayMap<Label> toAdd = new Object2IntArrayMap<>();
+		final Object2IntMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(inputMapLabelSize);
+		final Object2IntMap<Label> toAdd = makeObject2IntMap();
 		toAdd.defaultReturnValue(Constants.INT_NULL);
 		ObjectArraySet<Label> toRemove = new ObjectArraySet<>();
 
@@ -595,7 +659,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			return false;
 
 		int inputValue = entry.getIntValue();
-		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(this.base.length);
+		final Object2IntMap<Label> map1 = this.mainInt2SetMap.get(this.base.length);
 		for (final Label baseLabel : Label.allComponentsOfBaseGenerator(this.base)) {
 			final int baseValue = map1.getInt(baseLabel);
 			// SortedSet<String> nodeSet1 = map1.get(l1).nodeSet;
@@ -641,7 +705,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			this.base = emptyBase;
 			return true;
 		}
-		final Object2IntArrayMap<Label> map1 = this.mainInt2SetMap.get(n);
+		final Object2IntMap<Label> map1 = this.mainInt2SetMap.get(n);
 		if (map1.size() < Math.pow(2.0, n)) // there are no sufficient elements!
 			return false;
 		final char[] baseCandidateColl = entry.getKey().getPropositions();
@@ -672,7 +736,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		for (int i : this.mainInt2SetMap.keySet()) {
 			if (i < n)
 				continue;
-			final Object2IntArrayMap<Label> internalMap = this.mainInt2SetMap.get(i);
+			final Object2IntMap<Label> internalMap = this.mainInt2SetMap.get(i);
 			// BE CAREFUL! Since it is necessary to remove, it is not possible to use internalMap.keySet() directly
 			// because removing an element in the map changes the keyset and it is possible to loose the checking of some label (the following
 			// one a deleted element).
@@ -713,7 +777,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		Label l1, lb;
 		int v1, vb;
 		boolean toInsert = true;
-		for (final Object2IntArrayMap<Label> map1 : this.mainInt2SetMap.values()) {
+		for (final Object2IntMap<Label> map1 : this.mainInt2SetMap.values()) {
 			for (final Entry<Label> entry : map1.object2IntEntrySet()) {
 				l1 = entry.getKey();
 				v1 = entry.getIntValue();
