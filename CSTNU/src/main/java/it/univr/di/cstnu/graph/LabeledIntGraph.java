@@ -1,5 +1,6 @@
 /**
- *
+ * bear in mind that ObjectRBTreeSet is usually a little bit more faster than ObjectAVLTreeSet on set of medium size. OIn very large set size, ObjectAVLTreeSet shine!
+ * On small sit, ArraySet is more efficient in time and space.
  */
 package it.univr.di.cstnu.graph;
 
@@ -19,21 +20,25 @@ import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.graph.util.Pair;
 import it.unimi.dsi.fastutil.chars.Char2ObjectArrayMap;
 import it.unimi.dsi.fastutil.chars.Char2ObjectMap;
-import it.unimi.dsi.fastutil.chars.CharAVLTreeSet;
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
+import it.univr.di.labeledvalue.Literal;
 
 /**
  * This class tries to represent dense graphs where nodes {@link LabeledNode} and edges are {@link LabeledIntEdge} implementing the interface
@@ -98,12 +103,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * Children of observation nodes
 	 */
-	private Map<LabeledNode, CharSet> childrenOfObservator = null;
+	private Map<LabeledNode, Label> childrenOfObservator;
 
 	/**
 	 * In order to guarantee a fast mapping edge-->adjacency position, a map is maintained.
 	 */
-	private Object2ObjectRBTreeMap<String, EdgeIndex> edge2index;
+	private Object2ObjectMap<String, EdgeIndex> edge2index;
 
 	/**
 	 * Factory
@@ -125,11 +130,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 */
 	Class<? extends LabeledIntMap> internalMapImplementationClass;
 
-	/** 
+	/**
 	 * Alphabet for A-Label
 	 */
 	private ALabelAlphabet aLabelAlphabet;
-	
+
 	/**
 	 * @return the aLabelAlphabet
 	 */
@@ -140,12 +145,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * Set of edges with lower case label set not empty
 	 */
-	private ObjectArraySet<LabeledIntEdge> lowerCaseEdgesSet = null;
+	private ObjectSet<LabeledIntEdge> lowerCaseEdgesSet;
 
 	/**
 	 * Name
 	 */
-	private String name = null;
+	private String name;
 
 	/**
 	 * In order to guarantee a fast mapping node-->adjacency position, a map is maintained.
@@ -160,17 +165,17 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * Set of propositions observed in the graph.
 	 */
-	private Char2ObjectArrayMap<LabeledNode> proposition2Node = null;
+	private Char2ObjectMap<LabeledNode> proposition2Node;
 
 	/**
 	 * Zero node. In temporal constraint network such node is the first node to execute.
 	 */
-	private LabeledNode Z = null;
+	private LabeledNode Z;
 
 	/**
 	 * Ω node. In temporal constraint network such node is the last node to execute.
 	 */
-	private LabeledNode Ω = null;
+	private LabeledNode Ω;
 
 	/**
 	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
@@ -187,7 +192,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.nodeName2index = new Object2IntOpenHashMap<>();
 		this.nodeName2index.defaultReturnValue(Constants.INT_NULL);
 		this.index2node = new Int2ObjectOpenHashMap<>();
-		this.edge2index = new Object2ObjectRBTreeMap<>();
+		this.edge2index = new Object2ObjectAVLTreeMap<>(); //From fastutil javadoc: 
+		//In general, AVL trees have slightly slower updates but faster searches; however, on very large collections the smaller height may lead in fact to faster updates, too.
 		this.aLabelAlphabet = new ALabelAlphabet();
 	}
 
@@ -257,7 +263,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	public <C extends LabeledIntMap> LabeledIntGraph(final String name, Class<C> internalMapImplementationClass, ALabelAlphabet alphabet) {
 		this(internalMapImplementationClass);
 		this.name = name;
-		this.aLabelAlphabet=alphabet;
+		this.aLabelAlphabet = alphabet;
 	}
 
 	/**
@@ -273,18 +279,21 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return false;
 
 		if (this.edge2index.containsKey(e.getName())) {
-			LOG.info("An edge with name " + e.getName() + " already exists. The new edge is not added.");
+			if (Debug.ON)
+				LOG.info("An edge with name " + e.getName() + " already exists. The new edge is not added.");
 			return false;
 		}
 		int sourceIndex = this.nodeName2index.getInt(v1Name);
 		if (sourceIndex == Constants.INT_NULL) {
-			LOG.info("Source node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
+			if (Debug.ON)
+				LOG.info("Source node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
 			return false;
 		}
 
 		int destIndex = this.nodeName2index.get(v2Name);
 		if (destIndex == Constants.INT_NULL) {
-			LOG.info("Destination node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
+			if (Debug.ON)
+				LOG.info("Destination node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
 			return false;
 		}
 
@@ -340,7 +349,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	@Override
 	public boolean addVertex(LabeledNode vertex) {
 		if (vertex == null || this.nodeName2index.containsKey(vertex.name)) {
-			LOG.info("The new vertex for adding is null or is already present.");
+			if (Debug.ON)
+				LOG.info("The new vertex for adding is null or is already present.");
 			return false;
 		}
 
@@ -355,7 +365,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			this.adjacency = newAdjancency;
 		}
 		// now it is possible to add node in position 'order'
-		if (LOG.isLoggable(Level.FINER)) {
+		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
 			LOG.finer("Adding node " + vertex);
 		}
 		this.nodeName2index.put(vertex.name, this.order);
@@ -546,46 +556,58 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
+	 * Add child to obs.
+	 * It is user responsibility to assure that 'child' is a children in CSTN sense of 'obs'.
+	 * No validity check is made by the method.
+	 * @param obs
+	 * @param child
+	 */
+	public void addChildToObservatioNode(LabeledNode obs, char child) {
+		if (this.childrenOfObservator == null)
+			this.childrenOfObservator = newChildrenOfObservatorInstance();
+		Label children = this.childrenOfObservator.get(obs);
+		if (children == null) {
+			children = new Label();
+			this.childrenOfObservator.put(obs, children);
+		}
+		children.conjunct(child, Literal.State.straight);
+	}
+
+	/**
 	 * Given a observation node <code>obs</code> that observes the proposition 'p', its 'children' are all observation nodes, Q, for which 'p' appears in the
 	 * label of node Q.
 	 * <p>
-	 * This method returns the set of children of a given node as a <b>set of the propositions</b> associated to the children instead of a <b>set of
+	 * This method returns the set of children of a given node as a <b>label of straight propositions</b> associated to the children instead of a <b>set of
 	 * children nodes</b>.
 	 *
 	 * @param obs a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 * @return the set of children of observation node <code>obs</code>, null if there is no children.
 	 */
-	public char[] getChildrenOf(LabeledNode obs) {
+	public Label getChildrenOf(LabeledNode obs) {
 		if (obs == null)
 			return null;
-		
+
 		// The soundness of this method is based on the property that the observed proposition of an observation node is represented as a straight literal.
 		if (this.childrenOfObservator == null) {
-			//Build the cache map of childrenOfObservator
-			this.childrenOfObservator = new Object2ObjectRBTreeMap<>();
+			// Build the cache map of childrenOfObservator
+			this.childrenOfObservator = newChildrenOfObservatorInstance();
 
-			// LabeledNode, ObjectRBTreeSet<Literal>>();
 			for (Char2ObjectMap.Entry<LabeledNode> entryObservedObservatorNode : this.getObservedAndObservator().char2ObjectEntrySet()) {
-				char litObserved = entryObservedObservatorNode.getKey();
+				char observedProposition = entryObservedObservatorNode.getKey();
 				LabeledNode observator = entryObservedObservatorNode.getValue();
 				Label observatorLabel = observator.getLabel();
 				for (char propInObsLabel : observatorLabel.getPropositions()) {
 					LabeledNode father = this.getObservator(propInObsLabel);// for the well property, father must exist!
-					CharSet setChildrenOfFather = this.childrenOfObservator.get(father);
-					if (setChildrenOfFather == null) {
-						setChildrenOfFather = new CharAVLTreeSet();
-						this.childrenOfObservator.put(father, setChildrenOfFather);
+					Label children = this.childrenOfObservator.get(father);
+					if (children == null) {
+						children = new Label();
+						this.childrenOfObservator.put(father, children);
 					}
-					setChildrenOfFather.add(litObserved);
+					children.conjunct(observedProposition, Literal.State.straight);
 				}
 			}
 		}
-		
-		
-		CharAVLTreeSet out = (CharAVLTreeSet) this.childrenOfObservator.get(obs);
-		if (out == null)
-			return null;
-		return out.toCharArray();
+		return this.childrenOfObservator.get(obs);
 	}
 
 	@Override
@@ -785,11 +807,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the node that observes the proposition l if it exists, null otherwise.
 	 */
 	public LabeledNode getObservator(final char c) {
-		final Char2ObjectArrayMap<LabeledNode> observer = this.getObservedAndObservator();
+		final Char2ObjectMap<LabeledNode> observer = this.getObservedAndObservator();
 		if (observer == null)
 			return null;
 
-		LabeledIntGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
+		if (Debug.ON && LOG.isLoggable(Level.FINEST))
+			LabeledIntGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
 		return observer.get(c);
 	}
 
@@ -808,9 +831,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 *
 	 * @return the map of propositions and their observator nodes. If there is no observator node, it returns an empty map. The key is the literal observed.
 	 */
-	public Char2ObjectArrayMap<LabeledNode> getObservedAndObservator() {
+	public Char2ObjectMap<LabeledNode> getObservedAndObservator() {
 		if (this.proposition2Node == null) {
-			this.proposition2Node = new Char2ObjectArrayMap<>();
+			this.proposition2Node = newProposition2NodeInstance();
 			char proposition;
 			for (final LabeledNode n : getVertices()) {
 				if ((proposition = n.getPropositionObserved()) != Constants.UNKNOWN) {
@@ -828,7 +851,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
 			return outEdges;
 		LabeledIntEdge e;
-//		for (int i = 0; i < order; i++) {
+		// for (int i = 0; i < order; i++) {
 		for (int i = this.order; --i >= 0;) {
 			e = this.adjacency[nodeIndex][i];
 			if (e != null)
@@ -943,7 +966,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		final String g1name = g1.name;
 
 		boolean sameEdges = true;
-		ObjectRBTreeSet<LabeledIntEdge> allEdges = new ObjectRBTreeSet<>(getEdges());
+		ObjectSet<LabeledIntEdge> allEdges = new ObjectRBTreeSet<>(getEdges());
 		allEdges.addAll(g1.getEdges());
 		LabeledIntEdge eg, eg1;
 		for (LabeledIntEdge e : allEdges) {
@@ -955,7 +978,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			}
 		}
 
-		if (LOG.isLoggable(Level.FINE))
+		if (Debug.ON && LOG.isLoggable(Level.FINE))
 			LabeledIntGraph.LOG.log(Level.FINE, sb.toString());
 		return sameEdges;
 	}
@@ -1154,17 +1177,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				int oldI = this.nodeName2index.getInt(oldValue);
 				int newI = this.nodeName2index.getInt(node.getName());
 				if (newI != Constants.INT_NULL) {
-					LOG.finer("Values in nodeName2index: " + this.nodeName2index.toString());
-					LOG.severe("It is not possible to rename node " + oldValue + " with " + node.getName()
-							+ " because there is already a node with name " + node.getName());
+					if (Debug.ON && LOG.isLoggable(Level.FINER))
+						LOG.finer("Values in nodeName2index: " + this.nodeName2index.toString());
+					if (Debug.ON)
+						LOG.severe("It is not possible to rename node " + oldValue + " with " + node.getName()
+								+ " because there is already a node with name " + node.getName());
 					node.name = oldValue;
 					return;
 				}
 				this.nodeName2index.remove(oldValue);
 				this.nodeName2index.put(node.getName(), oldI);
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.finer("The nodeName2Index is updated. Removed old name " + oldValue + ". Add the new one: " + node + " at position " + oldI);
-					LOG.finer("Values in nodeName2index: " + this.nodeName2index.toString());
+				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
+					LOG.finer("The nodeName2Index is updated. Removed old name " + oldValue + ". Add the new one: " + node + " at position " + oldI
+							+ "\nValues in nodeName2index: " + this.nodeName2index.toString());
 				}
 				return;
 			}
@@ -1174,9 +1199,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				if (newP != Constants.UNKNOWN) {
 					LabeledNode obsNewProp = this.proposition2Node.get(newP);
 					if (obsNewProp != null) {
-						LOG.finer("Values in proposition2Node: " + this.proposition2Node.toString());
-						LOG.severe("It is not possible to set observed proposition " + newP + " to node " + node.getName()
-								+ " because there is already a node that observes the proposition: node "+obsNewProp);
+						if (Debug.ON && LOG.isLoggable(Level.FINER))
+							LOG.finer("Values in proposition2Node: " + this.proposition2Node.toString());
+						if (Debug.ON)
+							LOG.severe("It is not possible to set observed proposition " + newP + " to node " + node.getName()
+									+ " because there is already a node that observes the proposition: node " + obsNewProp);
 						node.propositionObserved = oldP;
 						return;
 					}
@@ -1185,14 +1212,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					this.proposition2Node.remove(oldP);
 				}
 				this.proposition2Node.put(newP, node);
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.finer("The proposition2Node is updated. Removed old key " + oldP + ". Add the new one: " + newP + " with node " + node);
-					LOG.finer("Values in proposition2Node: " + this.proposition2Node.toString());
+				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
+					LOG.finer("The proposition2Node is updated. Removed old key " + oldP + ". Add the new one: " + newP + " with node " + node +
+							"\nValues in proposition2Node: " + this.proposition2Node.toString());
 				}
 				this.childrenOfObservator = null;
 				return;
 			}
-			if (obj.equals("Proposition")) {
+			if (obj.equals("Label")) {
 				this.childrenOfObservator = null;
 			}
 		} // LabeledNode
@@ -1203,17 +1230,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				EdgeIndex oldI = this.edge2index.get(oldValue);
 				EdgeIndex newI = this.edge2index.get(edge.getName());
 				if (newI != null) {
-					LOG.finer("Values in edge2index: " + this.edge2index.toString());
-					LOG.severe("It is not possible to rename edge " + oldValue + " with " + edge.getName()
-							+ " because there is already a edge with name " + edge.getName());
+					if (Debug.ON && LOG.isLoggable(Level.FINER))
+						LOG.finer("Values in edge2index: " + this.edge2index.toString());
+					if (Debug.ON)
+						LOG.severe("It is not possible to rename edge " + oldValue + " with " + edge.getName()
+								+ " because there is already a edge with name " + edge.getName());
 					edge.name = oldValue;
 					return;
 				}
 				this.edge2index.remove(oldValue);
 				this.edge2index.put(edge.getName(), oldI);
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.finer("The edge2index is updated. Removed old name " + oldValue + ". Add the new one: " + edge + " at position " + oldI);
-					LOG.finer("Values in edge2index: " + this.edge2index.toString());
+				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
+					LOG.finer("The edge2index is updated. Removed old name " + oldValue + ". Add the new one: " + edge + " at position " + oldI +
+							"\nValues in edge2index: " + this.edge2index.toString());
 				}
 				return;
 			}
@@ -1234,5 +1263,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		EdgeIndex ei = this.edge2index.get(e.getName());
 		ei.rowAdj = row;
 		ei.colAdj = col;
+	}
+
+	/**
+	 * @return an instance for childrenOfObservator field.
+	 */
+	private static final Object2ObjectMap<LabeledNode, Label> newChildrenOfObservatorInstance() {
+		return new Object2ObjectArrayMap<>();//in Label I showed that for small map, ArrayMap is faster than Object2ObjectRBTreeMap and Object2ObjectAVLTreeMap.
+	}
+
+	/**
+	 * @return an instance for propositionToNode field.
+	 */
+	private static final Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
+		return new Char2ObjectArrayMap<>();//I verified that Char2ObjectArrayMap is faster than Openhash can work better for such application.
 	}
 }
