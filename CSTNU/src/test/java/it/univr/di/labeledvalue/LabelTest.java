@@ -293,6 +293,51 @@ public class LabelTest {
 		abc.remove('b');
 		assertEquals(Label.parse("ac"), abc);
 		assertTrue(2 == abc.size());
+
+		abc.remove(Literal.parse("¬a"));
+		assertEquals(Label.parse("ac"), abc);
+		assertTrue(2 == abc.size());
+
+		abc.remove(Literal.parse("a"));
+		assertEquals(Label.parse("c"), abc);
+		assertTrue(1 == abc.size());
+
+		abc.remove(Literal.parse("c"));
+		assertEquals(Label.emptyLabel, abc);
+		assertTrue(0 == abc.size());
+	}
+
+	/**
+	 * Test method for {@link it.univr.di.labeledvalue.Label#removeAllLiteralsWithSameName(it.univr.di.labeledvalue.Literal)}.
+	 */
+	@SuppressWarnings({ "static-method", "javadoc" })
+	@Test
+	public final void testRemoveLabel() {
+		Label abc = Label.parse("a¬bc");
+
+		abc.remove(Label.parse("b"));
+		assertEquals(Label.parse("ac"), abc);
+		assertTrue(2 == abc.size());
+
+		abc.remove(Label.parse("¬a"));
+		assertEquals(Label.parse("c"), abc);
+		assertTrue(1 == abc.size());
+
+		abc.remove(Label.emptyLabel);
+		assertEquals(Label.parse("c"), abc);
+		assertTrue(1 == abc.size());
+
+		Label.emptyLabel.remove(abc);
+		assertEquals(Label.emptyLabel, Label.emptyLabel);
+		assertTrue(0 == Label.emptyLabel.size());
+
+		abc.remove(Label.parse("c"));
+		assertEquals(Label.emptyLabel, abc);
+		assertTrue(0 == abc.size());
+
+		abc.remove(Label.parse("c"));
+		assertEquals(Label.emptyLabel, abc);
+		assertTrue(0 == abc.size());
 	}
 
 	/**

@@ -1439,6 +1439,7 @@ public class CSTN {
 	 * @param args
 	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
 	 */
+	@SuppressWarnings("deprecation")
 	boolean manageParameters(final String[] args) {
 		final CmdLineParser parser = new CmdLineParser(this);
 		try {

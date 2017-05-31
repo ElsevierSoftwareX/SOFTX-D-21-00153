@@ -593,7 +593,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			this.childrenOfObservator = newChildrenOfObservatorInstance();
 
 			for (Char2ObjectMap.Entry<LabeledNode> entryObservedObservatorNode : this.getObservedAndObservator().char2ObjectEntrySet()) {
-				char observedProposition = entryObservedObservatorNode.getKey();
+				char observedProposition = entryObservedObservatorNode.getCharKey();
 				LabeledNode observator = entryObservedObservatorNode.getValue();
 				Label observatorLabel = observator.getLabel();
 				for (char propInObsLabel : observatorLabel.getPropositions()) {

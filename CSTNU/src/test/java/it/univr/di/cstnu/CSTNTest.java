@@ -609,34 +609,38 @@ public class CSTNTest {
 		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
 		LabeledNode Y = new LabeledNode("Y");
 		LabeledNode A = new LabeledNode("A?", 'a');
+		A.setLabel(Label.parse("¬p"));
 		LabeledNode B = new LabeledNode("B?", 'b');
-		A.setLabel(Label.parse("p"));
+		B.setLabel(Label.parse("a¬p"));
+		LabeledNode G = new LabeledNode("G?", 'g');
 
 		g.addVertex(this.P);
 		g.addVertex(A);
 		g.addVertex(B);
+		g.addVertex(G);
 		g.addVertex(this.X);
 		g.addVertex(Y);
 		g.setZ(this.Z);
 
 		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
-		XP.mergeLabeledValue(Label.parse("¬ap"), 8);
+		XP.mergeLabeledValue(Label.parse("¬a¬p"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
-		XP.mergeLabeledValue(Label.parse("bap"), 9);
+		XP.mergeLabeledValue(Label.parse("ba¬p"), 9);
 
 		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		YX.mergeLabeledValue(Label.parse("¬b"), 9);
 		YX.mergeLabeledValue(Label.parse("b"), -10);
 
 		LabeledIntEdgePluggable AP = new LabeledIntEdgePluggable("AP", this.labeledIntValueMapClass);
-		AP.mergeLabeledValue(Label.parse("p"), -1);
+		AP.mergeLabeledValue(Label.parse("¬p"), -1);
 
 		g.addEdge(XP, this.X, this.P);
 		g.addEdge(YX, Y, this.X);
 		g.addEdge(AP, A, this.P);
 
 		wellDefinition(g);
+
 
 		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("pbg")).toString());
@@ -647,25 +651,79 @@ public class CSTNTest {
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
 		assertEquals("bg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
-
+		/*
+		 * 'a' in 'ba' is a children supposed not to be present.
+		 */
+		B.setLabel(Label.parse("a"));
 		assertEquals("¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());// 'a'
-																																							// in
-																																							// 'ba'
-																																							// is
-																																							// a
-																																							// children
-																																							// supposed
-																																							// not
-																																							// to
-																																							// be
-																																							// present.
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 		assertEquals("bg",
-				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
-
+				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
 		assertEquals("¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬ag")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 		// assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
+	}
+
+
+	
+	/**
+	 * Test method for
+	 * {@link it.univr.di.cstnu.CSTN#removeChildrenOfUnknown(Label)
+	 * 
+	 * <pre>
+	 * P? &lt;--- X &lt;---- Y
+	 * ^
+	 * |
+	 * |
+	 * A_p?         B?
+	 * </pre>
+	 */
+	@SuppressWarnings({ "javadoc" })
+	@Test
+	public final void testRemoveChildren() {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode A = new LabeledNode("A?", 'a');
+		A.setLabel(Label.parse("¬p"));
+		LabeledNode B = new LabeledNode("B?", 'b');
+		B.setLabel(Label.parse("a¬p"));
+		LabeledNode G = new LabeledNode("G?", 'g');
+
+		g.addVertex(this.P);
+		g.addVertex(A);
+		g.addVertex(B);
+		g.addVertex(G);
+		g.addVertex(this.X);
+		g.addVertex(Y);
+		g.setZ(this.Z);
+
+		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
+		XP.mergeLabeledValue(Label.emptyLabel, 10);
+		XP.mergeLabeledValue(Label.parse("¬a¬p"), 8);
+		XP.mergeLabeledValue(Label.parse("¬b"), -1);
+		XP.mergeLabeledValue(Label.parse("ba¬p"), 9);
+
+		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+		YX.mergeLabeledValue(Label.parse("¬b"), 9);
+		YX.mergeLabeledValue(Label.parse("b"), -10);
+
+		LabeledIntEdgePluggable AP = new LabeledIntEdgePluggable("AP", this.labeledIntValueMapClass);
+		AP.mergeLabeledValue(Label.parse("¬p"), -1);
+
+		g.addEdge(XP, this.X, this.P);
+		g.addEdge(YX, Y, this.X);
+		g.addEdge(AP, A, this.P);
+
+		wellDefinition(g);
+
+		assertEquals("a¿b", this.cstn.removeChildrenOfUnknown(Label.parse("a¿b")).toString());
+		assertEquals("¿p", this.cstn.removeChildrenOfUnknown(Label.parse("a¿p")).toString());
+		assertEquals("¿p", this.cstn.removeChildrenOfUnknown(Label.parse("ab¿p")).toString());
+		assertEquals("¿ap", this.cstn.removeChildrenOfUnknown(Label.parse("bp¿a")).toString());
+		Label a = Label.parse("a");
+		a.remove(Label.parse("a"));
+		assertEquals(Label.emptyLabel, this.cstn.removeChildrenOfUnknown(a));
+
 	}
 
 	/**

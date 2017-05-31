@@ -866,6 +866,7 @@ public class CSTNU2UppaalTiga {
 	 * @param args
 	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
 	 */
+	@SuppressWarnings("deprecation")
 	private boolean manageParameters(String[] args) {
 		CmdLineParser parser = new CmdLineParser(this);
 		try {

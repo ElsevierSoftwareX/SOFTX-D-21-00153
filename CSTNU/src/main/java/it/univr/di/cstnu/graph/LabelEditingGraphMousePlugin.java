@@ -156,7 +156,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 				jp.add(jtLabel);
 				group.add(jtLabel, StringValidators.regexp(Constants.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
 
-				oldIntInputs[i] = entry.getValue();
+				oldIntInputs[i] = entry.getIntValue();
 				jtValue = new JTextField(Constants.formatInt(oldIntInputs[i]));
 				newIntInputs[i] = jtValue;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtValue, viewerName, false);

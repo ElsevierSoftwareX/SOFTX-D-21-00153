@@ -550,7 +550,7 @@ public class CSTNU extends CSTNir {
 			final Label beta = entryCX.getKey().getKey();
 
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryAC : ACMap) {
-				final int u = entryAC.getValue();
+				final int u = entryAC.getIntValue();
 				final Label alpha = entryAC.getKey().getKey();
 				final Label alphaBeta = beta.conjunction(alpha);
 				if (alphaBeta == null)
@@ -1133,7 +1133,7 @@ public class CSTNU extends CSTNir {
 			eNew.setConstraintType(ConstraintType.normal);
 			eNew.getLowerLabelMap().clear();
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getUpperLabelSet()) {
-				eNew.mergeLabeledValue(entry.getKey().getKey(), entry.getValue());
+				eNew.mergeLabeledValue(entry.getKey().getKey(), entry.getIntValue());
 			}
 			eNew.getLowerLabelMap().clear();
 			eNew.getUpperLabelMap().clear();
