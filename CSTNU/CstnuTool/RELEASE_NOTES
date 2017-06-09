@@ -1,6 +1,7 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 v1.9.0
+------
 	date:	2016-03-31
 	
 	Labels are represented in a more compact way.
@@ -8,6 +9,7 @@ v1.9.0
 	It is still possible to choose which kind of representation to use for labeled value sets.
 	
 v1.8.0
+------
 	date:	2016-02-24
 
 	Graphs are represented by a new optimized class.
