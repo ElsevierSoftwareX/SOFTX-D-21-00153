@@ -111,7 +111,7 @@ public class LabeledIntTreeMapTest {
 				sb.append("(");
 				sb.append(e.getKey().toString());
 				sb.append(", ");
-				final int value = e.getValue();
+				final int value = e.getIntValue();
 				if ((value == Constants.INT_NEG_INFINITE) || (value == Constants.INT_POS_INFINITE)) {
 					if (value < 0) {
 						sb.append('-');
