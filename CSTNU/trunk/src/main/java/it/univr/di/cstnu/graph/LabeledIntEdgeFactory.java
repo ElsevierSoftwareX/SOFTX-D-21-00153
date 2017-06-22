@@ -30,7 +30,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	 * 
 	 */
 	private Class<C> labeledIntValueMapImpl;
-	
+
 	/**
 	 * @param labeledIntMapImplementation
 	 */
@@ -55,7 +55,6 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(lim, this.labeledIntValueMapImpl);
 	}
 
-	
 	/**
 	 * @param name a name for the new edge
 	 * @return a new LabeledIntMap concrete object.
@@ -64,8 +63,6 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(name, this.labeledIntValueMapImpl);
 	}
 
-	
-	
 	/**
 	 * @param n dimension
 	 * @return a new LabeledIntEdge array of size n.
@@ -74,16 +71,15 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 		return (LabeledIntEdgePluggable[]) Array.newInstance(this.internal.getClass(), n);
 	}
 
-	
 	/**
-	 * @return the class chosen for creating new object. 
+	 * @return the class chosen for creating new object.
 	 */
 	public Class<C> getInternalObjectClass() {
 		return this.labeledIntValueMapImpl;
 	}
-	
+
 	public String toString() {
-		return "Labeled value set managed as " + this.internal.labeledValueMapFactory.toString();
+		return "Labeled value set managed as " + this.internal.labeledValueMapFactory.toString() + ".";
 	}
 
 }

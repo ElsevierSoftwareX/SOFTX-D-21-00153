@@ -8,8 +8,8 @@
 //
 //import org.junit.Test;
 //
-//import it.univr.di.cstnu.CSTN;
-//import it.univr.di.cstnu.WellDefinitionException;
+//import it.univr.di.cstnu.algorithms.CSTN;
+//import it.univr.di.cstnu.algorithms.WellDefinitionException;
 //import it.univr.di.labeledvalue.Constants;
 //import it.univr.di.labeledvalue.Label;
 //import it.univr.di.labeledvalue.Literal;

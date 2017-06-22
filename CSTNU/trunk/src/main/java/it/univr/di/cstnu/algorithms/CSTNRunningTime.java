@@ -1,4 +1,4 @@
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,8 +20,8 @@ import org.kohsuke.args4j.spi.StringArrayOptionHandler;
 
 import edu.uci.ics.jung.io.GraphIOException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.univr.di.cstnu.CSTN.CSTNCheckStatus;
-import it.univr.di.cstnu.CSTN.DCSemantics;
+import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
+import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
 import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;

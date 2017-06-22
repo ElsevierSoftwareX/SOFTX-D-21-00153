@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 /**
  * Some common types of unsatisfied property for well defined CSTN.
@@ -55,7 +55,7 @@ public class WellDefinitionException extends Exception {
 	 * <p>Constructor for WellDefinitionException.</p>
 	 *
 	 * @param message a {@link java.lang.String} object.
-	 * @param t a {@link it.univr.di.cstnu.WellDefinitionException.Type} object.
+	 * @param t a {@link it.univr.di.cstnu.algorithms.WellDefinitionException.Type} object.
 	 */
 	public WellDefinitionException(String message, Type t) {
 		super(message);

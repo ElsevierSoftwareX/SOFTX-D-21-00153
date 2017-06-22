@@ -13,8 +13,8 @@ import it.unimi.dsi.fastutil.chars.CharArraySet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
-import it.univr.di.cstnu.WellDefinitionException;
-import it.univr.di.cstnu.WellDefinitionException.Type;
+import it.univr.di.cstnu.algorithms.WellDefinitionException;
+import it.univr.di.cstnu.algorithms.WellDefinitionException.Type;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
@@ -1067,7 +1067,7 @@ public class CSTNU_NodeSet {
 	 * @param g the original graph that has to be checked. If the check is successful, g is modified and it contains all minimized constraints; otherwise, it is
 	 *            not modified.
 	 * @return status an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws it.univr.di.cstnu.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties).
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties).
 	 */
 	public CSTNUCheckStatus dynamicControllabilityCheck(final LabeledIntGraph g) throws WellDefinitionException {
 		final CSTNUCheckStatus status = new CSTNUCheckStatus();

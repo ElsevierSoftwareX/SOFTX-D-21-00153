@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,7 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
-import it.univr.di.cstnu.CSTN.CSTNCheckStatus;
+import it.univr.di.cstnu.algorithms.CSTN;
+import it.univr.di.cstnu.algorithms.CSTNepsilon;
+import it.univr.di.cstnu.algorithms.WellDefinitionException;
+import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
@@ -83,7 +86,7 @@ public class CSTNepsilonTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
 	 */
 	@SuppressWarnings("javadoc")
 	@Test
@@ -109,7 +112,7 @@ public class CSTNepsilonTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
 	 */
 	@SuppressWarnings("javadoc")
 	@Test
@@ -342,7 +345,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -425,7 +428,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -477,7 +480,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for creating a -infty loop
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -524,7 +527,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for checking that all propagations are done
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -595,7 +598,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#makeAlphaBetaGammaPrime(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledNode, char, Label, Label)
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#makeAlphaBetaGammaPrime(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledNode, char, Label, Label)
 	 * 
 	 * <pre>
 	 * P? &lt;--- X &lt;---- Y
@@ -672,7 +675,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -711,7 +714,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -761,7 +764,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -818,7 +821,7 @@ public class CSTNepsilonTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")

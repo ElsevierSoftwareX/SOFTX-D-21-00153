@@ -13,7 +13,7 @@ import org.junit.Test;
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.cstnu.CSTN_NodeSet;
-import it.univr.di.cstnu.WellDefinitionException;
+import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.LabeledIntEdgeFactory;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;

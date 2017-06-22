@@ -21,7 +21,7 @@ import org.kohsuke.args4j.Option;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.univr.di.cstnu.CSTNRunningTime;
+import it.univr.di.cstnu.algorithms.CSTNRunningTime;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;

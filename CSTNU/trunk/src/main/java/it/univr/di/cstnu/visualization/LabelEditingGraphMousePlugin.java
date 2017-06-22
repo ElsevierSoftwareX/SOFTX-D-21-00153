@@ -3,7 +3,7 @@
  * software is open-source under the BSD license;
  * see either "license.txt" or http://jung.sourceforge.net/license.txt for a description. Created on Mar 8, 2005
  */
-package it.univr.di.cstnu.graph;
+package it.univr.di.cstnu.visualization;
 
 import java.awt.Cursor;
 import java.awt.GridLayout;
@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -31,7 +33,9 @@ import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.univr.di.cstnu.CSTNEditor;
+import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
@@ -535,10 +539,24 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 	protected E edge;
 
 	/**
+	 * The editor in which this plugin works.
+	 */
+	CSTNEditor cstnEditor;
+	
+	/**
 	 * create an instance with default settings
 	 */
 	public LabelEditingGraphMousePlugin() {
 		this(InputEvent.BUTTON1_MASK);
+	}
+
+	/**
+	 * create an instance with default settings
+	 * @param cstnEditor 
+	 */
+	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor) {
+		this(InputEvent.BUTTON1_MASK);
+		this.cstnEditor = cstnEditor;
 	}
 
 	/**
@@ -551,6 +569,20 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		this.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
 	}
 
+	
+	/**
+	 * Create an instance with overrides.
+	 *
+	 * @param selectionModifiers for primary selection
+	 * @param cstnEditor 
+	 */
+	public LabelEditingGraphMousePlugin(final int selectionModifiers, CSTNEditor cstnEditor) {
+		super(selectionModifiers);
+		this.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+		this.cstnEditor = cstnEditor;
+	}
+
+	
 	/**
 	 * {@inheritDoc}
 	 * For primary modifiers (default, MouseButton1):
@@ -573,14 +605,10 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 		if ((e.getModifiers() == this.modifiers) && (e.getClickCount() == 2)) {
 			final VisualizationViewer<N, E> vv = (VisualizationViewer<N, E>) e.getSource();
 			JPanel jp2;
-			final JTextArea mesg2 = (JTextArea) ((JPanel) vv.getParent().getParent().getParent().getComponent(0)).getComponent(0);
-			// mesg2.setIcon(null);
-			mesg2.setText("");
-			mesg2.setOpaque(false);
+			final JEditorPane mesg2 = this.cstnEditor.derivedGraphMessageArea;
 
 			if (!vv.getName().equals(CSTNEditor.distanceViewerName)) {
-				// I didn't find a better way to determine the VisualizationViewer of distance graphs inside this method.
-				jp2 = (JPanel) (((JPanel) vv.getParent().getParent().getComponent(1)).getComponent(0));
+				jp2 = this.cstnEditor.vv2;
 			} else {
 				jp2 = vv;
 			}
@@ -595,6 +623,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 				if (this.vertex != null) {
 					if (nodeAttributesEditor(this.vertex, viewerName, g)) {
 						jp2.setVisible(false);
+						mesg2.setText("");
 						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
 						g.clearCache();
 					}
@@ -608,6 +637,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 				if (this.edge != null) {
 					if (edgeAttributesEditor(this.edge, viewerName, g)) {
 						jp2.setVisible(false);
+						mesg2.setText("");
 						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
 						g.clearCache();
 					}

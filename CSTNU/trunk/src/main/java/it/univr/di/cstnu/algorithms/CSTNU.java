@@ -1,4 +1,4 @@
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,10 +20,10 @@ import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
+import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.cstnu.graph.LabeledIntEdgeFactory;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.cstnu.graph.StaticLayout;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
@@ -270,7 +270,7 @@ public class CSTNU extends CSTNir {
 	 * All propositions that are redundant at run time are removed: therefore, all labels contains only the necessary and sufficient propositions.
 	 *
 	 * @return status an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws it.univr.di.cstnu.WellDefinitionException
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException
 	 *             if the nextGraph is not well defined (does not observe all well definition properties).
 	 */
 	public CSTNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {

@@ -26,7 +26,7 @@
 //import it.univr.di.cstnu.graph.LabeledIntEdgeFactory;
 //import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 //import it.univr.di.cstnu.graph.LabeledIntGraph;
-//import it.univr.di.cstnu.graph.StaticLayout;
+//import it.univr.di.cstnu.visualization.StaticLayout;
 //import it.univr.di.labeledvalue.Constants;
 //import it.univr.di.labeledvalue.Label;
 //import it.univr.di.labeledvalue.LabeledIntNodeSetMap;

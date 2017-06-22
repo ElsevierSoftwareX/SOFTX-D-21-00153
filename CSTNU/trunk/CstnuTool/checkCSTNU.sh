@@ -8,5 +8,5 @@ java	-classpath ./CSTNU-1.** \
     -Xmx6g \
     -XX:NewSize=1G \
     -XX:MaxNewSize=1G \
-	it.univr.di.cstnu.CSTNURunningTime -numRepetitionDCCheck 1 -timeInS $*
+	it.univr.di.cstnu.algorithms.CSTNURunningTime -numRepetitionDCCheck 1 -timeInS $*
 
