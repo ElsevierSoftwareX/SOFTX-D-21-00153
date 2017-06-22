@@ -38,8 +38,8 @@ MODEL="$1.tga.xml"
 QUERY="$1.tga.q"
 
 echo "Generating automaton"
-echo "java -cp $CSTNU it.univr.di.cstnu.CSTNU2UppaalTiga -o $MODEL $IN"
-time java -cp $CSTNU it.univr.di.cstnu.CSTNU2UppaalTiga -o $MODEL $IN 
+echo "java -cp $CSTNU it.univr.di.cstnu.algorithms.CSTNU2UppaalTiga -o $MODEL $IN"
+time java -cp $CSTNU it.univr.di.cstnu.algorithms.CSTNU2UppaalTiga -o $MODEL $IN 
 
 echo "Model saved into file $MODEL"
 echo "Query saved into file $QUERY"

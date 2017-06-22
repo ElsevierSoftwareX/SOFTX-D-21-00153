@@ -1,4 +1,4 @@
-package it.univr.di.cstnu.graph;
+package it.univr.di.cstnu.visualization;
 
 /**
  * Created on Jul 21, 2005 Copyright (c) 2005, the JUNG Project and the Regents of the University of California All rights reserved. This software is
@@ -15,6 +15,7 @@ import org.apache.commons.collections15.Transformer;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;
+import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * StaticLayout places the vertices in the locations specified by its Transformer&lt;V,Point2D&gt; initializer. 

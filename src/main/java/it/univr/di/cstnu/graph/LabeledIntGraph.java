@@ -1,6 +1,6 @@
 /**
- * bear in mind that ObjectRBTreeSet is usually a little bit more faster than ObjectAVLTreeSet on set of medium size. OIn very large set size, ObjectAVLTreeSet shine!
- * On small sit, ArraySet is more efficient in time and space.
+ * Bear in mind that ObjectRBTreeSet is usually a little bit more faster than ObjectAVLTreeSet on set of medium size. In very large set size, ObjectAVLTreeSet shine!
+ * On small set, ArraySet is more efficient in time and space.
  */
 package it.univr.di.cstnu.graph;
 

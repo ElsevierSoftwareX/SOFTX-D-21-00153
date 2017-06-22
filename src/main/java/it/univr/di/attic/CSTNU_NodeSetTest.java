@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import it.univr.di.attic.CSTNU_NodeSet;
 import it.univr.di.attic.CSTNU_NodeSet.CSTNUCheckStatus;
-import it.univr.di.cstnu.WellDefinitionException;
+import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;

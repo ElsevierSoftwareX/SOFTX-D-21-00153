@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
-import it.univr.di.cstnu.WellDefinitionException;
+import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.CSTN_NodeSet.CSTNCheckStatus;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;

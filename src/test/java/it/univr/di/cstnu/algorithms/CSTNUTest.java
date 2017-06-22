@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -9,7 +9,9 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
-import it.univr.di.cstnu.CSTNU.CSTNUCheckStatus;
+import it.univr.di.cstnu.algorithms.CSTNU;
+import it.univr.di.cstnu.algorithms.WellDefinitionException;
+import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
@@ -548,7 +550,7 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTNU#labeledPropagationRule()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule()}.
 	 * 
 	 * <pre>
 	 * Y &lt;---[9,,¬b][10,,b]-- P &lt;---[10,,][8,,¬a]--- X

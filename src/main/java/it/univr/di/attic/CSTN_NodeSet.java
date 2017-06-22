@@ -23,14 +23,14 @@
 //import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 //import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 //import it.unimi.dsi.fastutil.objects.ObjectSet;
-//import it.univr.di.cstnu.WellDefinitionException.Type;
+//import it.univr.di.cstnu.algorithms.WellDefinitionException.Type;
 //import it.univr.di.cstnu.graph.GraphMLReader;
 //import it.univr.di.cstnu.graph.GraphMLWriter;
 //import it.univr.di.cstnu.graph.LabeledIntEdge;
 //import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 //import it.univr.di.cstnu.graph.LabeledIntGraph;
 //import it.univr.di.cstnu.graph.LabeledNode;
-//import it.univr.di.cstnu.graph.StaticLayout;
+//import it.univr.di.cstnu.visualization.StaticLayout;
 //import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 //import it.univr.di.labeledvalue.Constants;
 //import it.univr.di.labeledvalue.Label;
@@ -499,7 +499,7 @@
 //	 *
 //	 * @param g a {@link LabeledIntGraph} object.
 //	 * @return true if the g is a CSTN_NodeSet well defined.
-//	 * @throws it.univr.di.cstnu.WellDefinitionException if any.
+//	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 //	 */
 //	public boolean checkWellDefinitionProperties(final LabeledIntGraph g)
 //			throws WellDefinitionException {
@@ -529,7 +529,7 @@
 //	 * @param g the original graph that has to be checked. If the check is successful, g is modified and it contains all minimized constraints; otherwise, it is
 //	 *            not modified.
 //	 * @return the final status of the checking with some statistics.
-//	 * @throws it.univr.di.cstnu.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this
+//	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this
 //	 *             exception occurs, then there is a problem in the rules coding.
 //	 */
 //	public CSTNCheckStatus dynamicConsistencyCheck(final LabeledIntGraph g) throws WellDefinitionException {

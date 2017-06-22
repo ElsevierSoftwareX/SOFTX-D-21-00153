@@ -1,7 +1,7 @@
 /**
  * // * Translator to the Time Game Automata (TIGA) model.
  */
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
 import java.io.FileNotFoundException;

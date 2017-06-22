@@ -1,4 +1,4 @@
-package it.univr.di.cstnu.graph;
+package it.univr.di.cstnu.visualization;
 
 import java.awt.Component;
 import java.awt.Cursor;
@@ -32,6 +32,9 @@ import edu.uci.ics.jung.visualization.control.RotatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.ShearingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
+import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
+import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * It is a PluggableGraphMouse class that manages a collection of plugins for picking and transforming the graph. Additionally, it carries the notion of a Mode:
@@ -124,6 +127,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	protected MultiLayerTransformer basicTransformer;
 
 	protected RenderContext<V, E> rc;
+	
+	CSTNEditor cstnEditor;
 
 	/**
 	 * Creates an instance with default values.
@@ -135,8 +140,8 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	 * @param edgeFactory
 	 *                a {@link org.apache.commons.collections15.Factory} object.
 	 */
-	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory) {
-		this(rc, vertexFactory, edgeFactory, 1.1f, 1 / 1.1f);
+	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory, CSTNEditor cstnEditor) {
+		this(rc, vertexFactory, edgeFactory, 1.1f, 1 / 1.1f, cstnEditor);
 	}
 
 	/**
@@ -154,8 +159,9 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	 *                override value for scale out
 	 */
 	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory, final float in,
-			final float out) {
+			final float out, CSTNEditor cstnEditor) {
 		super(in, out);
+		this.cstnEditor = cstnEditor;
 		this.vertexFactory = vertexFactory;
 		this.edgeFactory = edgeFactory;
 		this.rc = rc;
@@ -165,9 +171,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 	}
 
 	/**
-	 * <p>
 	 * Getter for the field <code>annotatingPlugin</code>.
-	 * </p>
 	 *
 	 * @return the annotatingPlugin
 	 */
@@ -324,7 +328,7 @@ public class EditingModalGraphMouse<V, E> extends AbstractModalGraphMouse {
 		this.rotatingPlugin = new RotatingGraphMousePlugin();
 		this.shearingPlugin = new ShearingGraphMousePlugin();
 		this.editingPlugin = new EditingGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
-		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<LabeledNode, AbstractLabeledIntEdge>();
+		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<LabeledNode, AbstractLabeledIntEdge>(this.cstnEditor);
 		this.annotatingPlugin = new AnnotatingGraphMousePlugin<V, E>(this.rc);
 		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
 		this.add(this.scalingPlugin);

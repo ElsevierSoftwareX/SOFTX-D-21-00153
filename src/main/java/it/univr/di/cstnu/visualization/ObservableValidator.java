@@ -1,12 +1,15 @@
 /**
  *
  */
-package it.univr.di.cstnu.graph;
+package it.univr.di.cstnu.visualization;
 
 import java.util.logging.Logger;
 
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
+
+import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * <p>

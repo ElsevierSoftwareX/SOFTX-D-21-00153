@@ -1,4 +1,4 @@
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,8 +29,8 @@ import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.cstnu.graph.StaticLayout;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
+import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -556,7 +556,7 @@ public class CSTN {
 	 * It checks only WD1, WD2 (light version).
 	 *
 	 * @return true if the g is a CSTN well defined.
-	 * @throws it.univr.di.cstnu.WellDefinitionException if any.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public boolean checkWellDefinitionProperties() throws WellDefinitionException {
 		boolean flag = false;
@@ -581,7 +581,7 @@ public class CSTN {
 	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
 	 * 
 	 * @return the final status of the checking with some statistics.
-	 * @throws it.univr.di.cstnu.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties).
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties).
 	 */
 	public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
 		try {

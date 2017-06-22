@@ -30,4 +30,4 @@ if [ "x$IN" == "x" ]; then
     exit 1
 fi
 
-java -Djava.util.logging.config.file=$DIR/logging.properties -Xmx1g -cp $CSTNU it.univr.di.cstnu.CSTNURunningTime $IN 
+java -Djava.util.logging.config.file=$DIR/logging.properties -Xmx1g -cp $CSTNU it.univr.di.cstnu.algorithms.CSTNURunningTime $IN 

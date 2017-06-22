@@ -1,4 +1,4 @@
-package it.univr.di.cstnu;
+package it.univr.di.cstnu.algorithms;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -17,9 +17,9 @@ import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
+import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.cstnu.graph.StaticLayout;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
