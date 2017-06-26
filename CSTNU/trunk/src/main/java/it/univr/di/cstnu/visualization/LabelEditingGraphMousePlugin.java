@@ -9,7 +9,6 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -29,7 +28,6 @@ import org.netbeans.validation.api.ui.swing.ValidationPanel;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.AbstractGraphMousePlugin;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
@@ -44,12 +42,12 @@ import it.univr.di.labeledvalue.LabeledIntMapFactory;
 /**
  * Allows to edit vertex or edge attributes.
  *
- * @author Tom Nelson. Adapted by Roberto Posenato.
- * @param <N> vertex type
+ * @author Roberto Posenato.
+ * @param <V> vertex type
  * @param <E> edge type
  * @version $Id: $Id
  */
-public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends LabeledIntEdge> extends AbstractGraphMousePlugin implements MouseListener {
+public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends LabeledIntEdge> extends edu.uci.ics.jung.visualization.control.LabelEditingGraphMousePlugin<V, E> {
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -527,47 +525,19 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 	static Logger LOG = Logger.getLogger(LabelEditingGraphMousePlugin.class.getName());
 
 	/**
-	 * the picked Vertex, if any
-	 */
-	protected N vertex;
-
-	/**
-	 * the picked LabeledIntEdge, if any
-	 */
-	protected E edge;
-
-	/**
 	 * The editor in which this plugin works.
 	 */
 	CSTNEditor cstnEditor;
 	
 	/**
 	 * create an instance with default settings
-	 */
-	public LabelEditingGraphMousePlugin() {
-		this(InputEvent.BUTTON1_MASK);
-	}
-
-	/**
-	 * create an instance with default settings
 	 * @param cstnEditor 
 	 */
 	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor) {
-		this(InputEvent.BUTTON1_MASK);
+		super(InputEvent.BUTTON1_MASK);
 		this.cstnEditor = cstnEditor;
 	}
 
-	/**
-	 * Create an instance with overrides.
-	 *
-	 * @param selectionModifiers for primary selection
-	 */
-	public LabelEditingGraphMousePlugin(final int selectionModifiers) {
-		super(selectionModifiers);
-		this.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-	}
-
-	
 	/**
 	 * Create an instance with overrides.
 	 *
@@ -601,7 +571,7 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 	@SuppressWarnings("unchecked")
 	public void mouseClicked(final MouseEvent e) {
 		if ((e.getModifiers() == this.modifiers) && (e.getClickCount() == 2)) {
-			final VisualizationViewer<N, E> vv = (VisualizationViewer<N, E>) e.getSource();
+			final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
 			JPanel jp2;
 			final JEditorPane mesg2 = this.cstnEditor.derivedGraphMessageArea;
 
@@ -610,10 +580,10 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 			} else {
 				jp2 = vv;
 			}
-			final GraphElementAccessor<N, E> pickSupport = vv.getPickSupport();
+			final GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
 			final String viewerName = vv.getName();
 			if (pickSupport != null) {
-				final Layout<N, E> layout = vv.getGraphLayout();
+				final Layout<V, E> layout = vv.getGraphLayout();
 				final LabeledIntGraph g = (LabeledIntGraph) layout.getGraph();
 				final Point2D p = e.getPoint(); // p is the screen point for the mouse event
 
@@ -645,39 +615,6 @@ public class LabelEditingGraphMousePlugin<N extends LabeledNode, E extends Label
 			}
 			e.consume();
 		}
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void mouseEntered(final MouseEvent e) {
-		// empty
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void mouseExited(final MouseEvent e) {
-		// empty
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * If the mouse is over a picked vertex, drag all picked vertices with the mouse. If the mouse is not over a Vertex,
-	 * draw the rectangle to select multiple
-	 * Vertices
-	 */
-	@Override
-	public void mousePressed(final MouseEvent e) {
-		// empty
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * If the mouse is dragging a rectangle, pick the Vertices contained in that rectangle clean up settings from
-	 * mousePressed
-	 */
-	@Override
-	public void mouseReleased(final MouseEvent e) {
-		// empty
 	}
 
 }
