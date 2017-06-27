@@ -97,35 +97,38 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		// group.add(value, StringValidators.regexp(Constants.labeledValueRE, "Check the syntax!", false));
 
 		// Type
-		final JRadioButton normalButton = new JRadioButton(LabeledIntEdge.ConstraintType.normal.toString());
-		normalButton.setSelected(false);
-		final JRadioButton contingentButton = new JRadioButton(LabeledIntEdge.ConstraintType.contingent.toString());
-		contingentButton.setSelected(false);
-		final JRadioButton constraintButton = new JRadioButton(LabeledIntEdge.ConstraintType.constraint.toString());
-		constraintButton.setSelected(false);
 		jp.add(new JLabel("LabeledIntEdge type: "));
+		final JRadioButton normalButton = new JRadioButton(LabeledIntEdge.ConstraintType.normal.toString());
 		normalButton.setActionCommand(LabeledIntEdge.ConstraintType.normal.toString());
 		normalButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.normal);
-		jp.add(normalButton);
-		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
-
+		LabelEditingGraphMousePlugin.setConditionToEnable(normalButton, viewerName, false);
+		final JRadioButton contingentButton = new JRadioButton(LabeledIntEdge.ConstraintType.contingent.toString());
 		contingentButton.setActionCommand(LabeledIntEdge.ConstraintType.contingent.toString());
 		contingentButton.setSelected(e.isContingentEdge());
-		jp.add(contingentButton);
-		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
-
-		jp.add(new JLabel(""));
+		LabelEditingGraphMousePlugin.setConditionToEnable(contingentButton, viewerName, false);
+		final JRadioButton constraintButton = new JRadioButton(LabeledIntEdge.ConstraintType.constraint.toString());
 		constraintButton.setActionCommand(LabeledIntEdge.ConstraintType.constraint.toString());
 		constraintButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.constraint);
-		jp.add(constraintButton);
-		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
-		jp.add(new JLabel(""));
-
+		LabelEditingGraphMousePlugin.setConditionToEnable(constraintButton, viewerName, false);
+		final JRadioButton derivedButton = new JRadioButton(LabeledIntEdge.ConstraintType.derived.toString());
+		derivedButton.setActionCommand(LabeledIntEdge.ConstraintType.derived.toString());
+		derivedButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.derived || e.getConstraintType() == LabeledIntEdge.ConstraintType.internal);
+		derivedButton.setEnabled(false);
+		
 		// Group the radio buttons.
 		final ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(normalButton);
 		buttonGroup.add(contingentButton);
 		buttonGroup.add(constraintButton);
+		buttonGroup.add(derivedButton);
+		
+		jp.add(normalButton);
+		jp.add(contingentButton);
+		jp.add(new JLabel(""));//in order to jumb a cell
+		jp.add(constraintButton);
+		jp.add(derivedButton);
+//		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
+
 
 		// Show possible labeled values
 		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.getLabeledValueSet();

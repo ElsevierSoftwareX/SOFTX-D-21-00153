@@ -155,12 +155,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Layout for input graph.
 	 */
-	StaticLayout<LabeledNode, LabeledIntEdge> layout1;
+	StaticLayout<LabeledIntEdge> layout1;
 
 	/**
 	 * Layout for derived graph.
 	 */
-	StaticLayout<LabeledNode, LabeledIntEdge> layout2;
+	StaticLayout<LabeledIntEdge> layout2;
 
 	/**
 	 * The model for the viewer of input graph. Useful if there are more than one Viewer.
@@ -467,7 +467,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		try (FileReader fileReader = new FileReader(fileName)) {
 			final GraphMLReader<LabeledIntGraph> graphReader = new GraphMLReader<>(fileReader, this.labeledIntValueMap);
 			this.g = graphReader.readGraph();
-			this.layout1 = new StaticLayout<>(this.g, StaticLayout.positionInitializer);
+			this.layout1 = new StaticLayout<>(this.g);
 			fileReader.close();
 		} catch (final Exception e) {
 			e.printStackTrace();

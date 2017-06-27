@@ -13,23 +13,23 @@ import java.util.Map;
 
 import org.apache.commons.collections15.Transformer;
 
-import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.graph.Graph;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
- * StaticLayout places the vertices in the locations specified by its Transformer&lt;V,Point2D&gt; initializer. 
- * Vertex locations can be placed in a Map&lt;V,Point2D&gt; and then supplied to this layout as follows: <pre>
- *            Transformer&lt;V,Point2D&gt; vertexLocations =
- *        	TransformerUtils.mapTransformer(map);
- * </pre>
- *
- * @author Tom Nelson - tomnelson@dev.java.net
- * @param <V> vertex type
+ * Extends StaticLayout setting the following initializer:
+ * static public Transformer<LabeledNode, Point2D> positionInitializer = new Transformer<LabeledNode, Point2D>() {
+ * 
+ * @Override
+ * 			public Point2D transform(final LabeledNode v) {
+ *           final Point2D p = new Point2D.Double(v.getX(), v.getY());
+ *           return p;
+ *           }
+ *           };
  * @param <E> edge type
  * @version $Id: $Id
  */
-public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializable {
+public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements Serializable {
 
 	/**
 	 *
@@ -37,7 +37,7 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 *
+	 * It is used for getting the coordinates of node stored inside LabelNode object.
 	 */
 	static public Transformer<LabeledNode, Point2D> positionInitializer = new Transformer<LabeledNode, Point2D>() {
 		@Override
@@ -52,8 +52,8 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	 *
 	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
 	 */
-	public StaticLayout(final Graph<V, E> graph) {
-		super(graph);
+	public StaticLayout(final Graph<LabeledNode, E> graph) {
+		super(graph, positionInitializer);
 	}
 
 	/**
@@ -62,47 +62,24 @@ public class StaticLayout<V, E> extends AbstractLayout<V, E> implements Serializ
 	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
 	 * @param size a {@link java.awt.Dimension} object.
 	 */
-	public StaticLayout(final Graph<V, E> graph, final Dimension size) {
-		super(graph, size);
+	public StaticLayout(final Graph<LabeledNode, E> graph, final Dimension size) {
+		super(graph, positionInitializer, size);
 	}
 
 	/**
-	 * Creates an instance for the specified graph and locations, with default size.
-	 *
-	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
-	 * @param initializer a {@link org.apache.commons.collections15.Transformer} object.
-	 */
-	public StaticLayout(final Graph<V, E> graph, final Transformer<V, Point2D> initializer) {
-		super(graph, initializer);
-	}
-
-	/**
-	 * Creates an instance for the specified graph, locations, and size.
-	 *
-	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
-	 * @param initializer a {@link org.apache.commons.collections15.Transformer} object.
-	 * @param size a {@link java.awt.Dimension} object.
-	 */
-	public StaticLayout(final Graph<V, E> graph, final Transformer<V, Point2D> initializer, final Dimension size) {
-		super(graph, initializer, size);
-	}
-
-	/**
-	 * <p>getLocations.</p>
-	 *
 	 * @return the position of all vertices.
 	 */
-	public Map<V, Point2D> getLocations() {
+	public Map<LabeledNode, Point2D> getLocations() {
 		return this.locations;
 	}
 
-	/** {@inheritDoc} */
+	/** It has been erased. */
 	@Override
 	public void initialize() {
 		// empty
 	}
 
-	/** {@inheritDoc} */
+	/** It has been erased. */
 	@Override
 	public void reset() {
 		// empty
