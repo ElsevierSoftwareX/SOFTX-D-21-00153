@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="Name" for="graph">
+<desc>Graph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Format: [a-zA-Z]</desc>
+<default></default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-zA-Z]|[a-zA-Z]]+|⊡</desc>
+<default></default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Value" for="edge">
+<desc>Value. Format: an integer.</desc>
+<default>1</default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: normal|contingent|constraint.</desc>
+<default>normal</default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values. Format: {[[\('label', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="Name">ex1C.cstnu</data>
+<node id="A?">
+<data key="Obs">A</data>
+<data key="Label">⊡</data>
+<data key="y">39.0</data>
+<data key="x">359.0</data>
+</node>
+<node id="B?">
+<data key="Obs">B</data>
+<data key="Label">A</data>
+<data key="y">141.0</data>
+<data key="x">400.0</data>
+</node>
+<node id="C1_e">
+<data key="Obs"></data>
+<data key="Label">A</data>
+<data key="y">389.0</data>
+<data key="x">139.0</data>
+</node>
+<node id="C1_s">
+<data key="Obs"></data>
+<data key="Label">A</data>
+<data key="y">191.0</data>
+<data key="x">137.0</data>
+</node>
+<node id="C2_e">
+<data key="Obs"></data>
+<data key="Label">AB</data>
+<data key="y">341.0</data>
+<data key="x">302.0</data>
+</node>
+<node id="C2_s">
+<data key="Obs"></data>
+<data key="Label">AB</data>
+<data key="y">204.0</data>
+<data key="x">316.0</data>
+</node>
+<node id="C3_e">
+<data key="Obs"></data>
+<data key="Label">A¬B</data>
+<data key="y">337.0</data>
+<data key="x">504.0</data>
+</node>
+<node id="C3_s">
+<data key="Obs"></data>
+<data key="Label">A¬B</data>
+<data key="y">187.0</data>
+<data key="x">481.0</data>
+</node>
+<node id="n3">
+<data key="Obs"></data>
+<data key="Label">A</data>
+<data key="y">437.0</data>
+<data key="x">424.0</data>
+</node>
+<edge id="e0" source="A?" target="C1_s">
+<data key="Value">5</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e1" source="C1_s" target="A?">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e10" source="B?" target="C3_s">
+<data key="Value">4</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e11" source="C3_s" target="B?">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e12" source="C2_s" target="C2_e">
+<data key="Value">8</data>
+<data key="Type">contingent</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e13" source="C2_e" target="C2_s">
+<data key="Value">-3</data>
+<data key="Type">contingent</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e14" source="C3_s" target="C3_e">
+<data key="Value">7</data>
+<data key="Type">contingent</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e15" source="C3_e" target="C3_s">
+<data key="Value">-2</data>
+<data key="Type">contingent</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e16" source="C2_e" target="n3">
+<data key="Value">4</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e17" source="n3" target="C2_e">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e18" source="C3_e" target="n3">
+<data key="Value">4</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e19" source="n3" target="C3_e">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e2" source="C1_s" target="C1_e">
+<data key="Value">10</data>
+<data key="Type">contingent</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e3" source="C1_e" target="C1_s">
+<data key="Value">-5</data>
+<data key="Type">contingent</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e4" source="C1_e" target="n3">
+<data key="Value">9</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e5" source="n3" target="C1_e">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e6" source="A?" target="B?">
+<data key="Value">6</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e7" source="B?" target="A?">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e8" source="B?" target="C2_s">
+<data key="Value">3</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="e9" source="C2_s" target="B?">
+<data key="Value">-1</data>
+<data key="Type">normal</data>
+<data key="LabeledValues">{}</data>
+</edge>
+</graph>
+</graphml>
