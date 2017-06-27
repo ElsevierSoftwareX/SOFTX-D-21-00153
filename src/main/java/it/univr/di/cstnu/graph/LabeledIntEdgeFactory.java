@@ -14,7 +14,7 @@ import it.univr.di.labeledvalue.LabeledIntMap;
  * @author posenato
  * @param <C>
  */
-public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<LabeledIntEdgePluggable> {
+public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<LabeledIntEdge> {
 
 	/**
 	 * class logger
