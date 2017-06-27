@@ -36,6 +36,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.apache.commons.collections15.Factory;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.swing.ValidationPanel;
@@ -286,18 +287,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		// MOUSE setting
 		// Create a graph mouse and add it to the visualization component
-		LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(this.labeledIntValueMap);
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm = new EditingModalGraphMouse(this.vv1.getRenderContext(), LabeledNode.getFactory(),
+		Factory<LabeledIntEdge> edgeFactory = new LabeledIntEdgeFactory<>(this.labeledIntValueMap);
+		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm1 = new EditingModalGraphMouse<>(this.vv1.getRenderContext(), LabeledNode.getFactory(),
 				edgeFactory, this);
-		gm.setMode(ModalGraphMouse.Mode.PICKING);
-		this.vv1.setGraphMouse(gm);
-		this.vv1.addKeyListener(gm.getModeKeyListener());
-		// EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm2 = new EditingModalGraphMouse<LabeledNode, LabeledIntEdge>(vv2.getRenderContext(),
-		// LabeledNode.getFactory(), LabeledIntEdge.getFactory());
-		// gm2.setMode(ModalGraphMouse.Mode.PICKING);
-		this.vv2.setGraphMouse(gm);
-		this.vv2.addKeyListener(gm.getModeKeyListener());
+		gm1.setMode(ModalGraphMouse.Mode.PICKING);
+		this.vv1.setGraphMouse(gm1);
+		this.vv1.addKeyListener(gm1.getModeKeyListener());
+		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> gm2 = new EditingModalGraphMouse<>(this.vv2.getRenderContext(), LabeledNode.getFactory(), edgeFactory, this);
+		gm2.setMode(ModalGraphMouse.Mode.PICKING);
+		this.vv2.setGraphMouse(gm2);
+		this.vv2.addKeyListener(gm2.getModeKeyListener());
 
 		// CONTENT
 		// content is the canvas of the application.
@@ -349,7 +348,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// FIRST ROW OF COMMANDS
 
 		@SuppressWarnings("rawtypes")
-		final JComboBox modeBox = gm.getModeComboBox();
+		final JComboBox modeBox = gm1.getModeComboBox();
 		rowForAppButtons.add(modeBox);
 		// AnnotationControls<LabeledNode,LabeledIntEdge> annotationControls =
 		// new AnnotationControls<LabeledNode,LabeledIntEdge>(gm.getAnnotatingPlugin());
