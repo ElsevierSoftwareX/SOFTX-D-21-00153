@@ -170,7 +170,7 @@ public class LabeledIntHierarchyMapTest {
 	/**
 	 * 
 	 */
-	LabeledIntHierarchyMap actual = this.factory.create();
+	LabeledIntHierarchyMap actual = this.factory.get();
 	
 	/**
 	 * 
@@ -180,7 +180,7 @@ public class LabeledIntHierarchyMapTest {
 	/**
 	 * 
 	 */
-	LabeledIntMap expected = this.factory.create();
+	LabeledIntMap expected = this.factory.get();
 
 	/**
 	 * 

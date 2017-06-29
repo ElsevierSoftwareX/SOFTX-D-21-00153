@@ -93,7 +93,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		}
 
 		LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
-		final LabeledIntMap newMap = factory.create();
+		final LabeledIntMap newMap = factory.get();
 
 		final String[] entryPair = AbstractLabeledIntMap.splitterEntry.split(inputMap);
 		// LabeledValueTreeMap.LOG.finest("EntryPairs: " + Arrays.toString(entryPair));

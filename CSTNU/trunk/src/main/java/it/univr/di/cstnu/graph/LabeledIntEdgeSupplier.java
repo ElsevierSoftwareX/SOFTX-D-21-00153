@@ -6,21 +6,23 @@ package it.univr.di.cstnu.graph;
 import java.lang.reflect.Array;
 import java.util.logging.Logger;
 
-import org.apache.commons.collections15.Factory;
+import com.google.common.base.Supplier;
 
 import it.univr.di.labeledvalue.LabeledIntMap;
 
 /**
+ * LabeledIntEdgePluggabble supplier.
+ * 
  * @author posenato
  * @param <C>
  */
-public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<LabeledIntEdge> {
+public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier<LabeledIntEdge> {
 
 	/**
 	 * class logger
 	 */
 	@SuppressWarnings("unused")
-	static private Logger LOG = Logger.getLogger(LabeledIntEdgeFactory.class.getName());
+	static private Logger LOG = Logger.getLogger(LabeledIntEdgeSupplier.class.getName());
 
 	/**
 	 * 
@@ -34,7 +36,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	/**
 	 * @param labeledIntMapImplementation
 	 */
-	public LabeledIntEdgeFactory(Class<C> labeledIntMapImplementation) {
+	public LabeledIntEdgeSupplier(Class<C> labeledIntMapImplementation) {
 		super();
 		this.labeledIntValueMapImpl = labeledIntMapImplementation;
 		this.internal = new LabeledIntEdgePluggable(labeledIntMapImplementation);
@@ -43,7 +45,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	/**
 	 * @return a new LabeledIntMap concrete object.
 	 */
-	public LabeledIntEdgePluggable create() {
+	public LabeledIntEdgePluggable get() {
 		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(this.labeledIntValueMapImpl);
 	}
 
@@ -51,7 +53,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	 * @param lim
 	 * @return a new LabeledIntMap concrete object.
 	 */
-	public LabeledIntEdgePluggable create(LabeledIntEdge lim) {
+	public LabeledIntEdgePluggable get(LabeledIntEdge lim) {
 		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(lim, this.labeledIntValueMapImpl);
 	}
 
@@ -59,7 +61,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	 * @param name a name for the new edge
 	 * @return a new LabeledIntMap concrete object.
 	 */
-	public LabeledIntEdgePluggable create(String name) {
+	public LabeledIntEdgePluggable get(String name) {
 		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(name, this.labeledIntValueMapImpl);
 	}
 
@@ -67,7 +69,7 @@ public class LabeledIntEdgeFactory<C extends LabeledIntMap> implements Factory<L
 	 * @param n dimension
 	 * @return a new LabeledIntEdge array of size n.
 	 */
-	public LabeledIntEdgePluggable[] create(int n) {
+	public LabeledIntEdgePluggable[] get(int n) {
 		return (LabeledIntEdgePluggable[]) Array.newInstance(this.internal.getClass(), n);
 	}
 

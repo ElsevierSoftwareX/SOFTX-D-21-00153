@@ -169,16 +169,16 @@ public class LabeledIntTreeMapTest {
 	/**
 	 * 
 	 */
-	LabeledIntMap actual = this.factory.create();
+	LabeledIntMap actual = this.factory.get();
 	/**
 	 * 
 	 */
-	LabeledIntMap actual1 = this.factory.create();
+	LabeledIntMap actual1 = this.factory.get();
 
 	/**
 	 * 
 	 */
-	LabeledIntMap expected = this.factory.create();
+	LabeledIntMap expected = this.factory.get();
 
 	/**
 	 * Check if the management of the base is correct.

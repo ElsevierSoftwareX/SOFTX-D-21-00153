@@ -17,7 +17,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.commons.collections15.Transformer;
+import com.google.common.base.Function;
 
 import edu.uci.ics.jung.graph.Hypergraph;
 import edu.uci.ics.jung.io.GraphIOException;
@@ -74,15 +74,15 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	/**
 	 * LabeledIntEdge transformer
 	 */
-	Transformer<EdgeMetadata, LabeledIntEdge> edgeTransformer = new Transformer<EdgeMetadata, LabeledIntEdge>() {
+	Function<EdgeMetadata, LabeledIntEdge> edgeFunction = new Function<EdgeMetadata, LabeledIntEdge>() {
 		Pattern pattern = Pattern.compile("^e[0-9]+$");
 
 		@Override
-		public LabeledIntEdge transform(final EdgeMetadata metaData) {
+		public LabeledIntEdge apply(final EdgeMetadata metaData) {
 			// final boolean optimized =
 			// Boolean.getBoolean(metaData.getProperty("Optimized"));
-			LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(GraphMLReader.this.mapTypeImplementation);
-			final LabeledIntEdge e = edgeFactory.create();
+			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(GraphMLReader.this.mapTypeImplementation);
+			final LabeledIntEdge e = edgeFactory.get();
 			final String name = metaData.getId();
 			e.setName(metaData.getId());
 			if (this.pattern.matcher(name).matches()) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the mouse
@@ -129,10 +129,10 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	protected Reader fileReader;
 
 	/**
-	 * Just to satisfy requirements, a trivial LabeledIntGraph Transformer.
+	 * Just to satisfy requirements, a trivial LabeledIntGraph Function.
 	 */
-	protected Transformer<GraphMetadata, LabeledIntGraph> graphTransformer = new Transformer<GraphMetadata, LabeledIntGraph>() {
-		public LabeledIntGraph transform(final GraphMetadata metaData) {
+	protected Function<GraphMetadata, LabeledIntGraph> graphFunction = new Function<GraphMetadata, LabeledIntGraph>() {
+		public LabeledIntGraph apply(final GraphMetadata metaData) {
 			final String name = metaData.getProperty("Name");
 			// final boolean optimized = Boolean.getBoolean(metaData.getProperty("Optimized"));
 			LabeledIntGraph graph = new LabeledIntGraph(name, GraphMLReader.this.mapTypeImplementation, GraphMLReader.this.aLabelAlphabet);
@@ -142,11 +142,11 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	/**
 	 * HyperEdgeMetadata transformer that it is necessary to GraphMLreader2 but it not used.
 	 */
-	Transformer<HyperEdgeMetadata, LabeledIntEdge> hyperEdgeTransformer = new Transformer<HyperEdgeMetadata, LabeledIntEdge>() {
+	Function<HyperEdgeMetadata, LabeledIntEdge> hyperEdgeFunction = new Function<HyperEdgeMetadata, LabeledIntEdge>() {
 		@Override
-		public LabeledIntEdge transform(final HyperEdgeMetadata metadata) {
-			LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(GraphMLReader.this.mapTypeImplementation);
-			final LabeledIntEdge e = edgeFactory.create();
+		public LabeledIntEdge apply(final HyperEdgeMetadata metadata) {
+			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(GraphMLReader.this.mapTypeImplementation);
+			final LabeledIntEdge e = edgeFactory.get();
 			return e;
 		}
 	};
@@ -164,14 +164,14 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	final protected ElementParserRegistry<LabeledIntGraph, LabeledNode, LabeledIntEdge> parserRegistry;
 
 	/**
-	 * Vertex Transformer
+	 * Vertex Function
 	 */
-	protected Transformer<NodeMetadata, LabeledNode> vertexTransformer = new Transformer<NodeMetadata, LabeledNode>() {
+	protected Function<NodeMetadata, LabeledNode> vertexFunction = new Function<NodeMetadata, LabeledNode>() {
 		Pattern pattern = Pattern.compile("^n[0-9]+$");
 
 		@Override
-		public LabeledNode transform(final NodeMetadata metaData) {
-			final LabeledNode v = LabeledNode.getFactory().create();
+		public LabeledNode apply(final NodeMetadata metaData) {
+			final LabeledNode v = LabeledNode.getFactory().get();
 			final String name = metaData.getId();
 			v.setName(metaData.getId());
 			if (this.pattern.matcher(name).matches()) {// check the LabeledNode.getFactory(): there you can find/define the format name create using the mouse in the
@@ -225,7 +225,7 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 		this.fileReader = fileReader;
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
 		this.aLabelAlphabet = new ALabelAlphabet();
-		this.parserRegistry = new ElementParserRegistry<>(this.document.getKeyMap(), this.graphTransformer, this.vertexTransformer, this.edgeTransformer, this.hyperEdgeTransformer);
+		this.parserRegistry = new ElementParserRegistry<>(this.document.getKeyMap(), this.graphFunction, this.vertexFunction, this.edgeFunction, this.hyperEdgeFunction);
 	}
 
 	/**
@@ -250,10 +250,10 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 		} finally {
 			this.fileReader = null;
 			this.xmlEventReader = null;
-			this.graphTransformer = null;
-			this.vertexTransformer = null;
-			this.edgeTransformer = null;
-			this.hyperEdgeTransformer = null;
+			this.graphFunction = null;
+			this.vertexFunction = null;
+			this.edgeFunction = null;
+			this.hyperEdgeFunction = null;
 		}
 	}
 
@@ -262,8 +262,8 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	 *
 	 * @return the current transformer.
 	 */
-	public Transformer<EdgeMetadata, LabeledIntEdge> getEdgeTransformer() {
-		return this.edgeTransformer;
+	public Function<EdgeMetadata, LabeledIntEdge> getEdgeFunction() {
+		return this.edgeFunction;
 	}
 
 	/**
@@ -280,8 +280,8 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	 *
 	 * @return the current transformer.
 	 */
-	public Transformer<GraphMetadata, LabeledIntGraph> getGraphTransformer() {
-		return this.graphTransformer;
+	public Function<GraphMetadata, LabeledIntGraph> getGraphFunction() {
+		return this.graphFunction;
 	}
 
 	/**
@@ -289,8 +289,8 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	 *
 	 * @return the current transformer.
 	 */
-	public Transformer<HyperEdgeMetadata, LabeledIntEdge> getHyperEdgeTransformer() {
-		return this.hyperEdgeTransformer;
+	public Function<HyperEdgeMetadata, LabeledIntEdge> getHyperEdgeFunction() {
+		return this.hyperEdgeFunction;
 	}
 
 	/**
@@ -298,8 +298,8 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	 *
 	 * @return the current transformer.
 	 */
-	public Transformer<NodeMetadata, LabeledNode> getVertexTransformer() {
-		return this.vertexTransformer;
+	public Function<NodeMetadata, LabeledNode> getVertexFunction() {
+		return this.vertexFunction;
 	}
 
 	/**

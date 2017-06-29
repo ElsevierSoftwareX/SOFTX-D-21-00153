@@ -21,7 +21,7 @@ import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.cstnu.visualization.StaticLayout;
-import it.univr.di.cstnu.graph.LabeledIntEdgeFactory;
+import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.ALabel;
@@ -1125,11 +1125,11 @@ public class CSTNU extends CSTNir {
 		// clone all edges giving the right new endpoints corresponding the old ones.
 		// we do not add edges connecting nodes in not consistent scenarios (such edges have only unknown labels).
 		AbstractLabeledIntEdge eNew;
-		LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = allMax.getEdgeFactory();
+		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = allMax.getEdgeFactory();
 		for (final LabeledIntEdge e : this.g.getEdges()) {
 			if (!this.g.getSource(e).getLabel().isConsistentWith(this.g.getDest(e).getLabel()))
 				continue;
-			eNew = edgeFactory.create(e);
+			eNew = edgeFactory.get(e);
 			eNew.setConstraintType(ConstraintType.normal);
 			eNew.getLowerLabelMap().clear();
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getUpperLabelSet()) {
@@ -1174,7 +1174,7 @@ public class CSTNU extends CSTNir {
 			// It is necessary to check here the edge before to consider the second edge.
 			// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
 
-			edgeCopy = this.g.getEdgeFactory().create(AB);
+			edgeCopy = this.g.getEdgeFactory().get(AB);
 			if (A.isObservator()) {
 				// R0 on the resulting new values
 				labelModificationR0(A, B, Z, AB);
@@ -1208,7 +1208,7 @@ public class CSTNU extends CSTNir {
 				AC = this.g.findEdge(A, C);
 				// I need to preserve the old edge to compare below
 				if (AC != null) {
-					edgeCopy = this.g.getEdgeFactory().create(AC);
+					edgeCopy = this.g.getEdgeFactory().get(AC);
 				} else {
 					AC = makeNewEdge(A.getName() + "_" + C.getName(), LabeledIntEdge.ConstraintType.derived);
 					edgeCopy = null;
@@ -1254,7 +1254,7 @@ public class CSTNU extends CSTNir {
 				CB = this.g.findEdge(C, B);
 				// I need to preserve the old edge to compare below
 				if (CB != null) {
-					edgeCopy = this.g.getEdgeFactory().create(CB);
+					edgeCopy = this.g.getEdgeFactory().get(CB);
 				} else {
 					CB = makeNewEdge(C.getName() + "_" + B.getName(), LabeledIntEdge.ConstraintType.derived);
 					edgeCopy = null;

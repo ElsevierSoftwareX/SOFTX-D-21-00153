@@ -221,7 +221,7 @@ public class Luke2GraphML {
 
 		LabeledNode sourceNode = int2Node.get(Integer.valueOf(nodeParts[1]));
 		LabeledNode destNode = int2Node.get(Integer.valueOf(nodeParts[2]));
-		LabeledIntEdge edge = g.getEdgeFactory().create(sourceNode.name + "-" + destNode.name);
+		LabeledIntEdge edge = g.getEdgeFactory().get(sourceNode.name + "-" + destNode.name);
 		Label label = null;
 		String[] labelParts = null;
 		while (reader.ready()) {

@@ -128,6 +128,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 
 		@Override
+		@Deprecated
 		public Integer getValue() {
 			return this.value;
 		}
