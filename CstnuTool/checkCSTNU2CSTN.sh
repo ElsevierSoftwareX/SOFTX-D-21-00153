@@ -2,7 +2,7 @@
 #
 #	-Djava.util.logging.config.file=~/RandomTemplateSampler/conf/logging.properties \
 	#-Djava.util.logging.config.file=../logging.properties \
-java -classpath ../CSTNU-1.* \
+java -classpath CSTNU-1.** \
     -d64 \
     -XX:-UseAdaptiveSizePolicy \
     -XX:+UseConcMarkSweepGC \

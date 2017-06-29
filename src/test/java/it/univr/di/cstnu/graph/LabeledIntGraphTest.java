@@ -22,8 +22,8 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
 public class LabeledIntGraphTest {
 
 	@SuppressWarnings("javadoc")
-	static LabeledIntEdgeFactory<LabeledIntTreeMap> edgeWithOUTNodeSetFactory = new LabeledIntEdgeFactory<>(LabeledIntTreeMap.class);
-	// static LabeledIntEdgeFactory<LabeledIntNodeSetTreeMap> edgeWithNodeSetFactory = new LabeledIntEdgeFactory<>(LabeledIntNodeSetTreeMap.class);
+	static LabeledIntEdgeSupplier<LabeledIntTreeMap> edgeWithOUTNodeSetFactory = new LabeledIntEdgeSupplier<>(LabeledIntTreeMap.class);
+	// static LabeledIntEdgeSupplier<LabeledIntNodeSetTreeMap> edgeWithNodeSetFactory = new LabeledIntEdgeSupplier<>(LabeledIntNodeSetTreeMap.class);
 
 	@SuppressWarnings({ "static-method", "javadoc" })
 	@Test
@@ -80,9 +80,9 @@ public class LabeledIntGraphTest {
 
 		g.addVertex(new LabeledNode("Z"));
 		g.addVertex(new LabeledNode("X"));
-		g.addEdge(edgeWithOUTNodeSetFactory.create("ZX"), "Z", "X");
-		g.addEdge(edgeWithOUTNodeSetFactory.create("ZX"), "X", "Z");
-		g.addEdge(edgeWithOUTNodeSetFactory.create("XZ"), "X", "Z");
+		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "Z", "X");
+		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "X", "Z");
+		g.addEdge(edgeWithOUTNodeSetFactory.get("XZ"), "X", "Z");
 
 		assertEquals(g.getVertexCount(), 2);
 		assertEquals(g.getEdgeCount(), 2);
@@ -97,9 +97,9 @@ public class LabeledIntGraphTest {
 		LabeledNode Z = new LabeledNode("Z");
 		g.addVertex(Z);
 		g.addVertex(X);
-		g.addEdge(edgeWithOUTNodeSetFactory.create("ZX"), Z, X);
-		g.addEdge(edgeWithOUTNodeSetFactory.create("ZX"), "X", "Z");
-		g.addEdge(edgeWithOUTNodeSetFactory.create("XZ"), X, Z);
+		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), Z, X);
+		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "X", "Z");
+		g.addEdge(edgeWithOUTNodeSetFactory.get("XZ"), X, Z);
 
 		g.removeVertex(X);
 		assertEquals(g.getVertexCount(), 1);

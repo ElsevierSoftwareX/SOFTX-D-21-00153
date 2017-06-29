@@ -295,7 +295,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			}
 
 			LabeledIntMapFactory<LabeledIntMap> mapFactory = new LabeledIntMapFactory<>();
-			final LabeledIntMap comp = mapFactory.create();
+			final LabeledIntMap comp = mapFactory.get();
 			Label l;
 			String s, is;
 			// It is more safe to build a new Label set and put substitute the old one with the present.

@@ -25,7 +25,7 @@ import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
 import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdgeFactory;
+import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.labeledvalue.Constants;
@@ -317,7 +317,7 @@ public class CSTNRunningTime {
 		}
 
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
-		LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(g.getInternalLabeledValueMapImplementationClass());
+		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(g.getInternalLabeledValueMapImplementationClass());
 		GraphMLReader<LabeledIntGraph> graphMLReader;
 
 		CSTN cstn = null;
@@ -363,7 +363,7 @@ public class CSTNRunningTime {
 						System.out.println("Removing all edge values equal to " + tester.removeValue + "...");
 					if (tester.cuttingEdgeFactor > 1) {
 						for (LabeledIntEdge e : g.getEdgesArray()) {
-							LabeledIntEdgePluggable e1 = edgeFactory.create(e);
+							LabeledIntEdgePluggable e1 = edgeFactory.get(e);
 							for (Entry<Label> entry : e.getLabeledValueSet()) {
 								int v = entry.getIntValue() / tester.cuttingEdgeFactor;
 								e1.mergeLabeledValue(entry.getKey(), v);
@@ -380,7 +380,7 @@ public class CSTNRunningTime {
 					if (tester.removeValue != Constants.INT_NULL) {
 						int value = tester.removeValue;
 						for (LabeledIntEdge e : g.getEdgesArray()) {
-							LabeledIntEdge e1 = edgeFactory.create(e);
+							LabeledIntEdge e1 = edgeFactory.get(e);
 							for (Entry<Label> entry : e.getLabeledValueSet()) {
 								int v = entry.getIntValue();
 								if (v == value)

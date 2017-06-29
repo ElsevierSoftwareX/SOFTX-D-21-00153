@@ -23,7 +23,7 @@ import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdgeFactory;
+import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.visualization.StaticLayout;
@@ -255,7 +255,7 @@ public class CSTNURunningTime {
 		LabeledIntGraph g;
 		CSTNU cstnu;
 		CSTNU.CSTNUCheckStatus status = new CSTNUCheckStatus();
-		LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeFactory<>(labeledIntValueMap);
+		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
 		GraphMLReader<LabeledIntGraph> graphMLReader;
 
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
@@ -278,7 +278,7 @@ public class CSTNURunningTime {
 					System.out.println("Removing all edge values equal to " + tester.removeValue + "...");
 				if (tester.cuttingEdgeFactor > 1) {
 					for (LabeledIntEdge e : g.getEdgesArray()) {
-						LabeledIntEdgePluggable e1 = edgeFactory.create(e);
+						LabeledIntEdgePluggable e1 = edgeFactory.get(e);
 						for (Entry<Label> entry : e.getLabeledValueSet()) {
 							int v = entry.getIntValue() / tester.cuttingEdgeFactor;
 							e1.mergeLabeledValue(entry.getKey(), v);
@@ -295,7 +295,7 @@ public class CSTNURunningTime {
 				if (tester.removeValue != Constants.INT_NULL) {
 					int value = tester.removeValue;
 					for (LabeledIntEdge e : g.getEdgesArray()) {
-						LabeledIntEdge e1 = edgeFactory.create(e);
+						LabeledIntEdge e1 = edgeFactory.get(e);
 						for (Entry<Label> entry : e.getLabeledValueSet()) {
 							int v = entry.getIntValue();
 							if (v == value)

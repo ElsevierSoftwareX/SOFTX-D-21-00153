@@ -10,12 +10,9 @@ import java.awt.Stroke;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.functors.ConstantTransformer;
-import org.apache.commons.lang.NotImplementedException;
+import com.google.common.base.Function;
 
 import edu.uci.ics.jung.visualization.RenderContext;
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import edu.uci.ics.jung.visualization.picking.PickedInfo;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
@@ -40,7 +37,8 @@ import it.univr.di.labeledvalue.LabeledIntMap;
 public abstract class AbstractLabeledIntEdge extends AbstractComponent implements LabeledIntEdge {
 
 	/**
-	 * Represents a pair (Label, String). 
+	 * Represents a pair (Label, String).
+	 * 
 	 * @author posenato
 	 */
 	static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
@@ -71,7 +69,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 		@Override
 		public boolean equals(Object o) {
-			if (o==null || !(o instanceof InternalEntry))
+			if (o == null || !(o instanceof InternalEntry))
 				return false;
 			InternalEntry e = (InternalEntry) o;
 			return this.label.equals(e.label) && this.aLabel.equals(e.aLabel);
@@ -86,12 +84,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		public ALabel getValue() {
 			return this.aLabel;
 		}
-		
+
 		@Override
 		public int hashCode() {
-			return this.label.hashCode()+1000*this.aLabel.hashCode();
+			return this.label.hashCode() + 1000 * this.aLabel.hashCode();
 		}
-		
+
 		@Override
 		public ALabel setValue(ALabel value) {
 			ALabel old = new ALabel(this.aLabel);
@@ -101,7 +99,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 		@Override
 		public String toString() {
-			return "("+this.aLabel+", "+this.label+")";
+			return "(" + this.aLabel + ", " + this.label + ")";
 		}
 
 	}
@@ -125,20 +123,66 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	// new BasicStroke(0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	/**
-	 * A transformer to return a font for edge label.
+	 * Select how to draw an edge given its type.
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static final Transformer<LabeledIntEdge, Font> edgeFontTransformer = new ConstantTransformer(new Font("Helvetica", Font.PLAIN, 14));
+	public final static Function<LabeledIntEdge, Stroke> edgeStrokeTransformer = new Function<LabeledIntEdge, Stroke>() {
+		@Override
+		public Stroke apply(final LabeledIntEdge s) {
+			switch (s.getConstraintType()) {
+			case normal:
+				return AbstractLabeledIntEdge.normalEdgeStroke;
+			case contingent:
+				return AbstractLabeledIntEdge.contingentEdgeStroke;
+			case constraint:
+				return AbstractLabeledIntEdge.constraintEdgeStroke;
+			default:
+				return AbstractLabeledIntEdge.derivedEdgeStroke;
+			}
+		}
+	};
 
 	/**
-	 * A transformer to return a label for the edge
+	 * Font for edge label rendering
 	 */
-	public static final ToStringLabeller<LabeledIntEdge> edgeLabelTransformer = new ToStringLabeller<LabeledIntEdge>() {
+	public final static Function<LabeledIntEdge, Font> edgeFontFunction = new Function<LabeledIntEdge, Font>() {
+		/**
+		 * 
+		 */
+		protected boolean bold = false;
+		/**
+		 * 
+		 */
+		Font f = new Font("Helvetica", Font.PLAIN, 14);
+		/**
+		 * 
+		 */
+		Font b = new Font("Helvetica", Font.BOLD, 14);
+
+		/**
+		 * @param bold
+		 */
+		@SuppressWarnings("unused")
+		public void setBold(boolean bold) {
+			this.bold = bold;
+		}
+
+		@Override
+		public Font apply(LabeledIntEdge e) {
+			if (this.bold)
+				return this.b;
+			return this.f;
+		}
+	};
+	
+	
+	/**
+	 * Font for edge label rendering
+	 */
+	public final static Function<LabeledIntEdge, String> edgeLabelFunction = new Function<LabeledIntEdge, String>() {
 		/**
 		 * Returns a label for the edge
 		 */
-		@Override
-		public String transform(final LabeledIntEdge e) {
+		public String apply(final LabeledIntEdge e) {
 			final StringBuffer sb = new StringBuffer();
 			sb.append((e.getName().length() == 0 ? "''" : e.getName()));
 			sb.append("; ");
@@ -158,25 +202,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		}
 	};
 
-	/**
-	 * Select how to draw an edge given its type.
-	 */
-	public final static Transformer<LabeledIntEdge, Stroke> edgeStrokeTransformer = new Transformer<LabeledIntEdge, Stroke>() {
-		@Override
-		public Stroke transform(final LabeledIntEdge s) {
-			switch (s.getConstraintType()) {
-			case normal:
-				return AbstractLabeledIntEdge.normalEdgeStroke;
-			case contingent:
-				return AbstractLabeledIntEdge.contingentEdgeStroke;
-			case constraint:
-				return AbstractLabeledIntEdge.constraintEdgeStroke;
-			default:
-				return AbstractLabeledIntEdge.derivedEdgeStroke;
-			}
-		}
-	};
-
+		
+	
 	/**
 	 * To provide a unique id for the default creation of component.
 	 */
@@ -202,28 +229,23 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * Returns a transformer to select the color that is used to draw the edge. This transformer uses the type and the state of the edge to select the color.
 	 * 
 	 * @param <K>
-	 * @param pi
-	 *            a {@link PickedInfo} object.
-	 * @param pickedPaint
-	 *            a {@link java.awt.Paint} object.
-	 * @param normalPaint
-	 *            a {@link java.awt.Paint} object.
-	 * @param contingentPaint
-	 *            a {@link java.awt.Paint} object.
-	 * @param derivedPaint
-	 *            a {@link java.awt.Paint} object.
+	 * @param pi a {@link PickedInfo} object.
+	 * @param pickedPaint a {@link java.awt.Paint} object.
+	 * @param normalPaint a {@link java.awt.Paint} object.
+	 * @param contingentPaint a {@link java.awt.Paint} object.
+	 * @param derivedPaint a {@link java.awt.Paint} object.
 	 * @return a transformer object to draw an edge with a different color when it is picked.
 	 */
-	public static final <K extends LabeledIntEdge> Transformer<K, Paint> edgeDrawPaintTransformer(final PickedInfo<K> pi,
+	public static final <K extends LabeledIntEdge> Function<K, Paint> edgeDrawPaintTransformer(final PickedInfo<K> pi,
 			final Paint pickedPaint,
 			final Paint normalPaint,
 			final Paint contingentPaint, final Paint derivedPaint) {
 
 		final Paint[] paintMap = new Paint[] { normalPaint, contingentPaint, derivedPaint, derivedPaint, normalPaint };
 
-		return new Transformer<K, Paint>() {
+		return new Function<K, Paint>() {
 			@Override
-			public Paint transform(final K e) {
+			public Paint apply(final K e) {
 				if (e == null)
 					return normalPaint;
 				// LabeledIntEdge.LOG.finer("LabeledIntEdge: " + e + ", picked: " + pi.isPicked(e));
@@ -243,16 +265,16 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * @param derivedPaint
 	 * @return a transformer object to fill an edge 'area' with a color depending on edge type.
 	 */
-	static final Transformer<LabeledIntEdge, Paint> edgeFillPaintTransformer(final Paint normalPaint,
+	static final Function<LabeledIntEdge, Paint> edgeFillPaintTransformer(final Paint normalPaint,
 			final Paint contingentPaint, final Paint derivedPaint) {
-		return new Transformer<LabeledIntEdge, Paint>() {
+		return new Function<LabeledIntEdge, Paint>() {
 			/**
 			 * logger
 			 */
 			final Paint[] paintMap = { normalPaint, contingentPaint, derivedPaint };
 
 			@Override
-			public Paint transform(final LabeledIntEdge e) {
+			public Paint apply(final LabeledIntEdge e) {
 				if (e == null)
 					return normalPaint;
 				return this.paintMap[e.getConstraintType().ordinal()];
@@ -336,7 +358,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public void clearLabels() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -351,12 +373,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public LabeledIntEdge createLabeledIntEdge() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
 	public LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -388,12 +410,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public LabeledIntMap getLabeledValueMap() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -423,22 +445,22 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public int getMinValue() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
 	public int getMinValueAmongLabelsWOUnknown() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
 	public int getMinValueConsistentWith(Label l) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
 	public int getMinValueConsistentWith(Label l, ALabel upperL) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -463,7 +485,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public int getValue(Label label) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -489,17 +511,17 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public boolean mergeLabeledValue(Label l, int i) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
-//	@Override
-//	public boolean mergeLabeledValue(Label l, int i, ObjectSet<ALabel> s) {
-//		throw new NotImplementedException("Core class.");
-//	}
+	// @Override
+	// public boolean mergeLabeledValue(Label l, int i, ObjectSet<ALabel> s) {
+	// throw new UnsupportedOperationException("Core class.");
+	// }
 
 	@Override
 	public void mergeLabeledValue(LabeledIntMap map) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	/**
@@ -526,7 +548,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		if ((value != Constants.INT_NULL) && (value <= i)) {
 			if (Debug.ON)
 				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains ("
-					+ l + ", " + value + ").");
+						+ l + ", " + value + ").");
 			return false;
 		}
 		return this.lowerLabel.mergeTriple(l, nodeName, i, false);
@@ -535,7 +557,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	@Override
 	public final boolean mergeUpperLabelValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
-			throw new IllegalArgumentException("The label or the value has a not admitted value: (" + l +", " + nodeName +", "+ Constants.formatInt(i)+").");
+			throw new IllegalArgumentException(
+					"The label or the value has a not admitted value: (" + l + ", " + nodeName + ", " + Constants.formatInt(i) + ").");
 		InternalEntry se = new InternalEntry(l, nodeName);
 		final int oldValue = this.removedUpperLabel.getInt(se);
 		if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
@@ -543,22 +566,22 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			// A labeled value with a value equal or smaller will be modified again.
 			if (Debug.ON)
 				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the previous (" + l + ", " + nodeName + ", "
-					+ oldValue + ") is in the removed list");
+						+ oldValue + ") is in the removed list");
 			return false;
 		}
-		this.putUpperLabeledValueToRemovedList(l, nodeName, i);//once it has been added, it is useless to add it again!
+		this.putUpperLabeledValueToRemovedList(l, nodeName, i);// once it has been added, it is useless to add it again!
 		final int value = getValue(l);
 		if ((value != Constants.INT_NULL) && (value <= i)) {
 			if (Debug.ON)
 				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value
-					+ ").");
+						+ ").");
 			return false;
 		}
 		return this.upperLabel.mergeTriple(l, nodeName, i, false);
 	}
 
 	public boolean putLabeledValue(Label l, int i) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -573,7 +596,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public int removeLabel(Label l) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -605,7 +628,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public void setLabeledValue(LabeledIntMap labeledValue) {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	// /**
@@ -617,7 +640,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public int size() {
-		throw new NotImplementedException("Core class.");
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override

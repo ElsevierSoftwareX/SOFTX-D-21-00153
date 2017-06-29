@@ -3,10 +3,9 @@
  */
 package it.univr.di.cstnu.graph;
 
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
+import com.google.common.base.Function;
+import com.google.common.base.Supplier;
 
-import edu.uci.ics.jung.visualization.decorators.ToStringLabeller;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
@@ -20,21 +19,20 @@ import it.univr.di.labeledvalue.Literal;
 public class LabeledNode extends AbstractComponent {
 
 	/**
-	 * <p>
-	 * getFactory.
-	 * </p>
-	 *
-	 * @return a factory to build empty nodes.
+	 * Factory as Supplier type.
+
+	 * @return a supplier to get empty nodes.
 	 */
-	public static Factory<LabeledNode> getFactory() {
-		return new Factory<LabeledNode>() {
+	public static Supplier<LabeledNode> getFactory() {
+		return new Supplier<LabeledNode>() {
 			@Override
-			public LabeledNode create() {
+			public LabeledNode get() {
 				return new LabeledNode("n" + idSeq++, Label.emptyLabel);// if you change this default, change also in GraphMLReader
 			}
 		};
 	}
 
+	
 	/**
 	 *
 	 */
@@ -43,9 +41,11 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Used to show the node name.
 	 */
-	public static Transformer<LabeledNode, String> vertexLabelTransformer = new ToStringLabeller<LabeledNode>() {
-		@Override
-		public String transform(final LabeledNode v) {
+	public final static Function<LabeledNode, String> vertexLabelTransformer = new Function<LabeledNode, String>() {
+		/**
+		 * Returns a label for the node
+		 */
+		public String apply(final LabeledNode v) {
 			return v.getName() + (v.getLabel().isEmpty() ? "" : "_[" + v.getLabel() + "]");
 		}
 	};
@@ -53,9 +53,9 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Transformer object to show the tooltip of node: the label is print.
 	 */
-	public static Transformer<LabeledNode, String> vertexToolTipTransformer = new ToStringLabeller<LabeledNode>() {
+	public static Function<LabeledNode, String>  vertexToolTipTransformer = new Function<LabeledNode, String>()  {
 		@Override
-		public String transform(final LabeledNode v) {
+		public String apply(final LabeledNode v) {
 			return "Label: " + v.getLabel().toString();
 		}
 	};

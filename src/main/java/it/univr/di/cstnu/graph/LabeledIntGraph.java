@@ -113,7 +113,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * Factory
 	 */
-	private LabeledIntEdgeFactory<? extends LabeledIntMap> edgeFactory;
+	private LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory;
 
 	/**
 	 * Adjacency grow factor; It represents the multiplication factor to use for increasing the dimension of adjacency matrix. It has to be at least 1.5.
@@ -186,7 +186,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		if (internalMapImplementationClass.isInterface())
 			throw new IllegalArgumentException("Parameter cannot be an interface. It must be a name of implementation class.");
 		this.internalMapImplementationClass = internalMapImplementationClass;
-		this.edgeFactory = new LabeledIntEdgeFactory<>(internalMapImplementationClass);
+		this.edgeFactory = new LabeledIntEdgeSupplier<>(internalMapImplementationClass);
 		this.order = 0;
 		this.adjacency = createAdjacency(10);
 		this.nodeName2index = new Object2IntOpenHashMap<>();
@@ -235,7 +235,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// clone all edges giving the right new endpoints corresponding the old ones.
 		AbstractLabeledIntEdge eNew;
 		for (final LabeledIntEdge e : g.getEdges()) {
-			eNew = this.edgeFactory.create(e);
+			eNew = this.edgeFactory.get(e);
 			addEdge(eNew, g.getSource(e).name, g.getDest(e).name);
 		}
 	}
@@ -454,7 +454,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 		// Clone all edges giving the right new endpoints corresponding the old ones.
 		for (final LabeledIntEdge e : g.getEdges()) {
-			addEdge(this.edgeFactory.create(e), g.getSource(e).name, g.getDest(e).name);
+			addEdge(this.edgeFactory.get(e), g.getSource(e).name, g.getDest(e).name);
 		}
 	}
 
@@ -489,7 +489,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		int value;
 		Label label;
 		for (final LabeledIntEdge e : g.getEdges()) {
-			eNew = this.edgeFactory.create();
+			eNew = this.edgeFactory.get();
 			eNew.setName(e.getName());
 			eNew.setConstraintType(e.getConstraintType());
 			for (Object2IntMap.Entry<Label> entry : e.getLabeledValueSet()) {
@@ -516,7 +516,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return a bi-dimensional size x size vector for containing T elements.
 	 */
 	private LabeledIntEdge[][] createAdjacency(int size) {
-		return (LabeledIntEdge[][]) Array.newInstance(this.edgeFactory.create().getClass(), size, size);
+		return (LabeledIntEdge[][]) Array.newInstance(this.edgeFactory.get().getClass(), size, size);
 	}
 
 	/**
@@ -642,7 +642,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return the edgeFactory
 	 */
-	public LabeledIntEdgeFactory<? extends LabeledIntMap> getEdgeFactory() {
+	public LabeledIntEdgeSupplier<? extends LabeledIntMap> getEdgeFactory() {
 		return this.edgeFactory;
 	}
 
@@ -666,7 +666,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the set of edges as an array ordered w.r.t the name of edge in ascending order.
 	 */
 	public LabeledIntEdge[] getEdgesArray() {
-		final LabeledIntEdge[] edgesA = this.getEdges().toArray(this.edgeFactory.create(this.getEdgeCount()));
+		final LabeledIntEdge[] edgesA = this.getEdges().toArray(this.edgeFactory.get(this.getEdgeCount()));
 		return edgesA;
 	}
 
@@ -675,7 +675,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * NON FUNZIONA... è come scrivere LabeledIntEdge[] getEdgesArray() {
 	 *
 	 * @return the set of edges as an array ordered w.r.t the name of edge in ascending order. @SuppressWarnings("unchecked") public <E extends LabeledIntEdge>
-	 *         E[] getEdgesArray() { final E[] edgesA = (E[]) this.getEdges().toArray(edgeFactory.createLabeledIntEdge(this.getEdgeCount())); return edgesA; }
+	 *         E[] getEdgesArray() { final E[] edgesA = (E[]) this.getEdges().toArray(edgeFactory.getLabeledIntEdge(this.getEdgeCount())); return edgesA; }
 	 */
 
 	@Override

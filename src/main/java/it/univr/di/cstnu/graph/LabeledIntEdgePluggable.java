@@ -57,7 +57,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	public <C extends LabeledIntMap> LabeledIntEdgePluggable(Class<C> labeledIntMapImplementation) {
 		super();
 		this.labeledValueMapFactory = new LabeledIntMapFactory<>(labeledIntMapImplementation);
-		this.labeledValue = this.labeledValueMapFactory.create();
+		this.labeledValue = this.labeledValueMapFactory.get();
 	}
 
 	/**
@@ -80,9 +80,9 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		super(e);
 		this.labeledValueMapFactory = new LabeledIntMapFactory<>(labeledIntMapImplementation);
 		if (e != null) {
-			this.labeledValue = this.labeledValueMapFactory.create(e.getLabeledValueMap());
+			this.labeledValue = this.labeledValueMapFactory.get(e.getLabeledValueMap());
 		} else {
-			this.labeledValue = this.labeledValueMapFactory.create();
+			this.labeledValue = this.labeledValueMapFactory.get();
 		}
 	}
 
@@ -95,7 +95,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	public <C extends LabeledIntMap> LabeledIntEdgePluggable(final String n, Class<C> labeledIntMapImplementation) {
 		super(n);
 		this.labeledValueMapFactory = new LabeledIntMapFactory<>(labeledIntMapImplementation);
-		this.labeledValue = this.labeledValueMapFactory.create();
+		this.labeledValue = this.labeledValueMapFactory.get();
 	}
 
 	/**
@@ -363,7 +363,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 
 	@Override
 	public void setLabeledValue(final LabeledIntMap labeledValue) {
-		LabeledIntMap map = this.labeledValueMapFactory.create();
+		LabeledIntMap map = this.labeledValueMapFactory.get();
 		for (Object2IntMap.Entry<Label> entry : labeledValue.entrySet()) {
 			map.put(entry.getKey(), entry.getIntValue());
 		}
