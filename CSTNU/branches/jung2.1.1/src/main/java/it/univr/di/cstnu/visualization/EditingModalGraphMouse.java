@@ -9,7 +9,7 @@ import java.awt.event.KeyEvent;
 
 import javax.swing.JComboBox;
 
-import org.apache.commons.collections15.Factory;
+import com.google.common.base.Supplier;
 
 import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.annotations.AnnotatingGraphMousePlugin;
@@ -104,7 +104,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	 */
 	@SuppressWarnings("unused")
 	private EditingModalGraphMouse(RenderContext<V,E> rc,
-			Factory<V> vertexFactory, Factory<E> edgeFactory) {
+			Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
 		this(rc, vertexFactory, edgeFactory, 1.1f, 1/1.1f);
 	}
 
@@ -114,7 +114,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	 * @param out override value for scale out
 	 */
 	private EditingModalGraphMouse(RenderContext<V,E> rc,
-			Factory<V> vertexFactory, Factory<E> edgeFactory, float in, float out) {
+			Supplier<V> vertexFactory, Supplier<E> edgeFactory, float in, float out) {
 		super(rc,vertexFactory, edgeFactory, in,out);
 	}
 
@@ -126,7 +126,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	 * @param vertexFactory a {@link org.apache.commons.collections15.Factory} object.
 	 * @param edgeFactory a {@link org.apache.commons.collections15.Factory} object.
 	 */
-	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Factory<V> vertexFactory, final Factory<E> edgeFactory, CSTNEditor cstnEditor) {
+	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Supplier<V> vertexFactory, final Supplier<E> edgeFactory, CSTNEditor cstnEditor) {
 		super(rc, vertexFactory,edgeFactory);//this constructor uses local loadPlugins but LabelEditingGraphMousePlugin cannot be initialized correctly.
 		this.cstnEditor = cstnEditor;
 		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<V, E>(this.cstnEditor);

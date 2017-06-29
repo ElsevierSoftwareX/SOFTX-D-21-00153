@@ -1,27 +1,27 @@
 package it.univr.di.cstnu.visualization;
 
 /**
- * Created on Jul 21, 2005 Copyright (c) 2005, the JUNG Project and the Regents of the University of California All rights reserved. This software is
- * open-source under the BSD license; see either "license.txt" or http://jung.sourceforge.net/license.txt for a description. [07/02/2012] Made seriazable by
+ * 
+ * [07/02/2012] Made seriazable by
  * Posenato
  */
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
-import java.util.Map;
 
-import org.apache.commons.collections15.Transformer;
+import com.google.common.base.Function;
+import com.google.common.cache.LoadingCache;
 
 import edu.uci.ics.jung.graph.Graph;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * Extends StaticLayout setting the following initializer:
- * static public Transformer<LabeledNode, Point2D> positionInitializer = new Transformer<LabeledNode, Point2D>() {
+ * static public Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
  * 
  * @Override
- * 			public Point2D transform(final LabeledNode v) {
+ * 			public Point2D apply(final LabeledNode v) {
  *           final Point2D p = new Point2D.Double(v.getX(), v.getY());
  *           return p;
  *           }
@@ -39,9 +39,9 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
 	 */
-	static public Transformer<LabeledNode, Point2D> positionInitializer = new Transformer<LabeledNode, Point2D>() {
+	static public Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
 		@Override
-		public Point2D transform(final LabeledNode v) {
+		public Point2D apply(final LabeledNode v) {
 			final Point2D p = new Point2D.Double(v.getX(), v.getY());
 			return p;
 		}
@@ -69,7 +69,7 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/**
 	 * @return the position of all vertices.
 	 */
-	public Map<LabeledNode, Point2D> getLocations() {
+	public LoadingCache<LabeledNode, Point2D> getLocations() {
 		return this.locations;
 	}
 

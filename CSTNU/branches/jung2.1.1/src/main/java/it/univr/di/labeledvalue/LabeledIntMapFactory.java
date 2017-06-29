@@ -5,13 +5,13 @@ package it.univr.di.labeledvalue;
 
 import java.util.logging.Logger;
 
-import org.apache.commons.collections15.Factory;
+import com.google.common.base.Supplier;
 
 /**
  * @author posenato <C> implementation class of LabeledIntMap interface.
  * @param <C> 
  */
-public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Factory<C> {
+public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supplier<C> {
 
 	/**
 	 * class logger
@@ -49,7 +49,7 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Fact
 	 * @return a new LabeledIntMap concrete object.
 	 */
 	@SuppressWarnings("unchecked")
-	public C create() {
+	public C get() {
 		return (C) this.internal.createLabeledIntMap();
 	}
 
@@ -58,7 +58,7 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Fact
 	 * @return a new LabeledIntMap concrete object.
 	 */
 	@SuppressWarnings("unchecked")
-	public C create(LabeledIntMap lim) {
+	public C get(LabeledIntMap lim) {
 		return (C) this.internal.createLabeledIntMap(lim);
 	}
 

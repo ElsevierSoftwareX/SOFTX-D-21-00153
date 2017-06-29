@@ -26,9 +26,9 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
 public class LabeledIntEdgeSimpleTest {
 
 	@SuppressWarnings("javadoc")
-	static LabeledIntEdgeFactory<LabeledIntTreeMap> edgeFactory = new LabeledIntEdgeFactory<>(LabeledIntTreeMap.class);
+	static LabeledIntEdgeSupplier<LabeledIntTreeMap> edgeFactory = new LabeledIntEdgeSupplier<>(LabeledIntTreeMap.class);
 	@SuppressWarnings("javadoc")
-	static Class<? extends LabeledIntMap> labeledValueClass = edgeFactory.create().labeledValueMapFactory.create().getClass();
+	static Class<? extends LabeledIntMap> labeledValueClass = edgeFactory.get().labeledValueMapFactory.get().getClass();
 	
 	/**
 	 * 
@@ -47,7 +47,7 @@ public class LabeledIntEdgeSimpleTest {
 	 */
 	@Test
 	public final void testToString() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		e.setConstraintType(ConstraintType.contingent);
 		e.mergeLabeledValue(Label.emptyLabel, 1);
@@ -62,7 +62,7 @@ public class LabeledIntEdgeSimpleTest {
 	 */
 	@Test
 	public final void testGetAllUpperCaseAndOrdinaryLabeledValuesSet() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		e.mergeLabeledValue(Label.emptyLabel, 1);
 		e.mergeUpperLabelValue(Label.emptyLabel, new ALabel("A", this.alpha), 0);
@@ -76,7 +76,7 @@ public class LabeledIntEdgeSimpleTest {
 	 */
 	@Test
 	public final void testGetUpperLabelValueLabelString() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		e.mergeLabeledValue(Label.emptyLabel, 1);
 		e.mergeUpperLabelValue(Label.emptyLabel, new ALabel("A", this.alpha), 0);
@@ -90,7 +90,7 @@ public class LabeledIntEdgeSimpleTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testMergeUpperLabeledValues() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		ALabel aleph = new ALabel("C1_E", new ALabelAlphabet());
 		aleph.conjunct(new ALetter("C3_E"));
@@ -106,7 +106,7 @@ public class LabeledIntEdgeSimpleTest {
 	@Test
 	public final void testMergeUpperLabeledValues1() {
 		this.alpha.clear();
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		LabeledIntMap map = AbstractLabeledIntMap.parse("{(-20, ab) }");
 		assertEquals(map.toString(), "{(-20, ab) }");
@@ -122,7 +122,7 @@ public class LabeledIntEdgeSimpleTest {
 		
 		assertEquals(e.toString(), "❮e; normal; {(-20, ab) (-∞, ¿ab) (-8, ¬b) (-17, b) }; UL: {(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯");
 		
-		LabeledIntEdgePluggable e1 = edgeFactory.create(e);
+		LabeledIntEdgePluggable e1 = edgeFactory.get(e);
 		
 		assertTrue(e.equalsLabeledValues(e1));
 	}
@@ -135,7 +135,7 @@ public class LabeledIntEdgeSimpleTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testMergeLabeledValueLabelInt() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		e.setConstraintType(ConstraintType.contingent);
 		e.mergeLabeledValue(Label.emptyLabel, 1);
@@ -151,7 +151,7 @@ public class LabeledIntEdgeSimpleTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testMergeLabeledValueLabelInt1() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		
 		e.setConstraintType(ConstraintType.contingent);
@@ -170,7 +170,7 @@ public class LabeledIntEdgeSimpleTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testPutLabeledValue() {
-		LabeledIntEdgePluggable e = edgeFactory.create();
+		LabeledIntEdgePluggable e = edgeFactory.get();
 		e.setName("e");
 		e.setConstraintType(ConstraintType.contingent);
 		e.mergeLabeledValue(Label.emptyLabel, 1);

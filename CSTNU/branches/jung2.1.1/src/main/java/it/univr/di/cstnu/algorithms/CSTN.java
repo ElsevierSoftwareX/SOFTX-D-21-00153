@@ -734,8 +734,8 @@ public class CSTN {
 			if (Z == null) {
 				// We add by authority!
 				Z = new LabeledNode(this.ZeroNodeName);
-				Z.setX(0.0);
-				Z.setY(0.0);
+				Z.setX(5.0);
+				Z.setY(5.0);
 				this.g.addVertex(Z);
 				if (Debug.ON && LOG.isLoggable(Level.WARNING))
 					LOG.log(Level.WARNING, "No " + this.ZeroNodeName + " node found: added!");
@@ -1428,7 +1428,7 @@ public class CSTN {
 		while (this.g.getEdge(name1) != null) {
 			name1 = name + "_" + i++;
 		}
-		final LabeledIntEdgePluggable e = this.g.getEdgeFactory().create(name1);
+		final LabeledIntEdgePluggable e = this.g.getEdgeFactory().get(name1);
 		e.setConstraintType(type);
 		return e;
 	}
@@ -1518,7 +1518,7 @@ public class CSTN {
 			// initAndCheck does not resolve completely a qStar.
 			// It is necessary to check here the edge before to consider the second edge.
 			// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
-			edgeCopy = this.g.getEdgeFactory().create(AB);
+			edgeCopy = this.g.getEdgeFactory().get(AB);
 			if (A.isObservator()) {
 				// R0 on the resulting new values
 				labelModificationR0(A, B, Z, AB);
@@ -1543,7 +1543,7 @@ public class CSTN {
 				AC = this.g.findEdge(A, C);
 				// I need to preserve the old edge to compare below
 				if (AC != null) {
-					edgeCopy = this.g.getEdgeFactory().create(AC);
+					edgeCopy = this.g.getEdgeFactory().get(AC);
 				} else {
 					AC = makeNewEdge(A.getName() + "_" + C.getName(), LabeledIntEdge.ConstraintType.derived);
 					edgeCopy = null;
@@ -1605,7 +1605,7 @@ public class CSTN {
 				CB = this.g.findEdge(C, B);
 				// I need to preserve the old edge to compare below
 				if (CB != null) {
-					edgeCopy = this.g.getEdgeFactory().create(CB);
+					edgeCopy = this.g.getEdgeFactory().get(CB);
 				} else {
 					CB = makeNewEdge(C.getName() + "_" + B.getName(), LabeledIntEdge.ConstraintType.derived);
 					edgeCopy = null;

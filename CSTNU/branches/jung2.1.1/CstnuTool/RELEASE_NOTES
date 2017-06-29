@@ -1,5 +1,12 @@
 RELEASE NOTES
 =============START SNIPPET: rn
+v1.20.0
+------
+	date:	2017-06-29
+	
+	Jung library has been upgraded to 2.1.1 version.
+	Such update required an adaptation of all GUI classes of the package.
+
 v1.10.0
 ------
 	date:	2017-06-22
