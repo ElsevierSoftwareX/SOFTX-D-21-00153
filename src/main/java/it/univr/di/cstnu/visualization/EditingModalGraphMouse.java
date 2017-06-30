@@ -52,16 +52,11 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 		protected ModalGraphMouse graphMouse;
 
 		/**
-		 * @param t
-		 *                t key
-		 * @param p
-		 *                p key
-		 * @param e
-		 *                e key
-		 * @param a
-		 *                a key, not used.
-		 * @param graphMouse
-		 *                a ModalGraphMouse object.
+		 * @param t t key
+		 * @param p p key
+		 * @param e e key
+		 * @param a a key, not used.
+		 * @param graphMouse a ModalGraphMouse object.
 		 */
 		public ModeKeyAdapter(final char t, final char p, final char e, final char a, final ModalGraphMouse graphMouse) {
 			this.t = t;
@@ -103,8 +98,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	 *
 	 */
 	@SuppressWarnings("unused")
-	private EditingModalGraphMouse(RenderContext<V,E> rc,
-			Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
+	private EditingModalGraphMouse(RenderContext<V,E> rc, Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
 		this(rc, vertexFactory, edgeFactory, 1.1f, 1/1.1f);
 	}
 
@@ -113,8 +107,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	 * @param in override value for scale in
 	 * @param out override value for scale out
 	 */
-	private EditingModalGraphMouse(RenderContext<V,E> rc,
-			Supplier<V> vertexFactory, Supplier<E> edgeFactory, float in, float out) {
+	private EditingModalGraphMouse(RenderContext<V,E> rc, Supplier<V> vertexFactory, Supplier<E> edgeFactory, float in, float out) {
 		super(rc,vertexFactory, edgeFactory, in,out);
 	}
 

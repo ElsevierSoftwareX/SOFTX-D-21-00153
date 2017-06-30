@@ -245,11 +245,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		this.g1 = new LabeledIntGraph(this.labeledIntValueMap);
 		this.layout1 = new StaticLayout<>(this.g, CSTNEditor.preferredSize);
 		this.layout2 = new StaticLayout<>(this.g1, CSTNEditor.preferredSize);
-//		this.vm1 = new DefaultVisualizationModel<>(this.layout1, CSTNEditor.preferredSize);
-//		this.vm2 = new DefaultVisualizationModel<>(this.layout2, CSTNEditor.preferredSize);
 		this.vv1 = new VisualizationViewer<>(this.layout1, CSTNEditor.preferredSize);
 		this.vv1.setName("Editor");
-		// vv1.getRenderContext().setLabelOffset(20);
 		this.vv2 = new VisualizationViewer<>(this.layout2, CSTNEditor.preferredSize);
 		this.vv2.setName(CSTNEditor.distanceViewerName);
 
@@ -500,18 +497,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	}
 
 	/**
-	 * Every time the graph associated to a viewer is replaced by another one, the viewer and its render context has to be update.
+	 * Every time the graph associated to a viewer is replaced by another one, the layout and the visualization viewer render context has to be update.
 	 * 
 	 * @param firstViewer
 	 */
 	void updateVisualizationViewer(boolean firstViewer) {
 		if (firstViewer) {
-			CSTNEditor.this.layout1 = new StaticLayout<>(CSTNEditor.this.g);
-			CSTNEditor.this.vv1.setGraphLayout(CSTNEditor.this.layout1);
+			CSTNEditor.this.layout1.setGraph(CSTNEditor.this.g);
 			CSTNEditor.this.vv1.getRenderContext().setEdgeShapeTransformer(EdgeShape.quadCurve(CSTNEditor.this.g));
 		} else {
-			CSTNEditor.this.layout2 = new StaticLayout<>(CSTNEditor.this.g1);
-			CSTNEditor.this.vv2.setGraphLayout(CSTNEditor.this.layout2);
+			CSTNEditor.this.layout2.setGraph(CSTNEditor.this.g1);
 			CSTNEditor.this.vv2.getRenderContext().setEdgeShapeTransformer(EdgeShape.quadCurve(CSTNEditor.this.g1));
 		}
 	}
