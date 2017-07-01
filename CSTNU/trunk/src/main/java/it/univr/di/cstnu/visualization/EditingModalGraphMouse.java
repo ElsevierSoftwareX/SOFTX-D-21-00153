@@ -128,11 +128,10 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	/** {@inheritDoc} 
 	 *  Removed annotating mode.
 	 * */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public JComboBox getModeComboBox() {
+	public JComboBox<Mode> getModeComboBox() {
 		if (this.modeBox == null) {
-			this.modeBox = new JComboBox(new Mode[] { Mode.TRANSFORMING, Mode.PICKING, Mode.EDITING });
+			this.modeBox = new JComboBox<Mode>(new Mode[] { Mode.TRANSFORMING, Mode.PICKING, Mode.EDITING });
 			this.modeBox.addItemListener(this.getModeListener());
 		}
 		this.modeBox.setSelectedItem(this.mode);
