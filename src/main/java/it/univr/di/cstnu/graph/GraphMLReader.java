@@ -40,10 +40,7 @@ import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 
 /**
- * <p>
- * GraphMLReader class.
- * </p>
- * * Allows to read a graph from a file written in GraphML format.<br>
+ * Allows to read a graph from a file written in GraphML format.<br>
  * GraphML format allows the definition of different attributes for the graph, vertices and edges.<br>
  * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
  * under CstnuTool one.

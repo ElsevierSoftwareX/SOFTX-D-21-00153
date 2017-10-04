@@ -206,7 +206,6 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * logger
 	 */
-	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(ALabel.class.getName());
 
 	/**
@@ -290,6 +289,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		// build alphabet
 		if (alphabet == null) {
 			alphabet = new ALabelAlphabet(size);
+			LOG.info("Created a new ALabelAlphabet: " + alphabet);
 		}
 
 		// build alabel
@@ -462,12 +462,10 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * Conjuncts <code>label</code> to this if <code>this</code> is consistent with <code>label</code> and returns the results without modifying
-	 * <code>this</code>.
+	 * Conjuncts <code>a-label</code> to <code>this</code> and returns the result without modifying <code>this</code>.
 	 *
 	 * @param label the label to conjunct
-	 * @return a new label with the conjunction of 'this' and 'label' if they are consistent, null otherwise.<br>
-	 *         null also if this or label contains unknown literals. 'this' is not altered by this method.
+	 * @return a new label with the conjunction of 'this' and 'label'.
 	 */
 	public ALabel conjunction(final ALabel label) {
 		if (label == null || (!this.isEmpty() && !label.isEmpty() && this.alphabet != label.alphabet))
@@ -498,7 +496,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		if ((label == null) || label.isEmpty())
 			return true;
 		if (this.alphabet != label.alphabet)
-			throw new IllegalArgumentException("label is not defined using the same alphabet!");
+			throw new IllegalArgumentException(
+					"alabel is not defined using the same alphabet: " + this.alphabet.toString() + " vs " + label.alphabet.toString());
 		int max = (this.maxIndex > label.maxIndex) ? this.maxIndex : label.maxIndex;
 		for (byte i = (byte) (max + 1); (--i) >= 0;) {
 			State thisState = getState(i);
@@ -519,7 +518,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		if ((label == null) || this.isEmpty() || label.isEmpty())
 			return emptyLabel;
 		if (this.alphabet != label.alphabet)
-			throw new IllegalArgumentException("label is not defined using the same alphabet!");
+			throw new IllegalArgumentException(
+					"alabel is not defined using the same alphabet: " + this.alphabet.toString() + " vs " + label.alphabet.toString());
 		ALabel newl = new ALabel(this.alphabet);
 		newl.bit0 = this.bit0 & label.bit0;
 		if (newl.bit0 == 0)
@@ -551,12 +551,24 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * Compare the letter with a node name.
 	 * 
 	 * @param node
-	 * @return true if the letter represents the node name.
+	 * @return true if the label represents the node name.
 	 */
 	public boolean equals(final LabeledNode node) {
 		if (node == null)
 			return false;
 		return this.toString().equals(node.getName());
+	}
+
+	/**
+	 * Compare the letter with a a-letter name.
+	 * 
+	 * @param name
+	 * @return true if the label is equal to the a-letter name.
+	 */
+	public boolean equals(final ALetter name) {
+		if (name == null)
+			return false;
+		return this.size() == 1 && this.getState(getIndex(name)) == State.present;
 	}
 
 	/**

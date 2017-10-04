@@ -159,6 +159,12 @@ public class LabeledIntTreeMapTest {
 			// TODO Auto-generated method stub
 			return null;
 		}
+
+		@Override
+		public int getMinValueSubsumedBy(Label l) {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	}
 
 	/**

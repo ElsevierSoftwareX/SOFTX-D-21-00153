@@ -253,6 +253,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
 
+	
 	@Override
 	public int hashCode() {
 		return super.hashCode();

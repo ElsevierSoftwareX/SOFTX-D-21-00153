@@ -551,6 +551,16 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 
 	/** {@inheritDoc} */
 	@Override
+	public int getMinValueSubsumedBy(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		RecursionStatus status = new RecursionStatus();
+		int min = recursiveGetMinSubsumedBy(this.root, l, Constants.INT_POS_INFINITE, status);
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public int hashCode() {
 		return this.entrySet().hashCode();
 	}
@@ -784,6 +794,44 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		return min;
 	}
 
+	
+	
+	/**
+	 * @param node
+	 * @param l
+	 * @param min
+	 * @param status
+	 * @return the min value subsumed by label l if it exists, {@link Constants#INT_NULL} otherwise.
+	 */
+	private int recursiveGetMinSubsumedBy(final HierarchyNode node, final Label l, int min, RecursionStatus status) {
+		if (status.foundPerfectMatch)
+			return min;
+		if (node.label.equals(l)) {
+			status.foundPerfectMatch = true;
+			return node.value;
+		}
+		if (node.label.subsumes(l)) {
+			if (node.value < min)
+				min = node.value;
+		} else {
+			return min;
+		}
+		if (node.son == null || node.son.size() == 0) {
+			return min;
+		}
+		for (HierarchyNode n : node.son) {
+			if (!l.subsumes(n.label))
+				continue;
+			int v = recursiveGetMinSubsumedBy(n, l, min, status);
+			if (status.foundPerfectMatch)
+				return v;
+			if (v < min)
+				min = v;
+		}
+		return min;
+	}
+	
+	
 	/**
 	 * @param current
 	 * @param newNode

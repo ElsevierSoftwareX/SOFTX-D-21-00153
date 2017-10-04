@@ -146,7 +146,7 @@ public class CSTN {
 	// static final String VERSIONandDATE = "Version 3.1 - Apr, 20 2016";
 	// static final String VERSIONandDATE = "Version 3.3 - October, 4 2016";
 	// static final String VERSIONandDATE = "Version 4.0 - October, 25 2016";// added management not all negative edges in a negative qLoop
-	static final String VERSIONandDATE = "Version  5.0 - April, 03 2017";// refactored
+	static final public String VERSIONandDATE = "Version  5.0 - April, 03 2017";// refactored
 
 	/**
 	 * Just to check if a new labeled value is negative, its label has not unknown literals and it is in a self loop.
@@ -1093,7 +1093,7 @@ public class CSTN {
 	 * if A --[α, u]--&gt; B --[β, v]--&gt; C, then A --[(α★β)†, u+v]--&gt; C if u<0 and v+u<0
 	 * 
 	 * α,β in Q*
-	 * (α★β)† is the label without childredn of unknow.
+	 * (α★β)† is the label without children of unknown.
 	 *
 	 * If A==C and u+v < 0, then
 	 * - if (α★β)† does not contain ¿ literals, the network is not DC
@@ -1551,9 +1551,6 @@ public class CSTN {
 
 				this.labeledPropagationRule(A, B, C, AB, BC, AC);
 
-				if (!this.checkStatus.consistency)
-					return this.checkStatus;
-
 				/**
 				 * I need to clean values on AC
 				 * March, 8 2016 By an experimental results, it seems that the following clean code is not necessary. Without it, the final number of rule
@@ -1592,6 +1589,9 @@ public class CSTN {
 					// CB was already present and it has been changed!
 					newEdgesToCheck.add(AC);
 				}
+				
+				if (!this.checkStatus.consistency)
+					return this.checkStatus;
 			}
 
 			/**
@@ -1612,8 +1612,6 @@ public class CSTN {
 				}
 
 				this.labeledPropagationRule(C, A, B, CA, AB, CB);
-				if (!this.checkStatus.consistency)
-					return this.checkStatus;
 
 				if (edgeCopy == null && !CB.isEmpty()) {
 					// the new CB has to be added to the graph!
@@ -1623,6 +1621,9 @@ public class CSTN {
 					// CB was already present and it has been changed!
 					newEdgesToCheck.add(CB);
 				}
+				
+				if (!this.checkStatus.consistency)
+					return this.checkStatus;
 			}
 		}
 		if (Debug.ON && LOG.isLoggable(Level.FINER)) {

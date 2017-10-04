@@ -550,23 +550,16 @@ public class LabeledContingentIntTreeMap implements Serializable {
 		return n;
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public String toString() {
-		return this.toString(false);
-	}
-
 	/**
 	 * @param label
 	 * @param value
-	 * @param nodeName
-	 * @param lower
+	 * @param nodeName this name is printed as it is. This method is necessary for saving the values of the ma in a file.
 	 * @return the canonical representation of the triple (as stated in ICAPS/ICAART papers)
 	 */
-	static public String entryAsString(Label label, int value, ALabel nodeName, boolean lower) {
+	static public String entryAsString(Label label, int value, ALabel nodeName) {
 		StringBuffer s = new StringBuffer();
 		s.append(Constants.OPEN_PAIR);
-		s.append((lower) ? nodeName.toLowerCase() : nodeName.toUpperCase());
+		s.append(nodeName);
 		s.append(", ");
 		s.append(Constants.formatInt(value));
 		s.append(", ");
@@ -576,14 +569,32 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param lower if true, the alphabetic label (the name of contingent t.p.) is rendered as lower case.
+	 * @param label
+	 * @param value
+	 * @param nodeName
+	 * @param lower if the name of node has to be printed lower case
+	 * @return the canonical representation of the triple (as stated in ICAPS/ICAART papers)
+	 */
+	static public String entryAsString(Label label, int value, ALabel nodeName, boolean lower) {
+		StringBuffer s = new StringBuffer();
+		s.append(Constants.OPEN_PAIR);
+		s.append((lower) ? nodeName.toLowerCase() : nodeName.toString());
+		s.append(", ");
+		s.append(Constants.formatInt(value));
+		s.append(", ");
+		s.append(label);
+		s.append(Constants.CLOSE_PAIR);
+		return s.toString();
+	}
+
+	/**
 	 * @return a string representing the content of the map. The format is &lt;value, nodeName, label&gt;
 	 */
-	public String toString(final boolean lower) {
+	public String toString() {
 		final StringBuffer s = new StringBuffer("{");
 		for (final Entry<ALabel, LabeledIntTreeMap> entry : this.entrySet()) {
 			for (final Object2IntMap.Entry<Label> entry1 : entry.getValue().entrySet()) {
-				s.append(entryAsString(entry1.getKey(), entry1.getIntValue(), entry.getKey(), lower));
+				s.append(entryAsString(entry1.getKey(), entry1.getIntValue(), entry.getKey()));
 				s.append(' ');
 			}
 		}

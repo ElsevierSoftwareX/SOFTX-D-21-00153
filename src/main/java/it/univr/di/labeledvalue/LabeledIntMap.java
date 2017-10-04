@@ -106,6 +106,14 @@ public interface LabeledIntMap {
 	public int getMinValueConsistentWith(final Label l);
 
 	/**
+	 * Returns the minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
+	 *
+	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
+	 * @return minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
+	 */
+	public int getMinValueSubsumedBy(final Label l);
+
+	/**
 	 * @return the set view of all labels in the map.
 	 */
 	public ObjectSet<Label> keySet();

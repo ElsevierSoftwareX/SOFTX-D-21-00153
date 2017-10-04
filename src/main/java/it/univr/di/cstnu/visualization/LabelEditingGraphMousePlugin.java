@@ -216,7 +216,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				labelUpperInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
 				jp.add(jtLabel);
-				jtLabel = new JTextField(pair.getKey().getValue().toUpperCase() + ": " + Constants.formatInt(pair.getIntValue()));
+				jtLabel = new JTextField(pair.getKey().getValue() + ": " + Constants.formatInt(pair.getIntValue()));
 				newUpperValueInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, distanceViewer);
 				jp.add(jtLabel);
@@ -243,7 +243,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				labelLowerInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
 				jp.add(jtLabel);
-				jtLabel = new JTextField(pair.getKey().getValue().toLowerCase() + ": " + Constants.formatInt(pair.getIntValue()));
+				jtLabel = new JTextField(pair.getKey().getValue() + ": " + Constants.formatInt(pair.getIntValue()));
 				newLowerValueInputs[i] = jtLabel;
 				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
 				jp.add(jtLabel);
@@ -333,7 +333,16 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 					if (splitted.length < 2) {
 						v = null;
 					} else {
-						nodeName = splitted[0].toUpperCase();
+						//nodeName = splitted[0].toUpperCase();
+						nodeName = splitted[0];
+						if (nodeName !=null && nodeName.isEmpty()) 
+							nodeName=null;
+						else {
+							if (g.getNode(nodeName) == null) {
+								LabelEditingGraphMousePlugin.LOG.severe("ALabel "+nodeName +" does not correspond to a node name. Abort!" +caseValue);
+								nodeName = null;
+							}
+						}
 						v = Integer.valueOf(splitted[1]);
 						LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
 					}
@@ -347,11 +356,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 					final LabeledNode dest = g.getDest(e);
 					final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
 					ALabel alabel = new ALabel(new ALetter(source.getName()), g.getALabelAlphabet());
-					if (alabel.toString().equalsIgnoreCase(nodeName)) {
+					if (alabel.toString().equals(nodeName)) {
 						e.clearUpperLabels();
 						e.mergeUpperLabelValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 						// value of a contingent must have the label of its endpoints.
-						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel.toUpperCase() + ": " + v + ".");
+						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
 					}
 				}
 				// lower case
@@ -366,7 +375,16 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 							nodeName = null;
 							v = null;
 						} else {
-							nodeName = splitted[0].toLowerCase();
+//							nodeName = splitted[0].toLowerCase();
+							nodeName = splitted[0];
+							if (nodeName !=null && nodeName.isEmpty()) 
+								nodeName=null;
+							else {
+								if (g.getNode(nodeName) == null) {
+									LabelEditingGraphMousePlugin.LOG.severe("ALabel "+nodeName +" does not correspond to a node name. Abort!");
+									nodeName = null;
+								}
+							}
 							v = Integer.valueOf(splitted[1]);
 						}
 					} else {
@@ -380,7 +398,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 						final LabeledNode dest = g.getDest(e);
 						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
 						ALabel alabel = new ALabel(new ALetter(dest.getName()), g.getALabelAlphabet());
-						if (alabel.toString().equalsIgnoreCase(nodeName)) {
+						if (alabel.toString().equals(nodeName)) {
 							e.clearLowerLabels();
 							e.mergeLowerLabelValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 							// value of a contingent must have the label of its endpoints.

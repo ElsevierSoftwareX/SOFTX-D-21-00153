@@ -595,12 +595,12 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * Conjuncts <code>label</code> to this if <code>this</code> is consistent with <code>label</code> and returns the results without modifying
+	 * Conjuncts <code>label</code> to this if <code>this</code> is consistent with <code>label</code> and returns the result without modifying
 	 * <code>this</code>.
 	 *
 	 * @param label the label to conjunct
-	 * @return a new label with the conjunction of 'this' and 'label' if they are consistent, null otherwise.<br>
-	 *         null also if this or label contains unknown literals. 'this' is not altered by this method.
+	 * @return a new label with the conjunction of <code>this</code>  and <code>label</code> if they are consistent, null otherwise.<br>
+	 *         null also if <code>this</code> or <code>label</code> contains unknown literals.
 	 */
 	public Label conjunction(final Label label) {
 		if (label == null)

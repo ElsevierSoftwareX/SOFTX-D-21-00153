@@ -56,6 +56,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.univr.di.cstnu.algorithms.CSTN;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
+import it.univr.di.cstnu.algorithms.CSTNPSU;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNepsilon;
@@ -80,565 +81,6 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * @version $Id: $Id
  */
 public class CSTNEditor extends JFrame implements Cloneable {
-
-	/**
-	 * Standard serial number
-	 */
-	private static final long serialVersionUID = 647420826043015775L;
-
-	/**
-	 * Version
-	 */
-	private static final String version = "Version  $Rev$";
-
-	/**
-	 * class logger
-	 */
-	static Logger LOG = Logger.getLogger(CSTNEditor.class.getName());
-
-	/**
-	 * the preferred sizes for the two views
-	 */
-	static final Dimension preferredSize = new Dimension(780, 768);
-
-	/**
-	 * Name of the distance viewer
-	 */
-	public static final String distanceViewerName = "DistanceViewer";
-
-	/**
-	 *
-	 */
-	static final URL infoIconFile = Class.class.getResource("/images/metal-info.png");
-
-	/**
-	 *
-	 */
-	static final URL warnIconFile = Class.class.getResource("/images/metal-warning.png");
-
-	/**
-	 * Default load/save directory
-	 */
-	static String defaultDir = "/Dropbox/";
-
-	/**
-	 * @param args an array of {@link java.lang.String} objects.
-	 */
-	public static void main(final String[] args) {
-		@SuppressWarnings("unused")
-		CSTNEditor editor = new CSTNEditor();
-	}
-
-	/**
-	 * derivedGraphMessageArea
-	 */
-	JEditorPane derivedGraphMessageArea;
-
-	/**
-	 * The epsilon panel
-	 */
-	JPanel epsilonPanel;
-
-	/**
-	 * The graph info label
-	 */
-	JLabel graphInfoLabel;
-
-	/**
-	 * 
-	 */
-	JLabel mapInfoLabel;
-
-	/**
-	 * Result Save Button
-	 */
-	JButton saveCSTNResultButton;
-
-	/**
-	 * Layout for input graph.
-	 */
-	StaticLayout<LabeledIntEdge> layout1;
-
-	/**
-	 * Layout for derived graph.
-	 */
-	StaticLayout<LabeledIntEdge> layout2;
-
-	/**
-	 * The BasicVisualizationServer&lt;V,E&gt; for input graph.
-	 */
-	VisualizationViewer<LabeledNode, LabeledIntEdge> vv1;
-
-	/**
-	 * The BasicVisualizationServer&lt;V,E&gt; for derived graph.
-	 */
-	VisualizationViewer<LabeledNode, LabeledIntEdge> vv2;
-
-	/**
-	 * LabeledIntGraph structures necessary to represent input graph.
-	 */
-	final LabeledIntGraph inputGraph;
-	/**
-	 * LabeledIntGraph structures necessary to represent derived graph.
-	 */
-	final LabeledIntGraph checkedGraph;
-	/**
-	 * LabeledIntGraph structures necessary to represent an axuliary graph.
-	 */
-	LabeledIntGraph oneStepBackGraph;
-
-	/**
-	 * CSTN checker
-	 */
-	CSTN cstn;
-
-	/**
-	 * CSTNU checker
-	 */
-	CSTNU cstnu;
-
-	/**
-	 * CSTN check status
-	 */
-	CSTNCheckStatus cstnStatus;
-
-	/**
-	 * CSTNU check status
-	 */
-	CSTNUCheckStatus cstnuStatus;
-
-	/**
-	 * Number of cycles of CSTN(U) check step-by-step
-	 */
-	int cycle;
-
-	/**
-	 * Edges to check in CSTN(U) check step-by-step
-	 */
-	ObjectArraySet<LabeledIntEdge> edgesToCheck;
-
-	/**
-	 * Reaction time for CSTN
-	 */
-	int reactionTime = 1;
-
-	/**
-	 * The current wanted semantics
-	 */
-	public DCSemantics dcCurrentSem = DCSemantics.Std;
-
-	/**
-	 * Class for representing edge labeled values.
-	 */
-	final static Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;// LabeledIntHierarchyMap.class;
-
-	/**
-	 * Default constructor
-	 */
-	public CSTNEditor() {
-		super("Simple CSTNU Editor " + CSTNEditor.version);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-		this.inputGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
-		this.checkedGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
-		this.layout1 = new StaticLayout<>(this.inputGraph, CSTNEditor.preferredSize);
-		this.layout2 = new StaticLayout<>(this.checkedGraph, CSTNEditor.preferredSize);
-		this.vv1 = new VisualizationViewer<>(this.layout1, CSTNEditor.preferredSize);
-		this.vv1.setName("Editor");
-		this.vv2 = new VisualizationViewer<>(this.layout2, CSTNEditor.preferredSize);
-		this.vv2.setName(CSTNEditor.distanceViewerName);
-
-		buildRenderContext(this.vv1, true);
-		buildRenderContext(this.vv2, false);
-
-		// CONTENT
-		// content is the canvas of the application.
-		final Container contentPane = this.getContentPane();
-
-		// NORTH
-		// I put a row for messages: since there will 2 graphs, the row contains two columns,
-		// corresponding to the two following graphs.
-		JPanel messagePanel = new JPanel(new GridLayout(1, 2));
-		// Info for first graph
-		JPanel message1Graph = new JPanel();
-		message1Graph.setBackground(new Color(253, 253, 253));
-		this.graphInfoLabel = new JLabel("");
-		message1Graph.add(this.graphInfoLabel);
-		this.mapInfoLabel = new JLabel("");
-		// this.mapInfoLabel.setSize(200, 18);
-		message1Graph.add(this.mapInfoLabel);
-		messagePanel.add(message1Graph);
-
-		message1Graph = new JPanel(new GridLayout(1, 1));// even if in the second cell there is only one element, derivedGraphMessageArea, a JPanel is necessary
-															// to have the same
-		// padding of first cell.
-
-		this.derivedGraphMessageArea = new JEditorPane("text/html", "");
-		this.derivedGraphMessageArea.setBorder(new EmptyBorder(2, 2, 2, 2));
-		this.derivedGraphMessageArea.setEditable(false);
-		this.derivedGraphMessageArea.setVisible(true);
-		message1Graph.add(this.derivedGraphMessageArea);
-		messagePanel.add(message1Graph);
-
-		contentPane.add(messagePanel, BorderLayout.NORTH);
-
-		// LEFT
-		contentPane.add(new GraphZoomScrollPane(this.vv1), BorderLayout.WEST);
-
-		// RIGHT
-		contentPane.add(new GraphZoomScrollPane(this.vv2), BorderLayout.EAST);
-
-		// SOUTH
-		final JPanel controls = new JPanel(new GridLayout(3, 1)), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(),
-				rowForCSTNUButtons = new JPanel();
-		final ValidationPanel validationPanelRowForCSTNButtons = new ValidationPanel();
-		final ValidationGroup validationGroupCSTN = validationPanelRowForCSTNButtons.getValidationGroup();
-		validationPanelRowForCSTNButtons.setInnerComponent(rowForCSTNButtons);
-		validationPanelRowForCSTNButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
-		controls.add(rowForAppButtons, 0);// for tuning application
-		controls.add(validationPanelRowForCSTNButtons, 1);// for button regarding CSTN
-		controls.add(rowForCSTNUButtons, 2);// for button regarding CSTNU
-		contentPane.add(controls, BorderLayout.SOUTH);
-
-		JButton buttonCheck;
-
-		// FIRST ROW OF COMMANDS
-		@SuppressWarnings("unchecked")
-		final JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vv1.getGraphMouse()).getModeComboBox();
-		rowForAppButtons.add(modeBox);
-		// AnnotationControls<LabeledNode,LabeledIntEdge> annotationControls =
-		// new AnnotationControls<LabeledNode,LabeledIntEdge>(gm.getAnnotatingPlugin());
-		// controls.add(annotationControls.getAnnotationsToolBar());
-
-		// final JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", this.excludeR1R2);
-		// excludeR1R2Button.addItemListener(new ItemListener() {
-		// @Override
-		// public void itemStateChanged(final ItemEvent ev) {
-		// if (ev.getStateChange() == ItemEvent.SELECTED) {
-		// CSTNEditor.this.excludeR1R2 = true;
-		// CSTNEditor.LOG.fine("excludeR1R2 flag set to true");
-		// } else if (ev.getStateChange() == ItemEvent.DESELECTED) {
-		// CSTNEditor.this.excludeR1R2 = false;
-		// CSTNEditor.LOG.fine("excludeR1R2 flag set to false");
-		// }
-		// }
-		// });
-		// rowForAppButtons.add(excludeR1R2Button);
-
-		buttonCheck = new JButton("Help");
-		buttonCheck.addActionListener(new HelpListener());
-		rowForAppButtons.add(buttonCheck);
-
-		// SECOND ROW OF COMMANDS
-
-		// rowForCSTNButtons.add(new JLabel("Labeled value mode"));
-		// @SuppressWarnings("rawtypes")
-		// JComboBox<Class> jcb = new JComboBox<>(new Class[] { LabeledIntTreeMap.class, LabeledIntHierarchyMap.class});
-
-		rowForCSTNButtons.add(new JLabel("DC Semantics: "));
-		JComboBox<DCSemantics> dcSemCombo = new JComboBox<>(DCSemantics.values());
-		dcSemCombo.setSelectedItem(DCSemantics.Std);
-		dcSemCombo.addActionListener(new DCSemanticsListener(dcSemCombo));
-		rowForCSTNButtons.add(dcSemCombo);
-
-		// epsilon panel
-		CSTNEditor.this.epsilonPanel = new JPanel(new FlowLayout());
-
-		CSTNEditor.this.epsilonPanel.add(new JLabel("System reacts "));
-		final JFormattedTextField jreactionTime = new JFormattedTextField();
-		jreactionTime.setValue(this.reactionTime);
-		jreactionTime.setColumns(3);
-		jreactionTime.addPropertyChangeListener("value", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				CSTNEditor.LOG.finest("Property: " + evt.getPropertyName());
-				CSTNEditor.this.reactionTime = ((Number) jreactionTime.getValue()).intValue();
-				CSTNEditor.LOG.info("New reaction time: " + CSTNEditor.this.reactionTime);
-			}
-		});
-		validationGroupCSTN.add(jreactionTime, StringValidators.regexp(Constants.NonNegIntValueRE, "A > 0 integer!", false));
-		CSTNEditor.this.epsilonPanel.add(jreactionTime);
-		CSTNEditor.this.epsilonPanel.add(new JLabel("time units after (≥) an observation."));
-		CSTNEditor.this.epsilonPanel.setVisible(CSTNEditor.this.dcCurrentSem.equals(DCSemantics.ε));
-		rowForCSTNButtons.add(CSTNEditor.this.epsilonPanel);
-
-		buttonCheck = new JButton("CSTN Init Graph");
-		buttonCheck.addActionListener(new CSTNInitListener());
-		rowForCSTNButtons.add(buttonCheck);
-
-		buttonCheck = new JButton("CSTN Check");
-		buttonCheck.addActionListener(new CSTNCheckListener());
-		rowForCSTNButtons.add(buttonCheck);
-
-		buttonCheck = new JButton("One Step CSTN Check");
-		buttonCheck.addActionListener(new CSTNOneStepListener());
-		rowForCSTNButtons.add(buttonCheck);
-
-		this.saveCSTNResultButton = new JButton("Save CSTN");
-		this.saveCSTNResultButton.setEnabled(false);
-		this.saveCSTNResultButton.addActionListener(new CSTNSaveListener());
-		rowForCSTNButtons.add(this.saveCSTNResultButton);
-
-		buttonCheck = new JButton("CSTNU Init Graph");
-		buttonCheck.addActionListener(new CSTNUInitListener());
-		rowForCSTNUButtons.add(buttonCheck);
-
-		buttonCheck = new JButton("CSTNU Check");
-		buttonCheck.addActionListener(new CSTNUCheckListener());
-		rowForCSTNUButtons.add(buttonCheck);
-
-		buttonCheck = new JButton("One Step CSTNU Check");
-		buttonCheck.addActionListener(new CSTNUOneStepListener());
-		rowForCSTNUButtons.add(buttonCheck);
-
-		// MENU
-		final JMenu menu = new JMenu("File");
-		final JMenuItem openItem = new JMenuItem("Open...");
-		openItem.addActionListener(new OpenFileListener());
-		menu.add(openItem);
-		final JMenuItem saveItem = new JMenuItem("Save...");
-		saveItem.addActionListener(new SaveFileListener());
-		menu.add(saveItem);
-
-		final JMenuBar menuBar = new JMenuBar();
-		menuBar.add(menu);
-		this.setJMenuBar(menuBar);
-
-		final JFileChooser chooser = new JFileChooser();
-		CSTNEditor.defaultDir = chooser.getCurrentDirectory() + CSTNEditor.defaultDir;
-
-		this.pack();
-		this.setVisible(true);
-	}
-
-	/**
-	 * Load graph stored in file 'fileName' into attribute this.g. Moreover, it create this.layout1 using this.g.
-	 * 
-	 * @param fileName
-	 * @throws ClassNotFoundException
-	 * @throws FileNotFoundException
-	 * @throws GraphIOException
-	 */
-	void loadGraphG(final File fileName) throws ClassNotFoundException, FileNotFoundException, GraphIOException {
-		try (FileReader fileReader = new FileReader(fileName)) {
-			final GraphMLReader<LabeledIntGraph> graphReader = new GraphMLReader<>(fileReader, CSTNEditor.labeledIntValueMap);
-			CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
-			fileReader.close();
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * The following elements are saved in the order specified:<br>
-	 * 1. LabeledIntGraph g<br>
-	 * For each node i:<br>
-	 * i: LabeledNode i <Br>
-	 * i+1: Point2D position
-	 *
-	 * @param graphToSave graph to save
-	 * @param file
-	 */
-	void saveGraphToFile(final LabeledIntGraph graphToSave, final File file) {
-		final GraphMLWriter graphWriter = new GraphMLWriter(this.layout1);
-		graphToSave.setName(file.getName());
-		try (Writer out = new BufferedWriter(new FileWriter(file))) {
-			graphWriter.save(graphToSave, out);
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Update node positions in derived graph.
-	 */
-	void updateNodePositions() {
-		LabeledNode gV;
-		for (final LabeledNode v : this.checkedGraph.getVertices()) {
-			gV = this.inputGraph.getNode(v.getName());
-			if (gV != null) {
-				CSTNEditor.LOG.finest("Vertex of original graph: " + gV);
-				CSTNEditor.LOG.finest("Original position (" + CSTNEditor.this.layout1.getX(gV) + ";" + CSTNEditor.this.layout1.getY(gV) + ")");
-				CSTNEditor.this.layout2.setLocation(v, CSTNEditor.this.layout1.getX(gV), CSTNEditor.this.layout1.getY(gV));
-			} else {
-				CSTNEditor.this.layout2.setLocation(v, v.getX(), v.getY());
-			}
-		}
-	}
-
-	/**
-	 * @param viewer
-	 * @param firstViewer
-	 */
-	void buildRenderContext(VisualizationViewer<LabeledNode, LabeledIntEdge> viewer, boolean firstViewer) {
-		RenderContext<LabeledNode, LabeledIntEdge> renderCon = viewer.getRenderContext();
-
-		// VERTEX setting
-		// vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
-		viewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		viewer.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
-		renderCon.setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
-
-		// EDGE setting
-		renderCon.setEdgeDrawPaintTransformer(
-				AbstractLabeledIntEdge.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		renderCon.setEdgeLabelTransformer(AbstractLabeledIntEdge.edgeLabelFunction);
-		renderCon.setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
-		renderCon.setEdgeStrokeTransformer(AbstractLabeledIntEdge.edgeStrokeTransformer);
-		renderCon.setEdgeLabelClosenessTransformer(new ConstantDirectionalEdgeValueTransformer<LabeledNode, LabeledIntEdge>(0.65, 0.5));
-		renderCon.setArrowDrawPaintTransformer(
-				AbstractLabeledIntEdge.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		renderCon.setArrowFillPaintTransformer(
-				AbstractLabeledIntEdge.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
-		if (firstViewer) {
-			renderCon.setEdgeFontTransformer(AbstractLabeledIntEdge.edgeFontFunction);
-		}
-		renderCon.setLabelOffset((firstViewer) ? 6 : 3);
-
-		// MOUSE setting
-		// Create a graph mouse and add it to the visualization component
-		Supplier<LabeledIntEdge> edgeFactory = new LabeledIntEdgeSupplier<>(CSTNEditor.labeledIntValueMap);
-		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(), edgeFactory,
-				this);
-		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
-		viewer.setGraphMouse(graphMouse);
-		viewer.addKeyListener(graphMouse.getModeKeyListener());
-	}
-
-	/**
-	 * @author posenato
-	 */
-	private class HelpListener implements ActionListener {
-		@SuppressWarnings("javadoc")
-		private static final String instructions = "<html>"
-				+ "<h2>Simple CSTNU Editor " + CSTNEditor.version + "</h2><h3>All Modes:</h3>"
-				+ "<ul>"
-				+ "<li>Right-click an empty area for <b>Create Vertex</b> popup"
-				+ "<li>Right-click on a Vertex for <b>Delete Vertex</b> popup"
-				+ "<li>Right-click on a Vertex for <b>Add LabeledIntEdge</b> menus <br>(if there are selected Vertices)"
-				+ "<li>Right-click on an LabeledIntEdge for <b>Delete LabeledIntEdge</b> popup"
-				+ "<li>Mousewheel scales with a crossover value of 1.0.<br>"
-				+ "     - scales the graph layout when the combined scale is greater than 1<br>"
-				+ "     - scales the graph view when the combined scale is less than 1"
-				+ "</ul>"
-				+ "<h3>Editing Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Left-click an empty area to create a new Vertex"
-				+ "<li>Left-click on a Vertex and drag to another Vertex to create an Undirected LabeledIntEdge"
-				+ "<li>Shift+Left-click on a Vertex and drag to another Vertex to create a Directed LabeledIntEdge"
-				+ "</ul>"
-				+ "<h3>Picking Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Mouse1 on a Vertex selects the vertex"
-				+ "<li>Mouse1 elsewhere unselects all Vertices"
-				+ "<li>Mouse1+Shift on a Vertex adds/removes Vertex selection"
-				+ "<li>Mouse1+drag on a Vertex moves all selected Vertices"
-				+ "<li>Mouse1+drag elsewhere selects Vertices in a region"
-				+ "<li>Mouse1+Shift+drag adds selection of Vertices in a new region"
-				+ "<li>Mouse1+CTRL on a Vertex selects the vertex and centers the display on it"
-				+ "<li>Mouse1 double-click on a vertex or edge allows you to edit the label"
-				+ "</ul>"
-				+ "<h3>Transforming Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Mouse1+drag pans the graph"
-				+ "<li>Mouse1+Shift+drag rotates the graph"
-				+ "<li>Mouse1+CTRL(or Command)+drag shears the graph"
-				+ "<li>Mouse1 double-click on a vertex or edge allows you to edit the label"
-				+ "</ul>"
-				+ "<h3>Annotation Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Mouse1 begins drawing of a Rectangle"
-				+ "<li>Mouse1+drag defines the Rectangle shape"
-				+ "<li>Mouse1 release adds the Rectangle as an annotation"
-				+ "<li>Mouse1+Shift begins drawing of an Ellipse"
-				+ "<li>Mouse1+Shift+drag defines the Ellipse shape"
-				+ "<li>Mouse1+Shift release adds the Ellipse as an annotation"
-				+ "<li>Mouse3 shows a popup to input text, which will become"
-				+ "<li>a text annotation on the graph at the mouse location"
-				+ "</ul>"
-				+ "</html>";
-
-		@SuppressWarnings("javadoc")
-		public HelpListener() {
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			JOptionPane.showMessageDialog(CSTNEditor.this.vv1, instructions);
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	@SuppressWarnings("javadoc")
-	private class DCSemanticsListener implements ActionListener {
-		JComboBox<DCSemantics> comboBox;
-
-		public DCSemanticsListener(JComboBox<DCSemantics> comboBox) {
-			this.comboBox = comboBox;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			CSTNEditor.this.dcCurrentSem = (DCSemantics) this.comboBox.getSelectedItem();
-			CSTNEditor.this.epsilonPanel.setVisible(CSTNEditor.this.dcCurrentSem.equals(DCSemantics.ε));
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	@SuppressWarnings("javadoc")
-	private class CSTNInitListener implements ActionListener {
-
-		public CSTNInitListener() {
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl = CSTNEditor.this.derivedGraphMessageArea;
-			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			switch (CSTNEditor.this.dcCurrentSem) {
-			case ε:
-				CSTNEditor.this.cstn = new CSTNepsilon(CSTNEditor.this.reactionTime, CSTNEditor.this.checkedGraph);
-				break;
-			case IR:
-				CSTNEditor.this.cstn = new CSTNir(CSTNEditor.this.checkedGraph);
-				break;
-			default:
-				CSTNEditor.this.cstn = new CSTN(CSTNEditor.this.checkedGraph);
-				break;
-			}
-			try {
-				CSTNEditor.this.cstn.initAndCheck();
-			} catch (final Exception ec) {
-				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
-				CSTNEditor.LOG.warning(msg);
-				jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>" + msg + "</b>");
-				// jl.setIcon(CSTNEditor.warnIcon);
-				jl.setOpaque(true);
-				jl.setBackground(Color.orange);
-				// CSTNEditor.this.vv2.validate();
-				// CSTNEditor.this.vv2.repaint();
-				CSTNEditor.this.validate();
-				CSTNEditor.this.repaint();
-				return;
-			}
-			jl.setText("CSTN initialized.");
-			// jl.setIcon(CSTNEditor.infoIcon);
-			jl.setOpaque(true);
-			jl.setBackground(Color.orange);
-			updateNodePositions();
-			CSTNEditor.this.vv2.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
 
 	/**
 	 * @author posenato
@@ -691,6 +133,60 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 			CSTNEditor.this.vv2.validate();
 			CSTNEditor.this.vv2.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class CSTNInitListener implements ActionListener {
+
+		public CSTNInitListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.derivedGraphMessageArea;
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			switch (CSTNEditor.this.dcCurrentSem) {
+			case ε:
+				CSTNEditor.this.cstn = new CSTNepsilon(CSTNEditor.this.reactionTime, CSTNEditor.this.checkedGraph);
+				break;
+			case IR:
+				CSTNEditor.this.cstn = new CSTNir(CSTNEditor.this.checkedGraph);
+				break;
+			default:
+				CSTNEditor.this.cstn = new CSTN(CSTNEditor.this.checkedGraph);
+				break;
+			}
+			try {
+				CSTNEditor.this.cstn.initAndCheck();
+			} catch (final Exception ec) {
+				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+				CSTNEditor.LOG.warning(msg);
+				jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>" + msg + "</b>");
+				// jl.setIcon(CSTNEditor.warnIcon);
+				jl.setOpaque(true);
+				jl.setBackground(Color.orange);
+				// CSTNEditor.this.vv2.validate();
+				// CSTNEditor.this.vv2.repaint();
+				CSTNEditor.this.validate();
+				CSTNEditor.this.repaint();
+				return;
+			}
+			jl.setText("CSTN initialized.");
+			// jl.setIcon(CSTNEditor.infoIcon);
+			jl.setOpaque(true);
+			jl.setBackground(Color.orange);
+			updateNodePositions();
+			CSTNEditor.this.vv2.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
 
 			CSTNEditor.this.validate();
 			CSTNEditor.this.repaint();
@@ -810,48 +306,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * @author posenato
 	 */
 	@SuppressWarnings("javadoc")
-	private class CSTNUInitListener implements ActionListener {
-
-		public CSTNUInitListener() {
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
-			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-
-			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
-			try {
-				CSTNEditor.this.cstnu.initUpperLowerLabelDataStructure();
-			} catch (final IllegalArgumentException | WellDefinitionException ec) {
-				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
-				CSTNEditor.LOG.warning(msg);
-				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>" + msg + "</b>");
-				// jl.setIcon(CSTNUEditor.warnIcon);
-				jl1.setOpaque(true);
-				jl1.setBackground(Color.orange);
-				CSTNEditor.this.validate();
-				CSTNEditor.this.repaint();
-				return;
-			}
-			jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;LabeledIntGraph with Lower and Upper Case Labels.");
-			// jl.setIcon(CSTNUEditor.infoIcon);
-			jl1.setOpaque(true);
-			jl1.setBackground(Color.orange);
-			updateNodePositions();
-			CSTNEditor.this.vv2.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	@SuppressWarnings("javadoc")
 	private class CSTNUCheckListener implements ActionListener {
 
 		public CSTNUCheckListener() {
@@ -886,6 +340,48 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 			CSTNEditor.this.vv2.validate();
 			CSTNEditor.this.vv2.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class CSTNUInitListener implements ActionListener {
+
+		public CSTNUInitListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+
+			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
+			try {
+				CSTNEditor.this.cstnu.initUpperLowerLabelDataStructure();
+			} catch (final IllegalArgumentException | WellDefinitionException ec) {
+				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+				CSTNEditor.LOG.warning(msg);
+				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>" + msg + "</b>");
+				// jl.setIcon(CSTNUEditor.warnIcon);
+				jl1.setOpaque(true);
+				jl1.setBackground(Color.orange);
+				CSTNEditor.this.validate();
+				CSTNEditor.this.repaint();
+				return;
+			}
+			jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;LabeledIntGraph with Lower and Upper Case Labels.");
+			// jl.setIcon(CSTNUEditor.infoIcon);
+			jl1.setOpaque(true);
+			jl1.setBackground(Color.orange);
+			updateNodePositions();
+			CSTNEditor.this.vv2.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
 
 			CSTNEditor.this.validate();
 			CSTNEditor.this.repaint();
@@ -963,6 +459,133 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		}
 	}
 
+	
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class CSTNPSUCheckListener implements ActionListener {
+
+		public CSTNPSUCheckListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.cstnpsu = new CSTNPSU(CSTNEditor.this.checkedGraph);
+			jl1.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnpsu.dynamicControllabilityCheck();
+				if (CSTNEditor.this.cstnuStatus.consistency) {
+					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTNPSU controllable.</b>");
+					// jl.setIcon(CSTNUEditor.infoIcon);
+					jl1.setBackground(Color.green);
+					CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+				} else {
+					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTNPSU controllable.</b>");
+					// jl.setIcon(CSTNUEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNUEditor.warnIcon);
+			}
+			jl1.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vv2.setVisible(true);
+
+			CSTNEditor.this.vv2.validate();
+			CSTNEditor.this.vv2.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class DCSemanticsListener implements ActionListener {
+		JComboBox<DCSemantics> comboBox;
+
+		public DCSemanticsListener(JComboBox<DCSemantics> comboBox) {
+			this.comboBox = comboBox;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			CSTNEditor.this.dcCurrentSem = (DCSemantics) this.comboBox.getSelectedItem();
+			CSTNEditor.this.epsilonPanel.setVisible(CSTNEditor.this.dcCurrentSem.equals(DCSemantics.ε));
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class HelpListener implements ActionListener {
+		@SuppressWarnings("javadoc")
+		private static final String instructions = "<html>"
+				+ "<h2>Simple CSTNU Editor " + CSTNEditor.version + "</h2><h3>All Modes:</h3>"
+				+ "<ul>"
+				+ "<li>Right-click an empty area for <b>Create Vertex</b> popup"
+				+ "<li>Right-click on a Vertex for <b>Delete Vertex</b> popup"
+				+ "<li>Right-click on a Vertex for <b>Add LabeledIntEdge</b> menus <br>(if there are selected Vertices)"
+				+ "<li>Right-click on an LabeledIntEdge for <b>Delete LabeledIntEdge</b> popup"
+				+ "<li>Mousewheel scales with a crossover value of 1.0.<br>"
+				+ "     - scales the graph layout when the combined scale is greater than 1<br>"
+				+ "     - scales the graph view when the combined scale is less than 1"
+				+ "</ul>"
+				+ "<h3>Editing Mode:</h3>"
+				+ "<ul>"
+				+ "<li>Left-click an empty area to create a new Vertex"
+				+ "<li>Left-click on a Vertex and drag to another Vertex to create an Undirected LabeledIntEdge"
+				+ "<li>Shift+Left-click on a Vertex and drag to another Vertex to create a Directed LabeledIntEdge"
+				+ "</ul>"
+				+ "<h3>Picking Mode:</h3>"
+				+ "<ul>"
+				+ "<li>Mouse1 on a Vertex selects the vertex"
+				+ "<li>Mouse1 elsewhere unselects all Vertices"
+				+ "<li>Mouse1+Shift on a Vertex adds/removes Vertex selection"
+				+ "<li>Mouse1+drag on a Vertex moves all selected Vertices"
+				+ "<li>Mouse1+drag elsewhere selects Vertices in a region"
+				+ "<li>Mouse1+Shift+drag adds selection of Vertices in a new region"
+				+ "<li>Mouse1+CTRL on a Vertex selects the vertex and centers the display on it"
+				+ "<li>Mouse1 double-click on a vertex or edge allows you to edit the label"
+				+ "</ul>"
+				+ "<h3>Transforming Mode:</h3>"
+				+ "<ul>"
+				+ "<li>Mouse1+drag pans the graph"
+				+ "<li>Mouse1+Shift+drag rotates the graph"
+				+ "<li>Mouse1+CTRL(or Command)+drag shears the graph"
+				+ "<li>Mouse1 double-click on a vertex or edge allows you to edit the label"
+				+ "</ul>"
+				+ "<h3>Annotation Mode:</h3>"
+				+ "<ul>"
+				+ "<li>Mouse1 begins drawing of a Rectangle"
+				+ "<li>Mouse1+drag defines the Rectangle shape"
+				+ "<li>Mouse1 release adds the Rectangle as an annotation"
+				+ "<li>Mouse1+Shift begins drawing of an Ellipse"
+				+ "<li>Mouse1+Shift+drag defines the Ellipse shape"
+				+ "<li>Mouse1+Shift release adds the Ellipse as an annotation"
+				+ "<li>Mouse3 shows a popup to input text, which will become"
+				+ "<li>a text annotation on the graph at the mouse location"
+				+ "</ul>"
+				+ "</html>";
+
+		@SuppressWarnings("javadoc")
+		public HelpListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			JOptionPane.showMessageDialog(CSTNEditor.this.vv1, instructions);
+		}
+	}
+
 	/**
 	 * @author posenato
 	 */
@@ -1035,6 +658,447 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			}
 		}
 
+	}
+
+	/**
+	 * Default load/save directory
+	 */
+	static String defaultDir = "/Dropbox/";
+
+	/**
+	 * Name of the distance viewer
+	 */
+	public static final String distanceViewerName = "DistanceViewer";
+
+	/**
+	 *
+	 */
+	static final URL infoIconFile = Class.class.getResource("/images/metal-info.png");
+
+	/**
+	 * Class for representing edge labeled values.
+	 */
+	final static Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;// LabeledIntHierarchyMap.class;
+
+	/**
+	 * class logger
+	 */
+	static Logger LOG = Logger.getLogger(CSTNEditor.class.getName());
+
+	/**
+	 * the preferred sizes for the two views
+	 */
+	static final Dimension preferredSize = new Dimension(780, 768);
+
+	/**
+	 * Standard serial number
+	 */
+	private static final long serialVersionUID = 647420826043015775L;
+
+	/**
+	 * Version
+	 */
+	private static final String version = "Version  $Rev$";
+	/**
+	 *
+	 */
+	static final URL warnIconFile = Class.class.getResource("/images/metal-warning.png");
+	/**
+	 * @param args an array of {@link java.lang.String} objects.
+	 */
+	public static void main(final String[] args) {
+		@SuppressWarnings("unused")
+		CSTNEditor editor = new CSTNEditor();
+	}
+
+	/**
+	 * LabeledIntGraph structures necessary to represent derived graph.
+	 */
+	final LabeledIntGraph checkedGraph;
+
+	/**
+	 * CSTN checker
+	 */
+	CSTN cstn;
+
+	/**
+	 * CSTN check status
+	 */
+	CSTNCheckStatus cstnStatus;
+
+	/**
+	 * CSTNU checker
+	 */
+	CSTNU cstnu;
+	
+	/**
+	 * CSTNU check status
+	 */
+	CSTNUCheckStatus cstnuStatus;
+
+
+	/**
+	 * CSTNPSU checker
+	 */
+	CSTNPSU cstnpsu; 
+	
+	/**
+	 * Number of cycles of CSTN(U) check step-by-step
+	 */
+	int cycle;
+
+	/**
+	 * The current wanted semantics
+	 */
+	public DCSemantics dcCurrentSem = DCSemantics.Std;
+
+	/**
+	 * derivedGraphMessageArea
+	 */
+	JEditorPane derivedGraphMessageArea;
+
+	/**
+	 * Edges to check in CSTN(U) check step-by-step
+	 */
+	ObjectArraySet<LabeledIntEdge> edgesToCheck;
+
+	/**
+	 * The epsilon panel
+	 */
+	JPanel epsilonPanel;
+
+	/**
+	 * The graph info label
+	 */
+	JLabel graphInfoLabel;
+
+	/**
+	 * LabeledIntGraph structures necessary to represent input graph.
+	 */
+	final LabeledIntGraph inputGraph;
+
+	/**
+	 * Layout for input graph.
+	 */
+	StaticLayout<LabeledIntEdge> layout1;
+
+	/**
+	 * Layout for derived graph.
+	 */
+	StaticLayout<LabeledIntEdge> layout2;
+
+	/**
+	 * 
+	 */
+	JLabel mapInfoLabel;
+
+	/**
+	 * LabeledIntGraph structures necessary to represent an axuliary graph.
+	 */
+	LabeledIntGraph oneStepBackGraph;
+
+	/**
+	 * Reaction time for CSTN
+	 */
+	int reactionTime = 1;
+
+	/**
+	 * Result Save Button
+	 */
+	JButton saveCSTNResultButton;
+
+	/**
+	 * The BasicVisualizationServer&lt;V,E&gt; for input graph.
+	 */
+	VisualizationViewer<LabeledNode, LabeledIntEdge> vv1;
+
+	/**
+	 * The BasicVisualizationServer&lt;V,E&gt; for derived graph.
+	 */
+	VisualizationViewer<LabeledNode, LabeledIntEdge> vv2;
+
+	/**
+	 * Default constructor
+	 */
+	public CSTNEditor() {
+		super("Simple CSTNU Editor. CSTN " + CSTN.VERSIONandDATE +". CSTNU "+CSTNU.VERSIONandDATE);
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		this.inputGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
+		this.checkedGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
+		this.layout1 = new StaticLayout<>(this.inputGraph, CSTNEditor.preferredSize);
+		this.layout2 = new StaticLayout<>(this.checkedGraph, CSTNEditor.preferredSize);
+		this.vv1 = new VisualizationViewer<>(this.layout1, CSTNEditor.preferredSize);
+		this.vv1.setName("Editor");
+		this.vv2 = new VisualizationViewer<>(this.layout2, CSTNEditor.preferredSize);
+		this.vv2.setName(CSTNEditor.distanceViewerName);
+
+		buildRenderContext(this.vv1, true);
+		buildRenderContext(this.vv2, false);
+
+		// CONTENT
+		// content is the canvas of the application.
+		final Container contentPane = this.getContentPane();
+
+		// NORTH
+		// I put a row for messages: since there will 2 graphs, the row contains two columns,
+		// corresponding to the two following graphs.
+		JPanel messagePanel = new JPanel(new GridLayout(1, 2));
+		// Info for first graph
+		JPanel message1Graph = new JPanel();
+		message1Graph.setBackground(new Color(253, 253, 253));
+		this.graphInfoLabel = new JLabel("");
+		message1Graph.add(this.graphInfoLabel);
+		this.mapInfoLabel = new JLabel("");
+		// this.mapInfoLabel.setSize(200, 18);
+		message1Graph.add(this.mapInfoLabel);
+		messagePanel.add(message1Graph);
+
+		message1Graph = new JPanel(new GridLayout(1, 1));// even if in the second cell there is only one element, derivedGraphMessageArea, a JPanel is necessary
+															// to have the same
+		// padding of first cell.
+
+		this.derivedGraphMessageArea = new JEditorPane("text/html", "");
+		this.derivedGraphMessageArea.setBorder(new EmptyBorder(2, 2, 2, 2));
+		this.derivedGraphMessageArea.setEditable(false);
+		this.derivedGraphMessageArea.setVisible(true);
+		message1Graph.add(this.derivedGraphMessageArea);
+		messagePanel.add(message1Graph);
+
+		contentPane.add(messagePanel, BorderLayout.NORTH);
+
+		// LEFT
+		contentPane.add(new GraphZoomScrollPane(this.vv1), BorderLayout.WEST);
+
+		// RIGHT
+		contentPane.add(new GraphZoomScrollPane(this.vv2), BorderLayout.EAST);
+
+		// SOUTH
+		final JPanel controls = new JPanel(new GridLayout(3, 1)), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(),
+				rowForCSTNUButtons = new JPanel(), rowForCSTNPSUButtons = new JPanel();
+		final ValidationPanel validationPanelRowForCSTNButtons = new ValidationPanel();
+		final ValidationGroup validationGroupCSTN = validationPanelRowForCSTNButtons.getValidationGroup();
+		validationPanelRowForCSTNButtons.setInnerComponent(rowForCSTNButtons);
+		validationPanelRowForCSTNButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
+		controls.add(rowForAppButtons, 0);// for tuning application
+		controls.add(validationPanelRowForCSTNButtons, 1);// for button regarding CSTN
+		controls.add(rowForCSTNUButtons, 2);// for button regarding CSTNU
+//		controls.add(rowForCSTNPSUButtons, 3);// for button regarding CSTNPSU
+		contentPane.add(controls, BorderLayout.SOUTH);
+
+		JButton buttonCheck;
+
+		// FIRST ROW OF COMMANDS
+		@SuppressWarnings("unchecked")
+		final JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vv1.getGraphMouse()).getModeComboBox();
+		rowForAppButtons.add(modeBox);
+		// AnnotationControls<LabeledNode,LabeledIntEdge> annotationControls =
+		// new AnnotationControls<LabeledNode,LabeledIntEdge>(gm.getAnnotatingPlugin());
+		// controls.add(annotationControls.getAnnotationsToolBar());
+
+		// final JRadioButton excludeR1R2Button = new JRadioButton("R1 and R2 rule disabled", this.excludeR1R2);
+		// excludeR1R2Button.addItemListener(new ItemListener() {
+		// @Override
+		// public void itemStateChanged(final ItemEvent ev) {
+		// if (ev.getStateChange() == ItemEvent.SELECTED) {
+		// CSTNEditor.this.excludeR1R2 = true;
+		// CSTNEditor.LOG.fine("excludeR1R2 flag set to true");
+		// } else if (ev.getStateChange() == ItemEvent.DESELECTED) {
+		// CSTNEditor.this.excludeR1R2 = false;
+		// CSTNEditor.LOG.fine("excludeR1R2 flag set to false");
+		// }
+		// }
+		// });
+		// rowForAppButtons.add(excludeR1R2Button);
+
+		buttonCheck = new JButton("Help");
+		buttonCheck.addActionListener(new HelpListener());
+		rowForAppButtons.add(buttonCheck);
+
+		// SECOND ROW OF COMMANDS
+
+		// rowForCSTNButtons.add(new JLabel("Labeled value mode"));
+		// @SuppressWarnings("rawtypes")
+		// JComboBox<Class> jcb = new JComboBox<>(new Class[] { LabeledIntTreeMap.class, LabeledIntHierarchyMap.class});
+
+		
+		//RWO FOR CSTNs
+		rowForCSTNButtons.add(new JLabel("DC Semantics: "));
+		JComboBox<DCSemantics> dcSemCombo = new JComboBox<>(DCSemantics.values());
+		dcSemCombo.setSelectedItem(DCSemantics.Std);
+		dcSemCombo.addActionListener(new DCSemanticsListener(dcSemCombo));
+		rowForCSTNButtons.add(dcSemCombo);
+
+		// epsilon panel
+		CSTNEditor.this.epsilonPanel = new JPanel(new FlowLayout());
+
+		CSTNEditor.this.epsilonPanel.add(new JLabel("System reacts "));
+		final JFormattedTextField jreactionTime = new JFormattedTextField();
+		jreactionTime.setValue(this.reactionTime);
+		jreactionTime.setColumns(3);
+		jreactionTime.addPropertyChangeListener("value", new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				CSTNEditor.LOG.finest("Property: " + evt.getPropertyName());
+				CSTNEditor.this.reactionTime = ((Number) jreactionTime.getValue()).intValue();
+				CSTNEditor.LOG.info("New reaction time: " + CSTNEditor.this.reactionTime);
+			}
+		});
+		validationGroupCSTN.add(jreactionTime, StringValidators.regexp(Constants.NonNegIntValueRE, "A > 0 integer!", false));
+		CSTNEditor.this.epsilonPanel.add(jreactionTime);
+		CSTNEditor.this.epsilonPanel.add(new JLabel("time units after (≥) an observation."));
+		CSTNEditor.this.epsilonPanel.setVisible(CSTNEditor.this.dcCurrentSem.equals(DCSemantics.ε));
+		rowForCSTNButtons.add(CSTNEditor.this.epsilonPanel);
+
+		buttonCheck = new JButton("CSTN Init Graph");
+		buttonCheck.addActionListener(new CSTNInitListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTN Check");
+		buttonCheck.addActionListener(new CSTNCheckListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("One Step CSTN Check");
+		buttonCheck.addActionListener(new CSTNOneStepListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		this.saveCSTNResultButton = new JButton("Save CSTN");
+		this.saveCSTNResultButton.setEnabled(false);
+		this.saveCSTNResultButton.addActionListener(new CSTNSaveListener());
+		rowForCSTNButtons.add(this.saveCSTNResultButton);
+
+		//ROW FOR CSTNU
+		buttonCheck = new JButton("CSTNU Init Graph");
+		buttonCheck.addActionListener(new CSTNUInitListener());
+		rowForCSTNUButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTNU Check");
+		buttonCheck.addActionListener(new CSTNUCheckListener());
+		rowForCSTNUButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("One Step CSTNU Check");
+		buttonCheck.addActionListener(new CSTNUOneStepListener());
+		rowForCSTNUButtons.add(buttonCheck);
+		
+		//CSTNPSU row
+		buttonCheck = new JButton("CSTNPSU Check");
+		buttonCheck.addActionListener(new CSTNPSUCheckListener());
+		//rowForCSTNPSUButtons.add(buttonCheck);
+		rowForCSTNUButtons.add(buttonCheck);
+		
+		
+		// MENU
+		final JMenu menu = new JMenu("File");
+		final JMenuItem openItem = new JMenuItem("Open...");
+		openItem.addActionListener(new OpenFileListener());
+		menu.add(openItem);
+		final JMenuItem saveItem = new JMenuItem("Save...");
+		saveItem.addActionListener(new SaveFileListener());
+		menu.add(saveItem);
+
+		final JMenuBar menuBar = new JMenuBar();
+		menuBar.add(menu);
+		this.setJMenuBar(menuBar);
+
+		final JFileChooser chooser = new JFileChooser();
+		CSTNEditor.defaultDir = chooser.getCurrentDirectory() + CSTNEditor.defaultDir;
+
+		this.pack();
+		this.setVisible(true);
+	}
+
+	/**
+	 * @param viewer
+	 * @param firstViewer
+	 */
+	void buildRenderContext(VisualizationViewer<LabeledNode, LabeledIntEdge> viewer, boolean firstViewer) {
+		RenderContext<LabeledNode, LabeledIntEdge> renderCon = viewer.getRenderContext();
+
+		// VERTEX setting
+		// vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
+		viewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
+		viewer.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
+		renderCon.setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
+
+		// EDGE setting
+		renderCon.setEdgeDrawPaintTransformer(
+				AbstractLabeledIntEdge.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		renderCon.setEdgeLabelTransformer(AbstractLabeledIntEdge.edgeLabelFunction);
+		renderCon.setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
+		renderCon.setEdgeStrokeTransformer(AbstractLabeledIntEdge.edgeStrokeTransformer);
+		renderCon.setEdgeLabelClosenessTransformer(new ConstantDirectionalEdgeValueTransformer<LabeledNode, LabeledIntEdge>(0.65, 0.5));
+		renderCon.setArrowDrawPaintTransformer(
+				AbstractLabeledIntEdge.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		renderCon.setArrowFillPaintTransformer(
+				AbstractLabeledIntEdge.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+		if (firstViewer) {
+			renderCon.setEdgeFontTransformer(AbstractLabeledIntEdge.edgeFontFunction);
+		}
+		renderCon.setLabelOffset((firstViewer) ? 6 : 3);
+
+		// MOUSE setting
+		// Create a graph mouse and add it to the visualization component
+		Supplier<LabeledIntEdge> edgeFactory = new LabeledIntEdgeSupplier<>(CSTNEditor.labeledIntValueMap);
+		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(), edgeFactory,
+				this);
+		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
+		viewer.setGraphMouse(graphMouse);
+		viewer.addKeyListener(graphMouse.getModeKeyListener());
+	}
+
+	/**
+	 * Load graph stored in file 'fileName' into attribute this.g. Moreover, it create this.layout1 using this.g.
+	 * 
+	 * @param fileName
+	 * @throws ClassNotFoundException
+	 * @throws FileNotFoundException
+	 * @throws GraphIOException
+	 */
+	void loadGraphG(final File fileName) throws ClassNotFoundException, FileNotFoundException, GraphIOException {
+		try (FileReader fileReader = new FileReader(fileName)) {
+			final GraphMLReader<LabeledIntGraph> graphReader = new GraphMLReader<>(fileReader, CSTNEditor.labeledIntValueMap);
+			CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
+			fileReader.close();
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * The following elements are saved in the order specified:<br>
+	 * 1. LabeledIntGraph g<br>
+	 * For each node i:<br>
+	 * i: LabeledNode i <Br>
+	 * i+1: Point2D position
+	 *
+	 * @param graphToSave graph to save
+	 * @param file
+	 */
+	void saveGraphToFile(final LabeledIntGraph graphToSave, final File file) {
+		final GraphMLWriter graphWriter = new GraphMLWriter(this.layout1);
+		graphToSave.setName(file.getName());
+		try (Writer out = new BufferedWriter(new FileWriter(file))) {
+			graphWriter.save(graphToSave, out);
+		} catch (final Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Update node positions in derived graph.
+	 */
+	void updateNodePositions() {
+		LabeledNode gV;
+		for (final LabeledNode v : this.checkedGraph.getVertices()) {
+			gV = this.inputGraph.getNode(v.getName());
+			if (gV != null) {
+				CSTNEditor.LOG.finest("Vertex of original graph: " + gV);
+				CSTNEditor.LOG.finest("Original position (" + CSTNEditor.this.layout1.getX(gV) + ";" + CSTNEditor.this.layout1.getY(gV) + ")");
+				CSTNEditor.this.layout2.setLocation(v, CSTNEditor.this.layout1.getX(gV), CSTNEditor.this.layout1.getY(gV));
+			} else {
+				CSTNEditor.this.layout2.setLocation(v, v.getX(), v.getY());
+			}
+		}
 	}
 
 }// end_of_file

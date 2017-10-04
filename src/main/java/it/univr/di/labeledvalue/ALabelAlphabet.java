@@ -3,6 +3,7 @@
  */
 package it.univr.di.labeledvalue;
 
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
 /**
@@ -279,4 +280,7 @@ public class ALabelAlphabet {
 		return this.size;
 	}
 
+	public String toString() {
+		return Arrays.toString(this.value);
+	}
 }

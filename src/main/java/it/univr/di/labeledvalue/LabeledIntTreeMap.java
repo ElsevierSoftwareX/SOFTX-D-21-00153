@@ -210,21 +210,20 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		System.out.println("Execution time for simplification (ms): "
 				+ ((endTime - startTime) / 1.0E6));
 	}
-	
+
 	/**
 	 * @return an Object2IntMap<Label> object
 	 */
 	private static final Object2IntMap<Label> makeObject2IntMap() {
 		return new Object2IntArrayMap<>();
 	}
-	
+
 	/**
 	 * @return an Object2IntMap<Label> object
 	 */
 	private static final Int2ObjectMap<Object2IntMap<Label>> makeInt2ObjectMap() {
 		return new Int2ObjectArrayMap<>();
 	}
-	
 
 	/**
 	 * Set of propositions forming a base for the labels of the map.
@@ -314,6 +313,39 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			for (int j : mapI.values())
 				if (min > j)
 					min = j;
+		}
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public int getMinValueSubsumedBy(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		int min = this.get(l);
+		if (min == Constants.INT_NULL) {
+			// the label does not exits, try all subsumed labels
+			min = this.get(Label.emptyLabel);
+			if (min == Constants.INT_NULL) {
+				min = Constants.INT_POS_INFINITE;
+			}
+			int v1;
+			Label l1 = null;
+			int n = l.size();
+			for (int i = 0; i < n; i++) {
+				Object2IntMap<Label> map = this.mainInt2SetMap.get(i);
+				if (map == null)
+					continue;
+				for (final Entry<Label> e : map.object2IntEntrySet()) {
+					l1 = e.getKey();
+					if (l.subsumes(l1)) {
+						v1 = e.getIntValue();
+						if (min > v1) {
+							min = v1;
+						}
+					}
+				}
+			}
 		}
 		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
