@@ -141,12 +141,12 @@ public class CSTNUTest {
 		g.addEdge(dc, D, C);
 		g.addEdge(ca, C, A);
 		g.addEdge(da, D, A);
-		dc.mergeLowerLabelValue(Label.parse("ab"), new ALabel("c", this.alpha), 3);
+		dc.mergeLowerLabelValue(Label.parse("ab"), new ALabel(C.getName(), this.alpha), 3);
 
-		ca.mergeUpperLabelValue(Label.parse("b¬c"), new ALabel("D", this.alpha), -3);
-		ca.mergeUpperLabelValue(Label.parse("b¬f"), new ALabel("D", this.alpha), 3);
-		ca.mergeUpperLabelValue(Label.parse("¬b"), new ALabel("D", this.alpha), -4);
-		ca.mergeUpperLabelValue(Label.parse("ab"), new ALabel("C", this.alpha), -4);
+		ca.mergeUpperLabelValue(Label.parse("b¬c"), new ALabel(D.getName(), this.alpha), -3);
+		ca.mergeUpperLabelValue(Label.parse("b¬f"), new ALabel(D.getName(), this.alpha), 3);
+		ca.mergeUpperLabelValue(Label.parse("¬b"), new ALabel(D.getName(), this.alpha), -4);
+		ca.mergeUpperLabelValue(Label.parse("ab"), new ALabel(C.getName(), this.alpha), -4);
 
 		this.cstnu.setG(g);
 		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da);
@@ -550,53 +550,239 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 * 
-	 * <pre>
-	 * Y &lt;---[9,,¬b][10,,b]-- P &lt;---[10,,][8,,¬a]--- X
-	 * </pre>
 	 */
-	@SuppressWarnings("javadoc")
 	@Test
-	public final void testNoCase() {
+	public final void test_lncRule() {
 		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		LabeledNode P = new LabeledNode("P?", 'p');
+		LabeledNode W = new LabeledNode("W", 'w');
 		LabeledNode X = new LabeledNode("X");
 		LabeledNode Y = new LabeledNode("Y");
 		LabeledNode A = new LabeledNode("A?", 'a');
 		LabeledNode B = new LabeledNode("B?", 'b');
-		g.addVertex(P);
+		W.setLabel(Label.parse("a"));
+		g.addVertex(W);
 		g.addVertex(A);
 		g.addVertex(B);
 		g.addVertex(X);
 		g.addVertex(Y);
 		g.setZ(this.Z);
 
-		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
-		XP.mergeLabeledValue(Label.emptyLabel, -10);
-		XP.mergeLabeledValue(Label.parse("¬a"), 8);
-
-		LabeledIntEdgePluggable PY = new LabeledIntEdgePluggable("PY", this.labeledIntValueMapClass);
-		PY.mergeLabeledValue(Label.parse("¬b"), -9);
-		PY.mergeLabeledValue(Label.parse("b"), 10);
-
 		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		g.addEdge(XP, X, P);
-		g.addEdge(PY, P, Y);
+		XY.mergeLabeledValue(Label.emptyLabel, 2);
+		XY.mergeLabeledValue(Label.parse("¬a"), -2);
+		XY.mergeLabeledValue(Label.parse("b"), 1);
+		XY.mergeLabeledValue(Label.parse("a¬b"), -1);
+//		System.out.println(XY);
+
+		LabeledIntEdgePluggable YW = new LabeledIntEdgePluggable("YW", this.labeledIntValueMapClass);
+		YW.mergeLabeledValue(Label.parse("a"), 2);
+		YW.mergeLabeledValue(Label.parse("ab"), 1);
+		YW.mergeLabeledValue(Label.parse("a¬b"), -1);
+//		System.out.println(YW);
+
+		LabeledIntEdgePluggable XW = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
+		
 		g.addEdge(XY, X, Y);
+		g.addEdge(YW, Y, W);
+		g.addEdge(XW, X, W);
 
 		wellDefinition(g);
+//		System.out.println(XW);
 
-		this.cstnu.labeledPropagationRule(X, P, Y, XP, PY,  XY);//si propagano solo valori negativi
+		this.cstnu.labeledPropagationRule(X, Y, W, XY, YW,  XW);
+//		System.out.println(XW);
 		
-		LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-//		xyOK.mergeLabeledValue(Label.parse("¬a¬b"), 17);
-//		xyOK.mergeLabeledValue(Label.parse("¬ab"), 18);
-		xyOK.mergeLabeledValue(Label.parse("¬b"), -19);
-		xyOK.mergeLabeledValue(Label.parse("b"), 0);
+		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
+		xwOK.mergeLabeledValue(Label.parse("a"), 4);
+		xwOK.mergeLabeledValue(Label.parse("a¬b"), -2);
+		xwOK.mergeLabeledValue(Label.parse("ab"), 2);
+		xwOK.mergeLabeledValue(Label.parse("¿a"), 0);
+		xwOK.mergeLabeledValue(Label.parse("¿a¬b"), -3);
+		xwOK.mergeLabeledValue(Label.parse("¿ab"), -1);
+	
+		assertEquals("No case: XW labeled values.", xwOK.getLabeledValueMap(), XW.getLabeledValueMap());
+	}
+	
+	
+	
+	/**
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * 
+	 */
+	@Test
+	public final void test_lucRule() {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+		LabeledNode W = new LabeledNode("W", 'w');
+		LabeledNode X = new LabeledNode("X");
+		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode A = new LabeledNode("A?", 'a');
+		LabeledNode B = new LabeledNode("B?", 'b');
+		W.setLabel(Label.parse("a"));
+		g.addVertex(W);
+		g.addVertex(A);
+		g.addVertex(B);
+		g.addVertex(X);
+		g.addVertex(Y);
+		g.setZ(this.Z);
 
-		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
-		assertEquals("No case: XY upper case labedled values.", xyOK.getUpperLabelSet(), XY.getUpperLabelSet());
+		ALabel aLabel = new ALabel(A.getName(), this.alpha);
+		ALabel bLabel = new ALabel(B.getName(), this.alpha);
+		
+		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		XY.mergeLabeledValue(Label.emptyLabel, 2);
+		XY.mergeLabeledValue(Label.parse("¬a"), 1);
+		XY.mergeLabeledValue(Label.parse("b"), 1);
+		XY.mergeLabeledValue(Label.parse("a¬b"), -1);
+//		System.out.println(XY);
+
+		LabeledIntEdgePluggable YW = new LabeledIntEdgePluggable("YW", this.labeledIntValueMapClass);
+		YW.mergeLabeledValue(Label.parse("a"), -1);
+		YW.mergeLabeledValue(Label.parse("a¬b"), -2);
+		YW.mergeUpperLabelValue(Label.parse("a"), aLabel, -2);
+		YW.mergeUpperLabelValue(Label.parse("ab"), aLabel, -3);
+		YW.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -4);
+//		System.out.println(YW);
+
+		LabeledIntEdgePluggable XW = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
+		
+		g.addEdge(XY, X, Y);
+		g.addEdge(YW, Y, W);
+		g.addEdge(XW, X, W);
+
+		wellDefinition(g);
+//		System.out.println(XW);
+
+		this.cstnu.labeledPropagationRule(X, Y, W, XY, YW,  XW);
+//		System.out.println(XW);
+		
+		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
+		xwOK.mergeLabeledValue(Label.parse("a"), 0);
+		xwOK.mergeLabeledValue(Label.parse("¿a¬b"), -3);
+		xwOK.mergeLabeledValue(Label.parse("ab"), 2);
+		xwOK.mergeLabeledValue(Label.parse("a¬b"), -3);
+		xwOK.mergeUpperLabelValue(Label.parse("a"), aLabel, 0);
+		xwOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -2);
+		xwOK.mergeUpperLabelValue(Label.parse("a¿b"), aLabel, -4);
+		xwOK.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -5);
+
+//		assertEquals("No case: XW ", xwOK.toString(), XW.toString());
+	
+		assertEquals("No case: XW labeled values.", xwOK.getLabeledValueMap(), XW.getLabeledValueMap());
+		assertEquals("No case: XW upper case labedled values.", xwOK.getUpperLabelSet(), XW.getUpperLabelSet());
+	}
+	
+	
+	/**
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * 
+	 */
+	@Test
+	public final void test_flucRule() {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+		LabeledNode X = new LabeledNode("X");
+		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode A = new LabeledNode("A?", 'a');
+		LabeledNode B = new LabeledNode("B?", 'b');
+		g.addVertex(A);
+		g.addVertex(B);
+		g.addVertex(X);
+		g.addVertex(Y);
+		g.setZ(this.Z);
+
+		ALabel aLabel = new ALabel(A.getName(), this.alpha);
+		ALabel bLabel = new ALabel(B.getName(), this.alpha);
+		
+		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		XY.mergeUpperLabelValue(Label.emptyLabel, aLabel, 1);
+		XY.mergeUpperLabelValue(Label.parse("¬a"), aLabel,-3);
+		XY.mergeUpperLabelValue(Label.parse("b"), aLabel, -4);
+		XY.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -2);
+//		System.out.println(XY);
+
+		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+		YZ.mergeLabeledValue(Label.parse("a"), 2);
+		YZ.mergeLabeledValue(Label.parse("ab"), 1);
+		YZ.mergeLabeledValue(Label.parse("a¬b"), -1);
+	
+		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+
+		g.addEdge(XY, X, Y);
+		g.addEdge(YZ, Y, this.Z);
+		g.addEdge(XZ, X, this.Z);
+
+		wellDefinition(g);
+//		System.out.println(XW);
+
+		this.cstnu.labeledPropagationRule(X, Y, this.Z, XY, YZ,  XZ);
+//		System.out.println(XW);
+		
+		LabeledIntEdgePluggable xzOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
+		//FLUC and LCUC change upper case values!
+		xzOK.mergeUpperLabelValue(Label.parse("¿a"), aLabel, -1);
+		xzOK.mergeUpperLabelValue(Label.parse("¿a¬b"), aLabel, -4);
+		xzOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -3);
+		xzOK.mergeUpperLabelValue(Label.parse("a¿b"), aLabel, -5);
+		
+		assertEquals("No case: XZ labeled values.", xzOK.getLabeledValueMap(), XZ.getLabeledValueMap());
+		assertEquals("No case: XZ upper case labedled values.", xzOK.getUpperLabelSet(), XZ.getUpperLabelSet());
 	}
 
+	
+	/**
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * 
+	 */
+	@Test
+	public final void test_lcucRule() {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+		LabeledNode X = new LabeledNode("X");
+		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode A = new LabeledNode("A?", 'a');
+		LabeledNode B = new LabeledNode("B?", 'b');
+		g.addVertex(A);
+		g.addVertex(B);
+		g.addVertex(X);
+		g.addVertex(Y);
+		g.setZ(this.Z);
+
+		ALabel aLabel = new ALabel(A.getName(), this.alpha);
+		ALabel bLabel = new ALabel(B.getName(), this.alpha);
+		
+		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		XY.mergeUpperLabelValue(Label.emptyLabel, aLabel, 1);
+		XY.mergeUpperLabelValue(Label.parse("¬a"), aLabel,-3);
+		XY.mergeUpperLabelValue(Label.parse("b"), aLabel, -4);
+		XY.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -2);
+//		System.out.println(XY);
+
+		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+		YZ.mergeUpperLabelValue(Label.parse("a"), aLabel, 1);
+		YZ.mergeUpperLabelValue(Label.parse("ab"), aLabel, 0);
+		YZ.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -2);
+	
+		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		
+		g.addEdge(XY, X, Y);
+		g.addEdge(YZ, Y, this.Z);
+		g.addEdge(XZ, X, this.Z);
+
+		wellDefinition(g);
+//		System.out.println(XW);
+
+		this.cstnu.labeledPropagationRule(X, Y, this.Z, XY, YZ,  XZ);
+//		System.out.println(XW);
+		
+		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		//<{¿a=A?->-2, ab=A?->-4, ¿a¬b=A?∙B?->-5, a¿b=A?∙B?->-6}>
+		xwOK.mergeUpperLabelValue(Label.parse("¿a"), aLabel, -2);
+		xwOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -4);
+		xwOK.mergeUpperLabelValue(Label.parse("¿a¬b"), aLabel.conjunction(bLabel), -5);
+		xwOK.mergeUpperLabelValue(Label.parse("a¿b"), aLabel.conjunction(bLabel), -6);
+			
+
+		assertEquals("No case: XZ labeled values.", xwOK.getLabeledValueMap(), XZ.getLabeledValueMap());
+		assertEquals("No case: XZ upper case labedled values.", xwOK.getUpperLabelSet(), XZ.getUpperLabelSet());
+	}
 }

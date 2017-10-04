@@ -1123,15 +1123,17 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param g the graph to copy.
 	 */
 	public void takeIn(final LabeledIntGraph g) {
-		this.name = g.name;
 		this.adjacency = g.adjacency;
-		this.order = g.order;
-		this.nodeName2index = g.nodeName2index;
+		this.aLabelAlphabet = g.aLabelAlphabet;
+		this.childrenOfObservator = g.childrenOfObservator;
 		this.edge2index = g.edge2index;
-		this.index2node = g.index2node;
 		this.growFactor = g.growFactor;
+		this.index2node = g.index2node;
+		this.internalMapImplementationClass = g.internalMapImplementationClass;
 		this.lowerCaseEdgesSet = g.lowerCaseEdgesSet;
-		this.proposition2Node = g.proposition2Node;
+		this.name = g.name;
+		this.nodeName2index = g.nodeName2index;
+		this.order = g.order;
 		this.proposition2Node = g.proposition2Node;
 		this.Z = g.Z;
 		this.Ω = g.Ω;

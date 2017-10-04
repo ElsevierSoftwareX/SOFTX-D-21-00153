@@ -449,6 +449,11 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
+	public int getMinValueSubsumedBy(Label l) {
+		throw new UnsupportedOperationException("Core class.");
+	}
+
+	@Override
 	public int getMinValueAmongLabelsWOUnknown() {
 		throw new UnsupportedOperationException("Core class.");
 	}
@@ -501,7 +506,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public final String lowerLabelsAsString() {
-		return this.lowerLabel.toString(true);
+		return this.lowerLabel.toString();
 	}
 
 	@Override
@@ -570,7 +575,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			return false;
 		}
 		this.putUpperLabeledValueToRemovedList(l, nodeName, i);// once it has been added, it is useless to add it again!
-		final int value = getValue(l);
+		//Check if a standard labeled value is more restrictive of the one to put.
+		final int value = getMinValueSubsumedBy(l);
 		if ((value != Constants.INT_NULL) && (value <= i)) {
 			if (Debug.ON)
 				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value

@@ -199,6 +199,12 @@ public interface LabeledIntEdge extends Component {
 	public int getMinValueConsistentWith(final Label l);
 
 	/**
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @return the value of label l or the minimal value of labels subsumed by <code>l</code> if it exists, null otherwise.
+	 */
+	public int getMinValueSubsumedBy(final Label l);
+
+	/**
 	 * @param l the scenario label
 	 * @param upperL the Upper Label
 	 * @return the value associated to the upper label of the occurrence of node n if it exists or the minimal values

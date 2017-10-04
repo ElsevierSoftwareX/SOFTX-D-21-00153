@@ -118,7 +118,7 @@ public class GraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNode
 					}
 				});
 		//
-		this.addEdgeData("UpperCaseLabeledValues", "Upper-Case Labeled Values. Format: {[[\\('integer', 'node name (no case modification)', 'label'\\) ]+}|{}",
+		this.addEdgeData("UpperCaseLabeledValues", "Upper-Case Labeled Values. Format: {[[\\('node name (no case modification)', 'integer', 'label'\\) ]+}|{}",
 				"",
 				new Function<LabeledIntEdge, String>() {
 					@Override
@@ -127,7 +127,7 @@ public class GraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNode
 						return (s.startsWith("{}")) ? null : s;
 					}
 				});
-		this.addEdgeData("LowerCaseLabeledValues", "Lower-Case Labeled Values. Format: {[[\\('integer', 'node name (no case modification)', 'label'\\) ]+}|{}",
+		this.addEdgeData("LowerCaseLabeledValues", "Lower-Case Labeled Values. Format: {[[\\('node name (no case modification)', 'integer', 'label'\\) ]+}|{}",
 				"",
 				new Function<LabeledIntEdge, String>() {
 					@Override
