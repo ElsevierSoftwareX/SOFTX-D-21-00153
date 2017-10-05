@@ -45,7 +45,7 @@ public class CSTNURunningTime {
 	 */
 	// static final String VERSIONandDATE = "1.2, September, 29 2015";
 	// static final String VERSIONandDATE = "1.3, December, 30 2015";
-	static final String VERSIONandDATE = "1.4, June, 27 2016";
+	static final String VERSIONandDATE = "1.5, October, 04 2017";
 
 	/**
 	 * class logger
@@ -198,23 +198,23 @@ public class CSTNURunningTime {
 			try {
 				this.fOutput.createNewFile();
 				this.output = new PrintStream(this.fOutput);
-				this.output.println("\"CSTNU Name\""
+				this.output.println("\"CSTNUName\""
 						+ CSVSep + "#nodes"
 						+ CSVSep + "#edges"
 						+ CSVSep + "#obs"
 						+ CSVSep + "#ctg"
 						+ CSVSep + "minValue"
 						+ CSVSep + "maxValue"
-						+ CSVSep + "Dynamyc_Consistent"
-						+ CSVSep + "average_time " + (this.timeInS ? "[s]" : "[ns]")
-						+ CSVSep + "std._dev. " + (this.timeInS ? "[s]" : "[ns]")
+						+ CSVSep + "DC"
+						+ CSVSep + "RunningTimeMean" + (this.timeInS ? "[s]" : "[ns]")
+						+ CSVSep + "RunningTimeStdDev" + (this.timeInS ? "[s]" : "[ns]")
 						+ CSVSep + "#R0"
 						// + CSVSep + "\"#R1\" "
 						// + CSVSep + "\"#R2\" "
 						+ CSVSep + "#R3"
-						+ CSVSep + "#LabeledProgRuleCall"
+						+ CSVSep + "#LNC"
 						+ CSVSep + "#LowerCaseRuleCall"
-						+ CSVSep + "#UpperCaseRuleCall"
+						+ CSVSep + "#LUC+FLUC+LCUC"
 						+ CSVSep + "#CrossCaseRuleCall"
 						+ CSVSep + "#CaseLabelRemovalRuleCall"
 						+ CSVSep + "#NegQLoop"
