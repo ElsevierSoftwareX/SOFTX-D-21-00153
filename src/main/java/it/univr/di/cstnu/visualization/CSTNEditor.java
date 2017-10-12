@@ -867,15 +867,18 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		contentPane.add(messagePanel, BorderLayout.NORTH);
 
-		// LEFT
-		contentPane.add(new GraphZoomScrollPane(this.vv1), BorderLayout.WEST);
-
-		// RIGHT
-		contentPane.add(new GraphZoomScrollPane(this.vv2), BorderLayout.EAST);
+		//USING WEST AND EAST zone results that, after a resize, the central panel may be displayed and it is ugly. 
+		// LEFT contentPane.add(new GraphZoomScrollPane(this.vv1), BorderLayout.WEST);
+		// RIGHT contentPane.add(new GraphZoomScrollPane(this.vv2), BorderLayout.EAST);
+		//USIC CENTER is better even if it require a new layout
+		JPanel centralPanel = new JPanel(new GridLayout(1, 2));
+		centralPanel.add(new GraphZoomScrollPane(this.vv1));
+		centralPanel.add(new GraphZoomScrollPane(this.vv2));
+		contentPane.add(centralPanel, BorderLayout.CENTER);
 
 		// SOUTH
 		final JPanel controls = new JPanel(new GridLayout(3, 1)), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(),
-				rowForCSTNUButtons = new JPanel(), rowForCSTNPSUButtons = new JPanel();
+				rowForCSTNUButtons = new JPanel();//, rowForCSTNPSUButtons = new JPanel();
 		final ValidationPanel validationPanelRowForCSTNButtons = new ValidationPanel();
 		final ValidationGroup validationGroupCSTN = validationPanelRowForCSTNButtons.getValidationGroup();
 		validationPanelRowForCSTNButtons.setInnerComponent(rowForCSTNButtons);
