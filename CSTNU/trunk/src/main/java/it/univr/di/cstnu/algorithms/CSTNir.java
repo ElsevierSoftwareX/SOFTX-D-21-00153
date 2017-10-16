@@ -37,7 +37,8 @@ public class CSTNir extends CSTN {
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
-	static final String VERSIONandDATE = "Version  1.0 - April, 03 2017";// first release i.r.
+//	static public final String VERSIONandDATE = "Version  1.0 - April, 03 2017";// first release i.r.
+	static public final String VERSIONandDATE = "Version  1.1 - October, 10 2017";// removed qLables
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -196,11 +197,6 @@ public class CSTNir extends CSTN {
 			mergeStatus = ePX.mergeLabeledValue(alphaPrime, w);
 			if (mergeStatus && LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, logMessage);
-			}
-			if (CSTN.isNewLabeledValueANegativeLoop(alphaPrime, w, nObs, nX, ePX)) {
-				this.checkStatus.consistency = false;
-				this.checkStatus.finished = true;
-				return ruleApplied;
 			}
 		}
 		if (LOG.isLoggable(Level.FINEST)) {

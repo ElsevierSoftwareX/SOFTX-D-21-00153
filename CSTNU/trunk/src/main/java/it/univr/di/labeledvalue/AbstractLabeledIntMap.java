@@ -159,8 +159,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 * @param a an integer.
 	 * @param b an integer.
 	 * @return the controlled sum.
-	 * @throws java.lang.ArithmeticException
-	 *             if any.
+	 * @throws java.lang.ArithmeticException if any.
 	 */
 	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
 		int max, min;
@@ -173,12 +172,12 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		}
 		if (min == Constants.INT_NEG_INFINITE) {
 			if (max == Constants.INT_POS_INFINITE)
-				return -1;
+				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
 			return Constants.INT_NEG_INFINITE;
 		}
 		if (max == Constants.INT_POS_INFINITE) {
 			if (min == Constants.INT_NEG_INFINITE)
-				return -1;
+				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
 			return Constants.INT_POS_INFINITE;
 		}
 

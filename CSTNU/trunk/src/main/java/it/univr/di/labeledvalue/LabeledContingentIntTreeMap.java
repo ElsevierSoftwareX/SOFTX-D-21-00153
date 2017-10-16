@@ -337,7 +337,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return the map as a set of (nodeName, LabeledIntTreeMap).<br>
+	 * @return a set view of this map. In particular, it returns a set of (ALabel, LabeledIntTreeMap) objects.<br>
 	 *         Be careful: returned LabeledIntTreeMap(s) are not a copy but the maps inside this object.
 	 */
 	public ObjectSet<Entry<ALabel, LabeledIntTreeMap>> entrySet() {
@@ -410,7 +410,7 @@ public class LabeledContingentIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return the map as ((label,node),value) triples.
+	 * @return the map as set of ((label,nodeName),value) objects.
 	 */
 	public ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> labeledTripleSet() {
 		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> set = new ObjectArraySet<>();
