@@ -850,7 +850,7 @@ public class CSTNU2UppaalTiga {
 	private boolean checkCSTNUSyntax() {
 		LOG.finest("Checking graph...");
 		try {
-			this.cstnuCheck.initUpperLowerLabelDataStructure();
+			this.cstnuCheck.initAndCheck();
 		} catch (IllegalArgumentException | WellDefinitionException e) {
 			System.err.println(e.getMessage());
 			return false;

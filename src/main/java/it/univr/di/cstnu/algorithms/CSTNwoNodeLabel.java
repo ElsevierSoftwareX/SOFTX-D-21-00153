@@ -16,10 +16,10 @@ import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
-import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.visualization.StaticLayout;
+import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -45,49 +45,8 @@ public class CSTNwoNodeLabel extends CSTN {
 	/**
 	 * Version of the class
 	 */
-	@SuppressWarnings("hiding")
-	static final String VERSIONandDATE = "Version  1.2 - April, 25 2017";
-
-	/**
-	 * Determines the sum of 'a' and 'b'. If any of them is already INFINITY, returns INFINITY.
-	 * If the sum is greater/lesser than the maximum/minimum integer representable by a int,
-	 * it throws an ArithmeticException because the overflow.<br>
-	 * This version manage also a positive bound, horizon.
-	 * If a sum is greater than horizon, it is reset to horizon value.
-	 *
-	 * @param a an integer.
-	 * @param b an integer.
-	 * @param horizon maximum positive value!
-	 * @return the controlled sum.
-	 * @throws java.lang.ArithmeticException if any.
-	 */
-	static public final int sumWithOverflowCheck(final int a, final int b, int horizon) throws ArithmeticException {
-		int max, min;
-		if (a >= b) {
-			max = a;
-			min = b;
-		} else {
-			min = a;
-			max = b;
-		}
-		if (min == Constants.INT_NEG_INFINITE) {
-			if (max == Constants.INT_POS_INFINITE)
-				return -1;
-			return Constants.INT_NEG_INFINITE;
-		}
-		if (max == Constants.INT_POS_INFINITE) {
-			if (min == Constants.INT_NEG_INFINITE)
-				return -1;
-			return Constants.INT_POS_INFINITE;
-		}
-
-		final long sum = (long) a + (long) b;
-		if (sum > horizon)
-			return horizon;
-		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
-			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
-		return (int) sum;
-	}
+	// static public final String VERSIONandDATE = "Version 1.2 - April, 25 2017";
+	static public final String VERSIONandDATE = "Version  1.3 - October, 10 2017";// removed qLabels from LP
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -154,11 +113,6 @@ public class CSTNwoNodeLabel extends CSTN {
 	}
 
 	/**
-	 * Horizon value. A node that has to be executed after such time means that it has not to be executed!
-	 */
-	int horizon;
-
-	/**
 	 * Auxiliary constraints switch
 	 */
 	boolean addAuxiliaryConstraints = false;
@@ -192,13 +146,14 @@ public class CSTNwoNodeLabel extends CSTN {
 
 		super.initAndCheck();
 
-		if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-			LOG.log(Level.INFO, "Starts the conversion to a CSTN without labels on nodes.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.log(Level.INFO, "Starts the conversion to a CSTN without labels on nodes.");
+			}
 		}
 
 		// Substitutes node labels with corresponding edges with horizon value
 		final Collection<LabeledNode> nodeSet = this.g.getVertices();
-		this.horizon = (int) (this.maxWeight * nodeSet.size() * Math.pow(2.0, this.g.getPropositions().size()));
 		LabeledNode Z = this.g.getZ();
 		for (final LabeledNode node : nodeSet) {
 			if (this.addAuxiliaryConstraints) {
@@ -214,16 +169,18 @@ public class CSTNwoNodeLabel extends CSTN {
 					 */
 					edgeToZ.mergeLabeledValue(new Label(l.getName(), l.getState()), Constants.INT_NEG_INFINITE);
 				}
-				// Add the upper bound
-				LabeledIntEdge edgeFromZ = this.g.findEdge(Z, node);
-				if (edgeFromZ == null) {
-					edgeFromZ = makeNewEdge(this.ZeroNodeName + "_" + node.getName(), ConstraintType.internal);
-					this.g.addEdge(edgeFromZ, Z, node);
-				}
-				edgeFromZ.mergeLabeledValue(nodeLabel, this.horizon);
+				// Add the upper bound: since Ω has been already add, this is not more necessary
+				// LabeledIntEdge edgeFromZ = this.g.findEdge(Z, node);
+				// if (edgeFromZ == null) {
+				// edgeFromZ = makeNewEdge(this.ZeroNodeName + "_" + node.getName(), ConstraintType.internal);
+				// this.g.addEdge(edgeFromZ, Z, node);
+				// }
+				// edgeFromZ.mergeLabeledValue(nodeLabel, this.horizon);
 			}
 			node.setLabel(Label.emptyLabel);
 		}
+
+		// Since all nodes has an upper bound for their
 		// It is better to normalize with respect to the label modification rules before starting the DC check.
 		// Such normalization assures only that redundant labels are removed (w.r.t. R0)
 		// Q* are not solved by this normalization!
@@ -237,9 +194,9 @@ public class CSTNwoNodeLabel extends CSTN {
 
 				// Normalize with respect to R0--R3
 				if (s.isObservator()) {
-//					if (d.isObservator()) { //it seems that considering dynamic children requires too much time!
-//						updateChildrenOf(d, s, e);
-//					}
+					// if (d.isObservator()) { //it seems that considering dynamic children requires too much time!
+					// updateChildrenOf(d, s, e);
+					// }
 					this.labelModificationR0(s, d, Z, e);
 				}
 				this.labelModificationR3(s, d, Z, e);
@@ -254,8 +211,10 @@ public class CSTNwoNodeLabel extends CSTN {
 				LOG.severe(logMsg);
 			throw new WellDefinitionException(logMsg);
 		}
-		if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-			LOG.log(Level.INFO, "The conversion to a CSTN without labels on nodes has been done. ");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.log(Level.INFO, "The conversion to a CSTN without labels on nodes has been done. ");
+			}
 		}
 		this.checkStatus.initialized = true;
 		return true;
@@ -276,13 +235,17 @@ public class CSTNwoNodeLabel extends CSTN {
 		boolean ruleApplied = false;
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+				}
 			}
 			return false;
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R0: start.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R0: start.");
+			}
 		}
 
 		final ObjectSet<Label> obsXLabelSet = eObsX.getLabeledValueMap().keySet();
@@ -308,10 +271,12 @@ public class CSTNwoNodeLabel extends CSTN {
 
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
 			String logMessage = null;
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				logMessage = "R0 simplifies a label of edge " + eObsX.getName()
-						+ ":\nsource: " + nObs.getName() + " ---" + pairAsString(edgeLabel, w) + "---> " + nX.getName()
-						+ "\nresult: " + nObs.getName() + " ---" + pairAsString(alphaPrime, w) + "---> " + nX.getName();
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					logMessage = "R0 simplifies a label of edge " + eObsX.getName()
+							+ ":\nsource: " + nObs.getName() + " ---" + pairAsString(edgeLabel, w) + "---> " + nX.getName()
+							+ "\nresult: " + nObs.getName() + " ---" + pairAsString(alphaPrime, w) + "---> " + nX.getName();
+				}
 			}
 
 			eObsX.putLabeledValueToRemovedList(edgeLabel, w);
@@ -319,22 +284,21 @@ public class CSTNwoNodeLabel extends CSTN {
 			this.checkStatus.r0calls++;
 			ruleApplied = true;
 			boolean merged = eObsX.mergeLabeledValue(alphaPrime, w);
-			if (Debug.ON && merged && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, logMessage);
-			}
-			if (isNewLabeledValueANegativeLoop(alphaPrime, w, nObs, nX, eObsX)) {
-				this.checkStatus.consistency = false;
-				this.checkStatus.finished = true;
-				return ruleApplied;
+			if (Debug.ON) {
+				if (merged && LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, logMessage);
+				}
 			}
 		}
-//		if (ruleApplied && nX.isObservator()) {
-//			//update children 
-//			updateChildrenOf(nX, nObs, eObsX);//It is preferable to recheck all values because the new value can have simplified some labels.
-//		}
+		// if (ruleApplied && nX.isObservator()) {
+		// //update children
+		// updateChildrenOf(nX, nObs, eObsX);//It is preferable to recheck all values because the new value can have simplified some labels.
+		// }
 
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R0: end.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R0: end.");
+			}
 		}
 		return ruleApplied;
 	}
@@ -352,8 +316,10 @@ public class CSTNwoNodeLabel extends CSTN {
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
 
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R3: start.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R3: start.");
+			}
 		}
 		boolean ruleApplied = false;
 
@@ -392,9 +358,9 @@ public class CSTNwoNodeLabel extends CSTN {
 
 					final int max = Math.max(w, v);
 
-//					Label newLabel = new Label(SDLabel);
-//					newLabel.remove(p);
-//					newLabel = (nD != nZ) ? newLabel.conjunction(ObsDLabel) : newLabel.conjunctionExtended(ObsDLabel);
+					// Label newLabel = new Label(SDLabel);
+					// newLabel.remove(p);
+					// newLabel = (nD != nZ) ? newLabel.conjunction(ObsDLabel) : newLabel.conjunctionExtended(ObsDLabel);
 					Label newLabel = (nD != nZ) ? this.makeAlphaBetaGammaPrime4R3(nS, nD, nObs, p, ObsDLabel, SDLabel)
 							: makeBetaGammaDagger4qR3(nS, nZ, nObs, p, ObsDLabel, SDLabel);
 					if (newLabel == null) {
@@ -404,33 +370,32 @@ public class CSTNwoNodeLabel extends CSTN {
 					eSD.putLabeledValueToRemovedList(SDLabel, v);
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 					if (ruleApplied) {
-						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-							LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
-									+ "source: " + nObs.getName() + " ---" + pairAsString(ObsDLabel, w) + "---> " + nD.getName()
-									+ " <---" + pairAsString(SDLabel, v) + "--- " + nS.getName()
-									+ "\nresult: add " + nD.getName() + " <---" + pairAsString(newLabel, max) + "--- " + nS.getName());
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
+										+ "source: " + nObs.getName() + " ---" + pairAsString(ObsDLabel, w) + "---> " + nD.getName()
+										+ " <---" + pairAsString(SDLabel, v) + "--- " + nS.getName()
+										+ "\nresult: add " + nD.getName() + " <---" + pairAsString(newLabel, max) + "--- " + nS.getName());
+							}
 						}
 						this.checkStatus.r3calls++;
-					}
-
-					if (isNewLabeledValueANegativeLoop(newLabel, w, nS, nD, eSD)) {
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						return ruleApplied;
 					}
 				}
 			}
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R3: end.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R3: end.");
+			}
 		}
 		return ruleApplied;
 	}
 
 	/**
-	 * As {@link CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge)} 
+	 * As {@link CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge)}
 	 * but without the check that the new label subsumes the conjunction of node labels.
-	 * 
+	 * The rule is the EqLp+ not yet published. Moreover, qLabel are not more considered because it has been shown that are not necessary (2017-10-10).
+	 *
 	 * @param nA CANNOT BE NULL!
 	 * @param nB CANNOT BE NULL!
 	 * @param nC CANNOT BE NULL!
@@ -445,25 +410,27 @@ public class CSTNwoNodeLabel extends CSTN {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false;
+
 		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
-
 			/**
-			 * If there is a self loop containing a (-∞, q*), it must be propagated!
+			 * If there is a self loop containing a (-∞, q*), it must be propagated! NO MORE USED!
 			 */
 			final int u = ABEntry.getIntValue();
 			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
 				final Label labelBC = BCEntry.getKey();
-				final int v = BCEntry.getIntValue();
-				int sum = sumWithOverflowCheck(u, v, this.horizon);
-
-				final Label newLabelAC = labelAB.conjunctionExtended(labelBC);
-				final boolean qLabel = newLabelAC.containsUnknown();
-				if (qLabel) {
-					if (u >= 0) // rule condition!
-						continue;
-//					removeChildrenOfUnknown(newLabelAC);
+				final Label newLabelAC = labelAB.conjunction(labelBC);
+				if (newLabelAC == null) {
+					continue;
 				}
+				// final boolean qLabel = newLabelAC.containsUnknown();
+				// if (qLabel) {
+				// if (u >= 0) // rule condition!
+				// continue;
+				// removeChildrenOfUnknown(newLabelAC);
+				// }
+				final int v = BCEntry.getIntValue();
+				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
 				int oldValue = eAC.getValue(newLabelAC);
 				if (nA == nC) {
 					if (sum >= 0) {
@@ -471,36 +438,41 @@ public class CSTNwoNodeLabel extends CSTN {
 						continue;
 					}
 					// here sum is negative
-					if (!qLabel) {
-						// sum is negative!
-						eAC.mergeLabeledValue(newLabelAC, sum);
-						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
+					// if (!qLabel) {
+					// sum is negative!
+					eAC.mergeLabeledValue(newLabelAC, sum);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER, "***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
 						}
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						this.checkStatus.labeledValuePropagationcalls++;
-						return true;
 					}
-					sum = Constants.INT_NEG_INFINITE;
-				} else {
-					// in the case of A != C, a value is stored only if it is more negative than the current one.
-					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
-						continue;
-					}
+					this.checkStatus.consistency = false;
+					this.checkStatus.finished = true;
+					this.checkStatus.labeledValuePropagationcalls++;
+					return true;
+					// }
+					// sum = Constants.INT_NEG_INFINITE;
 				}
+				// else {
+				// in the case of A != C, a value is stored only if it is more negative than the current one.
+				if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+					continue;
+				}
+				// }
 				// here sum has to be insert!
 				// I have to prepare the log before the execution of the merge!
 				String log = null;
-				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-					log = "Label Propagation Rule applied to edge " + eAC.getName()
-							+ ":\nsource: "
-							+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
-							+ "---> "
-							+ nC.getName()
-							+ "\nresult: "
-							+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
-							+ "; old value: " + Constants.formatInt(oldValue);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						log = "Label Propagation Rule applied to edge " + eAC.getName()
+								+ ":\nsource: "
+								+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
+								+ "---> "
+								+ nC.getName()
+								+ "\nresult: "
+								+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
+								+ "; old value: " + Constants.formatInt(oldValue);
+					}
 				}
 
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
@@ -508,21 +480,20 @@ public class CSTNwoNodeLabel extends CSTN {
 					this.checkStatus.labeledValuePropagationcalls++;
 					if (Debug.ON)
 						LOG.log(Level.FINER, log);
-					if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
-						if (v >= 0)
-							this.checkStatus.qSemiNegLoop++;
-						else
-							this.checkStatus.qAllNegLoop++;
-					}
+					// if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
+					// if (v >= 0)
+					// this.checkStatus.qSemiNegLoop++;
+					// else
+					// this.checkStatus.qAllNegLoop++;
+					// }
 				}
 			}
 		}
-//		if (ruleApplied && nA.isObservator() && nC.isObservator()) {
-//			update children 
-//			updateChildrenOf(nC, nA, eAC);//It is preferable to recheck all values because the new value can have simplified some labels.
-//		}
+		// if (ruleApplied && nA.isObservator() && nC.isObservator()) {
+		// update children
+		// updateChildrenOf(nC, nA, eAC);//It is preferable to recheck all values because the new value can have simplified some labels.
+		// }
 		return ruleApplied;
-
 	}
 
 	/**
@@ -546,7 +517,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	public void setAddAuxiliaryConstraints(boolean addAuxiliaryConstraints) {
 		this.addAuxiliaryConstraints = addAuxiliaryConstraints;
 	}
-	
+
 	/**
 	 * Add nS as child to nD children set if it is a child.
 	 * 
@@ -558,24 +529,25 @@ public class CSTNwoNodeLabel extends CSTN {
 	private void updateChildrenOf(LabeledNode nD, LabeledNode nS, LabeledIntEdge eSD) {
 		char dProp = nD.getPropositionObserved();
 		char sProp = nS.getPropositionObserved();
-		if (dProp == Constants.UNKNOWN || sProp== Constants.UNKNOWN) return;
-		
+		if (dProp == Constants.UNKNOWN || sProp == Constants.UNKNOWN)
+			return;
+
 		Label dPropAsLabel = new Label(dProp, State.unknown);
-		for( Entry<Label> entry: eSD.getLabeledValueSet()) {
+		for (Entry<Label> entry : eSD.getLabeledValueSet()) {
 			if (entry.getIntValue() > 0)
 				continue;
 			Label label = entry.getKey();
 			if (dPropAsLabel.subsumes(label)) {
-				//q is child of p
+				// q is child of p
 				this.g.addChildToObservatioNode(nD, sProp);
 			}
 		}
 	}
-	
+
 	/**
 	 * It makes the same action of {@link CSTN#makeAlphaBetaGammaPrime4R3(LabeledNode, LabeledNode, LabeledNode, char, Label, Label)}
 	 * without the check of node labels because for streamlined CSTN is not necessary.
-
+	 * 
 	 * @param nS
 	 * @param nD
 	 * @param nObs
@@ -590,35 +562,45 @@ public class CSTNwoNodeLabel extends CSTN {
 			final Label labelFromObs, Label labelToClean) {
 
 		final StringBuilder slog = new StringBuilder();
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			slog.append("labelEdgeFromObs = " + labelFromObs);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				slog.append("labelEdgeFromObs = " + labelFromObs);
+		}
 
 		Label labelToCleanWOp = new Label(labelToClean);
 		labelToCleanWOp.remove(observed);
 
 		final Label alpha = labelFromObs.getSubLabelIn(labelToCleanWOp, false);
 		if (alpha.containsUnknown()) {
-			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, slog.toString() + " α contains unknow: " + alpha);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST, slog.toString() + " α contains unknow: " + alpha);
+				}
 			}
 			return null;
 		}
 		final Label beta = labelFromObs.getSubLabelIn(labelToCleanWOp, true);
 		if (beta.containsUnknown()) {
-			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, slog.toString() + " β contains unknow " + beta);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST, slog.toString() + " β contains unknow " + beta);
+				}
 			}
 			return null;
 		}
 		final Label gamma = labelToCleanWOp.getSubLabelIn(labelFromObs, false);
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, slog.toString() + " γ: " + gamma + "\n.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, slog.toString() + " γ: " + gamma + "\n.");
+			}
+			// gamma.remove(this.g.getChildrenOf(nObs));
 		}
-//		gamma.remove(this.g.getChildrenOf(nObs));
 
 		Label alphaBetaGamma = alpha.conjunction(beta).conjunction(gamma);
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			slog.append(", αβγ'=" + alphaBetaGamma);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				slog.append(", αβγ'=" + alphaBetaGamma);
+		}
 
 		if (alphaBetaGamma == null)
 			return null;
@@ -645,16 +627,11 @@ public class CSTNwoNodeLabel extends CSTN {
 
 		final Label beta = new Label(labelToClean);
 		beta.remove(observed);
-
-//		beta.remove(this.g.getChildrenOf(nObs));
-
+		// beta.remove(this.g.getChildrenOf(nObs));
 		Label betaGamma = labelFromObs.conjunctionExtended(beta);
-
 		// remove all children of unknowns.
-//		removeChildrenOfUnknown(betaGamma);
-
+		// removeChildrenOfUnknown(betaGamma);
 		return betaGamma;
 	}
 
-	
 }

@@ -395,7 +395,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	@Override
 	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getAllUpperCaseAndOrdinaryLabeledValuesSet() {
 		// Merge all possible labeled values and Upper Case labeled values of edges between Y and X in a single set.
-		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> globalLabeledValueSet = new ObjectArraySet<>(this.getUpperLabelSet());
+		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> globalLabeledValueSet = this.getUpperLabelSet();
 		for (final Object2IntMap.Entry<Label> entry : this.getLabeledValueSet()) {
 			final Entry<Label, ALabel> e = new AbstractObject2ObjectMap.BasicEntry<>(entry.getKey(), ALabel.emptyLabel);
 			globalLabeledValueSet.add(new AbstractObject2IntMap.BasicEntry<>(e, entry.getIntValue()));

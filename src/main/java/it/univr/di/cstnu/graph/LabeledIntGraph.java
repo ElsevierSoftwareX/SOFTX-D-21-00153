@@ -736,7 +736,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * getLowerLabeledEdges.
 	 *
-	 * @return the set of edges containing Lower Case Labels
+	 * @return the set of edges containing Lower Case Labels!
 	 */
 	public Set<LabeledIntEdge> getLowerLabeledEdges() {
 		if (this.lowerCaseEdgesSet == null) {

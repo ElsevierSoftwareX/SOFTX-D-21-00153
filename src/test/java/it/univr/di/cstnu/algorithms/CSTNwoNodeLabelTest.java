@@ -383,7 +383,7 @@ public class CSTNwoNodeLabelTest {
 		XYok.mergeLabeledValue(Label.parse("¬b"), 8);
 		XYok.mergeLabeledValue(Label.parse("¬ab"), -2);
 		XYok.mergeLabeledValue(Label.parse("b"), -1);
-		XYok.mergeLabeledValue(Label.parse("¿b"), -11);
+//		XYok.mergeLabeledValue(Label.parse("¿b"), -11);//2017-10-10: qlabels are not more generated.
 
 
 		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
@@ -414,7 +414,7 @@ public class CSTNwoNodeLabelTest {
 
 		// System.out.println("xy: " +xy);
 
-		XYok.mergeLabeledValue(Label.parse("¿b"), -20);
+//		XYok.mergeLabeledValue(Label.parse("¿b"), -20);//2017-10-10: qlabels are not more generated.
 		XYok.mergeLabeledValue(Label.parse("¬b"), -1);
 
 		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
@@ -498,6 +498,8 @@ public class CSTNwoNodeLabelTest {
 		YX.mergeLabeledValue(Label.parse("p"), 3);
 		YX.mergeLabeledValue(Label.parse("¬p"), -1);
 
+		assertEquals("YX: ", "{(-1, ¬p) (3, p) }", YX.getLabeledValueMap().toString());
+
 		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
 
 		g.addEdge(XX, this.X, this.X);
@@ -511,15 +513,20 @@ public class CSTNwoNodeLabelTest {
 		} catch (WellDefinitionException e) {
 			e.printStackTrace();
 		}
-
+		assertEquals("XY: ", "{(3, ¬p) (-2, p) (-5, ¿p) }", XY.getLabeledValueMap().toString());
+		assertEquals("YX: ", "{(-1, ¬p) (3, p) }", YX.getLabeledValueMap().toString());
+		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());
+		
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
-		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+//		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());//2017-10-10: qlabels are not more generated.
+		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+//		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());/2017-10-10: qlabels are not more generated.
+		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());
 	}
 
 	/**
@@ -788,154 +795,157 @@ public class CSTNwoNodeLabelTest {
 	 * Test method for
 	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
+	 * 	 * Since in 2017-10-10 -infty qlabeled value have been suppressed, this test is not more necessary!
 	 */
-	@SuppressWarnings("javadoc")
-	@Test
-	public final void testLabeledPropagationForwardOfInfty() {
-		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		LabeledNode Y = new LabeledNode("Y");
-		g.addVertex(this.P);
-		g.addVertex(this.X);
-		g.addVertex(Y);
-		g.addVertex(this.Z);
-		g.setZ(this.Z);
-
-		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
-		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
-		XZ.mergeLabeledValue(Label.emptyLabel, 0);
-
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		XY.mergeLabeledValue(Label.parse("p"), -2);
-
-		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
-		YX.mergeLabeledValue(Label.parse("¬p"), -2);
-
-		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
-		LabeledIntEdgePluggable YY = new LabeledIntEdgePluggable("YY", this.labeledIntValueMapClass);
-
-		g.addEdge(XY, this.X, Y);
-		g.addEdge(YX, Y, this.X);
-		g.addEdge(YZ, Y, this.Z);
-		g.addEdge(XZ, this.X, this.Z);
-		g.addEdge(XX, this.X, this.X);
-		g.addEdge(YY, Y, Y);
-
-		this.cstn.setG(g);
-		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
-		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
-
-		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
-
-		this.cstn.labeledPropagationRule(this.X, this.X, Y, XX, XY, XY);
-		assertEquals("XY", "{(-2, p) (-∞, ¿p) }", XY.getLabeledValueMap().toString());
-
-		this.cstn.labeledPropagationRule(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
-	}
+//	@SuppressWarnings("javadoc")
+//	@Test
+//	public final void testLabeledPropagationForwardOfInfty() {
+//		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+//		LabeledNode Y = new LabeledNode("Y");
+//		g.addVertex(this.P);
+//		g.addVertex(this.X);
+//		g.addVertex(Y);
+//		g.addVertex(this.Z);
+//		g.setZ(this.Z);
+//
+//		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+//		YZ.mergeLabeledValue(Label.emptyLabel, 0);
+//		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+//		XZ.mergeLabeledValue(Label.emptyLabel, 0);
+//
+//		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+//		XY.mergeLabeledValue(Label.parse("p"), -2);
+//
+//		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+//		YX.mergeLabeledValue(Label.parse("¬p"), -2);
+//
+//		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
+//		LabeledIntEdgePluggable YY = new LabeledIntEdgePluggable("YY", this.labeledIntValueMapClass);
+//
+//		g.addEdge(XY, this.X, Y);
+//		g.addEdge(YX, Y, this.X);
+//		g.addEdge(YZ, Y, this.Z);
+//		g.addEdge(XZ, this.X, this.Z);
+//		g.addEdge(XX, this.X, this.X);
+//		g.addEdge(YY, Y, Y);
+//
+//		this.cstn.setG(g);
+//		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
+//		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
+//
+//		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
+//		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+//
+//		this.cstn.labeledPropagationRule(this.X, this.X, Y, XX, XY, XY);
+//		assertEquals("XY", "{(-2, p) (-∞, ¿p) }", XY.getLabeledValueMap().toString());
+//
+//		this.cstn.labeledPropagationRule(Y, this.X, Y, YX, XY, YY);
+//		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
+//	}
 
 	/**
 	 * Test method for
 	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
+	 * 	 * Since in 2017-10-10 -infty qlabeled value have been suppressed, this test is not more necessary!
 	 */
-	@SuppressWarnings("javadoc")
-	@Test
-	public final void testLabeledPropagationForwardOfInfty1() {
-		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		LabeledNode Y = new LabeledNode("Y");
-		g.addVertex(this.P);
-		g.addVertex(this.X);
-		g.addVertex(Y);
-		g.addVertex(this.Z);
-		g.setZ(this.Z);
-
-		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
-		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
-		XZ.mergeLabeledValue(Label.emptyLabel, 0);
-
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		XY.mergeLabeledValue(Label.parse("¿p"), -2);
-
-		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
-		YX.mergeLabeledValue(Label.parse("¬p"), -2);
-
-		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
-		LabeledIntEdgePluggable YY = new LabeledIntEdgePluggable("YY", this.labeledIntValueMapClass);
-
-		g.addEdge(XY, this.X, Y);
-		g.addEdge(YX, Y, this.X);
-		g.addEdge(YZ, Y, this.Z);
-		g.addEdge(XZ, this.X, this.Z);
-		g.addEdge(XX, this.X, this.X);
-		g.addEdge(YY, Y, Y);
-
-		this.cstn.setG(g);
-		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
-		// assertEquals("XZ", "{(0, ⊡) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
-		assertEquals("XZ", "{(0, ⊡) (-2, ¿p) }", XZ.getLabeledValueMap().toString());// if negative sum value are q-propagate
-
-		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		// assertTrue(eNew == null);//if only negative value are q-propagate
-
-		// g.addEdge(XX, X, X);
-		this.cstn.labeledPropagationRule(this.X, this.X, Y, XX, XY, XY);
-		// assertEquals("XY", "{(-2, ¿p) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
-		assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
-
-		this.cstn.labeledPropagationRule(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
-
-		this.cstn.labeledPropagationRule(Y, Y, this.X, YY, YX, YX);
-		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
-	}
+//	@SuppressWarnings("javadoc")
+//	@Test
+//	public final void testLabeledPropagationForwardOfInfty1() {
+//		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+//		LabeledNode Y = new LabeledNode("Y");
+//		g.addVertex(this.P);
+//		g.addVertex(this.X);
+//		g.addVertex(Y);
+//		g.addVertex(this.Z);
+//		g.setZ(this.Z);
+//
+//		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+//		YZ.mergeLabeledValue(Label.emptyLabel, 0);
+//		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+//		XZ.mergeLabeledValue(Label.emptyLabel, 0);
+//
+//		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+//		XY.mergeLabeledValue(Label.parse("¿p"), -2);
+//
+//		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+//		YX.mergeLabeledValue(Label.parse("¬p"), -2);
+//
+//		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
+//		LabeledIntEdgePluggable YY = new LabeledIntEdgePluggable("YY", this.labeledIntValueMapClass);
+//
+//		g.addEdge(XY, this.X, Y);
+//		g.addEdge(YX, Y, this.X);
+//		g.addEdge(YZ, Y, this.Z);
+//		g.addEdge(XZ, this.X, this.Z);
+//		g.addEdge(XX, this.X, this.X);
+//		g.addEdge(YY, Y, Y);
+//
+//		this.cstn.setG(g);
+//		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
+//		// assertEquals("XZ", "{(0, ⊡) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
+//		assertEquals("XZ", "{(0, ⊡) (-2, ¿p) }", XZ.getLabeledValueMap().toString());// if negative sum value are q-propagate
+//
+//		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
+//		// assertTrue(eNew == null);//if only negative value are q-propagate
+//
+//		// g.addEdge(XX, X, X);
+//		this.cstn.labeledPropagationRule(this.X, this.X, Y, XX, XY, XY);
+//		// assertEquals("XY", "{(-2, ¿p) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
+//		assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
+//
+//		this.cstn.labeledPropagationRule(Y, this.X, Y, YX, XY, YY);
+//		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
+//
+//		this.cstn.labeledPropagationRule(Y, Y, this.X, YY, YX, YX);
+//		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
+//	}
 
 	/**
 	 * Test method for
 	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
+	 * 	 * Since in 2017-10-10 -infty qlabeled value have been suppressed, this test is not more necessary!
 	 */
-	@SuppressWarnings("javadoc")
-	@Test
-	public final void testLabeledPropagationBackwardOfInfty() {
-		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		LabeledNode Y = new LabeledNode("Y");
-		g.addVertex(this.P);
-		g.addVertex(this.X);
-		g.addVertex(Y);
-		g.addVertex(this.Z);
-		g.setZ(this.Z);
-
-		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
-		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
-		XZ.mergeLabeledValue(Label.emptyLabel, 0);
-
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		XY.mergeLabeledValue(Label.parse("p"), -2);
-
-		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
-		YX.mergeLabeledValue(Label.parse("¬p"), -2);
-
-		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
-
-		g.addEdge(XY, this.X, Y);
-		g.addEdge(YX, Y, this.X);
-		g.addEdge(YZ, Y, this.Z);
-		g.addEdge(XZ, this.X, this.Z);
-		g.addEdge(XX, this.X, this.X);
-		this.cstn.setG(g);
-		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
-		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
-
-		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
-
-		this.cstn.labeledPropagationRule(Y, this.X, this.X, YX, XX, YX);
-		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
-	}
+//	@SuppressWarnings("javadoc")
+//	@Test
+//	public final void testLabeledPropagationBackwardOfInfty() {
+//		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+//		LabeledNode Y = new LabeledNode("Y");
+//		g.addVertex(this.P);
+//		g.addVertex(this.X);
+//		g.addVertex(Y);
+//		g.addVertex(this.Z);
+//		g.setZ(this.Z);
+//
+//		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+//		YZ.mergeLabeledValue(Label.emptyLabel, 0);
+//		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+//		XZ.mergeLabeledValue(Label.emptyLabel, 0);
+//
+//		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+//		XY.mergeLabeledValue(Label.parse("p"), -2);
+//
+//		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+//		YX.mergeLabeledValue(Label.parse("¬p"), -2);
+//
+//		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
+//
+//		g.addEdge(XY, this.X, Y);
+//		g.addEdge(YX, Y, this.X);
+//		g.addEdge(YZ, Y, this.Z);
+//		g.addEdge(XZ, this.X, this.Z);
+//		g.addEdge(XX, this.X, this.X);
+//		this.cstn.setG(g);
+//		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
+//		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
+//
+//		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
+//		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+//
+//		this.cstn.labeledPropagationRule(Y, this.X, this.X, YX, XX, YX);
+//		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
+//	}
 
 	/**
 	 * Test method to check if a graph requiring only R0-R3 application is checked well. .

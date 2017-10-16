@@ -9,6 +9,10 @@ import java.io.PrintStream;
 import java.sql.Time;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -25,8 +29,8 @@ import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
 import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
+import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -40,6 +44,13 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * @version $Id: $Id
  */
 public class CSTNRunningTime {
+	/**
+	 * Version
+	 */
+	// static final String VERSIONandDATE = "1.0, March, 22 2015";
+	// static final String VERSIONandDATE = "1.1, November, 18 2015";
+	// static final String VERSIONandDATE = "1.2, October, 10 2017";
+	static final String VERSIONandDATE = "1.3, October, 16 2017";// executor code cleaned
 
 	/**
 	 * Represent a DC check task that can be interrupted by a timeout.
@@ -53,21 +64,6 @@ public class CSTNRunningTime {
 		CSTN cstnChecker;
 
 		/**
-		 * @return the g
-		 */
-		public LabeledIntGraph getGraph() {
-			return this.cstnChecker.getG();
-		}
-
-		/**
-		 * @param g the g to set
-		 */
-		public void setGraph(LabeledIntGraph g) {
-			this.cstnChecker.setG(g);
-
-		}
-
-		/**
 		 * @param cstnChecker
 		 */
 		public DCTask(CSTN cstnChecker) {
@@ -78,12 +74,6 @@ public class CSTNRunningTime {
 			return this.cstnChecker.dynamicConsistencyCheck();
 		}
 	}
-
-	/**
-	 * Version
-	 */
-	// static final String VERSIONandDATE = "1.0, March, 22 2015";
-	static final String VERSIONandDATE = "1.1, November, 18 2015";
 
 	/**
 	 * class logger
@@ -152,7 +142,7 @@ public class CSTNRunningTime {
 	/**
 	 * Output file where to write the determined experimental execution times in CSV format.
 	 */
-	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in CSV format. If file is already present, it is overwritten.", metaVar = "outputFile")
+	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in CSV format. If file is already present, data will be added.", metaVar = "outputFile")
 	private File fOutput = null;
 	/**
 	 * Parameter for asking reaction time.
@@ -192,7 +182,7 @@ public class CSTNRunningTime {
 	/**
 	 * Class for representing edge labeled values.
 	 */
-	final Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
+	final static Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
 
 	/**
 	 * 
@@ -254,16 +244,12 @@ public class CSTNRunningTime {
 				System.err.println();
 				return false;
 			}
+			// filename has to end with .csv
 			if (!this.fOutput.getName().endsWith(".csv")) {
 				this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".csv"));
 			}
-			if (this.fOutput.exists()) {
-				this.fOutput.renameTo(new File(this.fOutput.getAbsoluteFile() + ".old"));
-				this.fOutput.delete();
-			}
 			try {
-				this.fOutput.createNewFile();
-				this.output = new PrintStream(this.fOutput);
+				this.output = new PrintStream(new FileOutputStream(this.fOutput, true), true);
 			} catch (IOException e) {
 				System.err.println("Output file cannot be created: " + e.getMessage());
 				parser.printUsage(System.err);
@@ -288,8 +274,9 @@ public class CSTNRunningTime {
 					// + CSVSep + "#R1"
 					// + CSVSep + "#R2"
 					+ CSVSep + "#R3"
-					+ CSVSep + "#NegQLoop"
-					+ CSVSep + "#SemiNegQLopp");
+			// + CSVSep + "#NegQLoop"
+			// + CSVSep + "#SemiNegQLopp"
+			);
 		}
 		return true;
 	}
@@ -317,10 +304,13 @@ public class CSTNRunningTime {
 		}
 
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
+		CSTN cstn = null;
 		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(g.getInternalLabeledValueMapImplementationClass());
 		GraphMLReader<LabeledIntGraph> graphMLReader;
+		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
+		Future<CSTNCheckStatus> future;
+		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
 
-		CSTN cstn = null;
 		if (tester.woOnlyNodeLabels || tester.woNodeLabelsAuxConstraints) {
 			cstn = new CSTNwoNodeLabel(g);
 			if (tester.woOnlyNodeLabels) {
@@ -340,7 +330,6 @@ public class CSTNRunningTime {
 			}
 		}
 
-		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
 		// For each graph, solve it, save its times in an array
 		for (File file : tester.inputCSTNFile) {
 			System.out.println("Analyzing file " + file.getName() + "...");
@@ -403,31 +392,53 @@ public class CSTNRunningTime {
 				if (tester.convertToNewFormat)
 					continue;
 			}
-			System.out.println("Min max edge value determination...");
-			int min = Constants.INT_POS_INFINITE;
-			int max = Constants.INT_NEG_INFINITE;
+			// In order to determine the exac values of lower case edges, I exploit CSTNU init method
+			cstn.setG(g);
+			String msg;
+			try {
+				cstn.initAndCheck();
+			} catch (WellDefinitionException e) {
+				msg = (new Time(System.currentTimeMillis())).toString() + ": " + file.getName()
+						+ " is not a not well-defined instance. CSTNU is ignored.\nError details:"
+						+ e.getMessage();
+				System.out.println(msg);
+				LOG.severe(msg);
+				continue;
+			}
+			int min = -cstn.maxWeight;
+			int max = min;
 			for (LabeledIntEdge e : g.getEdgesArray()) {
 				for (Entry<Label> entry : e.getLabeledValueSet()) {
 					int v = entry.getIntValue();
 					if (v > max)
 						max = v;
-					if (v < min)
-						min = v;
 				}
 			}
 			int nEdges = g.getEdgeCount();
 
+			tester.output.printf(
+					"%s"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d",
+					file.getName(),
+					g.getVertexCount(),
+					nEdges,
+					g.getPropositions().size(),
+					min,
+					max);
+
 			Double localAvg = Double.NaN, localStdDev = Double.NaN;
 			CSTNCheckStatus status = new CSTNCheckStatus();
-			// ExecutorService executor = Executors.newSingleThreadExecutor();
-			// Future<CSTNCheckStatus> future = null;
-			// DCTask dcTask = new DCTask(cstn);
+			boolean cstnOK = true;
+
 			if (!tester.noDCCheck) {
-				String msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
+				msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
 						+ " repeating DC check for " + tester.nDCRepetition + " times.";
 				System.out.println(msg);
 				LOG.info(msg);
-				boolean cstnOK = true;
 				localSummaryStat.clear();
 				localAvg = Double.NaN;
 				localStdDev = Double.NaN;
@@ -435,25 +446,22 @@ public class CSTNRunningTime {
 					LOG.fine("Test " + j + ", CSTN: " + file.getName());
 					if (j != 0) {
 						// It is necessary to reset the graph!
-						graphMLReader = new GraphMLReader<>(file, g.getInternalLabeledValueMapImplementationClass());// to be sure that the reader reloads the
-																														// graph!
+						graphMLReader = new GraphMLReader<>(file, labeledIntValueMap);// reader must reload g.
 						g = graphMLReader.readGraph();
-					}
-					// dcTask.setGraph(g);
-					// future = executor.submit(dcTask);
-					try {
-						// status = future.get(tester.timeOut, TimeUnit.SECONDS);
 						cstn.setG(g);
-						status = cstn.dynamicConsistencyCheck();
-						// } catch (TimeoutException | ExecutionException | InterruptedException | WellDefinitionException ex) {
-					} catch (WellDefinitionException ex) {
-						msg = (new Time(System.currentTimeMillis())).toString() + ": " + file.getName()
-								+ " requires more than " + tester.timeOut
-								+ "seconds to be checked or it has been interrupted or it is a not well-defined instance. CSTN has been ignored.\nError details:"
+					}
+					future = executor.submit(new DCTask(cstn));
+					try {
+						// status = cstn.dynamicConsistencyCheck();
+						status = future.get(tester.timeOut, TimeUnit.SECONDS);
+					} catch (Exception ex) {
+						msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
+								+ " CSTNU is ignored.\nError details:"
 								+ ex.getMessage();
-						System.err.println(msg);
-						LOG.warning(msg);
+						System.out.println(msg);
+						LOG.severe(msg);
 						cstnOK = false;
+						status.consistency = false;
 						continue;
 					}
 					localSummaryStat.addValue(status.executionTimeNS);
@@ -461,8 +469,11 @@ public class CSTNRunningTime {
 				msg = (new Time(System.currentTimeMillis())).toString() + ": done!";
 				System.out.println(msg);
 				LOG.info(msg);
-				if (!cstnOK)
+				if (!cstnOK) {
+					// There is a problem... in the stats we write TIMEOUT
+					tester.output.printf(CSVSep + "TIMEOUT after %d seconds.\n", tester.timeOut);
 					continue;
+				}
 				localAvg = localSummaryStat.getMean();
 				localStdDev = localSummaryStat.getStandardDeviation();
 				if (tester.timeInS) {
@@ -473,25 +484,21 @@ public class CSTNRunningTime {
 				LOG.info(file.getName() + " is " + status.consistency);
 				LOG.info(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
 				LOG.info(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
-				// executor.shutdownNow();
-			}
-			tester.output.printf("%s"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					+ CSVSep + "%E"
-					+ CSVSep + "%E"
-					+ CSVSep + "%s"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					// + CSVSep +"%d"
-					// + CSVSep +"%d"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					+ CSVSep + "%d"
-					+ "\n", file.getName(), g.getVertexCount(), nEdges, g.getPropositions().size(), min, max,
+			} // end DC check
+
+			globalSummaryStat.addValue(localSummaryStat.getMean());
+			tester.output.printf(
+					CSVSep + "%E"
+							+ CSVSep + "%E"
+							+ CSVSep + "%s"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							// + CSVSep +"%d"
+							// + CSVSep +"%d"
+							+ CSVSep + "%d"
+							// + CSVSep + "%d"
+							// + CSVSep + "%d"
+							+ "\n",
 					localAvg,
 					localStdDev,
 					((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
@@ -499,21 +506,34 @@ public class CSTNRunningTime {
 					status.r0calls,
 					// , status.r1calls
 					// , status.r2calls
-					status.r3calls,
-					status.qAllNegLoop,
-					status.qSemiNegLoop);
-			globalSummaryStat.addValue(localSummaryStat.getMean());
-		}
+					status.r3calls
+			// status.qAllNegLoop,
+			// status.qSemiNegLoop
+			);
+		} // end list of files to process
 
+		if (tester.fOutput != null) {
+			tester.output.close();
+		}
 		if (!tester.convertToNewFormat) {
 			System.out.println("\nFINAL REPORT\nNumber of CSTN checked: " + globalSummaryStat.getN());
 			System.out.println("Average execution time: " + globalSummaryStat.getMean() + " ns (" + (globalSummaryStat.getMean() / 1E9) + " s)");
 			System.out.println("Std. Deviation execution time: " + globalSummaryStat.getStandardDeviation() + " ns ("
 					+ (globalSummaryStat.getStandardDeviation() / 1E9) + " s)");
 		}
-
-		if (tester.fOutput != null) {
-			tester.output.close();
+		// executor shutdown!
+		try {
+			System.out.println("Shutdown executor");
+			executor.shutdown();
+			executor.awaitTermination(5, TimeUnit.SECONDS);
+		} catch (InterruptedException e) {
+			System.err.println("Tasks interrupted");
+		} finally {
+			if (!executor.isTerminated()) {
+				System.err.println("Cancel non-finished tasks");
+			}
+			executor.shutdownNow();
+			System.out.println("Shutdown finished");
 		}
 	}
 }

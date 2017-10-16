@@ -383,7 +383,7 @@ public class CSTNTest {
 		XYok.mergeLabeledValue(Label.parse("¬b"), 8);
 		XYok.mergeLabeledValue(Label.parse("¬ab"), -2);
 		XYok.mergeLabeledValue(Label.parse("b"), -1);
-		XYok.mergeLabeledValue(Label.parse("¿b"), -11);
+//		XYok.mergeLabeledValue(Label.parse("¿b"), -11);//2017-10-10: qLabels are not more generated.
 
 
 		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
@@ -414,7 +414,7 @@ public class CSTNTest {
 
 		// System.out.println("xy: " +xy);
 
-		XYok.mergeLabeledValue(Label.parse("¿b"), -20);
+//		XYok.mergeLabeledValue(Label.parse("¿b"), -20);//2017-10-10: qLabels are not more generated.
 		XYok.mergeLabeledValue(Label.parse("¬b"), -1);
 
 		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
@@ -514,12 +514,12 @@ public class CSTNTest {
 
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
-		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 	}
 
 	/**
@@ -812,13 +812,13 @@ public class CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+		assertEquals("XX", "{}", XX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 
 		this.cstn.labeledPropagationRule(this.X, this.X, Y, XX, XY, XY);
-		assertEquals("XY", "{(-2, p) (-∞, ¿p) }", XY.getLabeledValueMap().toString());
+		assertEquals("XY", "{(-2, p) }", XY.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 
 		this.cstn.labeledPropagationRule(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
+		assertEquals("", "{}", YY.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 	}
 
 	/**
@@ -861,7 +861,7 @@ public class CSTNTest {
 		this.cstn.setG(g);
 		this.cstn.labeledPropagationRule(this.X, Y, this.Z, XY, YZ, XZ);
 		// assertEquals("XZ", "{(0, ⊡) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
-		assertEquals("XZ", "{(0, ⊡) (-2, ¿p) }", XZ.getLabeledValueMap().toString());// if negative sum value are q-propagate
+		assertEquals("XZ", "{(0, ⊡) }", XZ.getLabeledValueMap().toString());// if negative sum value are q-propagate///2017-10-10: qlabels are not more generated.
 
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
 		// assertTrue(eNew == null);//if only negative value are q-propagate
@@ -869,13 +869,13 @@ public class CSTNTest {
 		// g.addEdge(XX, X, X);
 		this.cstn.labeledPropagationRule(this.X, this.X, Y, XX, XY, XY);
 		// assertEquals("XY", "{(-2, ¿p) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
-		assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
-
+		assertEquals("XY", "{(-2, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
+		
 		this.cstn.labeledPropagationRule(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
+		assertEquals("", "{}", YY.getLabeledValueMap().toString());//2017-10-10: qlabels are not more generated.
 
 		this.cstn.labeledPropagationRule(Y, Y, this.X, YY, YX, YX);
-		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
+		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());//2017-10-10: qlabels are not more generated.
 	}
 
 	/**
@@ -917,10 +917,11 @@ public class CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labeledPropagationRule(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
+//		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
+		assertEquals("XX", "{}", XX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 
 		this.cstn.labeledPropagationRule(Y, this.X, this.X, YX, XX, YX);
-		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
+		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 	}
 
 	/**

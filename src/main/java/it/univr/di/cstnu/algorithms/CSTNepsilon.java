@@ -41,7 +41,8 @@ public class CSTNepsilon extends CSTN {
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
-	static final String VERSIONandDATE = "Version  1.0 - April, 03 2017";// first release
+//	static public final String VERSIONandDATE = "Version  1.0 - April, 03 2017";// first release
+	static public final String VERSIONandDATE = "Version  1.1 - October, 11 2017";//removed qLabel
 
 	/**
 	 * Reaction time for CSTN
@@ -211,11 +212,6 @@ public class CSTNepsilon extends CSTN {
 			if (mergeStatus && LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, logMessage);
 			}
-			if (CSTN.isNewLabeledValueANegativeLoop(alphaPrime, w, nObs, nX, ePX)) {
-				this.checkStatus.consistency = false;
-				this.checkStatus.finished = true;
-				return ruleApplied;
-			}
 		}
 		if (LOG.isLoggable(Level.FINEST)) {
 			LOG.log(Level.FINEST, "Label Modification R0: end.");
@@ -329,12 +325,6 @@ public class CSTNepsilon extends CSTN {
 									+ "\nresult: add " + nD.getName() + " <---" + CSTN.pairAsString(newLabel, max) + "--- " + nS.getName());
 						}
 						this.checkStatus.r3calls++;
-					}
-
-					if (CSTN.isNewLabeledValueANegativeLoop(newLabel, w, nS, nD, eSD)) {
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						return ruleApplied;
 					}
 				}
 			}

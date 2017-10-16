@@ -363,7 +363,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
 			try {
-				CSTNEditor.this.cstnu.initUpperLowerLabelDataStructure();
+				CSTNEditor.this.cstnu.initAndCheck();
 			} catch (final IllegalArgumentException | WellDefinitionException ec) {
 				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
 				CSTNEditor.LOG.warning(msg);
@@ -408,7 +408,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
 				CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.checkedGraph.getEdgeFactory().toString());
 				try {
-					CSTNEditor.this.cstnu.initUpperLowerLabelDataStructure();
+					CSTNEditor.this.cstnu.initAndCheck();
 				} catch (final Exception ex) {
 					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the graph: " + ex.getMessage());
 					// jl.setIcon(CSTNEditor.warnIcon);

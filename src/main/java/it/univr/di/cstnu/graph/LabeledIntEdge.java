@@ -224,7 +224,7 @@ public interface LabeledIntEdge extends Component {
 	public LabeledContingentIntTreeMap getUpperLabelMap();
 
 	/**
-	 * @return The map of Upper Case Labels of the edge.
+	 * @return The set of map of Upper Case Labels of the edge.
 	 */
 	public ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getUpperLabelSet();
 

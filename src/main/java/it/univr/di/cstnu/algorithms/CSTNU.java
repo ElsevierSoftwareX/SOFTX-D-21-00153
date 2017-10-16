@@ -71,8 +71,8 @@ public class CSTNU extends CSTNir {
 					+ "Labeled Lower Case Rule has been applied " + this.lowerCaseRuleCalls + " times.\n"
 					+ "Labeled Cross-Lower Case Rule has been applied " + this.crossCaseRuleCalls + " times.\n"
 					+ "Labeled Letter Removal (LLR) Rule has been applied " + this.letterRemovalRuleCalls + " times.\n"
-					+ "Negative qLoops: " + this.qAllNegLoop + "\n"
-					+ "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
+					// + "Negative qLoops: " + this.qAllNegLoop + "\n"
+					// + "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
 					+ "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)");
 		}
 
@@ -112,8 +112,9 @@ public class CSTNU extends CSTNir {
 	 */
 	// static final String VERSIONandDATE = "Version 3.1 - Apr, 20 2016";
 	// static final String VERSIONandDATE = "Version 3.2 - June, 14 2016";
+	// static final public String VERSIONandDATE = "Version 5.0 - September, 8 2017";// introduced new rules
 	@SuppressWarnings("hiding")
-	static final public String VERSIONandDATE = "Version 5.0 - September, 8 2017";
+	static final public String VERSIONandDATE = "Version 5.0 - September, 8 2017";// removed qLabels
 
 	/**
 	 * Returns the sum of all negative values (ignoring their labels) present in the edges of a graph. If an edge has more than one negative values, only
@@ -149,28 +150,36 @@ public class CSTNU extends CSTNir {
 	 * @throws GraphIOException
 	 */
 	public static void main(final String[] args) throws FileNotFoundException, GraphIOException {
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			LOG.finest("Start...");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				LOG.finest("Start...");
+		}
 		final CSTNU cstnu = new CSTNU();
 
 		if (!cstnu.manageParameters(args))
 			return;
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			LOG.finest("Parameters ok!");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				LOG.finest("Parameters ok!");
+		}
 		if (cstnu.versionReq) {
 			System.out.println(CSTNU.class.getName() + " " + CSTNU.VERSIONandDATE + ". Academic and non-commercial use only.\n"
 					+ "Copyright © 2017, Roberto Posenato");
 			return;
 		}
 
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			LOG.finest("Loading graph...");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				LOG.finest("Loading graph...");
+		}
 		GraphMLReader<LabeledIntGraph> graphMLReader = new GraphMLReader<>(cstnu.fInput, LabeledIntTreeMap.class);
 		cstnu.setG(graphMLReader.readGraph());
 
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.finest("LabeledIntGraph loaded!");
-			LOG.finest("DC Checking...");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("LabeledIntGraph loaded!");
+				LOG.finest("DC Checking...");
+			}
 		}
 		CSTNUCheckStatus status;
 		try {
@@ -179,8 +188,10 @@ public class CSTNU extends CSTNir {
 			System.out.print("An error has been occured during the checking: " + e.getMessage());
 			return;
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			LOG.finest("LabeledIntGraph minimized!");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				LOG.finest("LabeledIntGraph minimized!");
+		}
 		if (status.finished) {
 			System.out.println("Checking finished!");
 			if (status.consistency) {
@@ -236,11 +247,13 @@ public class CSTNU extends CSTNir {
 	 * @param alabel Upper case label
 	 * @return true if the value represent a negative loop!
 	 */
-	static public boolean isNewLabeledValueANegativeLoop(final Label newLabel, final int value, final LabeledNode source, final LabeledNode dest,
+	static boolean isNewLabeledValueANegativeLoop(final Label newLabel, final int value, final LabeledNode source, final LabeledNode dest,
 			final LabeledIntEdge newEdge, ALabel alabel) {
-		if (source.equalsByName(dest) && value < 0 && !newLabel.containsUnknown()) {// && alabel.size()<=1) {
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Found a negative loop in the edge " + newEdge);
+		if (source.equalsByName(dest) && value < 0 && !newLabel.containsUnknown()) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Found a negative loop in the edge " + newEdge);
+				}
 			}
 			return true;
 		}
@@ -284,8 +297,10 @@ public class CSTNU extends CSTNir {
 		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getUpperLabelSet()) {
 			if (!entry.getKey().getKey().subsumes(conjunctedLabel)) {
 				final String msg = "Upper case Labeled value " + entry + " of edge " + e.getName() + " does not subsume the endpoint labels.";
-				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
-					LOG.log(Level.WARNING, msg);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						LOG.log(Level.WARNING, msg);
+					}
 				}
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 			}
@@ -294,8 +309,10 @@ public class CSTNU extends CSTNir {
 		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getLowerLabelSet()) {
 			if (!entry.getKey().getKey().subsumes(conjunctedLabel)) {
 				final String msg = "Lower case Labeled value " + entry + " of edge " + e.getName() + " does not subsume the endpoint labels.";
-				if (Debug.ON && LOG.isLoggable(Level.WARNING)) {
-					LOG.log(Level.WARNING, msg);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						LOG.log(Level.WARNING, msg);
+					}
 				}
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 			}
@@ -313,12 +330,14 @@ public class CSTNU extends CSTNir {
 	 */
 	public CSTNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {
 
-		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-			LOG.log(Level.FINER, "\nStarting checking CSTNU dynamic controllability...\n");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "\nStarting checking CSTNU dynamic controllability...\n");
+			}
 		}
 
 		try {
-			initUpperLowerLabelDataStructure();
+			initAndCheck();
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("The graph has a problem and it cannot be initialize: " + e.getMessage());
 		}
@@ -338,48 +357,63 @@ public class CSTNU extends CSTNir {
 		if (maxCycles == 0) {
 			maxCycles = 2;
 		}
-		if (Debug.ON && LOG.isLoggable(Level.INFO))
-			LOG.info("The maximum number of possible cycles is " + maxCycles);
+		// TODO Find the right number of cycles.
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO))
+				LOG.info("The maximum number of possible cycles is " + maxCycles);
+		}
 
 		int i;
 		this.checkStatus.finished = false;
 		Instant startInstant = Instant.now();
 		for (i = 1; i <= maxCycles && this.checkStatus.consistency && !this.checkStatus.finished; i++) {
-			if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.log(Level.INFO, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
+				}
 			}
 			this.checkStatus = this.oneStepDynamicControllability(edgesToCheck);
-			if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "*** End Main Cycle " + i + "/" + maxCycles + " ***\n\n");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.log(Level.INFO, "*** End Main Cycle " + i + "/" + maxCycles + " ***\n\n");
+				}
 			}
 			if (this.checkStatus.consistency && !this.checkStatus.finished) {
-				if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-					StringBuilder log = new StringBuilder();
-					log.append("During the check n. " + i + ", " + edgesToCheck.size()
-							+ " edges have been add/modified. Check has to continue.\nDetails of only modified edges having values:\n");
-					for (LabeledIntEdge e : edgesToCheck) {
-						if (e.size() == 0)
-							continue;
-						log.append("Edge " + e + "\n");
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						StringBuilder log = new StringBuilder();
+						log.append("During the check n. " + i + ", " + edgesToCheck.size()
+								+ " edges have been add/modified. Check has to continue.\nDetails of only modified edges having values:\n");
+						for (LabeledIntEdge e : edgesToCheck) {
+							if (e.size() == 0)
+								continue;
+							log.append("Edge " + e + "\n");
+						}
+						LOG.log(Level.FINER, log.toString());
 					}
-					LOG.log(Level.FINER, log.toString());
 				}
 			}
 		}
 		if (this.checkStatus.consistency && this.checkStatus.finished && i <= maxCycles) {
-			if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "After " + (i - 1) + " cycle, all possible propagations have done."
-						+ "\nNow it is necessary to check that AllMax Projection network is consistent.");
-				LOG.info("AllMax Projection check starts...");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.log(Level.INFO, "After " + (i - 1) + " cycle, all possible propagations have done."
+							+ "\nNow it is necessary to check that AllMax Projection network is consistent.");
+					LOG.info("AllMax Projection check starts...");
+				}
 			}
 			LabeledIntGraph allMaxCSTN = makeAllMaxProjection();
-			CSTN cstnChecker = new CSTN(allMaxCSTN);
+			CSTNir cstnChecker = new CSTNir(allMaxCSTN);
 			CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
-			if (Debug.ON && LOG.isLoggable(Level.INFO))
-				LOG.info("AllMax Projection network check done.\n");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO))
+					LOG.info("AllMax Projection network check done.\n");
+			}
 			if (!cstnStatus.consistency) {
-				if (Debug.ON && LOG.isLoggable(Level.INFO))
-					LOG.info("The AllMax Projection network has at least one negative loop. The original network cannot be DC!");
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.INFO))
+						LOG.info("The AllMax Projection network has at least one negative loop. The original network cannot be DC!");
+				}
 				this.checkStatus.consistency = false;
 				this.checkStatus.finished = true;
 			}
@@ -388,26 +422,34 @@ public class CSTNU extends CSTNir {
 		this.checkStatus.executionTimeNS = Duration.between(startInstant, endInstant).toNanos();
 
 		if (!this.checkStatus.consistency) {
-			if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "After " + (i - 1) + " cycle, it has been stated that the network is NOT DC controllable.\nStatus: " + this.checkStatus);
-				LOG.log(Level.FINE, "Final NOT DC controllable network: " + this.g);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.log(Level.INFO,
+							"After " + (i - 1) + " cycle, it has been stated that the network is NOT DC controllable.\nStatus: " + this.checkStatus);
+					LOG.log(Level.FINE, "Final NOT DC controllable network: " + this.g);
+				}
 			}
 			return ((CSTNUCheckStatus) this.checkStatus);
 		}
 
 		if (i > maxCycles && !this.checkStatus.finished) {
-			if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + this.checkStatus);
-				LOG.log(Level.FINE, "Last NOT DC controllable network determined: " + this.g);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.log(Level.INFO, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + this.checkStatus);
+					LOG.log(Level.FINE, "Last NOT DC controllable network determined: " + this.g);
+				}
 			}
 			this.checkStatus.consistency = this.checkStatus.finished;
 			return ((CSTNUCheckStatus) this.checkStatus);
 		}
 
 		// controllable && finished
-		if (Debug.ON && LOG.isLoggable(Level.INFO)) {
-			LOG.log(Level.INFO, "Stable state reached. The newtork is DC controllable.\nNumber of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles
-					+ ".\nStatus: " + this.checkStatus);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.log(Level.INFO,
+						"Stable state reached. The newtork is DC controllable.\nNumber of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles
+								+ ".\nStatus: " + this.checkStatus);
+			}
 		}
 		return ((CSTNUCheckStatus) this.checkStatus);
 	}
@@ -418,10 +460,12 @@ public class CSTNU extends CSTNir {
 	 * @return true if the check is successful. The input g results to be modified by the method.
 	 * @throws WellDefinitionException if the graph is null or it is not well formed.
 	 */
-	public boolean initUpperLowerLabelDataStructure() throws WellDefinitionException {
+	public boolean initAndCheck() throws WellDefinitionException {
 
-		if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-			LOG.log(Level.FINER, "Starting checking graph as CSTNU well-defined instance...");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "Starting checking graph as CSTNU well-defined instance...");
+			}
 		}
 
 		// check underneath CSTN
@@ -447,11 +491,13 @@ public class CSTNU extends CSTNir {
 				}
 			}
 			if (initialValue == 0)
-				throw new IllegalArgumentException("Contingent edge " + e + " cannot have a bound equals to 0. The two bounds [x,y] have to be 0<x<y<∞.");
+				throw new IllegalArgumentException("Contingent edge " + e + " cannot have a bound equals to 0. The two bounds [x,y] have to be 0 < x < y < ∞.");
 
 			LabeledIntEdge eInverted = this.g.findEdge(d, s);
-			if (Debug.ON && LOG.isLoggable(Level.FINER))
-				LOG.finer("Edge " + e + " is contingent. Found its companion: " + eInverted);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER))
+					LOG.finer("Edge " + e + " is contingent. Found its companion: " + eInverted);
+			}
 			if (eInverted == null) {
 				throw new IllegalArgumentException("Contingent edge " + e + " is alone. The companion contingent edge between " + d.getName()
 						+ " and " + s.getName() + " does not exist. It must!");
@@ -488,13 +534,15 @@ public class CSTNU extends CSTNir {
 					if (lowerCaseValue == Constants.INT_NULL) {
 						lowerCaseValue = -initialValue;
 						eInverted.mergeLowerLabelValue(conjunctedLabel, sourceALabel, lowerCaseValue);
-						e.removeLabel(conjunctedLabel); // 2017-04-10 It is preferable to maintain the value for AllMaxProjection check
+						e.removeLabel(conjunctedLabel); // 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
+														// cares of it.
 						LOG.warning("Insert the lower label value: " + tripleAsString(lowerCaseValue, sourceALabel, conjunctedLabel, true) + " to edge "
 								+ eInverted);
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							upperCaseValue = -eInvertedInitialValue;
 							e.mergeUpperLabelValue(conjunctedLabel, sourceALabel, upperCaseValue);
-							eInverted.removeLabel(conjunctedLabel);// 2017-04-10 It is preferable to maintain the value for AllMaxProjection check
+							eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building
+																	// method cares of it.
 							LOG.warning("Insert the upper label value: " + tripleAsString(upperCaseValue, sourceALabel, conjunctedLabel, false) + " to edge "
 									+ e);
 						}
@@ -518,16 +566,17 @@ public class CSTNU extends CSTNir {
 						eInverted.mergeUpperLabelValue(conjunctedLabel, destALabel, upperCaseValue);
 						LOG.warning("Insert the upper label value: " + tripleAsString(upperCaseValue, destALabel, conjunctedLabel, false) + " to edge "
 								+ eInverted);
-						e.removeLabel(conjunctedLabel); // 2017-04-10 It is preferable to maintain the value for AllMaxProjection check
+						e.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
+														// cares of it.
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							lowerCaseValue = -eInvertedInitialValue;
 							e.mergeLowerLabelValue(conjunctedLabel, destALabel, lowerCaseValue);
-							eInverted.removeLabel(conjunctedLabel);// 2017-04-10 It is preferable to maintain the value for AllMaxProjection check
+							eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building
+																	// method cares of it.
 							LOG.warning("Insert the lower label value: " + tripleAsString(lowerCaseValue, destALabel, conjunctedLabel, true) + " to edge "
 									+ e);
 						}
 					}
-
 				}
 			}
 		} // end contingent edges cycle
@@ -536,8 +585,10 @@ public class CSTNU extends CSTNir {
 		this.g.getLowerLabeledEdges();
 		this.checkStatus.initialized = true;
 
-		if ((Debug.ON) && LOG.isLoggable(Level.FINER)) {
-			LOG.log(Level.FINER, "Checking graph as CSTNU well-defined instance finished!\n");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "Checking graph as CSTNU well-defined instance finished!\n");
+			}
 		}
 
 		return true;
@@ -545,7 +596,7 @@ public class CSTNU extends CSTNir {
 
 	/**
 	 * <h1>Labeled Cross-Lower Case (LCC*)</h1>
-	 * See TIME 17 paper.
+	 * See ICAPS 2018 paper.
 	 * 
 	 * <pre>
 	 *     v,ℵ,β           u,c,α            
@@ -554,7 +605,7 @@ public class CSTNU extends CSTNir {
 	 *             u+v,ℵ,αβ
 	 * X &lt;----------------------------A
 	 * 
-	 * if αβ∈P*, C ∉ ℵ, (v<0 or (v=0 and C!=X)
+	 * if αβ∈P*, C ∉ ℵ, and v<0
 	 * </pre>
 	 * 
 	 * @param nA
@@ -574,8 +625,10 @@ public class CSTNU extends CSTNir {
 		if (ACMap.isEmpty() || CXMap.isEmpty())
 			return false;
 
-		if ((Debug.ON) && LOG.isLoggable(Level.FINER)) {
-			LOG.finer("LCC*: start.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finer("LCC*: start.");
+			}
 		}
 
 		ALetter aLnC = new ALetter(nC.getName());
@@ -596,11 +649,13 @@ public class CSTNU extends CSTNir {
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryAC : ACMap) {
 				final int u = entryAC.getIntValue();
 
-				if (Debug.ON && !entryAC.getKey().getValue().equals(aLnC)) {
-					String msg = "There is a problem on " + eAC + ". The lower case label is not coherent: entry=" + entryAC.getKey().getValue()
-							+ ". Node name=" + aLnC;
-					LOG.severe(msg);
-					throw new Error(msg);
+				if (Debug.ON) {
+					if (!entryAC.getKey().getValue().equals(aLnC)) {
+						String msg = "There is a problem on " + eAC + ". The lower case label is not coherent: entry=" + entryAC.getKey().getValue()
+								+ ". Node name=" + aLnC;
+						LOG.severe(msg);
+						throw new Error(msg);
+					}
 				}
 				final Label alpha = entryAC.getKey().getKey();
 				final Label alphaBeta = beta.conjunction(alpha);
@@ -611,8 +666,8 @@ public class CSTNU extends CSTNir {
 
 				final boolean emptyAleph = aleph.isEmpty();
 
-				if (!emptyAleph && nA == nX && z >= 0) {
-					continue;// positive upper-case values are superseeded by 0 value that is implicit in a loop
+				if (!emptyAleph && nA == nX && z >= 0) { // Remember that nA can be equal to nX!!!
+					continue;// positive upper-case values are super-seeded by 0 value that is implicit in a loop
 				}
 
 				final int oldZ = (emptyAleph) ? eAX.getValue(alphaBeta) : eAX.getUpperLabelValue(alphaBeta, aleph);
@@ -640,15 +695,17 @@ public class CSTNU extends CSTNir {
 				}
 			}
 		}
-		if ((Debug.ON) && LOG.isLoggable(Level.FINER)) {
-			LOG.finer("LCLC: end.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finer("LCLC: end.");
+			}
 		}
 		return ruleApplied;
 	}
 
 	/**
-	 * <h1>Labeled LetterRemoval* (LLR*)</h1>
-	 * See TIME 17.
+	 * Labeled LetterRemoval* (LLR*)<br>
+	 * See ICAPS 18
 	 *
 	 * <pre>
 	 *       x,c,α          v,ℵ,β        
@@ -669,8 +726,10 @@ public class CSTNU extends CSTNir {
 	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final LabeledIntEdge eXA) {
 		boolean ruleApplied = false;
 
-		if (Debug.ON && LOG.isLoggable(Level.FINER))
-			LOG.finer("LLR*: start.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.finer("LLR*: start.");
+		}
 
 		Set<Object2IntMap.Entry<Entry<Label, ALabel>>> ABMap;
 
@@ -702,12 +761,14 @@ public class CSTNU extends CSTNir {
 
 						ruleApplied = true;
 						((CSTNUCheckStatus) this.checkStatus).letterRemovalRuleCalls++;
-						if (Debug.ON && LOG.isLoggable(Level.FINER))
-							LOG.finer("LLR* applied to edge " + oldXA + ":\n" + "partic: "
-									+ nC + " <---" + tripleAsString(x, lowerCaseLetter, alpha, true) + "--- " + nA.getName()
-									+ " <---" + tripleAsString(v, aleph, beta, false) + "--- " + nX.getName()
-									+ "\nresult: " + nA.getName() + " <---" + tripleAsString(v, aleph1, beta, false) + "--- " + nX.getName()
-									+ "; oldValue: " + Constants.formatInt(oldZ));
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER))
+								LOG.finer("LLR* applied to edge " + oldXA + ":\n" + "partic: "
+										+ nC + " <---" + tripleAsString(x, lowerCaseLetter, alpha, true) + "--- " + nA.getName()
+										+ " <---" + tripleAsString(v, aleph, beta, false) + "--- " + nX.getName()
+										+ "\nresult: " + nA.getName() + " <---" + tripleAsString(v, aleph1, beta, false) + "--- " + nX.getName()
+										+ "; oldValue: " + Constants.formatInt(oldZ));
+						}
 					}
 				}
 			}
@@ -754,13 +815,15 @@ public class CSTNU extends CSTNir {
 		// }
 		// }
 		// }
-		if (Debug.ON && LOG.isLoggable(Level.FINER))
-			LOG.finer("LLR*: end.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.finer("LLR*: end.");
+		}
 		return ruleApplied;
 	}
 
 	/**
-	 * Apply 'labeled no case' and 'labeled upper case' and 'forward labeled upper case' and 'labeled conjuncted upper case' rules.
+	 * Apply 'labeled no case' and 'labeled upper case' and 'forward labeled upper case' and 'labeled conjuncted upper case' rules.<br>
 	 * See ICAPS 18 paper.
 	 * 
 	 * <pre>
@@ -768,38 +831,33 @@ public class CSTNU extends CSTNir {
 	 *     v,◇,β           u,◇,α        
 	 * W &lt;------------ Y &lt;------------ X 
 	 * adds 
-	 *     u+v,◇,γ
+	 *     u+v,◇,αβ
 	 * W &lt;------------------------------X
-	 * 1) if u<0 or u>=0 and v>=0, then γ=(α*β)†∈Q
-	 * 2) otherwise, γ=αβ∈P*  
-	 * 
 	 * 
 	 * 2) CASE LUC
-	 *     v,ℵ,β           u,◇,α        
+	 *     v,C,β           u,◇,α        
 	 * W &lt;------------ Y &lt;------------ X 
 	 * adds 
-	 *     u+v,ℵ,γ
+	 *     u+v,C,αβ
 	 * W &lt;------------------------------X
-	 * 1) if u<0, then γ=(α*β)†∈Q
-	 * 2) otherwise, γ=αβ∈P*  
 	 * 
 	 * 
 	 * 3) CASE FLUC
-	 *     v,◇,β           u,ℵ,α        
+	 *     v,◇,β           u,C,α        
 	 * Z &lt;------------ Y &lt;------------ X 
 	 * adds 
-	 *     u+v,ℵ,(α*β)†
+	 *     u+v,C,αβ
 	 * Z &lt;------------------------------X
-	 * when u<0, and Z!=Y, and |ℵ|=1.
+	 * when u<0, and Z!=Y
 	 * 
 	 *   
 	 * 4) CASE LCUC
-	 *     v,ℵ_2,β           u,ℵ_1,α        
+	 *     v,ℵ,β           u,C,α        
 	 * Z &lt;------------ Y &lt;------------ X 
 	 * adds 
-	 *     u+v,ℵ_1ℵ_2,(α*β)†
+	 *     u+v,C ℵ_1,αβ
 	 * Z &lt;------------------------------X
-	 * when u<0, and Z!=Y, and |ℵ_1|=1.
+	 * when u<0, and Z!=Y.
 	 * </pre>
 	 * 
 	 * @param nX
@@ -816,14 +874,18 @@ public class CSTNU extends CSTNir {
 
 		// if (C.equalsByName(D) || A.equalsByName(D)) continue;// it is useless to consider self loop. NO! it is necessary with guarded links!
 		boolean ruleApplied = false;
+		Label nXnWLabel = nX.getLabel().conjunction(nW.getLabel());
+		if (nXnWLabel == null)
+			return false;
 
 		final Set<Object2IntMap.Entry<Label>> XYLabeledValueMap = eXY.getLabeledValueSet();
 		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> YWAllLabeledValueMap = eYW.getAllUpperCaseAndOrdinaryLabeledValuesSet();
 		if (YWAllLabeledValueMap.size() == 0)
 			return false;
-		if (Debug.ON && LOG.isLoggable(Level.FINEST))
-			LOG.finest("LNC+LUC+FLUC+LCUC: start.");
-		Label nXnYLabel = nX.getLabel().conjunctionExtended(nW.getLabel());
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				LOG.finest("LNC+LUC+FLUC+LCUC: start.");
+		}
 
 		// 1) CASE LNC + 2) CASE LUC*
 		for (final Object2IntMap.Entry<Label> entryXY : XYLabeledValueMap) {
@@ -831,41 +893,62 @@ public class CSTNU extends CSTNir {
 			final int u = entryXY.getIntValue();
 
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryYW : YWAllLabeledValueMap) {
-				final Label beta = entryYW.getKey().getKey();
 				final ALabel aleph = entryYW.getKey().getValue();
-				final int v = entryYW.getIntValue();
+				// IF UC a-label must NOT be backpropagated, uncomment the following
+				// if (aleph.size() > 1)
+				// continue;
+				// END IF
+				final Label beta = entryYW.getKey().getKey();
 
-				Label alphaBeta = ((u >= 0) && (v < 0)) ? alpha.conjunction(beta) : alpha.conjunctionExtended(beta);
-
+				Label alphaBeta;
+				// boolean qLabel = false;
+				// IF algorithm must work only with p-label
+				alphaBeta = alpha.conjunction(beta);
 				if (alphaBeta == null)
 					continue;
+				// ELSE
+				// if ((u >= 0) && (v < 0)) {
+				// alphaBeta = alpha.conjunction(beta);
+				// if (alphaBeta == null) {
+				// continue;
+				// }
+				// } else {
+				// alphaBeta = alpha.conjunctionExtended(beta);
+				// qLabel = alphaBeta.containsUnknown();
+				// if (qLabel) {
+				// this.removeChildrenOfUnknown(alphaBeta);
+				// }
+				// }
+				// END IF
 
-				if (alphaBeta.containsUnknown()) {
-					this.removeChildrenOfUnknown(alphaBeta);
-				}
-
-				if (!alphaBeta.subsumes(nXnYLabel)) {
-					if (Debug.ON && LOG.isLoggable(Level.FINEST))
-						LOG.log(Level.FINEST,
-								"New alphaBeta label " + alphaBeta + " does not subsume node labels " + nXnYLabel + ". New value cannot be added!");
+				if (!alphaBeta.subsumes(nXnWLabel)) {
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINEST))
+							LOG.log(Level.FINEST,
+									"New alphaBeta label " + alphaBeta + " does not subsume node labels " + nXnWLabel + ". New value cannot be added!");
+					}
 					continue;
 				}
 
+				final int v = entryYW.getIntValue();
 				boolean emptyUpperCase = aleph.isEmpty();
 				/**
 				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
 				 */
 				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
 
+				final String oldXW;
 				final int oldValue = (emptyUpperCase) ? eXW.getValue(alphaBeta) : eXW.getUpperLabelValue(alphaBeta, aleph);
-				final String oldXW = eXW.toString();
-
-				String logMsg = "LNC+LUC* applied to edge " + oldXW + ":\n" + "partic: "
-						+ nW.getName() + " <---" + tripleAsString(v, aleph, beta, false) + "--- " + nY.getName() + " <---"
-						+ tripleAsString(u, ALabel.emptyLabel, alpha, false) + "--- " + nX.getName()
-						+ "\nresult: "
-						+ nW.getName() + " <---" + tripleAsString(sum, aleph, alphaBeta, false) + "--- " + nX.getName()
-						+ "; old value: " + Constants.formatInt(oldValue);
+				final String logMsg;
+				if (Debug.ON) {
+					oldXW = eXW.toString();
+					logMsg = "LNC+LUC* applied to edge " + oldXW + ":\n" + "partic: "
+							+ nW.getName() + " <---" + tripleAsString(v, aleph, beta, false) + "--- " + nY.getName() + " <---"
+							+ tripleAsString(u, ALabel.emptyLabel, alpha, false) + "--- " + nX.getName()
+							+ "\nresult: "
+							+ nW.getName() + " <---" + tripleAsString(sum, aleph, alphaBeta, false) + "--- " + nX.getName()
+							+ "; old value: " + Constants.formatInt(oldValue);
+				}
 
 				if (nX == nW) {
 					if (sum >= 0) {
@@ -873,29 +956,32 @@ public class CSTNU extends CSTNir {
 						continue;
 					}
 					// sum is negative!
-					if (!alphaBeta.containsUnknown()) {// && aleph.size()<=1) {
-						if (emptyUpperCase) {
-							eXW.mergeLabeledValue(alphaBeta, sum);
-							this.checkStatus.labeledValuePropagationcalls++;
-						} else {
-							eXW.mergeUpperLabelValue(alphaBeta, aleph, sum);
-							((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
-						}
-						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
+					// IF one wants to manage qlabels also in LP rule
+					// if (!qLabel) {// && aleph.size()<=1) {
+					if (emptyUpperCase) {
+						eXW.mergeLabeledValue(alphaBeta, sum);
+						this.checkStatus.labeledValuePropagationcalls++;
+					} else {
+						eXW.mergeUpperLabelValue(alphaBeta, aleph, sum);
+						((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
+					}
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER,
 									logMsg + "\n***\nFound a negative loop " + tripleAsString(sum, aleph, alphaBeta, false) + " in the edge  " + eXW + "\n***");
 						}
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						return true;
 					}
-					sum = Constants.INT_NEG_INFINITE;
-				} else {
+					this.checkStatus.consistency = false;
+					this.checkStatus.finished = true;
+					return true;
+					// }
+					// sum = Constants.INT_NEG_INFINITE;
+				} // else {
 					// in the case of A != C, a value is stored only if it is more negative than the current one.
-					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
-						continue;
-					}
+				if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+					continue;
 				}
+				// }
 				boolean mergeStatus = (emptyUpperCase) ? eXW.mergeLabeledValue(alphaBeta, sum) : eXW.mergeUpperLabelValue(alphaBeta, aleph, sum);
 
 				if (mergeStatus) {
@@ -905,66 +991,82 @@ public class CSTNU extends CSTNir {
 					} else {
 						((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
 					}
-					if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-						LOG.finer(logMsg);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.finer(logMsg);
+						}
 					}
 				}
 			}
 		}
 
 		if (nW != this.g.getZ() || nW == nY) {
-			if (Debug.ON && LOG.isLoggable(Level.FINEST))
-				LOG.finest("LNC+LUC+FLUC+LCUC: end.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST))
+					LOG.finest("LNC+LUC+FLUC+LCUC: end.");
+			}
 			return ruleApplied;
 		}
+
 		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> XYUpperLabeledValueMap = eXY.getUpperLabelSet();
 
 		// 3) CASE FLUC + 4) CASE LCUC
 		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryXY : XYUpperLabeledValueMap) {
 			final Label alpha = entryXY.getKey().getKey();
-			final ALabel aleph1 = entryXY.getKey().getValue();
+			final ALabel upperCaseLetter = entryXY.getKey().getValue();
 			final int u = entryXY.getIntValue();
 
-			if (u >= 0 || aleph1.size() != 1) {
+			if (u >= 0 || upperCaseLetter.size() != 1) {
 				continue;// only negative values associated to single upper case are considered!
 			}
 
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryYW : YWAllLabeledValueMap) {
 				final Label beta = entryYW.getKey().getKey();
-				final ALabel aleph2 = entryYW.getKey().getValue();
-				final int v = entryYW.getIntValue();
 
-				Label alphaBeta = alpha.conjunctionExtended(beta);
-				if (alphaBeta.containsUnknown()) {
-					this.removeChildrenOfUnknown(alphaBeta);
-				}
+				// IF algorithm must work only with p-label
+				Label alphaBeta = alpha.conjunction(beta);
+				if (alphaBeta == null)
+					continue;
+				// ELSE
+				// Label alphaBeta = alpha.conjunctionExtended(beta);
+				// if (alphaBeta.containsUnknown()) {
+				// this.removeChildrenOfUnknown(alphaBeta);
+				// }
+				// END IF
 
-				if (!alphaBeta.subsumes(nXnYLabel)) {
-					if (Debug.ON && LOG.isLoggable(Level.FINEST))
-						LOG.log(Level.FINEST,
-								"New alphaBeta label " + alphaBeta + " does not subsume node labels " + nXnYLabel + ". New value cannot be added!");
+				final ALabel aleph = entryYW.getKey().getValue();
+				if (!alphaBeta.subsumes(nXnWLabel)) {
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINEST))
+							LOG.log(Level.FINEST,
+									"New alphaBeta label " + alphaBeta + " does not subsume node labels " + nXnWLabel + ". New value cannot be added!");
+					}
 					continue;
 				}
+				final ALabel upperCaseLetterAleph = upperCaseLetter.conjunction(aleph);
 
-				final ALabel aleph1aleph2 = aleph1.conjunction(aleph2);
+				final int v = entryYW.getIntValue();
 				/**
 				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
 				 */
 				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
 
-				if (!aleph1aleph2.isEmpty() && nW == nX && sum >= 0) {
+				if (!upperCaseLetterAleph.isEmpty() && nW == nX && sum >= 0) {
 					continue;// positive upper-case values are superseeded by 0 value that is implicit in a loop
 				}
 
-				final int oldValue = eXW.getUpperLabelValue(alphaBeta, aleph1aleph2);
-				final String oldXW = eXW.toString();
-
-				String logMsg = "FLUC+LCUC applied to edge " + oldXW + ":\n" + "partic: "
-						+ nW.getName() + " <---" + tripleAsString(v, aleph2, beta, false) + "--- " + nY.getName() + " <---"
-						+ tripleAsString(u, aleph1, alpha, false) + "--- " + nX.getName()
-						+ "\nresult: "
-						+ nW.getName() + " <---" + tripleAsString(sum, aleph1aleph2, alphaBeta, false) + "--- " + nX.getName()
-						+ "; old value: " + Constants.formatInt(oldValue);
+				final int oldValue = eXW.getUpperLabelValue(alphaBeta, upperCaseLetterAleph);
+				final String oldXW;
+				String logMsg;
+				if (Debug.ON) {
+					oldXW = eXW.toString();
+					logMsg = "FLUC+LCUC applied to edge " + oldXW + ":\n" + "partic: "
+							+ nW.getName() + " <---" + tripleAsString(v, aleph, beta, false) + "--- " + nY.getName() + " <---"
+							+ tripleAsString(u, upperCaseLetter, alpha, false) + "--- " + nX.getName()
+							+ "\nresult: "
+							+ nW.getName() + " <---" + tripleAsString(sum, upperCaseLetterAleph, alphaBeta, false) + "--- " + nX.getName()
+							+ "; old value: " + Constants.formatInt(oldValue);
+				}
 
 				if (nX == nW) {
 					if (sum >= 0) {
@@ -972,32 +1074,38 @@ public class CSTNU extends CSTNir {
 						continue;
 					}
 					// sum is negative!
-					if (!alphaBeta.containsUnknown()) {
-						eXW.mergeUpperLabelValue(alphaBeta, aleph1aleph2, sum);
-						((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
-						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
+					// IF one wants to manage qlabels also in LP rule
+					// if (!alphaBeta.containsUnknown()) {
+					eXW.mergeUpperLabelValue(alphaBeta, upperCaseLetterAleph, sum);
+					((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER,
-									logMsg + "\n***\nFound a negative loop " + tripleAsString(sum, aleph1aleph2, alphaBeta, false) + " in the edge  " + eXW
+									logMsg + "\n***\nFound a negative loop " + tripleAsString(sum, upperCaseLetterAleph, alphaBeta, false) + " in the edge  "
+											+ eXW
 											+ "\n***");
 						}
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						return true;
 					}
-					sum = Constants.INT_NEG_INFINITE;
-				} else {
+					this.checkStatus.consistency = false;
+					this.checkStatus.finished = true;
+					return true;
+					// }
+					// sum = Constants.INT_NEG_INFINITE;
+				} // else {
 					// in the case of A != C, a value is stored only if it is more negative than the current one.
-					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
-						continue;
-					}
+				if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+					continue;
 				}
-				boolean mergeStatus = eXW.mergeUpperLabelValue(alphaBeta, aleph1aleph2, sum);
+				// }
+				boolean mergeStatus = eXW.mergeUpperLabelValue(alphaBeta, upperCaseLetterAleph, sum);
 
 				if (mergeStatus) {
 					ruleApplied = true;
 					((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
-					if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-						LOG.finer(logMsg);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.finer(logMsg);
+						}
 					}
 				}
 			}
@@ -1036,18 +1144,22 @@ public class CSTNU extends CSTNir {
 		boolean ruleApplied = false, mergeStatus = false;
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+				}
 			}
 			return false;
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
+		if (Debug.ON) {
 			LOG.log(Level.FINEST, "Label Modification R0: start.");
 		}
 		if (nX.getLabel().contains(p)) {// Table 2 ICAPS
-			// if (LOG.isLoggable(Level.FINER)) {
-			// LOG.log(Level.FINER, "R0: Proposition '" + p + "' is present in the X label '" + X.getLabel() + "'. R0 cannot be applied.");
-			// }
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "R0: Proposition '" + p + "' is present in the X label '" + nX.getLabel() + "'. R0 cannot be applied.");
+				}
+			}
 			return false;
 		}
 
@@ -1059,13 +1171,9 @@ public class CSTNU extends CSTNir {
 				continue;
 			}
 			final ALabel aLabel = entryObs.getKey().getValue();
-			// It is necessary to re-check if the value is still present.Verified that it is necessary on Nov, 26 2015
 			final int w = (aLabel.isEmpty()) ? ePX.getValue(alpha) : ePX.getUpperLabelValue(alpha, aLabel);
-			if (w == Constants.INT_NULL) {
-				continue;
-			}
-
-			if (w >= 0) {// Table 1 ICAPS paper.
+			// It is necessary to re-check if the value is still present.Verified that it is necessary on Nov, 26 2015
+			if (w == Constants.INT_NULL || w >= 0) {// Table 1 ICAPS paper
 				continue;
 			}
 
@@ -1075,10 +1183,12 @@ public class CSTNU extends CSTNir {
 			}
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
 			String logMessage = null;
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				logMessage = "R0 simplifies a label of edge " + ePX.getName()
-						+ ":\nsource: " + nObs.getName() + " ---" + tripleAsString(w, aLabel, alpha, false) + "---> " + nX.getName()
-						+ "\nresult: " + nObs.getName() + " ---" + tripleAsString(w, aLabel, alphaPrime, false) + "---> " + nX.getName();
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					logMessage = "R0 simplifies a label of edge " + ePX.getName()
+							+ ":\nsource: " + nObs.getName() + " ---" + tripleAsString(w, aLabel, alpha, false) + "---> " + nX.getName()
+							+ "\nresult: " + nObs.getName() + " ---" + tripleAsString(w, aLabel, alphaPrime, false) + "---> " + nX.getName();
+				}
 			}
 
 			if (aLabel.isEmpty()) {
@@ -1090,24 +1200,23 @@ public class CSTNU extends CSTNir {
 			}
 			if (mergeStatus) {
 				ruleApplied = true;
-				if (Debug.ON && LOG.isLoggable(Level.FINER))
-					LOG.log(Level.FINER, logMessage);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER))
+						LOG.log(Level.FINER, logMessage);
+				}
 			}
 			this.checkStatus.r0calls++;
-			if (isNewLabeledValueANegativeLoop(alphaPrime, w, nObs, nX, ePX)) {
-				this.checkStatus.consistency = false;
-				this.checkStatus.finished = true;
-				return ruleApplied;
-			}
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R0: end.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R0: end.");
+			}
 		}
 		return ruleApplied;
 	}
 
 	/**
-	 * <h1>Rule R3*</h1>
+	 * Rule R3*<br>
 	 * <b>Instantaneous reaction semantics is assumed.</b><br>
 	 *
 	 * <pre>
@@ -1151,8 +1260,10 @@ public class CSTNU extends CSTNir {
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
 
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R3: start.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R3: start.");
+			}
 		}
 		boolean ruleApplied = false;
 
@@ -1161,6 +1272,8 @@ public class CSTNU extends CSTNir {
 			return false;
 
 		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> SDLabeledValueSet = eSD.getAllUpperCaseAndOrdinaryLabeledValuesSet();
+		if (SDLabeledValueSet.isEmpty())
+			return false;
 
 		boolean nDIsZ = nD.equalsByName(nZ);
 
@@ -1235,43 +1348,40 @@ public class CSTNU extends CSTNir {
 					}
 
 					if (ruleApplied) {
-						if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-							if (!newUpperCaseLetter.isEmpty()) {
-								LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
-										+ "source: " + nObs.getName() + " ---" + tripleAsString(w, ObsDUpperCaseLetter, ObsDLabel, false) + "---> "
-										+ nD.getName()
-										+ " <---" + tripleAsString(v, SDUpperCaseLetter, SDLabel, false) + "--- " + nS.getName()
-										+ "\nresult: add " + nD.getName() + " <---" + tripleAsString(max, newUpperCaseLetter, newLabel, false) + "--- "
-										+ nS.getName());
-							} else {
-								LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
-										+ "source: " + nObs.getName() + " ---" + pairAsString(ObsDLabel, w) + "---> " + nD.getName()
-										+ " <---" + pairAsString(SDLabel, v) + "--- " + nS.getName()
-										+ "\nresult: add " + nD.getName() + " <---" + pairAsString(newLabel, max) + "--- " + nS.getName());
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								if (!newUpperCaseLetter.isEmpty()) {
+									LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
+											+ "source: " + nObs.getName() + " ---" + tripleAsString(w, ObsDUpperCaseLetter, ObsDLabel, false) + "---> "
+											+ nD.getName()
+											+ " <---" + tripleAsString(v, SDUpperCaseLetter, SDLabel, false) + "--- " + nS.getName()
+											+ "\nresult: add " + nD.getName() + " <---" + tripleAsString(max, newUpperCaseLetter, newLabel, false) + "--- "
+											+ nS.getName());
+								} else {
+									LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
+											+ "source: " + nObs.getName() + " ---" + pairAsString(ObsDLabel, w) + "---> " + nD.getName()
+											+ " <---" + pairAsString(SDLabel, v) + "--- " + nS.getName()
+											+ "\nresult: add " + nD.getName() + " <---" + pairAsString(newLabel, max) + "--- " + nS.getName());
 
+								}
 							}
 						}
 						this.checkStatus.r3calls++;
 					}
-
-					if (newUpperCaseLetter.isEmpty() && CSTN.isNewLabeledValueANegativeLoop(newLabel, max, nS, nD, eSD)) {
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						return ruleApplied;
-					}
 				}
 			}
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R3: end.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R3: end.");
+			}
 		}
 		return ruleApplied;
 	}
 
 	/**
-	 * Adds 'edgesToAdd' to 'g' in all-max-projection way.<br>
-	 * Adds 'edgesToAdd' to 'g' considering, for each edge, only the ordinary labeled value and upper-case labeled values.
-	 * Upper-case labeled values are added as ordinary labeled values.<br>
+	 * Create a copy of this.g merging, for each each of g, all ordinary and upper case values.
+	 * Moreover, for each edge representing lower bound of a contingent, sets its ordinary value to the maximum of the contingent.
 	 *
 	 * @return the all-max projection of the graph g (CSTN graph) without edges connecting nodes with non consistent labels.
 	 */
@@ -1284,30 +1394,49 @@ public class CSTNU extends CSTNir {
 			allMax.addVertex(vNew);
 		}
 		allMax.setZ(allMax.getNode(this.g.getZ().getName()));
+		allMax.setΩ(allMax.getNode(this.g.getΩ().getName()));
 
 		// clone all edges giving the right new endpoints corresponding the old ones.
 		// we do not add edges connecting nodes in not consistent scenarios (such edges have only unknown labels).
-		AbstractLabeledIntEdge eNew;
+		LabeledIntEdge eNew;
 		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = allMax.getEdgeFactory();
 		for (final LabeledIntEdge e : this.g.getEdges()) {
-			if (!this.g.getSource(e).getLabel().isConsistentWith(this.g.getDest(e).getLabel()))
+			LabeledNode s = this.g.getSource(e);
+			LabeledNode d = this.g.getDest(e);
+			String sName = s.getName();
+			String dName = d.getName();
+			Label sdLabel = s.getLabel().conjunction(d.getLabel());
+			if (sdLabel == null)
 				continue;
-			eNew = edgeFactory.get(e);
+			eNew = allMax.findEdge(sName, dName);
+			if (eNew == null)
+				eNew = edgeFactory.get(e); // to preserve the name
 			eNew.setConstraintType(ConstraintType.normal);
-			eNew.getLowerLabelMap().clear();
-			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getUpperLabelSet()) {
+			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getAllUpperCaseAndOrdinaryLabeledValuesSet()) {
 				eNew.mergeLabeledValue(entry.getKey().getKey(), entry.getIntValue());
 			}
-			eNew.getLowerLabelMap().clear();
-			eNew.getUpperLabelMap().clear();
-			allMax.addEdge(eNew, this.g.getSource(e).getName(), this.g.getDest(e).getName());
+			if (e.isContingentEdge()) {
+				LabeledContingentIntTreeMap map = e.getUpperLabelMap();
+				if (map != null && map.size() > 0) {
+					LabeledIntEdge eNewInverted = allMax.findEdge(dName, sName);
+					if (eNewInverted == null) {
+						// this is the lower bound
+						eNewInverted = edgeFactory.get(this.g.findEdge(d, s));
+						allMax.addEdge((AbstractLabeledIntEdge) eNewInverted, dName, sName);
+					}
+					eNewInverted.clearLowerLabels();
+					eNewInverted.clearUpperLabels();
+					eNewInverted.mergeLabeledValue(sdLabel, -map.getValue(sdLabel,  new ALabel(dName, this.g.getALabelAlphabet())));
+				}
+			}
+			allMax.addEdge((AbstractLabeledIntEdge) eNew, sName, dName);
 		}
 		return allMax;
 	}
 
 	/**
 	 * Executes one step of the dynamic controllability check.<br>
-	 * Before the first execution of this method, it is necessary to execute {@link #initUpperLowerLabelDataStructure()}.
+	 * Before the first execution of this method, it is necessary to execute {@link #initAndCheck()}.
 	 * 
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
@@ -1322,14 +1451,18 @@ public class CSTNU extends CSTNir {
 		final LabeledNode Z = this.g.getZ();
 
 		this.checkStatus.cycles++;
-		if (Debug.ON && LOG.isLoggable(Level.FINE))
-			LOG.log(Level.FINE, "Start application labeled constraint generation and label removal rules.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINE))
+				LOG.log(Level.FINE, "Start application labeled constraint generation and label removal rules.");
+		}
 
 		ObjectArraySet<LabeledIntEdge> newEdgesToCheck = new ObjectArraySet<>();// HAS TO BE A SET!
 		int i = 1, n = edgesToCheck.size();
 		for (LabeledIntEdge AB : edgesToCheck) {
-			if (Debug.ON && LOG.isLoggable(Level.FINE)) {
-				LOG.log(Level.FINE, "Considering edge " + (i++) + "/" + n + ": " + AB + "\n");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.log(Level.FINE, "Considering edge " + (i++) + "/" + n + ": " + AB + "\n");
+				}
 			}
 			A = this.g.getSource(AB);
 			B = this.g.getDest(AB);
@@ -1361,8 +1494,10 @@ public class CSTNU extends CSTNir {
 			 * Step 1/2: Make all propagation considering edge AB as first edge.<br>
 			 * A-->B-->C
 			 */
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Rules, phase 1/2: edge " + AB.getName() + " as first component.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Rules, phase 1/2: edge " + AB.getName() + " as first component.");
+				}
 			}
 			for (LabeledIntEdge BC : this.g.getOutEdges(B)) {
 				C = this.g.getDest(BC);
@@ -1386,7 +1521,6 @@ public class CSTNU extends CSTNir {
 					labeledCrossLowerCaseRule(A, B, C, AB, BC, AC);
 				}
 
-
 				if (edgeCopy == null && !AC.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(AC, A, C);
@@ -1395,22 +1529,26 @@ public class CSTNU extends CSTNir {
 					// CB was already present and it has been changed!
 					newEdgesToCheck.add(AC);
 				}
-				
+
 				if (!this.checkStatus.consistency)
 					return ((CSTNUCheckStatus) this.checkStatus);
 
 			}
 
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Rules, phase 1/2 done.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Rules, phase 1/2 done.");
+				}
 			}
 
 			/**
 			 * Step 2/2: Make all propagation considering edge AB as second edge.<br>
 			 * C-->A-->B
 			 */
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Rules, phase 2/2: edge " + AB.getName() + " as second component.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Rules, phase 2/2: edge " + AB.getName() + " as second component.");
+				}
 			}
 			for (LabeledIntEdge CA : this.g.getInEdges(A)) {
 				C = this.g.getSource(CA);
@@ -1439,17 +1577,21 @@ public class CSTNU extends CSTNir {
 					// CB was already present and it has been changed!
 					newEdgesToCheck.add(CB);
 				}
-				
+
 				if (!this.checkStatus.consistency)
 					return ((CSTNUCheckStatus) this.checkStatus);
 
 			}
-			if (Debug.ON && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Rules phase 2/2 done.\n");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Rules phase 2/2 done.\n");
+				}
 			}
 		}
-		if (Debug.ON && LOG.isLoggable(Level.FINE)) {
-			LOG.log(Level.FINE, "End application all rules.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "End application all rules.");
+			}
 		}
 		edgesToCheck.clear();// in any case, this set has been elaborated. It is better to clear it out.
 		this.checkStatus.finished = newEdgesToCheck.size() == 0;
