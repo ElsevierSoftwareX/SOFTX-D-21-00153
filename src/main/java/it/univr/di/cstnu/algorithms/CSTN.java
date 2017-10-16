@@ -146,8 +146,10 @@ public class CSTN {
 	// static final String VERSIONandDATE = "Version 3.3 - October, 4 2016";
 	// static final String VERSIONandDATE = "Version 4.0 - October, 25 2016";// added management not all negative edges in a negative qLoop
 //	static final public String VERSIONandDATE = "Version  5.0 - April, 03 2017";// re-factored
-	static final public String VERSIONandDATE = "Version  5.0 - October, 10 2017";// removed qLabels from LP
-
+	static final public String VERSIONandDATE = "Version  5.1 - October, 10 2017";//SVN 201. removed qLabels from LP
+//	static final public String VERSIONandDATE = "Version  6.0 - October, 16 2017";// removed qLabels from LP. Removed R0 and R3. Now, rules are LP, qR0 and qR3*
+	
+	
 	/**
 	 * @param label
 	 * @param value
@@ -813,7 +815,7 @@ public class CSTN {
 					}
 				}
 			}
-		}
+		}//end maxWeight search
 		this.maxWeight = -this.maxWeight;
 		// Determine horizon value
 		long product = ((long) this.maxWeight) * this.g.getVertexCount();
@@ -1185,6 +1187,7 @@ public class CSTN {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false;
+		String log = null;
 		Label nAnCLabel = nA.getLabel().conjunction(nC.getLabel());
 		if (nAnCLabel == null)
 			return false;
@@ -1238,7 +1241,7 @@ public class CSTN {
 					eAC.mergeLabeledValue(newLabelAC, sum);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							String log = "Label Propagation Rule applied to edge " + eAC.getName()
+							log = "Label Propagation Rule applied to edge " + eAC.getName()
 									+ ":\nsource: "
 									+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
 									+ "---> "
@@ -1264,7 +1267,6 @@ public class CSTN {
 				// }
 				// here sum has to be add!
 				// I have to prepare the log before the execution of the merge!
-				String log = null;
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
 						log = "Label Propagation Rule applied to edge " + eAC.getName()
