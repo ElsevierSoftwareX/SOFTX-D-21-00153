@@ -104,9 +104,15 @@ public class CSTNepsilonTest {
 		this.cstn.labelModificationR0(this.P, this.X, this.Z, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		//if R0 is applied!
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.parse("¬A¬B"), 0);// epsilon semantics
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
+		//if qR0 is the only applied
+//		pxOK.mergeLabeledValue(Label.parse("ABp"), -10);
+//		pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
+//		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
+//		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
 
 		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 	}

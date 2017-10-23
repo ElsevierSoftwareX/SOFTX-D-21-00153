@@ -32,6 +32,7 @@ import edu.uci.ics.jung.io.graphml.Key;
 import edu.uci.ics.jung.io.graphml.NodeMetadata;
 import edu.uci.ics.jung.io.graphml.parser.ElementParserRegistry;
 import edu.uci.ics.jung.io.graphml.parser.GraphMLEventFilter;
+import it.univr.di.cstnu.algorithms.CSTN;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
@@ -66,6 +67,12 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 	/**
 	 * 
 	 */
+	@SuppressWarnings("javadoc")
+	LabeledNode Z = null, Ω = null;
+
+	/**
+	 * 
+	 */
 	final protected GraphMLDocument document = new GraphMLDocument();
 
 	/**
@@ -82,8 +89,9 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 			final LabeledIntEdge e = edgeFactory.get();
 			final String name = metaData.getId();
 			e.setName(metaData.getId());
-			if (this.pattern.matcher(name).matches()) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the mouse
-													// in the app.
+			if (this.pattern.matcher(name).matches()) {// check the LabeledIntEdge.getFactory(): there you can find/define the format for name create using the
+														// mouse
+														// in the app.
 				final int n = Integer.parseInt(name.substring(1));
 				if (AbstractLabeledIntEdge.idSeq <= n) {
 					AbstractLabeledIntEdge.idSeq = n + 1;
@@ -171,8 +179,13 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 			final LabeledNode v = LabeledNode.getFactory().get();
 			final String name = metaData.getId();
 			v.setName(metaData.getId());
-			if (this.pattern.matcher(name).matches()) {// check the LabeledNode.getFactory(): there you can find/define the format name create using the mouse in the
-													// app.
+			if (v.getName().equals(CSTN.ZeroNodeName))
+				GraphMLReader.this.Z = v;
+			if (v.getName().equals(CSTN.OmegaNodeName))
+				GraphMLReader.this.Ω = v;
+
+			if (this.pattern.matcher(name).matches()) {// check the LabeledNode.getFactory(): there you can find/define the format name create using the mouse
+														// in the app.
 				final int n = Integer.parseInt(name.substring(1));
 				if (AbstractComponent.idSeq <= n) {
 					AbstractComponent.idSeq = n + 1;
@@ -191,11 +204,12 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 			return v;
 		}
 	};
-	
+
 	/**
 	 * 
 	 */
 	protected XMLEventReader xmlEventReader;
+
 	/**
 	 * @param graphFile
 	 * @param labeledValueSetImplementationClass
@@ -222,7 +236,8 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 		this.fileReader = fileReader;
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
 		this.aLabelAlphabet = new ALabelAlphabet();
-		this.parserRegistry = new ElementParserRegistry<>(this.document.getKeyMap(), this.graphFunction, this.vertexFunction, this.edgeFunction, this.hyperEdgeFunction);
+		this.parserRegistry = new ElementParserRegistry<>(this.document.getKeyMap(), this.graphFunction, this.vertexFunction, this.edgeFunction,
+				this.hyperEdgeFunction);
 	}
 
 	/**
@@ -347,8 +362,13 @@ public class GraphMLReader<G extends Hypergraph<LabeledNode, LabeledIntEdge>> im
 						// Add it to the graph metadata list.
 						this.document.getGraphMetadata().add(graph);
 
+						LabeledIntGraph g = (LabeledIntGraph) graph.getGraph();
+						if (this.Z != null)
+							g.setZ(this.Z);
+						if (this.Ω != null)
+							g.setΩ(this.Ω);
 						// Return the graph object.
-						return (G) graph.getGraph();
+						return (G) g;
 					} else if (GraphMLConstants.GRAPHML_NAME.equals(name)) {
 						// Ignore the graphML object.
 					} else {

@@ -66,14 +66,14 @@ public class LabeledNode extends AbstractComponent {
 	private Label label = null;
 
 	/**
-	 * Position Coordinates
+	 * Position Coordinates. It must be double even if it is not necessary for Jung library compatibility.
 	 */
-	private Double x;
+	private double x;
 
 	/**
-	 * Position Coordinates
+	 * Position Coordinates. It must be double even if it is not necessary for Jung library compatibility.
 	 */
-	private Double y;
+	private double y;
 
 	/**
 	 * Possible proposition observed.
@@ -88,7 +88,7 @@ public class LabeledNode extends AbstractComponent {
 	public LabeledNode(final String string) {
 		super(string);
 		this.label = Label.emptyLabel;
-		this.x = this.y = new Double(0);
+		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
 	}
 
@@ -102,7 +102,7 @@ public class LabeledNode extends AbstractComponent {
 		super(n);
 		this.label = Label.emptyLabel;
 		this.propositionObserved = (Literal.check(proposition)) ? proposition : Constants.UNKNOWN;
-		this.x = this.y = new Double(0);
+		this.x = this.y = 0;
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class LabeledNode extends AbstractComponent {
 		super(n);
 		this.label = l;
 		this.propositionObserved = Constants.UNKNOWN;
-		this.x = this.y = new Double(0);
+		this.x = this.y = 0;
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @return the x
 	 */
-	public Double getX() {
+	public double getX() {
 		return this.x;
 	}
 
@@ -168,7 +168,7 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @return the y
 	 */
-	public Double getY() {
+	public double getY() {
 		return this.y;
 	}
 
@@ -210,7 +210,7 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @param x the x to set
 	 */
-	public void setX(final Double x) {
+	public void setX(final double x) {
 		this.x = x;
 	}
 
@@ -219,7 +219,7 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @param y the y to set
 	 */
-	public void setY(final Double y) {
+	public void setY(final double y) {
 		this.y = y;
 	}
 

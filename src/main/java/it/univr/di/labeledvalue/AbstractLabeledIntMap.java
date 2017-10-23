@@ -202,12 +202,27 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/** {@inheritDoc} */
 	@Override
 	public int getMinValue() {
+		if (this.size() == 0)
+			return Constants.INT_NULL;
 		int min = Constants.INT_POS_INFINITE;
+
 		for (int value : this.values()) {
 			if (min > value)
 				min = value;
 		}
-		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+		return min;
+	}
+
+	@Override
+	public int getMaxValue() {
+		if (this.size() == 0)
+			return Constants.INT_NULL;
+		int max = Constants.INT_NEG_INFINITE;
+		for (int value : this.values()) {
+			if (max < value)
+				max = value;
+		}
+		return max;
 	}
 
 	/** {@inheritDoc} */
@@ -252,7 +267,6 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
 
-	
 	@Override
 	public int hashCode() {
 		return super.hashCode();

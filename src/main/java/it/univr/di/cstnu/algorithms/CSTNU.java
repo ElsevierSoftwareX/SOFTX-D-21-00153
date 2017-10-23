@@ -21,10 +21,10 @@ import it.univr.di.cstnu.graph.GraphMLReader;
 import it.univr.di.cstnu.graph.GraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
-import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
@@ -42,7 +42,7 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNU extends CSTNir {
+public class CSTNU extends CSTNirRestricted {
 	/**
 	 * Simple class to represent the status of the checking algorithm during an execution.<br>
 	 * controllability = super.consistency!
@@ -345,11 +345,11 @@ public class CSTNU extends CSTNir {
 		Collection<LabeledIntEdge> edgesToCheck = this.g.getEdges();
 
 		final int n = this.g.getVertexCount();
-		int k = this.g.getUpperLabeledEdges().size();
+		int k = this.g.getContingentCount();
 		if (k == 0) {
 			k = 1;
 		}
-		int p = this.g.getPropositions().size();
+		int p = this.g.getObservatorCount();
 		if (p == 0) {
 			p = 1;
 		}
@@ -403,17 +403,16 @@ public class CSTNU extends CSTNir {
 				}
 			}
 			LabeledIntGraph allMaxCSTN = makeAllMaxProjection();
-			CSTNir cstnChecker = new CSTNir(allMaxCSTN);
+			CSTNirRestricted cstnChecker = new CSTNirRestricted(allMaxCSTN);
 			CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO))
 					LOG.info("AllMax Projection network check done.\n");
 			}
 			if (!cstnStatus.consistency) {
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.INFO))
-						LOG.info("The AllMax Projection network has at least one negative loop. The original network cannot be DC!");
-				}
+				if (LOG.isLoggable(Level.INFO))
+					LOG.severe(
+							"The AllMax Projection network has at least one negative loop. The original network cannot be DC! Filename is " + this.g.getName());
 				this.checkStatus.consistency = false;
 				this.checkStatus.finished = true;
 			}
@@ -536,15 +535,19 @@ public class CSTNU extends CSTNir {
 						eInverted.mergeLowerLabelValue(conjunctedLabel, sourceALabel, lowerCaseValue);
 						e.removeLabel(conjunctedLabel); // 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
 														// cares of it.
-						LOG.warning("Insert the lower label value: " + tripleAsString(lowerCaseValue, sourceALabel, conjunctedLabel, true) + " to edge "
-								+ eInverted);
+						if (Debug.ON) {
+							LOG.warning("Insert the lower label value: " + tripleAsString(lowerCaseValue, sourceALabel, conjunctedLabel, true) + " to edge "
+									+ eInverted);
+						}
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							upperCaseValue = -eInvertedInitialValue;
 							e.mergeUpperLabelValue(conjunctedLabel, sourceALabel, upperCaseValue);
 							eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building
 																	// method cares of it.
-							LOG.warning("Insert the upper label value: " + tripleAsString(upperCaseValue, sourceALabel, conjunctedLabel, false) + " to edge "
-									+ e);
+							if (Debug.ON) {
+								LOG.warning("Insert the upper label value: " + tripleAsString(upperCaseValue, sourceALabel, conjunctedLabel, false)
+										+ " to edge " + e);
+							}
 						}
 					}
 				} else {
@@ -564,8 +567,10 @@ public class CSTNU extends CSTNir {
 					if (upperCaseValue == Constants.INT_NULL) {
 						upperCaseValue = -initialValue;
 						eInverted.mergeUpperLabelValue(conjunctedLabel, destALabel, upperCaseValue);
-						LOG.warning("Insert the upper label value: " + tripleAsString(upperCaseValue, destALabel, conjunctedLabel, false) + " to edge "
-								+ eInverted);
+						if (Debug.ON) {
+							LOG.warning("Insert the upper label value: " + tripleAsString(upperCaseValue, destALabel, conjunctedLabel, false) + " to edge "
+									+ eInverted);
+						}
 						e.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
 														// cares of it.
 						if (eInvertedInitialValue != Constants.INT_NULL) {
@@ -573,8 +578,10 @@ public class CSTNU extends CSTNir {
 							e.mergeLowerLabelValue(conjunctedLabel, destALabel, lowerCaseValue);
 							eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building
 																	// method cares of it.
-							LOG.warning("Insert the lower label value: " + tripleAsString(lowerCaseValue, destALabel, conjunctedLabel, true) + " to edge "
-									+ e);
+							if (Debug.ON) {
+								LOG.warning(
+										"Insert the lower label value: " + tripleAsString(lowerCaseValue, destALabel, conjunctedLabel, true) + " to edge " + e);
+							}
 						}
 					}
 				}
@@ -605,7 +612,7 @@ public class CSTNU extends CSTNir {
 	 *             u+v,ℵ,αβ
 	 * X &lt;----------------------------A
 	 * 
-	 * if αβ∈P*, C ∉ ℵ, and v<0
+	 * if αβ∈P*, C ∉ ℵ, and v<0. If |ℵ|>1, then X must be Z.
 	 * </pre>
 	 * 
 	 * @param nA
@@ -614,15 +621,16 @@ public class CSTNU extends CSTNir {
 	 * @param eAC CANNOT BE NULL
 	 * @param eCX CANNOT BE NULL
 	 * @param eAX CANNOT BE NULL
+	 * @param nZ TODO
 	 * @return true if the rule has been applied.
 	 */
 	boolean labeledCrossLowerCaseRule(final LabeledNode nA, final LabeledNode nC, final LabeledNode nX, final LabeledIntEdge eAC, final LabeledIntEdge eCX,
-			final LabeledIntEdge eAX) {
+			final LabeledIntEdge eAX, LabeledNode nZ) {
 
 		boolean ruleApplied = false;
-		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> ACMap = eAC.getLowerLabelSet();
+		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> AClowerCaseMap = eAC.getLowerLabelSet();
 		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> CXMap = eCX.getAllUpperCaseAndOrdinaryLabeledValuesSet();
-		if (ACMap.isEmpty() || CXMap.isEmpty())
+		if (AClowerCaseMap.isEmpty() || CXMap.isEmpty())
 			return false;
 
 		if (Debug.ON) {
@@ -634,19 +642,22 @@ public class CSTNU extends CSTNir {
 		ALetter aLnC = new ALetter(nC.getName());
 
 		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryCX : CXMap) {
-			final ALabel aleph = entryCX.getKey().getValue();
-
-			// Rule condition: upper case label cannot be equal or contain nC name
-			if (aleph.contains(aLnC))
-				continue;
 
 			final int v = entryCX.getIntValue();
 			if (v >= 0)// the following condition is not applicable because we are considering instantaneous reaction: || (v == 0 && nX == nC))
 				continue; // Rule condition!
 
+			final ALabel aleph = entryCX.getKey().getValue();
+			// Rule condition: upper case label cannot be equal or contain nC name
+			if (aleph.contains(aLnC))
+				continue;
+			if (aleph.size() > 1 && nX != nZ)
+				continue;// rule condition
+			final boolean emptyAleph = aleph.isEmpty();
+
 			final Label beta = entryCX.getKey().getKey();
 
-			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryAC : ACMap) {
+			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryAC : AClowerCaseMap) {
 				final int u = entryAC.getIntValue();
 
 				if (Debug.ON) {
@@ -663,8 +674,6 @@ public class CSTNU extends CSTNir {
 					continue;
 
 				final int z = AbstractLabeledIntMap.sumWithOverflowCheck(v, u);
-
-				final boolean emptyAleph = aleph.isEmpty();
 
 				if (!emptyAleph && nA == nX && z >= 0) { // Remember that nA can be equal to nX!!!
 					continue;// positive upper-case values are super-seeded by 0 value that is implicit in a loop
@@ -731,7 +740,7 @@ public class CSTNU extends CSTNir {
 				LOG.finer("LLR*: start.");
 		}
 
-		Set<Object2IntMap.Entry<Entry<Label, ALabel>>> ABMap;
+		Set<Object2IntMap.Entry<Entry<Label, ALabel>>> ACLowerSetMap;
 
 		for (final Object2IntMap.Entry<Entry<Label, ALabel>> upperCaseEntryOfXA : eXA.getUpperLabelSet()) {
 			final ALabel aleph = upperCaseEntryOfXA.getKey().getValue();
@@ -740,9 +749,9 @@ public class CSTNU extends CSTNir {
 			for (ALetter nodeLetter : aleph) {
 				LabeledNode nC = this.g.getNode(nodeLetter.toString());
 				LabeledIntEdge AC = this.g.findEdge(nA, nC);
-				if (AC == null || (ABMap = AC.getLowerLabelSet()).size() == 0)
+				if (AC == null || (ACLowerSetMap = AC.getLowerLabelSet()).size() == 0)
 					continue;
-				for (final Object2IntMap.Entry<Entry<Label, ALabel>> lowerCaseEntryOfAC : ABMap) {
+				for (final Object2IntMap.Entry<Entry<Label, ALabel>> lowerCaseEntryOfAC : ACLowerSetMap) {
 					final Label alpha = lowerCaseEntryOfAC.getKey().getKey();
 					final ALabel lowerCaseLetter = lowerCaseEntryOfAC.getKey().getValue();
 					int x = lowerCaseEntryOfAC.getIntValue();
@@ -773,48 +782,6 @@ public class CSTNU extends CSTNir {
 				}
 			}
 		}
-		// I have not a clear idea if the above is more efficient of the below code!
-		// for (final LabeledIntEdge AB : lowerCaseEdge) {
-		// ABMap = AB.getLowerLabelSet();
-		// if (ABMap.size() == 0)
-		// continue;
-		// nB = this.g.getDest(AB);
-		//
-		// for (final Object2IntMap.Entry<Entry<Label, String>> upperCaseEntryOfCA : eCA.getUpperLabelSet()) {
-		// final String upperCaseNodeName = upperCaseEntryOfCA.getKey().getValue();
-		// if (!upperCaseNodeName.equals(nB.getName()))
-		// continue;// Rule condition!
-		// final Label l2 = upperCaseEntryOfCA.getKey().getKey();
-		// final int z = upperCaseEntryOfCA.getValue();
-		//
-		// for (final Object2IntMap.Entry<Entry<Label, String>> lowerCaseEntryOfAB : ABMap) {
-		// final Label l1 = lowerCaseEntryOfAB.getKey().getKey();
-		//
-		// int x = lowerCaseEntryOfAB.getValue();
-		// if (x == Constants.INT_NULL || z < -x)
-		// continue;
-		// if (!l1.isConsistentWith(l2)) {
-		// if (LOG.isLoggable(Level.FINEST)) {
-		// LOG.log(Level.FINEST,
-		// "Case Label Removal not applied to edge " + eCA + ": label l1 '" + l1 + "' is not consistent with l2 '" + l2 + "'");
-		// }
-		// continue;
-		// }
-		// final int oldZ = eCA.getValue(l2);
-		// final String oldCA = eCA.toString();
-		//
-		// if (eCA.mergeLabeledValue(l2, z)) {
-		// reductionApplied = true;
-		// ((CSTNUCheckStatus) this.checkStatus).caseLabelRemovalRuleCalls++;
-		// LOG.finer("Case Label Removal applied to edge " + oldCA + ":\n" + "partic: "
-		// + nB.getName() + " <---" + tripleAsString(l1, x, lowerCaseEntryOfAB.getKey().getValue(), true) + "--- " + nA.getName()
-		// + " <---" + tripleAsString(l2, z, upperCaseNodeName, false) + "--- " + nC.getName()
-		// + "\nresult: " + nA.getName() + " <---" + pairAsString(l2, z) + "--- " + nC.getName()
-		// + "; oldValue: " + Constants.formatInt(oldZ));
-		// }
-		// }
-		// }
-		// }
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.finer("LLR*: end.");
@@ -827,37 +794,23 @@ public class CSTNU extends CSTNir {
 	 * See ICAPS 18 paper.
 	 * 
 	 * <pre>
-	 * 1) CASE LNC
-	 *     v,◇,β           u,◇,α        
+	 * 1) CASE LNC+LUC*
+	 *     v,ℵ,β           u,◇,α        
 	 * W &lt;------------ Y &lt;------------ X 
 	 * adds 
-	 *     u+v,◇,αβ
+	 *     u+v,ℵ,αβ
 	 * W &lt;------------------------------X
 	 * 
-	 * 2) CASE LUC
-	 *     v,C,β           u,◇,α        
-	 * W &lt;------------ Y &lt;------------ X 
-	 * adds 
-	 *     u+v,C,αβ
-	 * W &lt;------------------------------X
+	 * ℵ can be empty. If |ℵ|>1, then W must be Z.
 	 * 
-	 * 
-	 * 3) CASE FLUC
-	 *     v,◇,β           u,C,α        
-	 * Z &lt;------------ Y &lt;------------ X 
-	 * adds 
-	 *     u+v,C,αβ
-	 * Z &lt;------------------------------X
-	 * when u<0, and Z!=Y
-	 * 
-	 *   
-	 * 4) CASE LCUC
+	 * 2) CASE FLUC+LCUC
 	 *     v,ℵ,β           u,C,α        
-	 * Z &lt;------------ Y &lt;------------ X 
+	 * Z &lt;------------ Y &lt;------------ C 
 	 * adds 
-	 *     u+v,C ℵ_1,αβ
-	 * Z &lt;------------------------------X
-	 * when u<0, and Z!=Y.
+	 *     u+v,Cℵ,αβ
+	 * Z &lt;------------------------------C
+	 * 
+	 * ℵ can be empty.
 	 * </pre>
 	 * 
 	 * @param nX
@@ -872,12 +825,13 @@ public class CSTNU extends CSTNir {
 	boolean labeledPropagationRule(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final LabeledIntEdge eXY, final LabeledIntEdge eYW,
 			final LabeledIntEdge eXW) {
 
-		// if (C.equalsByName(D) || A.equalsByName(D)) continue;// it is useless to consider self loop. NO! it is necessary with guarded links!
-		boolean ruleApplied = false;
 		Label nXnWLabel = nX.getLabel().conjunction(nW.getLabel());
 		if (nXnWLabel == null)
 			return false;
 
+		boolean ruleApplied = false;
+		LabeledNode Z = this.g.getZ();
+		boolean nWisNotZ = nW != Z;
 		final Set<Object2IntMap.Entry<Label>> XYLabeledValueMap = eXY.getLabeledValueSet();
 		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> YWAllLabeledValueMap = eYW.getAllUpperCaseAndOrdinaryLabeledValuesSet();
 		if (YWAllLabeledValueMap.size() == 0)
@@ -887,39 +841,21 @@ public class CSTNU extends CSTNir {
 				LOG.finest("LNC+LUC+FLUC+LCUC: start.");
 		}
 
-		// 1) CASE LNC + 2) CASE LUC*
+		// 1) CASE LNC + LUC*
 		for (final Object2IntMap.Entry<Label> entryXY : XYLabeledValueMap) {
 			final Label alpha = entryXY.getKey();
 			final int u = entryXY.getIntValue();
 
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryYW : YWAllLabeledValueMap) {
 				final ALabel aleph = entryYW.getKey().getValue();
-				// IF UC a-label must NOT be backpropagated, uncomment the following
-				// if (aleph.size() > 1)
-				// continue;
-				// END IF
+				if (nWisNotZ && aleph.size() > 1)
+					continue;// rule condition
 				final Label beta = entryYW.getKey().getKey();
 
 				Label alphaBeta;
-				// boolean qLabel = false;
-				// IF algorithm must work only with p-label
 				alphaBeta = alpha.conjunction(beta);
 				if (alphaBeta == null)
 					continue;
-				// ELSE
-				// if ((u >= 0) && (v < 0)) {
-				// alphaBeta = alpha.conjunction(beta);
-				// if (alphaBeta == null) {
-				// continue;
-				// }
-				// } else {
-				// alphaBeta = alpha.conjunctionExtended(beta);
-				// qLabel = alphaBeta.containsUnknown();
-				// if (qLabel) {
-				// this.removeChildrenOfUnknown(alphaBeta);
-				// }
-				// }
-				// END IF
 
 				if (!alphaBeta.subsumes(nXnWLabel)) {
 					if (Debug.ON) {
@@ -955,9 +891,6 @@ public class CSTNU extends CSTNir {
 						// it would be a redundant edge
 						continue;
 					}
-					// sum is negative!
-					// IF one wants to manage qlabels also in LP rule
-					// if (!qLabel) {// && aleph.size()<=1) {
 					if (emptyUpperCase) {
 						eXW.mergeLabeledValue(alphaBeta, sum);
 						this.checkStatus.labeledValuePropagationcalls++;
@@ -974,14 +907,11 @@ public class CSTNU extends CSTNir {
 					this.checkStatus.consistency = false;
 					this.checkStatus.finished = true;
 					return true;
-					// }
-					// sum = Constants.INT_NEG_INFINITE;
-				} // else {
-					// in the case of A != C, a value is stored only if it is more negative than the current one.
+				}
 				if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+					// value is stored only if it is more negative than the current one.
 					continue;
 				}
-				// }
 				boolean mergeStatus = (emptyUpperCase) ? eXW.mergeLabeledValue(alphaBeta, sum) : eXW.mergeUpperLabelValue(alphaBeta, aleph, sum);
 
 				if (mergeStatus) {
@@ -1000,7 +930,8 @@ public class CSTNU extends CSTNir {
 			}
 		}
 
-		if (nW != this.g.getZ() || nW == nY) {
+		if (nWisNotZ) {
+			// it is possible to return here, because the second part is applicable only when nW==Z.
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINEST))
 					LOG.finest("LNC+LUC+FLUC+LCUC: end.");
@@ -1010,31 +941,22 @@ public class CSTNU extends CSTNir {
 
 		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> XYUpperLabeledValueMap = eXY.getUpperLabelSet();
 
-		// 3) CASE FLUC + 4) CASE LCUC
+		// 2) CASE FLUC + LCUC
 		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryXY : XYUpperLabeledValueMap) {
-			final Label alpha = entryXY.getKey().getKey();
 			final ALabel upperCaseLetter = entryXY.getKey().getValue();
-			final int u = entryXY.getIntValue();
-
-			if (u >= 0 || upperCaseLetter.size() != 1) {
-				continue;// only negative values associated to single upper case are considered!
+			if (upperCaseLetter.size() != 1 || !upperCaseLetter.equals(nX)) {
+				continue;// only UC label corresponding to original contingent upper case value is considered.
 			}
+
+			final Label alpha = entryXY.getKey().getKey();
+			final int u = entryXY.getIntValue();
 
 			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryYW : YWAllLabeledValueMap) {
 				final Label beta = entryYW.getKey().getKey();
 
-				// IF algorithm must work only with p-label
 				Label alphaBeta = alpha.conjunction(beta);
 				if (alphaBeta == null)
 					continue;
-				// ELSE
-				// Label alphaBeta = alpha.conjunctionExtended(beta);
-				// if (alphaBeta.containsUnknown()) {
-				// this.removeChildrenOfUnknown(alphaBeta);
-				// }
-				// END IF
-
-				final ALabel aleph = entryYW.getKey().getValue();
 				if (!alphaBeta.subsumes(nXnWLabel)) {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINEST))
@@ -1043,6 +965,8 @@ public class CSTNU extends CSTNir {
 					}
 					continue;
 				}
+
+				final ALabel aleph = entryYW.getKey().getValue();
 				final ALabel upperCaseLetterAleph = upperCaseLetter.conjunction(aleph);
 
 				final int v = entryYW.getIntValue();
@@ -1051,13 +975,10 @@ public class CSTNU extends CSTNir {
 				 */
 				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
 
-				if (!upperCaseLetterAleph.isEmpty() && nW == nX && sum >= 0) {
-					continue;// positive upper-case values are superseeded by 0 value that is implicit in a loop
-				}
-
 				final int oldValue = eXW.getUpperLabelValue(alphaBeta, upperCaseLetterAleph);
+
 				final String oldXW;
-				String logMsg;
+				final String logMsg;
 				if (Debug.ON) {
 					oldXW = eXW.toString();
 					logMsg = "FLUC+LCUC applied to edge " + oldXW + ":\n" + "partic: "
@@ -1074,8 +995,6 @@ public class CSTNU extends CSTNir {
 						continue;
 					}
 					// sum is negative!
-					// IF one wants to manage qlabels also in LP rule
-					// if (!alphaBeta.containsUnknown()) {
 					eXW.mergeUpperLabelValue(alphaBeta, upperCaseLetterAleph, sum);
 					((CSTNUCheckStatus) this.checkStatus).upperCaseRuleCalls++;
 					if (Debug.ON) {
@@ -1089,14 +1008,11 @@ public class CSTNU extends CSTNir {
 					this.checkStatus.consistency = false;
 					this.checkStatus.finished = true;
 					return true;
-					// }
-					// sum = Constants.INT_NEG_INFINITE;
-				} // else {
-					// in the case of A != C, a value is stored only if it is more negative than the current one.
+				}
 				if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+					// in the case of A != C, a value is stored only if it is more negative than the current one.
 					continue;
 				}
-				// }
 				boolean mergeStatus = eXW.mergeUpperLabelValue(alphaBeta, upperCaseLetterAleph, sum);
 
 				if (mergeStatus) {
@@ -1115,23 +1031,24 @@ public class CSTNU extends CSTNir {
 	}
 
 	/**
-	 * Applies rule R0/qR0: label containing a proposition that can be decided only in the future is simplified removing such proposition.
+	 * On 2017-10-16 it has been shown that R0 is not more necessary for IR DC checking.<br>
+	 * For now, I comment out old code.<br>
+	 * Applies rule qR0: label containing a proposition that can be decided only in the future is simplified removing such proposition.
 	 * <b>Instantaneous reaction semantics is assumed.</b>
 	 * <b>This differs from CSTN.labelModificationR0 in the checking also upper case value</b>
 	 * 
 	 * <pre>
-	 * R0:
-	 * P? --[α, C p, w]--&gt; X 
+	 * qR0:
+	 * P? --[w, α p]--&gt; Z 
 	 * changes in 
-	 * P? --[α', C, w]--&gt; X when w &le; 0
+	 * P? --[w, α']--&gt; Z when w &le; 0
 	 * where:
 	 * p is the positive or the negative literal associated to proposition observed in P?,
 	 * α is a label,
-	 * C can be ◇ or an upper letter.
 	 * α' is α without 'p', P? children, and any children of possible q-literals.
 	 * </pre>
 	 * 
-	 * Rule qR0 has X==Z.
+	 * It is assumed that P? != Z.<br>
 	 * 
 	 * @param nObs the observation node
 	 * @param nX the other node
@@ -1140,38 +1057,35 @@ public class CSTNU extends CSTNir {
 	 * @return true if the rule has been applied one time at least.
 	 */
 	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge ePX) {
+		if (nX != nZ)
+			return false;
+		if (Debug.ON) {
+			LOG.log(Level.FINEST, "Label Modification qR0: start.");
+		}
 
-		boolean ruleApplied = false, mergeStatus = false;
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+					LOG.log(Level.FINER, "Method qR0 called passing a non observation node as first parameter!");
 				}
 			}
 			return false;
 		}
-		if (Debug.ON) {
-			LOG.log(Level.FINEST, "Label Modification R0: start.");
-		}
-		if (nX.getLabel().contains(p)) {// Table 2 ICAPS
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "R0: Proposition '" + p + "' is present in the X label '" + nX.getLabel() + "'. R0 cannot be applied.");
-				}
-			}
-			return false;
-		}
+		boolean ruleApplied = false, mergeStatus = false;
 
 		// normal and upper-case values
-		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> allLabeledValueSet = ePX.getAllUpperCaseAndOrdinaryLabeledValuesSet();
-		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryObs : allLabeledValueSet) {
+		final Set<Object2IntMap.Entry<Entry<Label, ALabel>>> allLabeledValueSetPX = ePX.getAllUpperCaseAndOrdinaryLabeledValuesSet();
+
+		for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryObs : allLabeledValueSetPX) {
 			Label alpha = entryObs.getKey().getKey();
 			if (alpha == null || !alpha.contains(p)) {// l can be nullified in a previous cycle.
 				continue;
 			}
+
 			final ALabel aLabel = entryObs.getKey().getValue();
 			final int w = (aLabel.isEmpty()) ? ePX.getValue(alpha) : ePX.getUpperLabelValue(alpha, aLabel);
+
 			// It is necessary to re-check if the value is still present.Verified that it is necessary on Nov, 26 2015
 			if (w == Constants.INT_NULL || w >= 0) {// Table 1 ICAPS paper
 				continue;
@@ -1185,7 +1099,7 @@ public class CSTNU extends CSTNir {
 			String logMessage = null;
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					logMessage = "R0 simplifies a label of edge " + ePX.getName()
+					logMessage = "qR0 simplifies a label of edge " + ePX.getName()
 							+ ":\nsource: " + nObs.getName() + " ---" + tripleAsString(w, aLabel, alpha, false) + "---> " + nX.getName()
 							+ "\nresult: " + nObs.getName() + " ---" + tripleAsString(w, aLabel, alphaPrime, false) + "---> " + nX.getName();
 				}
@@ -1209,36 +1123,21 @@ public class CSTNU extends CSTNir {
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, "Label Modification R0: end.");
+				LOG.log(Level.FINEST, "Label Modification qR0: end.");
 			}
 		}
 		return ruleApplied;
 	}
 
 	/**
-	 * Rule R3*<br>
+	 * <h1>Rule qR3*</h1>
 	 * <b>Instantaneous reaction semantics is assumed.</b><br>
-	 *
-	 * <pre>
-	 * if P? --[w, U, αβ]--&gt; nD &lt;--[v, U', βγp]-- nS  and w &le; 0
-	 * then the constraint between Y and X is modified adding the following label:
-	 * nD &lt;--[max{w,v}, U'', αβγ']-- nS
-	 * where:
-	 * α, β and γ do not share any literals.
-	 * α, β do not contain any literal of p.
-	 * p cannot compare also in label of nodes nD and nS.
-	 * γ' is obtained by removing children of p from γ.
-	 * nD != Z
-	 * U = ◇, U' can be upper-case letter or ◇.
-	 * U'' = U ⋅ U'
-	 * </pre>
-	 *
-	 * <h2>Rule qR3*</h2>
+	 * On 2017-10-16 it has been shown that R3 is not more necessary.<br>
 	 * 
 	 * <pre>
-	 * if P? --[w, U, γ]--&gt; Z &lt;--[v, U', βθp']-- nS  and w &le; 0
+	 * if P? --[w, γ]--&gt; Z &lt;--[v, βθp']-- nS  and w &le; 0
 	 * then the constraint between Y and X is modified adding the following label:
-	 * Z &lt;--[max{w,v}, U'', (γ★β)†]-- nS
+	 * Z &lt;--[max{w,v}, (γ★β)†]-- nS
 	 * where:
 	 * β, θ and γ are in Q*.
 	 * p' is p or ¬p or ¿p
@@ -1248,102 +1147,92 @@ public class CSTNU extends CSTNir {
 	 * p cannot compare also in label of nodes nD and nS.
 	 * γ' is obtained by removing children of p from γ.
 	 * (γ★β)† is the extended conjunction without any children of unknown literals.
-	 * U'' = U ⋅ U'
 	 * </pre>
 	 * 
+	 * It is assumed that nS!=nD.
+	 * 
 	 * @param nS node
-	 * @param nD node
-	 * @param nZ
+	 * @param nZ node
+	 * @param Z the certified Z node of the graph.
 	 * @param eSD LabeledIntEdge containing the constrain to modify
 	 * @return true if a rule has been applied.
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
-	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
+	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nZ, final LabeledNode Z, final LabeledIntEdge eSD) {
+
+		if (nZ != Z)
+			return false;
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, "Label Modification R3: start.");
+				LOG.log(Level.FINEST, "Label Modification qR3*: start.");
 			}
 		}
 		boolean ruleApplied = false;
 
-		ObjectArraySet<LabeledIntEdge> Obs2nDEdges = getEdgeFromObservatorsToNode(nD);
-		if (Obs2nDEdges.isEmpty())
+		ObjectArraySet<LabeledIntEdge> Obs2ZEdges = getEdgeFromObservatorsToNode(nZ);
+		if (Obs2ZEdges.isEmpty())
 			return false;
 
-		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> SDLabeledValueSet = eSD.getAllUpperCaseAndOrdinaryLabeledValuesSet();
-		if (SDLabeledValueSet.isEmpty())
+		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> SZLabeledValueSet = eSD.getAllUpperCaseAndOrdinaryLabeledValuesSet();
+		if (SZLabeledValueSet.isEmpty())
 			return false;
 
-		boolean nDIsZ = nD.equalsByName(nZ);
+		// check each edge from an observator to Z.
+		for (final LabeledIntEdge eObsZ : Obs2ZEdges) {
 
-		// For each observator to D
-		for (final LabeledIntEdge eObsD : Obs2nDEdges) {
-			final LabeledNode nObs = this.g.getSource(eObsD);
-
+			final LabeledNode nObs = this.g.getSource(eObsZ);
 			if (nObs.equalsByName(nS))
 				continue;
+
 			final char p = nObs.getPropositionObserved();
 
-			if (nS.getLabel().contains(p) || nD.getLabel().contains(p)) {// Table 2 ICAPS16
-				// if (LOG.isLoggable(Level.FINEST)) {
-				// LOG.log(Level.FINEST, "R3: Proposition '" + p + "' is present in the nS label '" + nS.getLabel() + "' or nD label '" + nD.getLabel()
-				// + "'. R3 cannot be applied.");
-				// }
+			if (nS.getLabel().contains(p)) {// Table 2 ICAPS16
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST, "qR3*: Proposition '" + p + "' is present in the nS label '" + nS.getLabel()
+								+ "'. WD1 must be preserved, so R3 cannot be applied.");
+					}
+				}
 				continue;
 			}
 			// all labels from current Obs
-			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryObsD : eObsD.getAllUpperCaseAndOrdinaryLabeledValuesSet()) {
-				final int w = entryObsD.getIntValue();
-				if (w > 0 || (nDIsZ && w == 0)) { // Table 1 ICAPS
-					// (w == 0 && nD==Z), it means that P? is executed at 0. So, even if v==0 (it cannot be v>0),
-					// the constraint does not imply an implicit constraint (stripping p). So, we don't touch the constraint.
+			for (final Object2IntMap.Entry<Entry<Label, ALabel>> entryObsZ : eObsZ.getAllUpperCaseAndOrdinaryLabeledValuesSet()) {
+				final int w = entryObsZ.getIntValue();
+				if (w >= 0) { // Table 1 ICAPS
+					// (w == 0 && nD==Z), it means that P? is executed at 0. For IR, it cannot be modified.
 					continue;
 				}
 
-				final Label ObsDLabel = entryObsD.getKey().getKey();
-				final ALabel ObsDUpperCaseLetter = entryObsD.getKey().getValue();
+				final Label ObsZLabel = entryObsZ.getKey().getKey();
+				final ALabel ObsZUpperCaseLabel = entryObsZ.getKey().getValue();
 
-				Label SDLabel;
-				ALabel newUpperCaseLetter;
-				for (final Object2IntMap.Entry<Entry<Label, ALabel>> SDLabelEntry : SDLabeledValueSet) {
-					if (SDLabelEntry == null || !(SDLabel = SDLabelEntry.getKey().getKey()).contains(p)) {
+				Label SZLabel;
+				for (final Object2IntMap.Entry<Entry<Label, ALabel>> SZLabelEntry : SZLabeledValueSet) {
+					if (SZLabelEntry == null || !(SZLabel = SZLabelEntry.getKey().getKey()).contains(p)) {
 						continue;
 					}
 
-					ALabel SDUpperCaseLetter = SDLabelEntry.getKey().getValue();
+					ALabel SZUpperCaseLabel = SZLabelEntry.getKey().getValue();
 
-					if (nDIsZ) {
-						newUpperCaseLetter = SDUpperCaseLetter.conjunction(ObsDUpperCaseLetter);
-					} else {
-						if (ObsDUpperCaseLetter.isEmpty()) {
-							// ObsDUpperCaseLetter == ◇
-							newUpperCaseLetter = SDUpperCaseLetter;
-						} else {
-							continue;
-						}
-					}
-
-					final int v = (SDUpperCaseLetter.isEmpty()) ? eSD.getValue(SDLabel) : eSD.getUpperLabelValue(SDLabel, SDUpperCaseLetter);
+					final int v = (SZUpperCaseLabel.isEmpty()) ? eSD.getValue(SZLabel) : eSD.getUpperLabelValue(SZLabel, SZUpperCaseLabel);
 					if (v == Constants.INT_NULL) {
 						// the value has been removed in a previous merge! Verified that it is necessary on Nov, 26 2015
 						continue;
 					}
 
-					final int max = Math.max(w, v);
-
-					Label newLabel = (nDIsZ) ? makeBetaGammaDagger4qR3(nS, nZ, nObs, p, ObsDLabel, SDLabel)
-							: makeAlphaBetaGammaPrime4R3(nS, nD, nObs, p, ObsDLabel, SDLabel);
-
+					Label newLabel = makeBetaGammaDagger4qR3(nS, Z, nObs, p, ObsZLabel, SZLabel);
 					if (newLabel == null) {
 						continue;
 					}
+					final int max = Math.max(w, v);
+					ALabel newUpperCaseLetter = SZUpperCaseLabel.conjunction(ObsZUpperCaseLabel);
 
 					if (newUpperCaseLetter.isEmpty()) {
-						eSD.putLabeledValueToRemovedList(SDLabel, v);
+						eSD.putLabeledValueToRemovedList(SZLabel, v);
 						ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 					} else {
-						eSD.putUpperLabeledValueToRemovedList(SDLabel, SDUpperCaseLetter, v);
+						eSD.putUpperLabeledValueToRemovedList(SZLabel, SZUpperCaseLabel, v);
 						ruleApplied = eSD.mergeUpperLabelValue(newLabel, newUpperCaseLetter, max);
 					}
 
@@ -1351,17 +1240,17 @@ public class CSTNU extends CSTNir {
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								if (!newUpperCaseLetter.isEmpty()) {
-									LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
-											+ "source: " + nObs.getName() + " ---" + tripleAsString(w, ObsDUpperCaseLetter, ObsDLabel, false) + "---> "
-											+ nD.getName()
-											+ " <---" + tripleAsString(v, SDUpperCaseLetter, SDLabel, false) + "--- " + nS.getName()
-											+ "\nresult: add " + nD.getName() + " <---" + tripleAsString(max, newUpperCaseLetter, newLabel, false) + "--- "
+									LOG.log(Level.FINER, "qR3* adds a labeled value to edge " + eSD.getName() + ":\n"
+											+ "source: " + nObs.getName() + " ---" + tripleAsString(w, ObsZUpperCaseLabel, ObsZLabel, false) + "---> "
+											+ nZ.getName()
+											+ " <---" + tripleAsString(v, SZUpperCaseLabel, SZLabel, false) + "--- " + nS.getName()
+											+ "\nresult: add " + nZ.getName() + " <---" + tripleAsString(max, newUpperCaseLetter, newLabel, false) + "--- "
 											+ nS.getName());
 								} else {
-									LOG.log(Level.FINER, "R3 adds a labeled value to edge " + eSD.getName() + ":\n"
-											+ "source: " + nObs.getName() + " ---" + pairAsString(ObsDLabel, w) + "---> " + nD.getName()
-											+ " <---" + pairAsString(SDLabel, v) + "--- " + nS.getName()
-											+ "\nresult: add " + nD.getName() + " <---" + pairAsString(newLabel, max) + "--- " + nS.getName());
+									LOG.log(Level.FINER, "qR3* adds a labeled value to edge " + eSD.getName() + ":\n"
+											+ "source: " + nObs.getName() + " ---" + pairAsString(ObsZLabel, w) + "---> " + nZ.getName()
+											+ " <---" + pairAsString(SZLabel, v) + "--- " + nS.getName()
+											+ "\nresult: add " + nZ.getName() + " <---" + pairAsString(newLabel, max) + "--- " + nS.getName());
 
 								}
 							}
@@ -1373,7 +1262,7 @@ public class CSTNU extends CSTNir {
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, "Label Modification R3: end.");
+				LOG.log(Level.FINEST, "Label Modification qR3*: end.");
 			}
 		}
 		return ruleApplied;
@@ -1426,7 +1315,7 @@ public class CSTNU extends CSTNir {
 					}
 					eNewInverted.clearLowerLabels();
 					eNewInverted.clearUpperLabels();
-					eNewInverted.mergeLabeledValue(sdLabel, -map.getValue(sdLabel,  new ALabel(dName, this.g.getALabelAlphabet())));
+					eNewInverted.mergeLabeledValue(sdLabel, -map.getValue(sdLabel, new ALabel(dName, this.g.getALabelAlphabet())));
 				}
 			}
 			allMax.addEdge((AbstractLabeledIntEdge) eNew, sName, dName);
@@ -1456,7 +1345,7 @@ public class CSTNU extends CSTNir {
 				LOG.log(Level.FINE, "Start application labeled constraint generation and label removal rules.");
 		}
 
-		ObjectArraySet<LabeledIntEdge> newEdgesToCheck = new ObjectArraySet<>();// HAS TO BE A SET!
+		EdgesToCheck newEdgesToCheck = new EdgesToCheck();
 		int i = 1, n = edgesToCheck.size();
 		for (LabeledIntEdge AB : edgesToCheck) {
 			if (Debug.ON) {
@@ -1469,25 +1358,26 @@ public class CSTNU extends CSTNir {
 			// initAndCheck does not resolve completely a qStar.
 			// It is necessary to check here the edge before to consider the second edge.
 			// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
-
 			edgeCopy = this.g.getEdgeFactory().get(AB);
-			if (A.isObservator()) {
-				// R0 on the resulting new values
-				labelModificationR0(A, B, Z, AB);
-			}
-			labelModificationR3(A, B, Z, AB);
-			if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
-				// R0 on the resulting new values
-				labelModificationR0(A, B, Z, AB);
-			}
+			if (B == Z) {
+				if (A.isObservator()) {
+					// R0 on the resulting new values
+					labelModificationR0(A, B, Z, AB);
+				}
+				labelModificationR3(A, B, Z, AB);
+				if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
+					// R0 on the resulting new values
+					labelModificationR0(A, B, Z, AB);
+				}
 
+			}
 			// LLR is put here because it works like R0 and R3
 			if (AB.getUpperLabelMap().size() > 0) {
 				labeledLetterRemovalRule(A, B, AB);
 			}
 
-			if (!AB.equalsLabeledValues(edgeCopy)) {
-				newEdgesToCheck.add(AB);
+			if (!AB.equalsAllLabeledValues(edgeCopy)) {
+				newEdgesToCheck.add(AB, A, B, Z, this.g);
 			}
 
 			/**
@@ -1501,7 +1391,6 @@ public class CSTNU extends CSTNir {
 			}
 			for (LabeledIntEdge BC : this.g.getOutEdges(B)) {
 				C = this.g.getDest(BC);
-				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
 				AC = this.g.findEdge(A, C);
 				// I need to preserve the old edge to compare below
@@ -1518,16 +1407,16 @@ public class CSTNU extends CSTNir {
 				 * The following rule are called if there are condition (avoid to call for nothing)
 				 */
 				if (AB.getLowerLabelMap().size() > 0) {
-					labeledCrossLowerCaseRule(A, B, C, AB, BC, AC);
+					labeledCrossLowerCaseRule(A, B, C, AB, BC, AC, Z);
 				}
 
 				if (edgeCopy == null && !AC.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(AC, A, C);
-					newEdgesToCheck.add(AC);
-				} else if (edgeCopy != null && !edgeCopy.equalsLabeledValues(AC)) {
+					newEdgesToCheck.add(AC, A, C, Z, this.g);
+				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(AC)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(AC);
+					newEdgesToCheck.add(AC, A, C, Z, this.g);
 				}
 
 				if (!this.checkStatus.consistency)
@@ -1552,7 +1441,6 @@ public class CSTNU extends CSTNir {
 			}
 			for (LabeledIntEdge CA : this.g.getInEdges(A)) {
 				C = this.g.getSource(CA);
-				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
 				CB = this.g.findEdge(C, B);
 				// I need to preserve the old edge to compare below
@@ -1566,16 +1454,16 @@ public class CSTNU extends CSTNir {
 				labeledPropagationRule(C, A, B, CA, AB, CB);
 
 				if (CA.getLowerLabelMap().size() > 0) {
-					labeledCrossLowerCaseRule(C, A, B, CA, AB, CB);
+					labeledCrossLowerCaseRule(C, A, B, CA, AB, CB, Z);
 				}
 
 				if (edgeCopy == null && !CB.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(CB, C, B);
-					newEdgesToCheck.add(CB);
-				} else if (edgeCopy != null && !edgeCopy.equalsLabeledValues(CB)) {
+					newEdgesToCheck.add(CB, C, B, Z, this.g);
+				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(CB)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(CB);
+					newEdgesToCheck.add(CB, C, B, Z, this.g);
 				}
 
 				if (!this.checkStatus.consistency)
@@ -1596,7 +1484,7 @@ public class CSTNU extends CSTNir {
 		edgesToCheck.clear();// in any case, this set has been elaborated. It is better to clear it out.
 		this.checkStatus.finished = newEdgesToCheck.size() == 0;
 		if (!this.checkStatus.finished) {
-			edgesToCheck.addAll(newEdgesToCheck);
+			edgesToCheck.addAll(newEdgesToCheck.get());
 		}
 		if (!this.checkStatus.consistency)
 			this.checkStatus.finished = true;

@@ -118,7 +118,7 @@ public interface LabeledIntEdge extends Component {
 	 * @param e a not null edge
 	 * @return true if edge e contains labeled values equal to the current edge ones.
 	 */
-	public boolean equalsLabeledValues(final LabeledIntEdge e);
+	public boolean equalsAllLabeledValues(final LabeledIntEdge e);
 
 	/**
 	 * The ordinary labeled values have Constants.EMPTY_UPPER_CASE_LABELstring as Upper-case letter.

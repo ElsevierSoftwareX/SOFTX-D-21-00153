@@ -9,10 +9,13 @@ import java.io.PrintStream;
 import java.sql.Time;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -165,8 +168,14 @@ public class CSTNRunningTime {
 	/**
 	 * Parameter for asking whether to add auxiliary constraints when node labels are not considered during the DC check.
 	 */
-	@Option(required = false, name = "-woNodeLabelandAuxConstraints", usage = "Check DC transforming the netwrok in an equivalent CSTN without node labels and without auxiliary constraints.")
+	@Option(required = false, name = "-woNodeLabelandAuxConstraints", usage = "Check DC transforming the network in an equivalent CSTN without node labels and without auxiliary constraints.")
 	private boolean woNodeLabelsAuxConstraints = false;
+
+	/**
+	 * Parameter for asking whether to consider only Lp,qR0, qR3* rules.
+	 */
+	@Option(required = false, name = "-onlyLPQR0QR3", usage = "Check DC considering only rules LP, qR0 and QR3.")
+	private boolean onlyLPQR0QR3 = false;
 
 	/**
 	 * Output stream to fOutput
@@ -317,16 +326,20 @@ public class CSTNRunningTime {
 				((CSTNwoNodeLabel) cstn).setAddAuxiliaryConstraints(true);
 			}
 		} else {
-			switch (tester.dcSemantics) {
-			case ε:
-				cstn = new CSTNepsilon(tester.reactionTime, g);
-				break;
-			case IR:
-				cstn = new CSTNir(g);
-				break;
-			default:
-				cstn = new CSTN(g);
-				break;
+			if (tester.onlyLPQR0QR3) {
+				cstn = new CSTNirRestricted(g);
+			} else {
+				switch (tester.dcSemantics) {
+				case ε:
+					cstn = new CSTNepsilon(tester.reactionTime, g);
+					break;
+				case IR:
+					cstn = new CSTNir(g);
+					break;
+				default:
+					cstn = new CSTN(g);
+					break;
+				}
 			}
 		}
 
@@ -426,7 +439,7 @@ public class CSTNRunningTime {
 					file.getName(),
 					g.getVertexCount(),
 					nEdges,
-					g.getPropositions().size(),
+					g.getObservatorCount(),
 					min,
 					max);
 
@@ -454,7 +467,7 @@ public class CSTNRunningTime {
 					try {
 						// status = cstn.dynamicConsistencyCheck();
 						status = future.get(tester.timeOut, TimeUnit.SECONDS);
-					} catch (Exception ex) {
+					} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
 						msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
 								+ " CSTNU is ignored.\nError details:"
 								+ ex.getMessage();
@@ -466,12 +479,16 @@ public class CSTNRunningTime {
 					}
 					localSummaryStat.addValue(status.executionTimeNS);
 				}
-				msg = (new Time(System.currentTimeMillis())).toString() + ": done!";
+				msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
 				System.out.println(msg);
 				LOG.info(msg);
 				if (!cstnOK) {
 					// There is a problem... in the stats we write TIMEOUT
-					tester.output.printf(CSVSep + "TIMEOUT after %d seconds.\n", tester.timeOut);
+					tester.output.printf(CSVSep + "%E"
+							+ CSVSep + "%E"
+							+ CSVSep + "%s"
+							+ "\n",
+							(double) tester.timeOut, 0.0, "TIMEOUT after " + tester.timeOut + " seconds.");
 					continue;
 				}
 				localAvg = localSummaryStat.getMean();
@@ -487,18 +504,17 @@ public class CSTNRunningTime {
 			} // end DC check
 
 			globalSummaryStat.addValue(localSummaryStat.getMean());
-			tester.output.printf(
-					CSVSep + "%E"
-							+ CSVSep + "%E"
-							+ CSVSep + "%s"
-							+ CSVSep + "%d"
-							+ CSVSep + "%d"
-							// + CSVSep +"%d"
-							// + CSVSep +"%d"
-							+ CSVSep + "%d"
-							// + CSVSep + "%d"
-							// + CSVSep + "%d"
-							+ "\n",
+			tester.output.printf(CSVSep + "%E"
+					+ CSVSep + "%E"
+					+ CSVSep + "%s"
+					+ CSVSep + "%d"
+					+ CSVSep + "%d"
+					// + CSVSep +"%d"
+					// + CSVSep +"%d"
+					+ CSVSep + "%d"
+					// + CSVSep + "%d"
+					// + CSVSep + "%d"
+					+ "\n",
 					localAvg,
 					localStdDev,
 					((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),

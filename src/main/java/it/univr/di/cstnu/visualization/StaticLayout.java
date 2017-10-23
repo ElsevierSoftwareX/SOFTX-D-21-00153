@@ -2,8 +2,7 @@ package it.univr.di.cstnu.visualization;
 
 /**
  * 
- * [07/02/2012] Made seriazable by
- * Posenato
+ * [07/02/2012] Made serializable by Posenato
  */
 
 import java.awt.Dimension;
@@ -13,6 +12,7 @@ import java.io.Serializable;
 import com.google.common.base.Function;
 import com.google.common.cache.LoadingCache;
 
+import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import it.univr.di.cstnu.graph.LabeledNode;
 
@@ -29,12 +29,17 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @param <E> edge type
  * @version $Id: $Id
  */
-public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements Serializable {
+public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements Serializable, IterativeContext {
 
 	/**
 	 *
 	 */
 	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Version
+	 */
+	static final public String VERSIONandDATE = StaticLayout.class.getName()+ ". Version  1.0 - October, 20 2017";
 
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
@@ -48,7 +53,7 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	};
 
 	/**
-	 * Creates an instance for the specified graph and default size; vertex locations are randomly assigned.
+	 * Creates an instance for the specified graph and default size; vertex locations are determined by {@link #positionInitializer}.
 	 *
 	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
 	 */
@@ -83,6 +88,22 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	@Override
 	public void reset() {
 		// empty
+	}
+	
+	@Override
+	public String toString() {
+		return StaticLayout.VERSIONandDATE;
+	}
+
+	@Override
+	public void step() {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public boolean done() {
+		// TODO Auto-generated method stub
+		return true;
 	}
 
 }

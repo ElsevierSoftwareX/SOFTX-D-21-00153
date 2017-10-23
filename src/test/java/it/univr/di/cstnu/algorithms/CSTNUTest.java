@@ -149,7 +149,7 @@ public class CSTNUTest {
 		ca.mergeUpperLabelValue(Label.parse("ab"), new ALabel(C.getName(), this.alpha), -4);
 
 		this.cstnu.setG(g);
-		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da);
+		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da, null);
 
 		LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
 		daOk.mergeUpperLabelValue(Label.parse("ab¬c"), new ALabel("D", this.alpha), 0);
@@ -191,10 +191,17 @@ public class CSTNUTest {
 		this.cstnu.labelModificationR0(P, X, this.Z, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
-		pxOK.mergeUpperLabelValue(Label.parse("ab"), new ALabel("C", this.alpha), -11);
-		pxOK.mergeLabeledValue(Label.parse("ab"), -10);
-		pxOK.mergeLabeledValue(Label.parse("a"), -1);
+		//if R0 is applied!
+//		pxOK.mergeUpperLabelValue(Label.parse("ab"), new ALabel("C", this.alpha), -11);
+//		pxOK.mergeLabeledValue(Label.parse("ab"), -10);
+//		pxOK.mergeLabeledValue(Label.parse("a"), -1);
+//		pxOK.mergeLabeledValue(Label.parse("c¬p"), 1);
+		//if only qR0 is applied!
+		pxOK.mergeLabeledValue(Label.parse("abpq"), -10);
+		pxOK.mergeLabeledValue(Label.parse("ab¬p"), 0);
 		pxOK.mergeLabeledValue(Label.parse("c¬p"), 1);
+		pxOK.mergeLabeledValue(Label.parse("¬c¬pa"), -1);
+		pxOK.mergeUpperLabelValue(Label.parse("ab¬p"), new ALabel("C", this.alpha), -11);
 
 		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 		assertEquals("R0: px upper case labedled values.", pxOK.getUpperLabelSet(), px.getUpperLabelSet());
@@ -293,15 +300,15 @@ public class CSTNUTest {
 		// <YX, normal, Y, X, L:{(¬ABGp, -4) (ABG, -4) }, LL:{}, UL:{(¬ABG¬p,C:-4) (¬ABGp,C:-7) (ABG,C:-7) }>
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
-		yxOK.mergeLabeledValue(Label.parse("ab"), -4);
-		yxOK.mergeLabeledValue(Label.parse("abc"), -10);
-		yxOK.mergeLabeledValue(Label.parse("bgp"), -4);
-		yxOK.mergeLabeledValue(Label.parse("¬bc"), 0);// R5 rule
-		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
-		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
+//		yxOK.mergeLabeledValue(Label.parse("ab"), -4); from 20171017 R3 is only qR3*
+//		yxOK.mergeLabeledValue(Label.parse("abc"), -10); from 20171017 R3 is only qR3*
+//		yxOK.mergeLabeledValue(Label.parse("¬bc"), 0);// R5 rule. from 20171017 R3 is only qR3*
+		yxOK.mergeLabeledValue(Label.parse("bgp"), -4);//original
+		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);//original
+		yxOK.mergeLabeledValue(Label.parse("cp"), -10);//original
 
-		yxOK.mergeUpperLabelValue(Label.parse("ab"), new ALabel("C", this.alpha), -7);
-		yxOK.mergeUpperLabelValue(Label.parse("bgp"), new ALabel("C", this.alpha), -7);
+//		yxOK.mergeUpperLabelValue(Label.parse("ab"), new ALabel("C", this.alpha), -7);from 20171017 R3 is only qR3*
+		yxOK.mergeUpperLabelValue(Label.parse("bgp"), new ALabel("C", this.alpha), -7);//original
 
 		assertEquals("R3: yx labeled values.", yxOK.getLabeledValueMap(), yx.getLabeledValueMap());
 		assertEquals("R3: yx upper case labedled values.", yxOK.getUpperLabelSet(), yx.getUpperLabelSet());
@@ -662,10 +669,10 @@ public class CSTNUTest {
 //		xwOK.mergeLabeledValue(Label.parse("¿a¬b"), -3);From 20171010 unknown literal are not more propagated
 		xwOK.mergeLabeledValue(Label.parse("ab"), 2);
 		xwOK.mergeLabeledValue(Label.parse("a¬b"), -3);
-		xwOK.mergeUpperLabelValue(Label.parse("a"), aLabel, 0);
+		xwOK.mergeUpperLabelValue(Label.parse("a"), aLabel, 0);//not stored because is 0
 		xwOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -2);
 //		xwOK.mergeUpperLabelValue(Label.parse("a¿b"), aLabel, -4);
-		xwOK.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -5);
+//		xwOK.mergeUpperLabelValue(Label.parse("a¬b"), aLabel.conjunction(bLabel), -5);//not allowed because rule does not back propagate conjuncted UC from node != Z
 
 //		assertEquals("No case: XW ", xwOK.toString(), XW.toString());
 	
@@ -722,7 +729,7 @@ public class CSTNUTest {
 		//FLUC and LCUC change upper case values!
 //		xzOK.mergeUpperLabelValue(Label.parse("¿a"), aLabel, -1); From 20171010 unknown literal are not more propagated
 //		xzOK.mergeUpperLabelValue(Label.parse("¿a¬b"), aLabel, -4);
-		xzOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -3);
+//		xzOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -3);// X<>A?, so rule cannot be applied
 //		xzOK.mergeUpperLabelValue(Label.parse("a¿b"), aLabel, -5);
 		
 		assertEquals("No case: XZ labeled values.", xzOK.getLabeledValueMap(), XZ.getLabeledValueMap());
@@ -774,15 +781,15 @@ public class CSTNUTest {
 		this.cstnu.labeledPropagationRule(X, Y, this.Z, XY, YZ,  XZ);
 //		System.out.println(XW);
 		
-		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable xzOK = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
 		//<{¿a=A?->-2, ab=A?->-4, ¿a¬b=A?∙B?->-5, a¿b=A?∙B?->-6}>
 //		xwOK.mergeUpperLabelValue(Label.parse("¿a"), aLabel, -2);From 20171010 unknown literal are not more propagated
-		xwOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -4);
+//		xwOK.mergeUpperLabelValue(Label.parse("ab"), aLabel, -4);
 //		xwOK.mergeUpperLabelValue(Label.parse("¿a¬b"), aLabel.conjunction(bLabel), -5);
 //		xwOK.mergeUpperLabelValue(Label.parse("a¿b"), aLabel.conjunction(bLabel), -6);
 			
 
-		assertEquals("No case: XZ labeled values.", xwOK.getLabeledValueMap(), XZ.getLabeledValueMap());
-		assertEquals("No case: XZ upper case labedled values.", xwOK.getUpperLabelSet(), XZ.getUpperLabelSet());
+		assertEquals("No case: XZ labeled values.", xzOK.getLabeledValueMap(), XZ.getLabeledValueMap());
+		assertEquals("No case: XZ upper case labedled values.", xzOK.getUpperLabelSet(), XZ.getUpperLabelSet());
 	}
 }

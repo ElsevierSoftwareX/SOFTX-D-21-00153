@@ -46,6 +46,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * Version of the class
 	 */
 	// static public final String VERSIONandDATE = "Version 1.2 - April, 25 2017";
+	@SuppressWarnings("hiding")
 	static public final String VERSIONandDATE = "Version  1.3 - October, 10 2017";// removed qLabels from LP
 
 	/**

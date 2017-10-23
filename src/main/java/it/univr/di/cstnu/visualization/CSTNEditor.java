@@ -8,7 +8,9 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -22,9 +24,11 @@ import java.io.Writer;
 import java.net.URL;
 import java.util.logging.Logger;
 
+import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
@@ -35,6 +39,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
 
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
@@ -43,7 +48,9 @@ import org.netbeans.validation.api.ui.swing.ValidationPanel;
 
 import com.google.common.base.Supplier;
 
+import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.io.GraphIOException;
+import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -53,6 +60,7 @@ import edu.uci.ics.jung.visualization.decorators.ConstantDirectionalEdgeValueTra
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.CSTN;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
@@ -61,6 +69,7 @@ import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNepsilon;
 import it.univr.di.cstnu.algorithms.CSTNir;
+import it.univr.di.cstnu.algorithms.CSTNirRestricted;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
 import it.univr.di.cstnu.graph.GraphMLReader;
@@ -108,6 +117,54 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cstn = new CSTN(CSTNEditor.this.checkedGraph);
 				break;
 			}
+
+			jl.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.cstnStatus = CSTNEditor.this.cstn.dynamicConsistencyCheck();
+				if (CSTNEditor.this.cstnStatus.consistency) {
+
+					jl.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTN consistent.");
+					jl.setBackground(Color.green);
+					CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+				} else {
+					// The distance graph is not consistent
+					jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTN consistent.</b>");
+					// jl.setIcon(CSTNEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl.setText("There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNEditor.warnIcon);
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vv2.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vv2.validate();
+			CSTNEditor.this.vv2.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class CSTNRestrictedCheckListener implements ActionListener {
+
+		public CSTNRestrictedCheckListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.derivedGraphMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.cstn = new CSTNirRestricted(CSTNEditor.this.checkedGraph);
 
 			jl.setBackground(Color.orange);
 			try {
@@ -459,7 +516,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		}
 	}
 
-	
 	/**
 	 * @author posenato
 	 */
@@ -504,7 +560,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		}
 	}
 
-	
 	/**
 	 * @author posenato
 	 */
@@ -606,16 +661,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				try {
 					CSTNEditor.this.loadGraphG(file);
 					CSTNEditor.this.vv2.setVisible(false);
-
+					((LayoutListener) CSTNEditor.this.layoutToggleButton.getActionListeners()[0]).reset();
 					CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 					jl.setText("");
 					jl.setOpaque(false);
 					// CSTNEditor.this.setTitle("CSTNU Editor and Checker: " + file.getName() + "-" + CSTNEditor.this.g.getName());
-					CSTNEditor.this.graphInfoLabel.setText("File " + file.getName()
-							+ ": #nodes: " + CSTNEditor.this.inputGraph.getVertexCount()
-							+ ", #edges: " + CSTNEditor.this.inputGraph.getEdgeCount()
-							+ ", #obs: " + CSTNEditor.this.inputGraph.getObservators().size()
-							+ ".");
+					CSTNEditor.this.graphInfoLabel.setText(CSTNEditor.getGraphLabelDescription(CSTNEditor.this.inputGraph));
 					CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
 				} catch (ClassNotFoundException | FileNotFoundException | GraphIOException e1) {
@@ -661,6 +712,120 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	}
 
 	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class BigViewerListener implements ActionListener {
+
+		boolean isInputGraphLayoutToShow;
+
+		public BigViewerListener(boolean isInputGraphLayoutToShow) {
+			this.isInputGraphLayoutToShow = isInputGraphLayoutToShow;
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			JDialog frame = new JDialog(CSTNEditor.this,
+					(this.isInputGraphLayoutToShow) ? CSTNEditor.inputGraphBigViewerName : CSTNEditor.derivedGraphBigViewerName);
+			frame.setBounds(CSTNEditor.this.getBounds());
+			Dimension bvvDim = new Dimension(frame.getWidth(), frame.getHeight() - 100);
+			VisualizationViewer<LabeledNode, LabeledIntEdge> bvv = new VisualizationViewer<>(
+					(this.isInputGraphLayoutToShow) ? CSTNEditor.this.layout1 : CSTNEditor.this.layout2, bvvDim);
+			bvv.setName(CSTNEditor.inputGraphBigViewerName);
+			buildRenderContext(bvv, true);
+			((ModalGraphMouse) bvv.getGraphMouse()).setMode(ModalGraphMouse.Mode.TRANSFORMING);
+			final JPanel rowForAppButtons = new JPanel();
+			@SuppressWarnings("unchecked")
+			final JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) bvv.getGraphMouse()).getModeComboBox();
+			rowForAppButtons.add(modeBox);
+			JButton close = new JButton(new AbstractAction("Close") {
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void actionPerformed(ActionEvent event) {
+					frame.dispose();
+				}
+			});
+			rowForAppButtons.add(close);
+			frame.setLayout(new FlowLayout(FlowLayout.CENTER));
+			frame.add(new JLabel(getGraphLabelDescription(((LabeledIntGraph) CSTNEditor.this.layout1.getGraph()))));
+			frame.add(bvv);
+			frame.add(rowForAppButtons);
+			frame.setVisible(true);
+			frame.validate();
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class LayoutListener implements ActionListener {
+
+		/**
+		 * Original StaticLayout
+		 */
+		AbstractLayout<LabeledNode, LabeledIntEdge> originalLayout;
+
+		/**
+		 * 
+		 */
+		CSTNLayout<LabeledIntEdge> cstnLayout;
+
+		/**
+		 * 
+		 */
+		LayoutListener() {
+			this.originalLayout = null;
+			this.cstnLayout = null;
+		}
+
+		/**
+		 * 
+		 */
+		public void reset() {
+			CSTNEditor.this.layoutToggleButton.setSelected(false);
+			this.originalLayout = null;
+			this.cstnLayout = null;
+			return;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent actionEvent) {
+			try {
+				AbstractLayout<LabeledNode, LabeledIntEdge> nextLayout;
+				if (CSTNEditor.this.layoutToggleButton.isSelected()) {
+					this.originalLayout = CSTNEditor.this.layout1;
+					if (this.cstnLayout == null) {
+						nextLayout = new CSTNLayout<>(CSTNEditor.this.inputGraph, CSTNEditor.this.vv1.getSize());
+						((CSTNLayout<LabeledIntEdge>) nextLayout).setInitialY(CSTNEditor.this.vv1.getSize().height / 2);
+						nextLayout.initialize();
+						this.cstnLayout = (CSTNLayout<LabeledIntEdge>) nextLayout;
+					} else {
+						nextLayout = this.cstnLayout;
+					}
+				} else {
+					nextLayout = this.originalLayout;
+				}
+
+				// IF one wants animation
+				// Relaxer relaxer = new VisRunner((IterativeContext) this.currentLayout);
+				// relaxer.stop();
+				// relaxer.prerelax();
+				// LayoutTransition<LabeledNode, LabeledIntEdge> lt = new LayoutTransition<>(CSTNEditor.this.vv1, CSTNEditor.this.layout1, nextLayout);
+				// Animator animator = new Animator(lt);
+				// animator.start();
+				// ELSE one step transition
+				CSTNEditor.this.vv1.setGraphLayout(nextLayout);
+				CSTNEditor.this.vv1.repaint();
+				// END iF
+				CSTNEditor.this.layout1 = nextLayout;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
 	 * Default load/save directory
 	 */
 	static String defaultDir = "/Dropbox/";
@@ -668,7 +833,22 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Name of the distance viewer
 	 */
+	public static final String editorName = "Editor";
+
+	/**
+	 * Name of the distance viewer
+	 */
 	public static final String distanceViewerName = "DistanceViewer";
+
+	/**
+	 * Name of the input graph big viewer
+	 */
+	public static final String inputGraphBigViewerName = "Input Graph Big Viewer";
+
+	/**
+	 * Name of the derived graph big viewer
+	 */
+	public static final String derivedGraphBigViewerName = "Derived Graph Big Viewer";
 
 	/**
 	 *
@@ -688,7 +868,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * the preferred sizes for the two views
 	 */
-	static final Dimension preferredSize = new Dimension(780, 768);
+	static Dimension preferredSize = new Dimension(780, 768);
 
 	/**
 	 * Standard serial number
@@ -703,6 +883,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 *
 	 */
 	static final URL warnIconFile = Class.class.getResource("/images/metal-warning.png");
+
 	/**
 	 * @param args an array of {@link java.lang.String} objects.
 	 */
@@ -730,18 +911,17 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * CSTNU checker
 	 */
 	CSTNU cstnu;
-	
+
 	/**
 	 * CSTNU check status
 	 */
 	CSTNUCheckStatus cstnuStatus;
 
-
 	/**
 	 * CSTNPSU checker
 	 */
-	CSTNPSU cstnpsu; 
-	
+	CSTNPSU cstnpsu;
+
 	/**
 	 * Number of cycles of CSTN(U) check step-by-step
 	 */
@@ -753,7 +933,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	public DCSemantics dcCurrentSem = DCSemantics.Std;
 
 	/**
-	 * derivedGraphMessageArea
+	 * Message area above the derived (no input) graph.
 	 */
 	JEditorPane derivedGraphMessageArea;
 
@@ -780,17 +960,22 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Layout for input graph.
 	 */
-	StaticLayout<LabeledIntEdge> layout1;
+	AbstractLayout<LabeledNode, LabeledIntEdge> layout1;
 
 	/**
 	 * Layout for derived graph.
 	 */
-	StaticLayout<LabeledIntEdge> layout2;
+	AbstractLayout<LabeledNode, LabeledIntEdge> layout2;
 
 	/**
 	 * 
 	 */
 	JLabel mapInfoLabel;
+
+	/**
+	 * Button for re-layout input graph
+	 */
+	JToggleButton layoutToggleButton;
 
 	/**
 	 * LabeledIntGraph structures necessary to represent an axuliary graph.
@@ -821,15 +1006,21 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * Default constructor
 	 */
 	public CSTNEditor() {
-		super("Simple CSTNU Editor. CSTN " + CSTN.VERSIONandDATE +". CSTNU "+CSTNU.VERSIONandDATE);
+		super("Simple CSTNU Editor. CSTN " + CSTN.VERSIONandDATE + ". CSTNU " + CSTNU.VERSIONandDATE);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+		Rectangle bounds = env.getMaximumWindowBounds();
+		if (Debug.ON)
+			LOG.finest("Screen Bounds: " + bounds);
+		CSTNEditor.preferredSize = new Dimension((bounds.width - 30) / 2, bounds.height - 260);
 
 		this.inputGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
 		this.checkedGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
 		this.layout1 = new StaticLayout<>(this.inputGraph, CSTNEditor.preferredSize);
 		this.layout2 = new StaticLayout<>(this.checkedGraph, CSTNEditor.preferredSize);
 		this.vv1 = new VisualizationViewer<>(this.layout1, CSTNEditor.preferredSize);
-		this.vv1.setName("Editor");
+		this.vv1.setName(CSTNEditor.editorName);
 		this.vv2 = new VisualizationViewer<>(this.layout2, CSTNEditor.preferredSize);
 		this.vv2.setName(CSTNEditor.distanceViewerName);
 
@@ -867,18 +1058,18 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		contentPane.add(messagePanel, BorderLayout.NORTH);
 
-		//USING WEST AND EAST zone results that, after a resize, the central panel may be displayed and it is ugly. 
+		// USING WEST AND EAST zone results that, after a resize, the central panel may be displayed and it is ugly.
 		// LEFT contentPane.add(new GraphZoomScrollPane(this.vv1), BorderLayout.WEST);
 		// RIGHT contentPane.add(new GraphZoomScrollPane(this.vv2), BorderLayout.EAST);
-		//USIC CENTER is better even if it require a new layout
+		// USIC CENTER is better even if it require a new layout
 		JPanel centralPanel = new JPanel(new GridLayout(1, 2));
-		centralPanel.add(new GraphZoomScrollPane(this.vv1));
+		centralPanel.add(new GraphZoomScrollPane(this.vv1));// GraphZoomScroll is necessary to show border!
 		centralPanel.add(new GraphZoomScrollPane(this.vv2));
 		contentPane.add(centralPanel, BorderLayout.CENTER);
 
 		// SOUTH
 		final JPanel controls = new JPanel(new GridLayout(3, 1)), rowForAppButtons = new JPanel(), rowForCSTNButtons = new JPanel(),
-				rowForCSTNUButtons = new JPanel();//, rowForCSTNPSUButtons = new JPanel();
+				rowForCSTNUButtons = new JPanel();// , rowForCSTNPSUButtons = new JPanel();
 		final ValidationPanel validationPanelRowForCSTNButtons = new ValidationPanel();
 		final ValidationGroup validationGroupCSTN = validationPanelRowForCSTNButtons.getValidationGroup();
 		validationPanelRowForCSTNButtons.setInnerComponent(rowForCSTNButtons);
@@ -886,12 +1077,20 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		controls.add(rowForAppButtons, 0);// for tuning application
 		controls.add(validationPanelRowForCSTNButtons, 1);// for button regarding CSTN
 		controls.add(rowForCSTNUButtons, 2);// for button regarding CSTNU
-//		controls.add(rowForCSTNPSUButtons, 3);// for button regarding CSTNPSU
+		// controls.add(rowForCSTNPSUButtons, 3);// for button regarding CSTNPSU
 		contentPane.add(controls, BorderLayout.SOUTH);
 
 		JButton buttonCheck;
 
 		// FIRST ROW OF COMMANDS
+		this.layoutToggleButton = new JToggleButton("Layout input graph");
+		this.layoutToggleButton.addActionListener(new LayoutListener());
+		rowForAppButtons.add(this.layoutToggleButton);
+
+		buttonCheck = new JButton("Input Graph big viewer");
+		buttonCheck.addActionListener(new BigViewerListener(true));
+		rowForAppButtons.add(buttonCheck);
+
 		@SuppressWarnings("unchecked")
 		final JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vv1.getGraphMouse()).getModeComboBox();
 		rowForAppButtons.add(modeBox);
@@ -914,6 +1113,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// });
 		// rowForAppButtons.add(excludeR1R2Button);
 
+		buttonCheck = new JButton("Derived Graph big viewer");
+		buttonCheck.addActionListener(new BigViewerListener(false));
+		rowForAppButtons.add(buttonCheck);
+
 		buttonCheck = new JButton("Help");
 		buttonCheck.addActionListener(new HelpListener());
 		rowForAppButtons.add(buttonCheck);
@@ -924,8 +1127,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// @SuppressWarnings("rawtypes")
 		// JComboBox<Class> jcb = new JComboBox<>(new Class[] { LabeledIntTreeMap.class, LabeledIntHierarchyMap.class});
 
-		
-		//RWO FOR CSTNs
+		// RWO FOR CSTNs
 		rowForCSTNButtons.add(new JLabel("DC Semantics: "));
 		JComboBox<DCSemantics> dcSemCombo = new JComboBox<>(DCSemantics.values());
 		dcSemCombo.setSelectedItem(DCSemantics.Std);
@@ -970,7 +1172,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		this.saveCSTNResultButton.addActionListener(new CSTNSaveListener());
 		rowForCSTNButtons.add(this.saveCSTNResultButton);
 
-		//ROW FOR CSTNU
+		buttonCheck = new JButton("CSTN Restricted Check");
+		buttonCheck.addActionListener(new CSTNRestrictedCheckListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		// ROW FOR CSTNU
 		buttonCheck = new JButton("CSTNU Init Graph");
 		buttonCheck.addActionListener(new CSTNUInitListener());
 		rowForCSTNUButtons.add(buttonCheck);
@@ -982,14 +1188,13 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("One Step CSTNU Check");
 		buttonCheck.addActionListener(new CSTNUOneStepListener());
 		rowForCSTNUButtons.add(buttonCheck);
-		
-		//CSTNPSU row
+
+		// CSTNPSU row
 		buttonCheck = new JButton("CSTNPSU Check");
 		buttonCheck.addActionListener(new CSTNPSUCheckListener());
-		//rowForCSTNPSUButtons.add(buttonCheck);
+		// rowForCSTNPSUButtons.add(buttonCheck);
 		rowForCSTNUButtons.add(buttonCheck);
-		
-		
+
 		// MENU
 		final JMenu menu = new JMenu("File");
 		final JMenuItem openItem = new JMenuItem("Open...");
@@ -1011,16 +1216,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	}
 
 	/**
+	 * sets up vertex and edges renders
+	 * 
 	 * @param viewer
 	 * @param firstViewer
 	 */
-	void buildRenderContext(VisualizationViewer<LabeledNode, LabeledIntEdge> viewer, boolean firstViewer) {
+	public static void setNodeEdgeRenders(BasicVisualizationServer<LabeledNode, LabeledIntEdge> viewer, boolean firstViewer) {
 		RenderContext<LabeledNode, LabeledIntEdge> renderCon = viewer.getRenderContext();
-
 		// VERTEX setting
 		// vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		viewer.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
 		renderCon.setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
 
 		// EDGE setting
@@ -1038,12 +1243,29 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			renderCon.setEdgeFontTransformer(AbstractLabeledIntEdge.edgeFontFunction);
 		}
 		renderCon.setLabelOffset((firstViewer) ? 6 : 3);
+	}
+
+	/**
+	 * Adds vertex and edges renders, tooltips and mouse behaviour to a viewer.
+	 * 
+	 * @param viewer
+	 * @param firstViewer
+	 */
+	void buildRenderContext(VisualizationViewer<LabeledNode, LabeledIntEdge> viewer, boolean firstViewer) {
+		RenderContext<LabeledNode, LabeledIntEdge> renderCon = viewer.getRenderContext();
+
+		// vertex and edge renders
+		setNodeEdgeRenders(viewer, firstViewer);
+
+		// TOOLTIPS setting
+		viewer.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
 
 		// MOUSE setting
 		// Create a graph mouse and add it to the visualization component
 		Supplier<LabeledIntEdge> edgeFactory = new LabeledIntEdgeSupplier<>(CSTNEditor.labeledIntValueMap);
-		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(), edgeFactory,
-				this);
+		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(),
+				edgeFactory,
+				CSTNEditor.this);
 		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
 		viewer.setGraphMouse(graphMouse);
 		viewer.addKeyListener(graphMouse.getModeKeyListener());
@@ -1061,6 +1283,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		try (FileReader fileReader = new FileReader(fileName)) {
 			final GraphMLReader<LabeledIntGraph> graphReader = new GraphMLReader<>(fileReader, CSTNEditor.labeledIntValueMap);
 			CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
+			CSTNEditor.this.inputGraph.setFileName(fileName);
 			fileReader.close();
 		} catch (final Exception e) {
 			e.printStackTrace();
@@ -1102,6 +1325,31 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.layout2.setLocation(v, v.getX(), v.getY());
 			}
 		}
+	}
+
+	/**
+	 * @param g
+	 * @return a string describing essential characteristics of the graph.
+	 */
+	public static String getGraphLabelDescription(LabeledIntGraph g) {
+		if (g == null)
+			return "";
+		StringBuilder sb = new StringBuilder();
+		if (g.getFileName() != null) {
+			sb.append("File ");
+			sb.append(g.getFileName().getName());
+		}
+		sb.append(": #nodes: ");
+		sb.append(g.getVertexCount());
+		sb.append(", #edges: ");
+		sb.append(g.getEdgeCount());
+		sb.append(", #obs: ");
+		sb.append(g.getObservators().size());
+		if (g.getContingentCount() > 0) {
+			sb.append(", #contingent: ");
+			sb.append(g.getContingentCount());
+		}
+		return sb.toString();
 	}
 
 }// end_of_file

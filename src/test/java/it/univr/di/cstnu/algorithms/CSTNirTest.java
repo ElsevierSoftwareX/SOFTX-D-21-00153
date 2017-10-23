@@ -97,9 +97,15 @@ public class CSTNirTest {
 		this.cstn.labelModificationR0(this.P, this.X, this.Z, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		//if R0 is applied!
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);// ir semantics
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
+		//if only qR0 is applied!
+//		pxOK.mergeLabeledValue(Label.parse("ABp"), -10);
+//		pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
+//		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
+//		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
 
 		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 	}
@@ -284,13 +290,19 @@ public class CSTNirTest {
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// std semantics
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
+		//if R3 is applied!
 		yxOK.mergeLabeledValue(Label.parse("abc"), -10);
 		yxOK.mergeLabeledValue(Label.parse("abg"), -4);
 		yxOK.mergeLabeledValue(Label.parse("¬bc"), 0);// std semantics R3 rule with reaction time
 		yxOK.mergeLabeledValue(Label.parse("bgp"), -4);
 		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
 		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
+		//if only qR3* is applied
+//		yxOK.mergeLabeledValue(Label.parse("bgp"), -4);
+//		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
+//		yxOK.mergeLabeledValue(Label.parse("c¬p"), 11);
 
+		
 		assertEquals("R3: yx labeled values.", yxOK.getLabeledValueSet(), yx.getLabeledValueSet());
 	}
 
