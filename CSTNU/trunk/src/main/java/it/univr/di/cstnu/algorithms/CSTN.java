@@ -60,7 +60,7 @@ public class CSTN {
 		 * Counters about the # of application of different rules.
 		 */
 		@SuppressWarnings("javadoc")
-		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationcalls = 0;//, qAllNegLoop = 0, qSemiNegLoop = 0;
+		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationcalls = 0;// , qAllNegLoop = 0, qSemiNegLoop = 0;
 		// r1calls = 0, r2calls = 0,
 		/**
 		 * Execution time in nanoseconds.
@@ -92,8 +92,8 @@ public class CSTN {
 					// + "Rule R2 has been applied " + this.r2calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
 					+ "Rule Labeled Propagation has been applied " + this.labeledValuePropagationcalls + " times.\n"
-//					+ "Negative qLoops: " + this.qAllNegLoop + "\n"
-//					+ "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
+					// + "Negative qLoops: " + this.qAllNegLoop + "\n"
+					// + "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
 					+ ((this.executionTimeNS != Constants.INT_NULL)
 							? "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)"
 							: ""));
@@ -108,8 +108,8 @@ public class CSTN {
 			this.r0calls = 0;
 			this.r3calls = 0;
 			this.labeledValuePropagationcalls = 0;
-//			this.qAllNegLoop = 0;
-//			this.qSemiNegLoop = 0;
+			// this.qAllNegLoop = 0;
+			// this.qSemiNegLoop = 0;
 			this.executionTimeNS = Constants.INT_NULL;
 			this.finished = false;
 			this.initialized = false;
@@ -135,6 +135,64 @@ public class CSTN {
 	}
 
 	/**
+	 * @author posenato
+	 */
+	public static class EdgesToCheck {
+		/**
+		 * 
+		 */
+		public ObjectArraySet<LabeledIntEdge> edgesToCheck;
+		/**
+		 * 
+		 */
+		public boolean alreadyAddAllIncidentsToZ;
+
+		/**
+		 * 
+		 */
+		public EdgesToCheck() {
+			this.edgesToCheck = new ObjectArraySet<>();
+			this.alreadyAddAllIncidentsToZ = false;
+		}
+
+		/**
+		 * Check if the edge that has to be add has one end-point that is an observator. In positive case, it adds
+		 * all incident edges to the observation t.p.
+		 * 
+		 * @param enSnD
+		 * @param nS
+		 * @param nD
+		 * @param Z
+		 * @param g
+		 */
+		void add(LabeledIntEdge enSnD, LabeledNode nS, LabeledNode nD, LabeledNode Z, LabeledIntGraph g) {
+			// in any case, the edge has to be added.
+			this.edgesToCheck.add(enSnD);
+			// then,
+			if (this.alreadyAddAllIncidentsToZ || !nS.isObservator())
+				return;
+			// add all incident to nD
+			this.edgesToCheck.addAll(g.getIncidentEdges(nD));
+			this.alreadyAddAllIncidentsToZ = true;
+		}
+
+		/**
+		 * @return the number of edges in the set.
+		 */
+		int size() {
+			return (this.edgesToCheck != null) ? this.edgesToCheck.size() : 0;
+		}
+		
+		/**
+		 * @return the set of edges.
+		 */
+		public ObjectArraySet<LabeledIntEdge> get() {
+			return this.edgesToCheck;
+		}
+
+	}
+
+	/**
 	 * logger
 	 */
 	static Logger LOG = Logger.getLogger(CSTN.class.getName());
@@ -145,11 +203,10 @@ public class CSTN {
 	// static final String VERSIONandDATE = "Version 3.1 - Apr, 20 2016";
 	// static final String VERSIONandDATE = "Version 3.3 - October, 4 2016";
 	// static final String VERSIONandDATE = "Version 4.0 - October, 25 2016";// added management not all negative edges in a negative qLoop
-//	static final public String VERSIONandDATE = "Version  5.0 - April, 03 2017";// re-factored
-	static final public String VERSIONandDATE = "Version  5.1 - October, 10 2017";//SVN 201. removed qLabels from LP
-//	static final public String VERSIONandDATE = "Version  6.0 - October, 16 2017";// removed qLabels from LP. Removed R0 and R3. Now, rules are LP, qR0 and qR3*
-	
-	
+	// static final public String VERSIONandDATE = "Version 5.0 - April, 03 2017";// re-factored
+	static final public String VERSIONandDATE = "Version  5.2 - October, 16 2017";// better log management. This version uses LP,R0,R3*,qLP,qR0,qR3* and
+																					// horizon!
+
 	/**
 	 * @param label
 	 * @param value
@@ -488,12 +545,12 @@ public class CSTN {
 	/**
 	 * The name for the initial node.
 	 */
-	String ZeroNodeName = "Z";
+	public static String ZeroNodeName = "Z";
 
 	/**
 	 * The name for the initial node.
 	 */
-	String OmegaNodeName = "Ω";
+	public static String OmegaNodeName = "Ω";
 
 	/**
 	 * Default constructor.
@@ -569,7 +626,7 @@ public class CSTN {
 		}
 		ObjectArraySet<LabeledIntEdge> edgesToCheck = new ObjectArraySet<>(this.g.getEdges());
 		@SuppressWarnings("unused")
-		final int propositionN = this.g.getPropositions().size();
+		final int propositionN = this.g.getObservatorCount();
 		final int nodeN = this.g.getVertexCount();
 		// TODO: trovare il numero giusto di iterazioni
 		final int maxCycles = (int) (Math.pow(nodeN, 3)); // * Math.pow(2, propositionN));
@@ -714,16 +771,16 @@ public class CSTN {
 		// Checks the presence of Z node!
 		LabeledNode Z = this.g.getZ();
 		if (Z == null) {
-			Z = this.g.getNode(this.ZeroNodeName);
+			Z = this.g.getNode(CSTN.ZeroNodeName);
 			if (Z == null) {
 				// We add by authority!
-				Z = new LabeledNode(this.ZeroNodeName);
-				Z.setX(5.0);
-				Z.setY(5.0);
+				Z = new LabeledNode(CSTN.ZeroNodeName);
+				Z.setX(5);
+				Z.setY(5);
 				this.g.addVertex(Z);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
-						LOG.log(Level.WARNING, "No " + this.ZeroNodeName + " node found: added!");
+						LOG.log(Level.WARNING, "No " + CSTN.ZeroNodeName + " node found: added!");
 				}
 			}
 			this.g.setZ(Z);
@@ -735,21 +792,21 @@ public class CSTN {
 				}
 				Z.setLabel(Label.emptyLabel);
 			}
-			this.ZeroNodeName = Z.getName();
+			CSTN.ZeroNodeName = Z.getName();
 		}
 		// Checks the presence of Ω node!
 		LabeledNode Ω = this.g.getΩ();
 		if (Ω == null) {
-			Ω = this.g.getNode(this.OmegaNodeName);
+			Ω = this.g.getNode(CSTN.OmegaNodeName);
 			if (Ω == null) {
 				// We add by authority!
-				Ω = new LabeledNode(this.OmegaNodeName);
-				Ω.setX(5.0);
-				Ω.setY(50.0);
+				Ω = new LabeledNode(CSTN.OmegaNodeName);
+				Ω.setX(5);
+				Ω.setY(50);
 				this.g.addVertex(Ω);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
-						LOG.log(Level.WARNING, "No " + this.OmegaNodeName + " node found: added!");
+						LOG.log(Level.WARNING, "No " + CSTN.OmegaNodeName + " node found: added!");
 				}
 			}
 			this.g.setΩ(Ω);
@@ -761,7 +818,7 @@ public class CSTN {
 				}
 				Ω.setLabel(Label.emptyLabel);
 			}
-			this.OmegaNodeName = Ω.getName();
+			CSTN.OmegaNodeName = Ω.getName();
 		}
 
 		// Checks well definiteness of edges and determine maxWeight
@@ -784,8 +841,8 @@ public class CSTN {
 			final LabeledNode s = this.g.getSource(e);
 			final LabeledNode d = this.g.getDest(e);
 
-			if (s==d) {
-				//loop are not admissible
+			if (s == d) {
+				// loop are not admissible
 				this.g.removeEdge(e);
 				continue;
 			}
@@ -815,7 +872,7 @@ public class CSTN {
 					}
 				}
 			}
-		}//end maxWeight search
+		}
 		this.maxWeight = -this.maxWeight;
 		// Determine horizon value
 		long product = ((long) this.maxWeight) * this.g.getVertexCount();
@@ -855,12 +912,12 @@ public class CSTN {
 			if (node != Z) {
 				LabeledIntEdge edgeToZ = this.g.findEdge(node, Z);
 				if (edgeToZ == null) {
-					edgeToZ = makeNewEdge(node.getName() + "_" + this.ZeroNodeName, ConstraintType.internal);
+					edgeToZ = makeNewEdge(node.getName() + "_" + CSTN.ZeroNodeName, ConstraintType.internal);
 					this.g.addEdge(edgeToZ, node, Z);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING,
-									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs after '" + this.ZeroNodeName + "'.");
+									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs after '" + CSTN.ZeroNodeName + "'.");
 						}
 					}
 				}
@@ -871,12 +928,12 @@ public class CSTN {
 			if (node != Ω) {
 				LabeledIntEdge edgeFromΩ = this.g.findEdge(Ω, node);
 				if (edgeFromΩ == null) {
-					edgeFromΩ = makeNewEdge(this.OmegaNodeName + "_" + node.getName(), ConstraintType.internal);
+					edgeFromΩ = makeNewEdge(CSTN.OmegaNodeName + "_" + node.getName(), ConstraintType.internal);
 					this.g.addEdge(edgeFromΩ, Ω, node);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING,
-									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs before '" + this.OmegaNodeName
+									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs before '" + CSTN.OmegaNodeName
 											+ "'.");
 						}
 					}
@@ -887,13 +944,13 @@ public class CSTN {
 		// Edge from Z to Ω
 		LabeledIntEdge eZΩ = this.g.findEdge(Z, Ω);
 		if (eZΩ == null) {
-			eZΩ = makeNewEdge(this.ZeroNodeName + "_" + this.OmegaNodeName, ConstraintType.internal);
+			eZΩ = makeNewEdge(CSTN.ZeroNodeName + "_" + CSTN.OmegaNodeName, ConstraintType.internal);
 			this.g.addEdge(eZΩ, Z, Ω);
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING,
 							"It is necessary to add a constraint to guarantee that '" + Ω.getName() + "' occurs at most " + this.horizon + " after '"
-									+ this.ZeroNodeName + "'.");
+									+ CSTN.ZeroNodeName + "'.");
 				}
 			}
 		}
@@ -1165,13 +1222,19 @@ public class CSTN {
 	 * Applies the labeled propagation rule:<br>
 	 * <b>Standard DC semantics is assumed.</b><br>
 	 * <b>This method is also valid assuming Instantaneous Reaction semantics.</b>
-	 * The rule is the EqLp+ not yet published. Moreover, qLabel are not more considered because it has been shown that are not necessary (2017-10-10).
+	 * The rule is the EqLp+ not yet published.
 	 * 
 	 * <pre>
-	 * if A --[α, u]--&gt; B --[β, v]--&gt; C, 
-	 * then A --[αβ, u+v]--&gt; C 
+	 * if A --[α, u]--&gt; B --[β, v]--&gt; C, then A --[(α★β)†, u+v]--&gt; C if u<0
 	 * 
-	 * If A==C and u+c<0, then the network is not DC.
+	 * α,β in Q*
+	 * (α★β)† is the label without children of unknown.
+	 *
+	 * If A==C and u+v < 0, then
+	 * - if (α★β)† does not contain ¿ literals, the network is not DC
+	 * - if (α★β)† contains ¿ literals, the u+v becomes -∞
+	 * 
+	 * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with nodes A == B or B==C!
 	 * </pre>
 	 * 
 	 * @param nA CANNOT BE NULL!
@@ -1187,11 +1250,10 @@ public class CSTN {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false;
-		String log = null;
 		Label nAnCLabel = nA.getLabel().conjunction(nC.getLabel());
 		if (nAnCLabel == null)
 			return false;
-		
+
 		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 			/**
@@ -1211,20 +1273,20 @@ public class CSTN {
 					continue;
 				}
 
-				// boolean qLabel = false;
-				// if ((u >= 0) && (v < 0)) {
-				// newLabelAC = labelAB.conjunction(labelBC);
-				// if (newLabelAC == null) {
-				// continue;
-				// }
-				// } else {
-				// newLabelAC = labelAB.conjunctionExtended(labelBC);
-				// qLabel = newLabelAC.containsUnknown();
-				// if (qLabel) {
-				// removeChildrenOfUnknown(newLabelAC);
-				// }
-				// }
 				final int v = BCEntry.getIntValue();
+				boolean qLabel = false;
+				if ((u >= 0) && (v < 0)) {
+					newLabelAC = labelAB.conjunction(labelBC);
+					if (newLabelAC == null) {
+						continue;
+					}
+				} else {
+					newLabelAC = labelAB.conjunctionExtended(labelBC);
+					qLabel = newLabelAC.containsUnknown();
+					if (qLabel) {
+						removeChildrenOfUnknown(newLabelAC);
+					}
+				}
 				/**
 				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
 				 */
@@ -1237,36 +1299,36 @@ public class CSTN {
 						continue;
 					}
 					// sum is negative!
-					// if (!qLabel) {
-					eAC.mergeLabeledValue(newLabelAC, sum);
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
-							log = "Label Propagation Rule applied to edge " + eAC.getName()
-									+ ":\nsource: "
-									+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
-									+ "---> "
-									+ nC.getName()
-									+ "\nresult: "
-									+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
-									+ "; old value: " + Constants.formatInt(oldValue);
-							LOG.log(Level.FINER, log + "\n***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
+					if (!qLabel) {
+						eAC.mergeLabeledValue(newLabelAC, sum);
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								String log = "Label Propagation Rule applied to edge " + eAC.getName()
+										+ ":\nsource: "
+										+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
+										+ "---> "
+										+ nC.getName()
+										+ "\nresult: "
+										+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
+										+ "; old value: " + Constants.formatInt(oldValue);
+								LOG.log(Level.FINER, log + "\n***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
+							}
 						}
+						this.checkStatus.consistency = false;
+						this.checkStatus.finished = true;
+						this.checkStatus.labeledValuePropagationcalls++;
+						return true;
 					}
-					this.checkStatus.consistency = false;
-					this.checkStatus.finished = true;
-					this.checkStatus.labeledValuePropagationcalls++;
-					return true;
-					// }
-					// sum = Constants.INT_NEG_INFINITE;
+					sum = Constants.INT_NEG_INFINITE;
+				} else {
+					// in the case of A != C, a value is stored only if it is more negative than the current one.
+					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+						continue;
+					}
 				}
-				// else {
-				// in the case of A != C, a value is stored only if it is more negative than the current one.
-				if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
-					continue;
-				}
-				// }
 				// here sum has to be add!
 				// I have to prepare the log before the execution of the merge!
+				String log = null;
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
 						log = "Label Propagation Rule applied to edge " + eAC.getName()
@@ -1285,12 +1347,12 @@ public class CSTN {
 					this.checkStatus.labeledValuePropagationcalls++;
 					if (Debug.ON)
 						LOG.log(Level.FINER, log);
-//					if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
-//						if (v >= 0)
-//							this.checkStatus.qSemiNegLoop++;
-//						else
-//							this.checkStatus.qAllNegLoop++;
-//					}
+					// if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
+					// if (v >= 0)
+					// this.checkStatus.qSemiNegLoop++;
+					// else
+					// this.checkStatus.qAllNegLoop++;
+					// }
 				}
 			}
 		}
@@ -1625,7 +1687,7 @@ public class CSTN {
 		/**
 		 * March, 06 2016 I try to apply the rules on all edges that have been modified in the previous cycle.
 		 */
-		ObjectArraySet<LabeledIntEdge> newEdgesToCheck = new ObjectArraySet<>();
+		EdgesToCheck newEdgesToCheck = new EdgesToCheck();
 		int i = 1, n = edgesToCheck.size();
 		for (LabeledIntEdge AB : edgesToCheck) {
 			if (Debug.ON) {
@@ -1648,8 +1710,8 @@ public class CSTN {
 				// R0 on the resulting new values
 				this.labelModificationR0(A, B, Z, AB);
 			}
-			if (!AB.equalsLabeledValues(edgeCopy)) {
-				newEdgesToCheck.add(AB);
+			if (!AB.equalsAllLabeledValues(edgeCopy)) {
+				newEdgesToCheck.add(AB, A, B, Z, this.g);
 			}
 
 			/**
@@ -1704,10 +1766,10 @@ public class CSTN {
 				if (edgeCopy == null && !AC.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(AC, A, C);
-					newEdgesToCheck.add(AC);
-				} else if (edgeCopy != null && !edgeCopy.equalsLabeledValues(AC)) {
+					newEdgesToCheck.add(AC, A, C, Z, this.g);
+				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(AC)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(AC);
+					newEdgesToCheck.add(AC, A, C, Z, this.g);
 				}
 
 				if (!this.checkStatus.consistency)
@@ -1736,10 +1798,10 @@ public class CSTN {
 				if (edgeCopy == null && !CB.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(CB, C, B);
-					newEdgesToCheck.add(CB);
-				} else if (edgeCopy != null && !edgeCopy.equalsLabeledValues(CB)) {
+					newEdgesToCheck.add(CB, C, B, Z, this.g);
+				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(CB)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(CB);
+					newEdgesToCheck.add(CB, C, B, Z, this.g);
 				}
 
 				if (!this.checkStatus.consistency)
@@ -1754,7 +1816,7 @@ public class CSTN {
 		edgesToCheck.clear();
 		this.checkStatus.finished = newEdgesToCheck.size() == 0;
 		if (!this.checkStatus.finished) {
-			edgesToCheck.addAll(newEdgesToCheck);
+			edgesToCheck.addAll(newEdgesToCheck.get());
 		}
 		if (!this.checkStatus.consistency)
 			this.checkStatus.finished = true;

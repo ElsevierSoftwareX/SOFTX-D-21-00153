@@ -19,7 +19,6 @@ import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
@@ -173,8 +172,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			return this.f;
 		}
 	};
-	
-	
+
 	/**
 	 * Font for edge label rendering
 	 */
@@ -202,8 +200,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		}
 	};
 
-		
-	
 	/**
 	 * To provide a unique id for the default creation of component.
 	 */
@@ -382,7 +378,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final boolean equalsLabeledValues(final LabeledIntEdge e) {
+	public final boolean equalsAllLabeledValues(final LabeledIntEdge e) {
 		if (e == null || e == this)
 			return false;
 
@@ -575,8 +571,15 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			return false;
 		}
 		this.putUpperLabeledValueToRemovedList(l, nodeName, i);// once it has been added, it is useless to add it again!
-		//Check if a standard labeled value is more restrictive of the one to put.
-		final int value = getMinValueSubsumedBy(l);
+		// Check if a standard labeled value is more restrictive of the one to put.
+		final int max = this.getLabeledValueMap().getMaxValue();//FIXME
+		if ((max != Constants.INT_NULL) && (max <= i)) {
+			if (Debug.ON)
+				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the value is greater than the maximum value present in the constraint.");
+			return false;
+			
+		}
+		final int value = this.getMinValueSubsumedBy(l);
 		if ((value != Constants.INT_NULL) && (value <= i)) {
 			if (Debug.ON)
 				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value

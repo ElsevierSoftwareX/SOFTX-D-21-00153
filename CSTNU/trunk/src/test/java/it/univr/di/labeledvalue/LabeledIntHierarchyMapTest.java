@@ -169,6 +169,12 @@ public class LabeledIntHierarchyMapTest {
 			// TODO Auto-generated method stub
 			return 0;
 		}
+
+		@Override
+		public int getMaxValue() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
 	}
 
 	@SuppressWarnings("javadoc")

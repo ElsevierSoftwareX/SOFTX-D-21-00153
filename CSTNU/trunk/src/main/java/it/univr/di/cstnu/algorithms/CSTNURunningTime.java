@@ -9,10 +9,13 @@ import java.io.PrintStream;
 import java.sql.Time;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -131,8 +134,8 @@ public class CSTNURunningTime {
 	/**
 	 * Parameter for asking timeout in sec.
 	 */
-	@Option(required = false, name = "-timeOut", usage = "Time in seconds. Default is 1200 s = 20 m")
-	private int timeOut = 1200; // 20 min
+	@Option(required = false, name = "-timeOut", usage = "Time in seconds. Default is 1800 s = 30 m")
+	private int timeOut = 1800; // 30 min
 
 	/**
 	 * Parameter for asking reaction time.
@@ -377,8 +380,8 @@ public class CSTNURunningTime {
 					file.getName(),
 					g.getVertexCount(),
 					nEdges,
-					g.getPropositions().size(),
-					g.getLowerLabeledEdges().size(),
+					g.getObservatorCount(),
+					g.getContingentCount(),
 					min,
 					max);
 
@@ -405,7 +408,7 @@ public class CSTNURunningTime {
 					try {
 						// status = cstnu.dynamicControllabilityCheck();
 						status = future.get(tester.timeOut, TimeUnit.SECONDS);
-					} catch (Exception ex) {
+					} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
 						msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
 								+ " CSTNU is ignored.\nError details:"
 								+ ex.getMessage();
@@ -417,12 +420,16 @@ public class CSTNURunningTime {
 					}
 					localSummaryStat.addValue(status.executionTimeNS);
 				}
-				msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? " NOT " : "") + "DC.";
+				msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
 				System.out.println(msg);
 				LOG.info(msg);
 				if (!cstnOK) {
 					// There is a problem... in the stats we write TIMEOUT
-					tester.output.printf(CSVSep + "TIMEOUT after %d seconds.\n", tester.timeOut);
+					tester.output.printf(CSVSep + "%E"
+							+ CSVSep + "%E"
+							+ CSVSep + "%s"
+							+ "\n",
+							(double) tester.timeOut, 0.0, "TIMEOUT after " + tester.timeOut + " seconds.");
 					continue;
 				}
 				localAvg = localSummaryStat.getMean();

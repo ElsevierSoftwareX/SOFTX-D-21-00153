@@ -79,13 +79,14 @@ public interface LabeledIntMap {
 	public int get(final Label l);
 
 	/**
-	 * <p>
-	 * getMinValue.
-	 * </p>
-	 *
 	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
 	 */
 	public int getMinValue();
+
+	/**
+	 * @return the maximum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 */
+	public int getMaxValue();
 
 	/**
 	 * <p>

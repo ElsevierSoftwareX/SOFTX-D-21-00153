@@ -366,33 +366,35 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * Default constructor.
+	 * Default constructor using a given alphabet. 
 	 * 
-	 * @param alphab
+	 * @param alphabet
 	 */
-	public ALabel(ALabelAlphabet alphab) {
+	public ALabel(ALabelAlphabet alphabet) {
 		this();
-		if (alphab == null)
+		if (alphabet == null)
 			throw new IllegalArgumentException("Alphabet cannot be null!");
-		this.alphabet = alphab;
+		this.alphabet = alphabet;
 	}
 
 	/**
-	 * Default constructor.
+	 * Builds an a-label using the a-letter 'l' and 'alphabet'.
+	 * Be aware that if 'l' is not present into alphabet, it will be added. 
 	 * 
-	 * @param l firs a-letter of label
-	 * @param alphab alphabet of a-letters. It could be empty!
+	 * @param l first a-letter of label
+	 * @param alphabet alphabet of a-letters. It may be empty!
 	 */
-	public ALabel(ALetter l, ALabelAlphabet alphab) {
-		this(alphab);
+	public ALabel(ALetter l, ALabelAlphabet alphabet) {
+		this(alphabet);
 		this.conjunct(l);
 	}
 
 	/**
 	 * Helper constructor. It calls {@link #ALabel(ALetter, ALabelAlphabet)}
-	 * 
-	 * @param s
-	 * @param alphabet
+	 * Be aware that if 's' is not present into alphabet as a-letter, it will be added as a-letter.
+	 *  
+	 * @param s the string to add.
+	 * @param alphabet alphabet of a-letters. It may be empty!
 	 */
 	public ALabel(String s, ALabelAlphabet alphabet) {
 		this(new ALetter(s), alphabet);

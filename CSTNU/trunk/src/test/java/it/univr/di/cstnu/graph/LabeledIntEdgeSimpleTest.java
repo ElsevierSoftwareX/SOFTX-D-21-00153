@@ -124,7 +124,7 @@ public class LabeledIntEdgeSimpleTest {
 		
 		LabeledIntEdgePluggable e1 = edgeFactory.get(e);
 		
-		assertTrue(e.equalsLabeledValues(e1));
+		assertTrue(e.equalsAllLabeledValues(e1));
 	}
 
 

@@ -319,6 +319,18 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 	/** {@inheritDoc} */
 	@Override
+	public int getMaxValue() {
+		int max = Constants.INT_NEG_INFINITE;
+		for (final Object2IntMap<Label> mapI : this.mainInt2SetMap.values()) {
+			for (int j : mapI.values())
+				if (max < j)
+					max = j;
+		}
+		return (max == Constants.INT_NEG_INFINITE) ? Constants.INT_NULL : max;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public int getMinValueSubsumedBy(final Label l) {
 		if (l == null)
 			return Constants.INT_NULL;
@@ -440,8 +452,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		// The label to remove and to adjust are now ready to be managed.
 		for (Label lr : labelToRemove) {
 			int old = this.mainInt2SetMap.get(lr.size()).remove(lr);
-			if (Debug.ON && LOG.isLoggable(Level.FINEST))
-				LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + old + ").");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST))
+					LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + old + ").");
+			}
 			checkValidityOfTheBaseAfterRemoving(lr);
 		}
 		// for (Label lr : labelToAdjust) {
@@ -612,15 +626,19 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
 						toRemove.add(inputLabel);
 						toRemove.add(entry.getKey());
-						if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-							LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
-									+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
+										+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
+							}
 						}
 						l1.remove(lit.getName());
 						if (l1.size() < 0)
 							throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
-						if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-							LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
+							}
 						}
 						toAdd.put(l1, v1);
 					}
@@ -651,8 +669,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			}
 		}
 		for (Label l : toRemove) {
-			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, "Label " + l + " is removed from inputMap.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST, "Label " + l + " is removed from inputMap.");
+				}
 			}
 			inputMap.remove(l);
 		}
@@ -778,8 +798,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			for (final Label currentLabel : labels) {
 				final int currentValue = internalMap.getInt(currentLabel);
 				if (currentLabel != null && currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
-					if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-						LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentValue + ")");
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINEST)) {
+							LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentValue + ")");
+						}
 					}
 					internalMap.remove(currentLabel);
 					this.checkValidityOfTheBaseAfterRemoving(currentLabel);
@@ -833,8 +855,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			}
 		}
 		if (!newMap.equals(this)) {
-			if (Debug.ON && LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Base changed: the old map " + this.toString() + " is subsituted by " + newMap.toString());
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("Base changed: the old map " + this.toString() + " is subsituted by " + newMap.toString());
+				}
 			}
 			this.mainInt2SetMap = newMap.mainInt2SetMap;
 			return true;

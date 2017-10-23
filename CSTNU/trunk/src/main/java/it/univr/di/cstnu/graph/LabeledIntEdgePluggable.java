@@ -262,9 +262,11 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
 			// The new value is greater or equal the old one, the new value can be ignored.
 			// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
-			if (Debug.ON && LOG.isLoggable(Level.FINEST))
-				LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
-						+ oldValue + ") is in the removed list");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST))
+					LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
+							+ oldValue + ") is in the removed list");
+			}
 			return false;
 		}
 		this.removedLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again
@@ -273,9 +275,17 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 			//Since this.labeledValue.put(l, i) can simplify labeled value, it is necessary to check every UPPER CASE with any labeled value, not only the last one inserted!
 			ObjectSet<Entry<java.util.Map.Entry<Label, ALabel>>> upperLabelValueSet = this.getUpperLabelSet();
 			if (upperLabelValueSet.size() > 0) {
+				int maxValueWOUpperCase = this.labeledValue.getMaxValue();
 				for (Entry<java.util.Map.Entry<Label, ALabel>> entry : upperLabelValueSet) {
 					Label label = entry.getKey().getKey();
 					int value = entry.getIntValue();
+					//FIXME 
+					if (value >= maxValueWOUpperCase) {
+						ALabel alabel = entry.getKey().getValue();
+						this.putUpperLabeledValueToRemovedList(label, alabel, value);
+						this.removeUpperLabel(label, alabel);
+						continue;
+					}
 					int valueWOUpperCase = this.labeledValue.getMinValueSubsumedBy(label);
 					if (valueWOUpperCase!= Constants.INT_NULL && value >= valueWOUpperCase) {
 						ALabel alabel = entry.getKey().getValue();

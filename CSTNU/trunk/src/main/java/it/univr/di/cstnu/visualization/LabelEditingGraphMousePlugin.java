@@ -47,7 +47,9 @@ import it.univr.di.labeledvalue.LabeledIntMapFactory;
  * @param <E> edge type
  * @version $Id: $Id
  */
-public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends LabeledIntEdge> extends edu.uci.ics.jung.visualization.control.LabelEditingGraphMousePlugin<V, E> {
+public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends LabeledIntEdge>
+		extends edu.uci.ics.jung.visualization.control.LabelEditingGraphMousePlugin<V, E> {
+
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -57,12 +59,12 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	 * @param g graph
 	 * @return true if one attribute at least has been modified
 	 */
-	@SuppressWarnings({ "static-method", "unchecked" })
-	private boolean edgeAttributesEditor(final LabeledIntEdge e, final String viewerName, final LabeledIntGraph g) {
+	@SuppressWarnings("unchecked")
+	private static boolean edgeAttributesEditor(final LabeledIntEdge e, final String viewerName, final LabeledIntGraph g) {
 
 		// LabeledIntEdge has a name, a default value (label for this value is determined by the conjunction of labels of its end-points and a type.
 
-		final boolean distanceViewer = viewerName.equals("DistanceViewer");
+		final boolean editorPanel = viewerName.equals(CSTNEditor.editorName);
 		// Create a ValidationPanel - this is a panel that will show
 		// any problem with the input at the bottom with an icon
 		final ValidationPanel panel = new ValidationPanel();
@@ -83,6 +85,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
 		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
+
+		// Endpoints
+		jp.add(new JLabel("Endpoints:"));
+		jp.add(new JLabel(g.getSource(e) + "→"));
+		jp.add(new JLabel("→" + g.getDest(e)));
 
 		// Default Value
 		Integer v = null;
@@ -112,23 +119,23 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		LabelEditingGraphMousePlugin.setConditionToEnable(constraintButton, viewerName, false);
 		final JRadioButton derivedButton = new JRadioButton(LabeledIntEdge.ConstraintType.derived.toString());
 		derivedButton.setActionCommand(LabeledIntEdge.ConstraintType.derived.toString());
-		derivedButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.derived || e.getConstraintType() == LabeledIntEdge.ConstraintType.internal);
+		derivedButton
+				.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.derived || e.getConstraintType() == LabeledIntEdge.ConstraintType.internal);
 		derivedButton.setEnabled(false);
-		
+
 		// Group the radio buttons.
 		final ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(normalButton);
 		buttonGroup.add(contingentButton);
 		buttonGroup.add(constraintButton);
 		buttonGroup.add(derivedButton);
-		
+
 		jp.add(normalButton);
 		jp.add(contingentButton);
-		jp.add(new JLabel(""));//in order to jumb a cell
+		jp.add(new JLabel(""));// in order to jumb a cell
 		jp.add(constraintButton);
 		jp.add(derivedButton);
-//		LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
-
+		// LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
 
 		// Show possible labeled values
 		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.getLabeledValueSet();
@@ -170,7 +177,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			}
 		}
 		// Show a row where it is possible to specify a new labeled value
-		if (!distanceViewer) {
+		if (editorPanel) {
 			jl = new JLabel("Labeled value " + i + ":");
 			jtLabel = new JTextField();
 			labelInputs[i] = jtLabel;
@@ -218,11 +225,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jp.add(jtLabel);
 				jtLabel = new JTextField(pair.getKey().getValue() + ": " + Constants.formatInt(pair.getIntValue()));
 				newUpperValueInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, distanceViewer);
+				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, editorPanel);
 				jp.add(jtLabel);
 			}
 		} else {
-			if (!distanceViewer) {
+			if (editorPanel) {
 				jp.add(new JLabel("Upper Label"));
 				jtLabel = new JTextField("");
 				labelUpperInputs[i] = jtLabel;
@@ -230,7 +237,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jp.add(jtLabel);
 				jtLabel = new JTextField("");
 				newUpperValueInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, distanceViewer);
+				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, editorPanel);
 				jp.add(jtLabel);
 			}
 		}
@@ -249,7 +256,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jp.add(jtLabel);
 			}
 		} else {
-			if (!distanceViewer) {
+			if (editorPanel) {
 				jp.add(new JLabel("Lower Label"));
 				jtLabel = new JTextField("");
 				labelLowerInputs[i] = jtLabel;
@@ -264,7 +271,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 		// Build the new object from the return values.
 		boolean modified = false;
-		if (panel.showOkCancelDialog("Attributes editor") && !distanceViewer) {
+		if (panel.showOkCancelDialog("Attributes editor") && !editorPanel) {
 			String newValue = null;
 
 			// Name
@@ -333,13 +340,13 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 					if (splitted.length < 2) {
 						v = null;
 					} else {
-						//nodeName = splitted[0].toUpperCase();
+						// nodeName = splitted[0].toUpperCase();
 						nodeName = splitted[0];
-						if (nodeName !=null && nodeName.isEmpty()) 
-							nodeName=null;
+						if (nodeName != null && nodeName.isEmpty())
+							nodeName = null;
 						else {
 							if (g.getNode(nodeName) == null) {
-								LabelEditingGraphMousePlugin.LOG.severe("ALabel "+nodeName +" does not correspond to a node name. Abort!" +caseValue);
+								LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!" + caseValue);
 								nodeName = null;
 							}
 						}
@@ -375,13 +382,13 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 							nodeName = null;
 							v = null;
 						} else {
-//							nodeName = splitted[0].toLowerCase();
+							// nodeName = splitted[0].toLowerCase();
 							nodeName = splitted[0];
-							if (nodeName !=null && nodeName.isEmpty()) 
-								nodeName=null;
+							if (nodeName != null && nodeName.isEmpty())
+								nodeName = null;
 							else {
 								if (g.getNode(nodeName) == null) {
-									LabelEditingGraphMousePlugin.LOG.severe("ALabel "+nodeName +" does not correspond to a node name. Abort!");
+									LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
 									nodeName = null;
 								}
 							}
@@ -438,7 +445,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		// Planning a possible extension, a node could contains more labels with associated integers.
 		// For now, we use only one entry and only the label part.
 
-		final boolean distanceViewer = viewerName.equals("DistanceViewer");
+		final boolean editorPanel = viewerName.equals(CSTNEditor.editorName);
 		// Create a ValidationPanel - this is a panel that will show
 		// any problem with the input at the bottom with an icon
 		final ValidationPanel panel = new ValidationPanel();
@@ -458,8 +465,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [" + Constants.ALETTER+"?]+"));
-		group.add(name, StringValidators.regexp("["+Constants.ALETTER+"?]+", "Must be a well format name", false), new ObservableValidator(g, node));
+		jp.add(new JLabel("Syntax: [" + Constants.ALETTER + "?]+"));
+		group.add(name, StringValidators.regexp("[" + Constants.ALETTER + "?]+", "Must be a well format name", false), new ObservableValidator(g, node));
 
 		// Observed proposition
 		JTextField observedProposition = new JTextField(1);
@@ -488,7 +495,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 		// Build the new object from the return values.
 		boolean modified = false;
-		if (panel.showOkCancelDialog("Attributes editor") && !distanceViewer) {
+		if (panel.showOkCancelDialog("Attributes editor") && editorPanel) {
 			String newValue = null;
 
 			// Name
@@ -526,7 +533,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	}
 
 	/**
-	 * Simple method to disable the editing of the property jc if forceDisable is true or if the viewerName is equals to "DistanceViewer".
+	 * Simple method to disable the editing of the property jc if forceDisable is true or if the viewerName is not equals to CSTNEditor.editorName.
 	 *
 	 * @param jc
 	 * @param viewerName
@@ -537,7 +544,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			jc.setEnabled(false);
 			return;
 		}
-		jc.setEnabled(!viewerName.equals("DistanceViewer"));
+		jc.setEnabled(viewerName.equals(CSTNEditor.editorName));
 	}
 
 	/**
@@ -549,10 +556,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	 * The editor in which this plugin works.
 	 */
 	CSTNEditor cstnEditor;
-	
+
 	/**
 	 * create an instance with default settings
-	 * @param cstnEditor 
+	 * 
+	 * @param cstnEditor
 	 */
 	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor) {
 		super(InputEvent.BUTTON1_MASK);
@@ -563,7 +571,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	 * Create an instance with overrides.
 	 *
 	 * @param selectionModifiers for primary selection
-	 * @param cstnEditor 
+	 * @param cstnEditor
 	 */
 	public LabelEditingGraphMousePlugin(final int selectionModifiers, CSTNEditor cstnEditor) {
 		super(selectionModifiers);
@@ -571,7 +579,6 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		this.cstnEditor = cstnEditor;
 	}
 
-	
 	/**
 	 * {@inheritDoc}
 	 * For primary modifiers (default, MouseButton1):
@@ -596,7 +603,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			JPanel jp2;
 			final JEditorPane mesg2 = this.cstnEditor.derivedGraphMessageArea;
 
-			if (!vv.getName().equals(CSTNEditor.distanceViewerName)) {
+			if (vv.getName().equals(CSTNEditor.editorName)) {
 				jp2 = this.cstnEditor.vv2;
 			} else {
 				jp2 = vv;
@@ -637,5 +644,4 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			e.consume();
 		}
 	}
-
 }
