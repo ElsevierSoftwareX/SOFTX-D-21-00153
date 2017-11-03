@@ -8,14 +8,13 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.base.Function;
 
 import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.picking.PickedInfo;
-import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
-import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -24,8 +23,9 @@ import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledContingentIntTreeMap;
+import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
+import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
 /**
  * It contains all information of a CSTPU edge.
@@ -40,7 +40,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * 
 	 * @author posenato
 	 */
-	static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
+	final static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
 
 		@SuppressWarnings("javadoc")
 		ALabel aLabel;
@@ -122,6 +122,67 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	// new BasicStroke(0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	/**
+	 * Font for edge label rendering
+	 */
+	public final static Function<LabeledIntEdge, Font> edgeFontFunction = new Function<LabeledIntEdge, Font>() {
+		/**
+		 * 
+		 */
+		Font b = new Font("Helvetica", Font.BOLD, 14);
+		/**
+		 * 
+		 */
+		protected boolean bold = false;
+		/**
+		 * 
+		 */
+		Font f = new Font("Helvetica", Font.PLAIN, 14);
+
+		@Override
+		public Font apply(LabeledIntEdge e) {
+			if (this.bold)
+				return this.b;
+			return this.f;
+		}
+
+		/**
+		 * @param bold
+		 */
+		@SuppressWarnings("unused")
+		public void setBold(boolean bold) {
+			this.bold = bold;
+		}
+	};
+
+	/**
+	 * Font for edge label rendering
+	 */
+	public final static Function<LabeledIntEdge, String> edgeLabelFunction = new Function<LabeledIntEdge, String>() {
+		/**
+		 * Returns a label for the edge
+		 */
+		@Override
+		public String apply(final LabeledIntEdge e) {
+			final StringBuffer sb = new StringBuffer();
+			sb.append((e.getName().length() == 0 ? "''" : e.getName()));
+			sb.append("; ");
+			if (e.getLabeledValueMap().size() > 0) {
+				sb.append(e.getLabeledValueMap().toString());
+			}
+			if (e.getUpperCaseValueMap().size() > 0) {
+				sb.append("; UL: ");
+				sb.append(e.upperCaseValuesAsString());
+			}
+			if (!e.getLowerCaseValue().isEmpty()) {
+				sb.append("; LL:");
+				sb.append(e.lowerCaseValueAsString());
+			}
+
+			return sb.toString();
+		}
+	};
+
+	/**
 	 * Select how to draw an edge given its type.
 	 */
 	public final static Function<LabeledIntEdge, Stroke> edgeStrokeTransformer = new Function<LabeledIntEdge, Stroke>() {
@@ -137,66 +198,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			default:
 				return AbstractLabeledIntEdge.derivedEdgeStroke;
 			}
-		}
-	};
-
-	/**
-	 * Font for edge label rendering
-	 */
-	public final static Function<LabeledIntEdge, Font> edgeFontFunction = new Function<LabeledIntEdge, Font>() {
-		/**
-		 * 
-		 */
-		protected boolean bold = false;
-		/**
-		 * 
-		 */
-		Font f = new Font("Helvetica", Font.PLAIN, 14);
-		/**
-		 * 
-		 */
-		Font b = new Font("Helvetica", Font.BOLD, 14);
-
-		/**
-		 * @param bold
-		 */
-		@SuppressWarnings("unused")
-		public void setBold(boolean bold) {
-			this.bold = bold;
-		}
-
-		@Override
-		public Font apply(LabeledIntEdge e) {
-			if (this.bold)
-				return this.b;
-			return this.f;
-		}
-	};
-
-	/**
-	 * Font for edge label rendering
-	 */
-	public final static Function<LabeledIntEdge, String> edgeLabelFunction = new Function<LabeledIntEdge, String>() {
-		/**
-		 * Returns a label for the edge
-		 */
-		public String apply(final LabeledIntEdge e) {
-			final StringBuffer sb = new StringBuffer();
-			sb.append((e.getName().length() == 0 ? "''" : e.getName()));
-			sb.append("; ");
-			if (e.getLabeledValueMap().size() > 0) {
-				sb.append(e.getLabeledValueMap().toString());
-			}
-			if (e.getUpperLabelSet().size() > 0) {
-				sb.append("; UL: ");
-				sb.append(e.upperLabelsAsString());
-			}
-			if (e.getLowerLabelSet().size() > 0) {
-				sb.append("; LL:");
-				sb.append(e.lowerLabelsAsString());
-			}
-
-			return sb.toString();
 		}
 	};
 
@@ -284,13 +285,13 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	ConstraintType constraintType;
 
 	/**
-	 * Lower case Morris Labels. The name of node HAS TO be preserved as the original. The name of this map says that has to be considered as lower-case letter.
+	 * Morris Lower case value augmented by a propositional label. The name of node has to be equal to the original name. No case modifications are necessary!
 	 */
-	LabeledContingentIntTreeMap lowerLabel;
+	LabeledLowerCaseValue lowerCaseValue;
 
 	/**
 	 * Removed Labeled value.<br>
-	 * The CSTNU controllability check algorithm needs to know if a labeled value has been removed in the past in order to avoid to add it a second time.
+	 * Only methods inside AbstractLabeledIntEdge or implementing class can modified such field.
 	 */
 	Object2IntMap<Label> removedLabeledValue;
 
@@ -298,12 +299,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 * Removed Upper Case Labeled value.<br>
 	 * The CSTNU controllability check algorithm needs to know if a labeled value has been removed in the past in order to avoid to add it a second time.
 	 */
-	Object2IntMap<Entry<Label, ALabel>> removedUpperLabel;
+	Object2IntMap<Entry<Label, ALabel>> removedUpperCaseValue;
 
 	/**
-	 * Upper case Morris Labels. The name of node HAS TO be preserved as the original. The name of this map says that has to be considered as upper-case letter.
+	 * Morris Upper case value augmented by a propositional label. The name of node has to be equal to the original name. No case modifications are necessary!
 	 */
-	LabeledContingentIntTreeMap upperLabel;
+	LabeledALabelIntTreeMap upperCaseValue;
 
 	/**
 	 * Minimal constructor. the name will be 'e&lt;id&gt;'.
@@ -322,8 +323,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		this((e != null) ? e.getName() : (String) null);
 		if (e != null) {
 			this.setConstraintType(e.getConstraintType());
-			this.upperLabel = new LabeledContingentIntTreeMap(e.getUpperLabelMap());
-			this.lowerLabel = new LabeledContingentIntTreeMap(e.getLowerLabelMap());
+			this.upperCaseValue = new LabeledALabelIntTreeMap(e.getUpperCaseValueMap());
+			this.lowerCaseValue = LabeledLowerCaseValue.create(e.getLowerCaseValue());
 		}
 	}
 
@@ -335,21 +336,21 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	AbstractLabeledIntEdge(final String n) {
 		this.name = ((n == null) || (n.length() == 0)) ? "e" + idSeq++ : n;
 		this.setConstraintType(ConstraintType.normal);
-		this.upperLabel = new LabeledContingentIntTreeMap();
-		this.lowerLabel = new LabeledContingentIntTreeMap();
+		this.upperCaseValue = new LabeledALabelIntTreeMap();
+		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 
 		this.removedLabeledValue = new Object2IntArrayMap<>();
 		this.removedLabeledValue.defaultReturnValue(Constants.INT_NULL);
-		this.removedUpperLabel = new Object2IntArrayMap<>();
-		this.removedUpperLabel.defaultReturnValue(Constants.INT_NULL);
+		this.removedUpperCaseValue = new Object2IntArrayMap<>();
+		this.removedUpperCaseValue.defaultReturnValue(Constants.INT_NULL);
 	}
 
 	@Override
 	public void clear() {
-		this.upperLabel.clear();
-		this.lowerLabel.clear();
+		this.upperCaseValue.clear();
+		this.lowerCaseValue.clear();
 		this.removedLabeledValue.clear();
-		this.removedUpperLabel.clear();
+		this.removedUpperCaseValue.clear();
 	}
 
 	@Override
@@ -358,13 +359,18 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final void clearLowerLabels() {
-		this.lowerLabel.clear();
+	public final void clearLowerCaseValue() {
+		this.lowerCaseValue.clear();
 	}
 
 	@Override
-	public final void clearUpperLabels() {
-		this.upperLabel.clear();
+	public final void clearUpperCaseValues() {
+		this.upperCaseValue.clear();
+	}
+
+	@Override
+	public void copyLabeledValueMap(LabeledIntMap labeledValue) {
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
@@ -384,19 +390,19 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 		// Use getLabeledValueMap instead of labeledValueSet() to have a better control.
 		return (this.getLabeledValueMap().equals(e.getLabeledValueMap())
-				&& this.getLowerLabelSet().equals(e.getLowerLabelSet())
-				&& this.getUpperLabelSet().equals(e.getUpperLabelSet()));
+				&& this.getLowerCaseValue().equals(e.getLowerCaseValue())
+				&& this.getUpperCaseValueMap().equals(e.getUpperCaseValueMap()));
 	}
 
 	@Override
-	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getAllUpperCaseAndOrdinaryLabeledValuesSet() {
-		// Merge all possible labeled values and Upper Case labeled values of edges between Y and X in a single set.
-		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> globalLabeledValueSet = this.getUpperLabelSet();
-		for (final Object2IntMap.Entry<Label> entry : this.getLabeledValueSet()) {
-			final Entry<Label, ALabel> e = new AbstractObject2ObjectMap.BasicEntry<>(entry.getKey(), ALabel.emptyLabel);
-			globalLabeledValueSet.add(new AbstractObject2IntMap.BasicEntry<>(e, entry.getIntValue()));
+	public final LabeledALabelIntTreeMap getAllUpperCaseAndLabeledValuesMaps() {
+		LabeledALabelIntTreeMap union = new LabeledALabelIntTreeMap();
+
+		for (final ALabel alabel : this.upperCaseValue.keySet()) {
+			union.put(alabel, this.upperCaseValue.get(alabel));
 		}
-		return globalLabeledValueSet;
+		union.put(ALabel.emptyLabel, this.getLabeledValueMap());
+		return union;
 	}
 
 	@Override
@@ -415,37 +421,17 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final LabeledContingentIntTreeMap getLowerLabelMap() {
-		return this.lowerLabel;
+	public LabeledLowerCaseValue getLowerCaseValue() {
+		return this.lowerCaseValue;
 	}
 
 	@Override
-	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getLowerLabelSet() {
-		return this.lowerLabel.labeledTripleSet();
-	}
-
-	@Override
-	public final int getLowerLabelValue(final Label l, final ALabel nodeName) {
-		return this.lowerLabel.getValue(l, nodeName);
-	}
-
-	@Override
-	public final int getMinLowerLabeledValue() {
-		return this.lowerLabel.getMinValue();
-	}
-
-	@Override
-	public final int getMinUpperLabeledValue() {
-		return this.upperLabel.getMinValue();
+	public final int getMinUpperCaseValue() {
+		return this.upperCaseValue.getMinValue();
 	}
 
 	@Override
 	public int getMinValue() {
-		throw new UnsupportedOperationException("Core class.");
-	}
-
-	@Override
-	public int getMinValueSubsumedBy(Label l) {
 		throw new UnsupportedOperationException("Core class.");
 	}
 
@@ -460,7 +446,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public int getMinValueConsistentWith(Label l, ALabel upperL) {
+	public int getMinValueSubsumedBy(Label l) {
 		throw new UnsupportedOperationException("Core class.");
 	}
 
@@ -470,19 +456,24 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final LabeledContingentIntTreeMap getUpperLabelMap() {
-		return this.upperLabel;
+	public int getUpperCaseMinValueConsistentWith(Label l, ALabel upperL) {
+		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override
-	public final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> getUpperLabelSet() {
-		return this.upperLabel.labeledTripleSet();
+	public final int getUpperCaseValue(final Label l, final ALabel name1) {
+		return this.upperCaseValue.getValue(l, name1);
 	}
 
 	@Override
-	public final int getUpperLabelValue(final Label l, final ALabel name1) {
-		return this.upperLabel.getValue(l, name1);
+	public final LabeledALabelIntTreeMap getUpperCaseValueMap() {
+		return this.upperCaseValue;
 	}
+
+	// @Override
+	// public final ObjectSet<Entry<ALabel, LabeledIntTreeMap>> getUpperCaseValueSet() {
+	// return this.upperCaseValue.entrySet();
+	// }
 
 	@Override
 	public int getValue(Label label) {
@@ -501,24 +492,19 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final String lowerLabelsAsString() {
-		return this.lowerLabel.toString();
+	public final String lowerCaseValueAsString() {
+		return this.lowerCaseValue.toString();
 	}
 
 	@Override
-	public final int lowerLabelSize() {
-		return this.lowerLabel.size();
+	public final int lowerCaseValueSize() {
+		return this.lowerCaseValue.isEmpty() ? 0 : 1;
 	}
 
 	@Override
 	public boolean mergeLabeledValue(Label l, int i) {
 		throw new UnsupportedOperationException("Core class.");
 	}
-
-	// @Override
-	// public boolean mergeLabeledValue(Label l, int i, ObjectSet<ALabel> s) {
-	// throw new UnsupportedOperationException("Core class.");
-	// }
 
 	@Override
 	public void mergeLabeledValue(LabeledIntMap map) {
@@ -528,12 +514,10 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	/**
 	 * Wrapper method for {@link #mergeLabeledValue(Label, int)}.
 	 *
-	 * @param i
-	 *            an integer.
+	 * @param i an integer.
 	 * @return true if the operation was successful, false otherwise.
 	 * @see #mergeLabeledValue(Label, int)
-	 * @param ls
-	 *            a {@link java.lang.String} object.
+	 * @param ls a {@link java.lang.String} object.
 	 */
 	@Override
 	public boolean mergeLabeledValue(final String ls, final int i) {
@@ -542,65 +526,53 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final boolean mergeLowerLabelValue(final Label l, ALabel nodeName, final int i) {
-		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
-			throw new IllegalArgumentException("The label or the value has a not admitted value");
-		final int value = this.getValue(l);
-		if ((value != Constants.INT_NULL) && (value <= i)) {
-			if (Debug.ON)
-				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains ("
-						+ l + ", " + value + ").");
-			return false;
-		}
-		return this.lowerLabel.mergeTriple(l, nodeName, i, false);
-	}
-
-	@Override
-	public final boolean mergeUpperLabelValue(final Label l, ALabel nodeName, final int i) {
+	public final boolean mergeUpperCaseValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
 			throw new IllegalArgumentException(
 					"The label or the value has a not admitted value: (" + l + ", " + nodeName + ", " + Constants.formatInt(i) + ").");
 		InternalEntry se = new InternalEntry(l, nodeName);
-		final int oldValue = this.removedUpperLabel.getInt(se);
+		final int oldValue = this.removedUpperCaseValue.getInt(se);
 		if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
 			// the labeled value (l,i) was already removed by label modification rule.
 			// A labeled value with a value equal or smaller will be modified again.
-			if (Debug.ON)
-				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the previous (" + l + ", " + nodeName + ", "
-						+ oldValue + ") is in the removed list");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the previous (" + l + ", " + nodeName
+							+ ", " + oldValue + ") is in the removed list");
+				}
+			}
 			return false;
 		}
-		this.putUpperLabeledValueToRemovedList(l, nodeName, i);// once it has been added, it is useless to add it again!
+		this.putUpperCaseValueToRemovedList(l, nodeName, i);// once it has been added, it is useless to add it again!
 		// Check if a standard labeled value is more restrictive of the one to put.
-		final int max = this.getLabeledValueMap().getMaxValue();//FIXME
-		if ((max != Constants.INT_NULL) && (max <= i)) {
-			if (Debug.ON)
-				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the value is greater than the maximum value present in the constraint.");
-			return false;
-			
-		}
-		final int value = this.getMinValueSubsumedBy(l);
-		if ((value != Constants.INT_NULL) && (value <= i)) {
-			if (Debug.ON)
-				LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i + ") has not been stored because the constraint contains (" + l + ", " + value
-						+ ").");
+		final int minNormalValueSubSumedByL = this.getLabeledValueMap().getMinValueSubsumedBy(l);
+		if ((minNormalValueSubSumedByL != Constants.INT_NULL) && (minNormalValueSubSumedByL <= i)) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i
+							+ ") has not been stored because the value is greater than the labeled minimal value subsume by " + l + ".");
+				}
+			}
 			return false;
 		}
-		return this.upperLabel.mergeTriple(l, nodeName, i, false);
+		return this.upperCaseValue.mergeTriple(l, nodeName, i, false);
 	}
 
+	@Override
 	public boolean putLabeledValue(Label l, int i) {
 		throw new UnsupportedOperationException("Core class.");
 	}
 
-	@Override
-	public final int putLabeledValueToRemovedList(final Label l, final int i) {
-		return this.removedLabeledValue.put(l, i);
-	}
-
-	@Override
-	public final int putUpperLabeledValueToRemovedList(final Label l, final ALabel n, final int i) {
-		return this.removedUpperLabel.put(new InternalEntry(l, n), i);
+	/**
+	 * Put the triple in the removedUpperLabel list in order to avoid to consider it again in the future.
+	 * 
+	 * @param l
+	 * @param n
+	 * @param i
+	 * @return the old value, or the {@link Constants#INT_NULL} if no value was present for the given key.
+	 */
+	int putUpperCaseValueToRemovedList(final Label l, final ALabel n, final int i) {
+		return this.removedUpperCaseValue.put(new InternalEntry(l, n), i);
 	}
 
 	@Override
@@ -609,15 +581,20 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final int removeLowerLabel(final Label l, final ALabel n) {
+	public final int removeLowerCaseValue() {
+		if (this.lowerCaseValue.isEmpty())
+			return Constants.INT_NULL;
 		this.setChanged();
-		notifyObservers("LowerLabel:" + l.toString());
-		return this.lowerLabel.remove(l, n);
+		notifyObservers("LowerLabel");
+		int i = this.lowerCaseValue.getValue();
+		this.lowerCaseValue.clear();
+		return i;
 	}
 
 	@Override
-	public final int removeUpperLabel(final Label l, final ALabel n) {
-		return this.upperLabel.remove(l, n);
+	public final int removeUpperCaseValue(final Label l, final ALabel n) {
+		this.removedUpperCaseValue.remove(new InternalEntry(l, n));
+		return this.upperCaseValue.remove(l, n);
 	}
 
 	@Override
@@ -626,26 +603,19 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final void setLabeledLowerCaseValue(final LabeledContingentIntTreeMap labeledValue) {
-		this.lowerLabel = (labeledValue == null) ? new LabeledContingentIntTreeMap() : labeledValue;
+	public void setLowerCaseValue(final Label l, final ALabel nodeName, final int i) {
+		this.lowerCaseValue = LabeledLowerCaseValue.create(nodeName, i, l);
 	}
 
 	@Override
-	public final void setLabeledUpperCaseValue(final LabeledContingentIntTreeMap labeledValue) {
-		this.upperLabel = (labeledValue == null) ? new LabeledContingentIntTreeMap() : labeledValue;
+	public final void setLowerCaseValue(final LabeledLowerCaseValue labeledValue) {
+		this.lowerCaseValue = labeledValue;
 	}
 
 	@Override
-	public void setLabeledValue(LabeledIntMap labeledValue) {
-		throw new UnsupportedOperationException("Core class.");
+	public final void setUpperCaseValueMap(final LabeledALabelIntTreeMap labeledValue) {
+		this.upperCaseValue = (labeledValue == null) ? new LabeledALabelIntTreeMap() : labeledValue;
 	}
-
-	// /**
-	// * A copy by reference of internal structure of edge e. Only optimize field cannot be update because it is read-only.
-	// *
-	// * @param e edge to clone. If null, it returns doing nothing.
-	// */
-	// public abstract void takeIn(final LabeledIntEdge e);
 
 	@Override
 	public int size() {
@@ -653,12 +623,12 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	}
 
 	@Override
-	public final String upperLabelsAsString() {
-		return this.upperLabel.toString();
+	public final String upperCaseValuesAsString() {
+		return this.upperCaseValue.toString();
 	}
 
 	@Override
-	public final int upperLabelSize() {
-		return this.upperLabel.size();
+	public final int upperCaseValueSize() {
+		return this.upperCaseValue.size();
 	}
 }

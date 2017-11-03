@@ -11,6 +11,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
@@ -28,16 +29,22 @@ import org.netbeans.validation.api.ui.swing.ValidationPanel;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.ALabel;
+import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntMapFactory;
+import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledLowerCaseValue;
+import it.univr.di.labeledvalue.Literal;
 
 /**
  * Allows to edit vertex or edge attributes.
@@ -49,7 +56,6 @@ import it.univr.di.labeledvalue.LabeledIntMapFactory;
  */
 public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends LabeledIntEdge>
 		extends edu.uci.ics.jung.visualization.control.LabelEditingGraphMousePlugin<V, E> {
-
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -83,7 +89,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "0-9_]"));
+		jp.add(new JLabel("Syntax: [" + Literal.PROPOSITIONS + "0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
 		// Endpoints
@@ -141,7 +147,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.getLabeledValueSet();
 		JTextField jt;
 		jp.add(new JLabel("Labeled value syntax:"));
-		jt = new JTextField(Constants.LABEL_RE);
+		jt = new JTextField(Label.LABEL_RE);
 		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, false);
 		jp.add(jt);
 		jt = new JTextField(Constants.LabeledValueRE);
@@ -164,7 +170,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jl.setLabelFor(jtLabel);
 				jp.add(jl);
 				jp.add(jtLabel);
-				group.add(jtLabel, StringValidators.regexp(Constants.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
+				group.add(jtLabel, StringValidators.regexp(Label.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
 
 				oldIntInputs[i] = entry.getIntValue();
 				jtValue = new JTextField(Constants.formatInt(oldIntInputs[i]));
@@ -185,7 +191,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			jl.setLabelFor(jtLabel);
 			jp.add(jl);
 			jp.add(jtLabel);
-			group.add(jtLabel, StringValidators.regexp(Constants.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
+			group.add(jtLabel, StringValidators.regexp(Label.LABEL_RE + "|", "Check the syntax!", false), Label.labelValidator);
 
 			jtValue = new JTextField();
 			newIntInputs[i] = jtValue;
@@ -196,13 +202,14 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		}
 
 		// Show all upper and lower case values allowing also the possibility of insertion.
-		final int nUpperLabels = e.upperLabelSize();
+		final int nUpperLabels = e.upperCaseValueSize();
 		final JTextField[] labelUpperInputs = new JTextField[nUpperLabels + 1];
 		final JTextField[] newUpperValueInputs = new JTextField[nUpperLabels + 1];
 
-		final int nLowerLabels = e.lowerLabelSize();
-		final JTextField[] labelLowerInputs = new JTextField[nLowerLabels + 1];
-		final JTextField[] newLowerValueInputs = new JTextField[nLowerLabels + 1];
+		LabeledLowerCaseValue lowerValue = e.getLowerCaseValue();
+		final int nLowerLabels = (lowerValue.isEmpty()) ? 0 : 1;
+		final JTextField[] labelLowerInputs = new JTextField[1];
+		final JTextField[] newLowerValueInputs = new JTextField[1];
 
 		// If the edge type is contingent, then we allow the modification of the single possible lower/upper case value.
 		// Show additional label
@@ -216,17 +223,21 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jt);
 		i = 0;
 		if (nUpperLabels > 0) {
-			for (Entry<java.util.Map.Entry<Label, ALabel>> pair : e.getUpperLabelSet()) {
-				// It should be only one! I put a cycle in order to verify
-				jp.add(new JLabel("Upper Label"));
-				jtLabel = new JTextField(pair.getKey().getKey().toString());
-				labelUpperInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
-				jp.add(jtLabel);
-				jtLabel = new JTextField(pair.getKey().getValue() + ": " + Constants.formatInt(pair.getIntValue()));
-				newUpperValueInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, editorPanel);
-				jp.add(jtLabel);
+			for (ALabel alabel : e.getUpperCaseValueMap().keySet()) {
+				LabeledIntTreeMap labeledValues = e.getUpperCaseValueMap().get(alabel);
+				for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+					// It should be only one! I put a cycle in order to verify
+
+					jp.add(new JLabel("Upper Label"));
+					jtLabel = new JTextField(entry1.getKey().toString());
+					labelUpperInputs[i] = jtLabel;
+					LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
+					jp.add(jtLabel);
+					jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
+					newUpperValueInputs[i] = jtLabel;
+					LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, editorPanel);
+					jp.add(jtLabel);
+				}
 			}
 		} else {
 			if (editorPanel) {
@@ -242,19 +253,22 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			}
 		}
 		i = 0;
-		if (nLowerLabels > 0) {
-			for (Entry<java.util.Map.Entry<Label, ALabel>> pair : e.getLowerLabelSet()) {
-				// It should be only one! I put a cycle in order to verify
-				jp.add(new JLabel("Lower Label"));
-				jtLabel = new JTextField(pair.getKey().getKey().toString());
-				labelLowerInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
-				jp.add(jtLabel);
-				jtLabel = new JTextField(pair.getKey().getValue() + ": " + Constants.formatInt(pair.getIntValue()));
-				newLowerValueInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
-				jp.add(jtLabel);
-			}
+		if (nLowerLabels == 1) {
+			// for (java.util.Map.Entry<ALabel, LabeledIntTreeMap> entry : e.getLowerLabelSet()) {
+			// LabeledIntTreeMap labeledValues = entry.getValue();
+			// for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+			// It should be only one! I put a cycle in order to verify
+			jp.add(new JLabel("Lower Label"));
+			jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
+			labelLowerInputs[i] = jtLabel;
+			LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
+			jp.add(jtLabel);
+			jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
+			newLowerValueInputs[i] = jtLabel;
+			LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
+			jp.add(jtLabel);
+			// }
+			// }
 		} else {
 			if (editorPanel) {
 				jp.add(new JLabel("Lower Label"));
@@ -271,7 +285,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 		// Build the new object from the return values.
 		boolean modified = false;
-		if (panel.showOkCancelDialog("Attributes editor") && !editorPanel) {
+		if (panel.showOkCancelDialog("Attributes editor") && editorPanel) {
 			String newValue = null;
 
 			// Name
@@ -310,7 +324,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				s = labelInputs[i].getText();
 				is = newIntInputs[i].getText();
 				v = (is.length() > 0) ? Integer.valueOf(is) : null;
-				LabelEditingGraphMousePlugin.LOG.finest("Label value" + i + ": (" + s + ", " + is + " [old:" + oldIntInputs[i] + "])");
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LabelEditingGraphMousePlugin.LOG.finest("Label value" + i + ": (" + s + ", " + is + " [old:" + oldIntInputs[i] + "])");
+					}
+				}
 				if (v == null)
 					continue; // if label is null or empty, the value is the default value!
 				l = ((s == null) || (s.length() == 0)) ? Label.emptyLabel : Label.parse(s);
@@ -322,7 +340,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				l = (labelInputs[i] != null) ? Label.parse(labelInputs[i].getText()) : Label.emptyLabel;
 				is = newIntInputs[i].getText();
 				v = Integer.valueOf(is);
-				LabelEditingGraphMousePlugin.LOG.finest("New label value: (" + l + ", " + v + ")");
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LabelEditingGraphMousePlugin.LOG.finest("New label value: (" + l + ", " + v + ")");
+					}
+				}
 				comp.put(l, v);
 			}
 
@@ -346,28 +368,41 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 							nodeName = null;
 						else {
 							if (g.getNode(nodeName) == null) {
-								LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!" + caseValue);
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.SEVERE)) {
+										LabelEditingGraphMousePlugin.LOG
+												.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!" + caseValue);
+									}
+								}
 								nodeName = null;
 							}
 						}
 						v = Integer.valueOf(splitted[1]);
-						LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
+							}
+						}
 					}
 				} else {
-					e.clearUpperLabels();
+					e.clearUpperCaseValues();
 				}
 				if (nodeName == null || v == null) {
-					e.clearUpperLabels();
+					e.clearUpperCaseValues();
 				} else {
 					final LabeledNode source = g.getSource(e);
 					final LabeledNode dest = g.getDest(e);
 					final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
 					ALabel alabel = new ALabel(new ALetter(source.getName()), g.getALabelAlphabet());
 					if (alabel.toString().equals(nodeName)) {
-						e.clearUpperLabels();
-						e.mergeUpperLabelValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
+						e.clearUpperCaseValues();
+						e.mergeUpperCaseValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 						// value of a contingent must have the label of its endpoints.
-						LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINEST)) {
+								LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
+							}
+						}
 					}
 				}
 				// lower case
@@ -388,7 +423,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 								nodeName = null;
 							else {
 								if (g.getNode(nodeName) == null) {
-									LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
+									if (Debug.ON) {
+										if (LOG.isLoggable(Level.SEVERE)) {
+											LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
+										}
+									}
 									nodeName = null;
 								}
 							}
@@ -399,33 +438,47 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 						v = null;
 					}
 					if ((nodeName == null) || (v == null)) {
-						e.clearLowerLabels();
+						e.clearLowerCaseValue();
 					} else {
 						final LabeledNode source = g.getSource(e);
 						final LabeledNode dest = g.getDest(e);
 						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
-						ALabel alabel = new ALabel(new ALetter(dest.getName()), g.getALabelAlphabet());
-						if (alabel.toString().equals(nodeName)) {
-							e.clearLowerLabels();
-							e.mergeLowerLabelValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
+
+						if (dest.getName().equals(nodeName)) {
+							e.clearLowerCaseValue();
+							ALabel destALabel = (dest.getAlabel() != null) ? new ALabel(dest.getAlabel()) : new ALabel(dest.getName(), null);
+							dest.setAlabel(destALabel);
+							e.setLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 							// value of a contingent must have the label of its endpoints.
 						}
 					}
 				} else {
-					e.clearLowerLabels();
+					e.clearLowerCaseValue();
 				}
 			} else {
-				e.clearLowerLabels();
-				e.clearUpperLabels();
+				e.clearLowerCaseValue();
+				e.clearUpperCaseValues();
 			}
 			if (!e.getLabeledValueMap().equals(comp)) {
 				modified = true;
-				LabelEditingGraphMousePlugin.LOG.finer("Original label set of the component: " + e.getLabeledValueMap());
-				LabelEditingGraphMousePlugin.LOG.finer("New label set for the component: " + comp);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LabelEditingGraphMousePlugin.LOG.finer("Original label set of the component: " + e.getLabeledValueMap());
+						LabelEditingGraphMousePlugin.LOG.finer("New label set for the component: " + comp);
+					}
+				}
 				e.clearLabels();
-				LabelEditingGraphMousePlugin.LOG.finer("Label set of the component after the clear: " + e.getLabeledValueMap());
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LabelEditingGraphMousePlugin.LOG.finer("Label set of the component after the clear: " + e.getLabeledValueMap());
+					}
+				}
 				e.mergeLabeledValue(comp);
-				LabelEditingGraphMousePlugin.LOG.finer("New label set assigned to the component: " + e.getLabeledValueMap());
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LabelEditingGraphMousePlugin.LOG.finer("New label set assigned to the component: " + e.getLabeledValueMap());
+					}
+				}
 			}
 		}
 		return modified;
@@ -465,8 +518,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [" + Constants.ALETTER + "?]+"));
-		group.add(name, StringValidators.regexp("[" + Constants.ALETTER + "?]+", "Must be a well format name", false), new ObservableValidator(g, node));
+		jp.add(new JLabel("Syntax: [" + ALabelAlphabet.ALETTER + "?]+"));
+		group.add(name, StringValidators.regexp("[" + ALabelAlphabet.ALETTER + "?]+", "Must be a well format name", false), new ObservableValidator(g, node));
 
 		// Observed proposition
 		JTextField observedProposition = new JTextField(1);
@@ -477,8 +530,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(observedProposition);
 		LabelEditingGraphMousePlugin.setConditionToEnable(observedProposition, viewerName, false);
-		jp.add(new JLabel("Syntax: [" + Constants.PROPOSITION_RANGES + "]| "));
-		group.add(observedProposition, StringValidators.regexp("[" + Constants.PROPOSITION_RANGES + "]|", "Must be a single char in the range!", false),
+		jp.add(new JLabel("Syntax: " + Literal.PROPOSITION_RANGE + "| "));
+		group.add(observedProposition, StringValidators.regexp(Literal.PROPOSITION_RANGE + "|", "Must be a single char in the range!", false),
 				new ObservableValidator(g, node));
 
 		// Label
@@ -489,9 +542,9 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(label);
 		LabelEditingGraphMousePlugin.setConditionToEnable(label, viewerName, false);
-		final JTextField jtf = new JTextField("Syntax: " + Constants.LABEL_RE);
+		final JTextField jtf = new JTextField("Syntax: " + Label.LABEL_RE);
 		jp.add(jtf);
-		group.add(label, StringValidators.regexp(Constants.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
+		group.add(label, StringValidators.regexp(Label.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
 
 		// Build the new object from the return values.
 		boolean modified = false;
@@ -522,7 +575,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			}
 			// Label
 			newValue = label.getText();
-			LabelEditingGraphMousePlugin.LOG.finest("New label for node " + node.getName() + ": " + newValue + ". Old: " + l.toString());
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LabelEditingGraphMousePlugin.LOG.finest("New label for node " + node.getName() + ": " + newValue + ". Old: " + l.toString());
+				}
+			}
 			if (!l.toString().equals(newValue)) {
 				// syntax check allows a fast assignment!
 				node.setLabel(Label.parse(newValue));
@@ -620,7 +677,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 					if (nodeAttributesEditor(this.vertex, viewerName, g)) {
 						jp2.setVisible(false);
 						mesg2.setText("");
-						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+							}
+						}
 						g.clearCache();
 					}
 					vv.repaint();
@@ -634,7 +695,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 					if (edgeAttributesEditor(this.edge, viewerName, g)) {
 						jp2.setVisible(false);
 						mesg2.setText("");
-						LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+							}
+						}
 						g.clearCache();
 					}
 					vv.repaint();

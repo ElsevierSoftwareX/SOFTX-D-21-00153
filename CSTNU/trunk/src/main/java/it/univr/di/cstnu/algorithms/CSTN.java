@@ -1,29 +1,33 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.OptionHandlerFilter;
+import org.xml.sax.SAXException;
 
-import edu.uci.ics.jung.io.GraphIOException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.GraphMLWriter;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
@@ -137,11 +141,11 @@ public class CSTN {
 	/**
 	 * @author posenato
 	 */
-	public static class EdgesToCheck {
+	public static class EdgesToCheck implements Iterable<LabeledIntEdge> {
 		/**
-		 * 
+		 * It must be a set because an edge could be added more times!
 		 */
-		public ObjectArraySet<LabeledIntEdge> edgesToCheck;
+		public ObjectAVLTreeSet<LabeledIntEdge> edgesToCheck;
 		/**
 		 * 
 		 */
@@ -151,12 +155,22 @@ public class CSTN {
 		 * 
 		 */
 		public EdgesToCheck() {
-			this.edgesToCheck = new ObjectArraySet<>();
+			this.edgesToCheck = new ObjectAVLTreeSet<>();
 			this.alreadyAddAllIncidentsToZ = false;
 		}
 
 		/**
-		 * Check if the edge that has to be add has one end-point that is an observator. In positive case, it adds
+		 * A simple constructor when the initial set of edges is available.
+		 * 
+		 * @param coll
+		 */
+		public EdgesToCheck(Collection<LabeledIntEdge> coll) {
+			this.edgesToCheck = new ObjectAVLTreeSet<>(coll);
+			this.alreadyAddAllIncidentsToZ = false;
+		}
+
+		/**
+		 * Check if the edge that has to be add has one end-point that is an observer. In positive case, it adds
 		 * all incident edges to the observation t.p.
 		 * 
 		 * @param enSnD
@@ -169,7 +183,7 @@ public class CSTN {
 			// in any case, the edge has to be added.
 			this.edgesToCheck.add(enSnD);
 			// then,
-			if (this.alreadyAddAllIncidentsToZ || !nS.isObservator())
+			if (this.alreadyAddAllIncidentsToZ || !nS.isObserver())
 				return;
 			// add all incident to nD
 			this.edgesToCheck.addAll(g.getIncidentEdges(nD));
@@ -177,19 +191,74 @@ public class CSTN {
 		}
 
 		/**
-		 * @return the number of edges in the set.
+		 * Makes as {@link #add(LabeledIntEdge, LabeledNode, LabeledNode, LabeledNode, LabeledIntGraph)} but only when nD != Z.
+		 * 
+		 * @param edge
+		 * @param nS
+		 * @param nD
+		 * @param Z
+		 * @param g
 		 */
-		int size() {
-			return (this.edgesToCheck != null) ? this.edgesToCheck.size() : 0;
-		}
-		
-		/**
-		 * @return the set of edges.
-		 */
-		public ObjectArraySet<LabeledIntEdge> get() {
-			return this.edgesToCheck;
+		void addIfZ(LabeledIntEdge edge, LabeledNode nS, LabeledNode nD, LabeledNode Z, LabeledIntGraph g) {
+			// in any case, the edge has to be added.
+			this.edgesToCheck.add(edge);
+			// then,
+			if (this.alreadyAddAllIncidentsToZ || nD != Z || !nS.isObserver())
+				return;
+			// add all incident to nD
+			this.edgesToCheck.addAll(g.getInEdges(Z));
+			this.alreadyAddAllIncidentsToZ = true;
 		}
 
+		/**
+		 * @return the number of edges in the set.
+		 */
+		public int size() {
+			return (this.edgesToCheck != null) ? this.edgesToCheck.size() : 0;
+		}
+
+		/**
+		 * @return the set of edges.
+		 *         public ObjectAVLTreeSet<LabeledIntEdge> get() {
+		 *         return this.edgesToCheck;
+		 *         }
+		 */
+
+		@Override
+		public Iterator<LabeledIntEdge> iterator() {
+			// TODO Auto-generated method stub
+			return this.edgesToCheck.iterator();
+		}
+
+		/**
+		 * Clear the set.
+		 */
+		public void clear() {
+			this.edgesToCheck.clear();
+			this.alreadyAddAllIncidentsToZ = false;
+		}
+
+		/**
+		 * @param coll
+		 * @return true if this set changed.
+		 *         public boolean addAll(Collection<LabeledIntEdge> coll) {
+		 *         this.alreadyAddAllIncidentsToZ = false;
+		 *         return this.edgesToCheck.addAll(coll);
+		 *         }
+		 */
+
+		/**
+		 * Copy fields reference of into this.
+		 * After this method, this and input share the internal fields.
+		 * 
+		 * @param input
+		 */
+		void takeIn(EdgesToCheck input) {
+			if (input == null)
+				return;
+			this.edgesToCheck = input.edgesToCheck;
+			this.alreadyAddAllIncidentsToZ = input.alreadyAddAllIncidentsToZ;
+		}
 	}
 
 	/**
@@ -295,7 +364,7 @@ public class CSTN {
 			// WD3 property.
 			Label currentLabelModified = new Label(currentLabel);
 			for (final char l : currentLabel.getPropositions()) {
-				LabeledNode obs = this.g.getObservator(l);
+				LabeledNode obs = this.g.getObserver(l);
 				if (obs == null) {
 					final String msg = "Observation node of literal " + l + " of label " + currentLabel + " in edge " + eSN + " does not exist.";
 					if (Debug.ON) {
@@ -316,8 +385,12 @@ public class CSTN {
 					}
 					currentLabelModified = currentLabelModified.conjunction(obsLabel);
 					if (currentLabelModified == null) {
-						LOG.log(Level.WARNING, "Label " + currentLabel + " of edge " + eSN + " does not subsume label of obs node " + obs
-								+ " and cannot be expanded because it becomes inconsistent.");
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.WARNING)) {
+								LOG.log(Level.WARNING, "Label " + currentLabel + " of edge " + eSN + " does not subsume label of obs node " + obs
+										+ " and cannot be expanded because it becomes inconsistent.");
+							}
+						}
 						throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelInconsistent);
 					}
 				}
@@ -326,8 +399,12 @@ public class CSTN {
 				int v = entry.getIntValue();
 				eSN.removeLabel(currentLabel);
 				eSN.putLabeledValue(currentLabelModified, v);
-				LOG.log(Level.WARNING, "Labeled value " + pairAsString(currentLabelModified, v) + " replace dishonest labeled value "
-						+ pairAsString(currentLabelModified, v) + " in edge " + eSN + ".");
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						LOG.log(Level.WARNING, "Labeled value " + pairAsString(currentLabelModified, v) + " replace dishonest labeled value "
+								+ pairAsString(currentLabelModified, v) + " in edge " + eSN + ".");
+					}
+				}
 			}
 		}
 		return true;
@@ -360,7 +437,7 @@ public class CSTN {
 		LabeledNode obs;
 		// Checks whether the node label is well defined w.r.t. each involved observation node label.
 		for (final char l : nodeLabel.getPropositions()) {
-			obs = this.g.getObservator(l);
+			obs = this.g.getObserver(l);
 			if (obs == null) {
 				msg = "Observation node of literal " + l + " of node " + node + " does not exist.";
 				if (Debug.ON) {
@@ -379,7 +456,11 @@ public class CSTN {
 				if (newNodeLabel == null) {
 					msg = "Label of node " + node + " is not consistent with label of obs node " + obs
 							+ " but it should be subsume it! Thenetwork is not well defined.";
-					LOG.log(Level.SEVERE, msg);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.SEVERE)) {
+							LOG.log(Level.SEVERE, msg);
+						}
+					}
 					throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 				}
 
@@ -400,7 +481,7 @@ public class CSTN {
 		// LabelNode is ok with all involved observation node labels.
 		// It is possible to check and assure that node is after such observation nodes.
 		for (final char l : nodeLabel.getPropositions()) {
-			obs = this.g.getObservator(l);
+			obs = this.g.getObserver(l);
 			// if (hasToBeFixed) {
 			LabeledIntEdge e = this.g.findEdge(node, obs);
 			if ((e == null) || ((v = e.getValue(nodeLabel)) == Constants.INT_NULL) || (v > 0)) {// WD2.2 ICAPS paper
@@ -436,29 +517,44 @@ public class CSTN {
 	 * Just for using this class also from a terminal.
 	 * 
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws FileNotFoundException
-	 * @throws GraphIOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	public static void main(final String[] args) throws FileNotFoundException, GraphIOException {
-		LOG.finest("Start...");
+	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Start...");
+			}
+		}
 		final CSTN cstn = new CSTN();
 
 		if (!cstn.manageParameters(args))
 			return;
-		LOG.finest("Parameters ok!");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Parameters ok!");
+			}
+		}
 		if (cstn.versionReq) {
 			System.out.println(CSTN.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
 					+ "Copyright © 2017, Roberto Posenato");
 			return;
 		}
 
-		LOG.finest("Loading graph...");
-		GraphMLReader<LabeledIntGraph> graphMLReader = new GraphMLReader<>(cstn.fInput, LabeledIntTreeMap.class);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Loading graph...");
+			}
+		}
+		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstn.fInput, LabeledIntTreeMap.class);
 		cstn.setG(graphMLReader.readGraph());
 
-		LOG.finest("LabeledIntGraph loaded!");
-
-		LOG.finest("Standard DC Checking...");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("LabeledIntGraph loaded!\nStandard DC Checking...");
+			}
+		}
 		CSTNCheckStatus status;
 		try {
 			status = cstn.dynamicConsistencyCheck();
@@ -466,7 +562,11 @@ public class CSTN {
 			System.out.print("An error has been occured during the checking: " + e.getMessage());
 			return;
 		}
-		LOG.finest("LabeledIntGraph minimized!");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("LabeledIntGraph minimized!");
+			}
+		}
 		if (status.finished) {
 			System.out.println("Checking finished!");
 			if (status.consistency) {
@@ -481,7 +581,7 @@ public class CSTN {
 		}
 
 		if (cstn.fOutput != null) {
-			final GraphMLWriter graphWriter = new GraphMLWriter(new StaticLayout<>(cstn.g));
+			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(cstn.g));
 			try {
 				graphWriter.save(cstn.g, new PrintWriter(cstn.output));
 			} catch (final IOException e) {
@@ -606,7 +706,7 @@ public class CSTN {
 	 */
 	public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
 		try {
-			this.initAndCheck();
+			initAndCheck();
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("The CSTN graph has a problem and it cannot be initialize: " + e.getMessage());
 		}
@@ -624,9 +724,9 @@ public class CSTN {
 		if (!this.checkStatus.initialized) {
 			throw new IllegalStateException("Graph has not been initialized! Please, consider dynamicConsistencyCheck() method!");
 		}
-		ObjectArraySet<LabeledIntEdge> edgesToCheck = new ObjectArraySet<>(this.g.getEdges());
+		EdgesToCheck edgesToCheck = new EdgesToCheck(this.g.getEdges());
 		@SuppressWarnings("unused")
-		final int propositionN = this.g.getObservatorCount();
+		final int propositionN = this.g.getObserverCount();
 		final int nodeN = this.g.getVertexCount();
 		// TODO: trovare il numero giusto di iterazioni
 		final int maxCycles = (int) (Math.pow(nodeN, 3)); // * Math.pow(2, propositionN));
@@ -645,7 +745,7 @@ public class CSTN {
 					LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
 				}
 			}
-			this.oneStepDynamicConsistencyByEdges(edgesToCheck);
+			oneStepDynamicConsistencyByEdges(edgesToCheck);// Don't use this. because such method is override!
 
 			if (this.checkStatus.consistency && !this.checkStatus.finished) {
 				if (Debug.ON) {
@@ -675,7 +775,9 @@ public class CSTN {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO)) {
 					LOG.log(Level.INFO, "After " + (i - 1) + " cycle, found an inconsistency.\nStatus: " + this.checkStatus);
-					LOG.log(Level.FINER, "Final inconsistent graph: " + this.g);
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, "Final inconsistent graph: " + this.g);
+					}
 				}
 			}
 			return this.checkStatus;
@@ -685,7 +787,9 @@ public class CSTN {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + this.checkStatus);
-					LOG.log(Level.FINER, "Last determined graph: " + this.g);
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, "Last determined graph: " + this.g);
+					}
 				}
 			}
 			this.checkStatus.consistency = this.checkStatus.finished;
@@ -721,15 +825,19 @@ public class CSTN {
 	}
 
 	/**
-	 * Determine the set of edges P?-->nX where P? is an observator node and nX is the given node.
+	 * Determine the set of edges P?-->nX where P? is an observer node and nX is the given node.
 	 * 
 	 * @param nX the given node.
-	 * @return the set of edges P?-->nX, an empty set if nX is empty or there is no observator or there is no such edges.
+	 * @return the set of edges P?-->nX, an empty set if nX is empty or there is no observer or there is no such edges.
 	 */
-	public ObjectArraySet<LabeledIntEdge> getEdgeFromObservatorsToNode(final LabeledNode nX) {
-		final ObjectArraySet<LabeledIntEdge> fromObs = new ObjectArraySet<>();
+	public ObjectList<LabeledIntEdge> getEdgeFromObserversToNode(final LabeledNode nX) {
 
-		Collection<LabeledNode> obsSet = this.g.getObservators();
+		if (nX == this.g.getZ()) {
+			return this.g.getObserver2ZEdges();
+		}
+		final ObjectList<LabeledIntEdge> fromObs = new ObjectArrayList<>();
+
+		Collection<LabeledNode> obsSet = this.g.getObservers();
 		if (obsSet.size() == 0)
 			return fromObs;
 
@@ -966,13 +1074,13 @@ public class CSTN {
 				final LabeledNode d = this.g.getDest(e);
 
 				// Normalize with respect to R0--R3
-				if (s.isObservator()) {
-					this.labelModificationR0(s, d, Z, e);
+				if (s.isObserver()) {
+					labelModificationR0(s, d, Z, e);
 				}
 				this.labelModificationR3(s, d, Z, e);
-				if (s.isObservator()) {
+				if (s.isObserver()) {
 					// again because R3 could have add a new value;
-					this.labelModificationR0(s, d, Z, e);
+					labelModificationR0(s, d, Z, e);
 				}
 			}
 		} catch (IllegalStateException ex) {
@@ -1076,13 +1184,15 @@ public class CSTN {
 				}
 			}
 
-			eObsX.putLabeledValueToRemovedList(l, w);
-			// PXinNextGraph.removeLabel(l); It is not necessary, the introduction of new label remove it!
 			this.checkStatus.r0calls++;
 			ruleApplied = true;
 			mergeStatus = eObsX.mergeLabeledValue(alphaPrime, w);
-			if (mergeStatus && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, logMessage);
+			if (mergeStatus) {
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, logMessage);
+					}
+				}
 			}
 		}
 		if (Debug.ON) {
@@ -1144,7 +1254,7 @@ public class CSTN {
 		}
 		boolean ruleApplied = false;
 
-		ObjectArraySet<LabeledIntEdge> Obs2nDEdges = this.getEdgeFromObservatorsToNode(nD);
+		ObjectList<LabeledIntEdge> Obs2nDEdges = this.getEdgeFromObserversToNode(nD);
 		if (Obs2nDEdges.isEmpty())
 			return false;
 
@@ -1194,7 +1304,6 @@ public class CSTN {
 						continue;
 					}
 
-					eSD.putLabeledValueToRemovedList(SDLabel, v);
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 					if (ruleApplied) {
 						if (Debug.ON) {
@@ -1345,8 +1454,11 @@ public class CSTN {
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
 					ruleApplied = true;
 					this.checkStatus.labeledValuePropagationcalls++;
-					if (Debug.ON)
-						LOG.log(Level.FINER, log);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.log(Level.FINER, log);
+						}
+					}
 					// if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
 					// if (v >= 0)
 					// this.checkStatus.qSemiNegLoop++;
@@ -1380,9 +1492,9 @@ public class CSTN {
 	 * @param nS
 	 * @param nD
 	 * @param nObs
-	 * @param observed the proposition observed by observator (since this value usually is already determined before calling this method, this parameter is just
+	 * @param observed the proposition observed by observer (since this value usually is already determined before calling this method, this parameter is just
 	 *            for speeding up).
-	 * @param labelFromObs label of the edge from observator
+	 * @param labelFromObs label of the edge from observer
 	 * @param labelToClean
 	 * @return alphaBetaGamma' if all conditions are satisfied. null otherwise.
 	 */
@@ -1463,11 +1575,11 @@ public class CSTN {
 	 * If X==Z, then it is necessary also to remove all children of unknown from α'.
 	 * 
 	 * @param nX the destination node
-	 * @param nObs observator node
+	 * @param nObs observer node
 	 * @param nZ
-	 * @param observed the proposition observed by observator (since this value usually is already determined before calling this method, this parameter is just
+	 * @param observed the proposition observed by observer (since this value usually is already determined before calling this method, this parameter is just
 	 *            for speeding up.)
-	 * @param labelFromObs label of the edge from observator
+	 * @param labelFromObs label of the edge from observer
 	 * @return α'
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
@@ -1531,9 +1643,9 @@ public class CSTN {
 	 * @param nS
 	 * @param nZ
 	 * @param nObs
-	 * @param observed the proposition observed by observator (since this value usually is already determined before calling this method, this parameter is just
+	 * @param observed the proposition observed by observer (since this value usually is already determined before calling this method, this parameter is just
 	 *            for speeding up).
-	 * @param labelFromObs label of the edge from observator
+	 * @param labelFromObs label of the edge from observer
 	 * @param labelToClean
 	 * @return αβγ'
 	 */
@@ -1671,7 +1783,7 @@ public class CSTN {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @return the update status (it is for convenience. It is not necessary because return the same parameter status).
 	 */
-	public CSTNCheckStatus oneStepDynamicConsistencyByEdges(final ObjectArraySet<LabeledIntEdge> edgesToCheck) {
+	public CSTNCheckStatus oneStepDynamicConsistencyByEdges(final EdgesToCheck edgesToCheck) {
 
 		LabeledNode A, B, C;
 		LabeledIntEdge AC, CB, edgeCopy;
@@ -1701,14 +1813,14 @@ public class CSTN {
 			// It is necessary to check here the edge before to consider the second edge.
 			// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
 			edgeCopy = this.g.getEdgeFactory().get(AB);
-			if (A.isObservator()) {
+			if (A.isObserver()) {
 				// R0 on the resulting new values
 				labelModificationR0(A, B, Z, AB);
 			}
 			labelModificationR3(A, B, Z, AB);
-			if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
+			if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 				// R0 on the resulting new values
-				this.labelModificationR0(A, B, Z, AB);
+				labelModificationR0(A, B, Z, AB);
 			}
 			if (!AB.equalsAllLabeledValues(edgeCopy)) {
 				newEdgesToCheck.add(AB, A, B, Z, this.g);
@@ -1738,19 +1850,19 @@ public class CSTN {
 				 * March, 8 2016 By an experimental results, it seems that the following clean code is not necessary. Without it, the final number of rule
 				 * applications does not change!
 				 */
-				// if (A.isObservator()) {
+				// if (A.isObserver()) {
 				// // R0 on the resulting new values
 				// this.labelModificationR0(currentGraph, A, C, AC, status);
 				// }
 				//
-				// // if (!this.excludeR1R2 && C.isObservator()) {
+				// // if (!this.excludeR1R2 && C.isObserver()) {
 				// // // R2 on the resulting new values.
 				// // this.labelModificationR2(currentGraph, C, A, AC, status);
 				// // }
 				//
 				// // R3 on the resulting new values
 				// this.labelModificationR3(currentGraph, A, C, AC, status);
-				// if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
+				// if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 				// // R0 on the resulting new values
 				// this.labelModificationR0(currentGraph, A, C, AC, status);
 				// }
@@ -1758,7 +1870,7 @@ public class CSTN {
 				// // if (!this.excludeR1R2) {
 				// // // R1 on the resulting new values.
 				// // this.labelModificationR1(currentGraph, A, C, AC, status);
-				// // if (C.isObservator()) {
+				// // if (C.isObserver()) {
 				// // this.labelModificationR2(currentGraph, C, A, AC, status);// It should be like R0! To verify
 				// // // experimentally.
 				// // }
@@ -1816,7 +1928,7 @@ public class CSTN {
 		edgesToCheck.clear();
 		this.checkStatus.finished = newEdgesToCheck.size() == 0;
 		if (!this.checkStatus.finished) {
-			edgesToCheck.addAll(newEdgesToCheck.get());
+			edgesToCheck.takeIn(newEdgesToCheck);
 		}
 		if (!this.checkStatus.consistency)
 			this.checkStatus.finished = true;
@@ -1842,8 +1954,7 @@ public class CSTN {
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "");
-				LOG.log(Level.FINER, "Start application labeled propagation rule+R0+R3.");
+				LOG.log(Level.FINER, "\nStart application labeled propagation rule+R0+R3.");
 			}
 		}
 		/**
@@ -1860,27 +1971,27 @@ public class CSTN {
 				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
 				// Since in some graphs it is possible that there is not BC, we apply R0 and R3 to AB
-				if (A.isObservator()) {
+				if (A.isObserver()) {
 					// R0 on the resulting new values
-					this.labelModificationR0(A, B, Z, AB);
+					labelModificationR0(A, B, Z, AB);
 				}
 				this.labelModificationR3(A, B, Z, AB);
-				if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
+				if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 					// R0 on the resulting new values
-					this.labelModificationR0(A, B, Z, AB);
+					labelModificationR0(A, B, Z, AB);
 				}
 				for (LabeledIntEdge BC : this.g.getOutEdges(B)) {
 					C = this.g.getDest(BC);
 					// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
-					if (B.isObservator()) {
+					if (B.isObserver()) {
 						// R0 on the resulting new values
-						this.labelModificationR0(B, C, Z, BC);
+						labelModificationR0(B, C, Z, BC);
 					}
 					this.labelModificationR3(B, C, Z, BC);
-					if (B.isObservator()) {// R3 can add new values that have to be minimized.
+					if (B.isObserver()) {// R3 can add new values that have to be minimized.
 						// R0 on the resulting new values
-						this.labelModificationR0(B, C, Z, BC);
+						labelModificationR0(B, C, Z, BC);
 					}
 					// Now it is possible to propagate the labels with the standard rules
 					AC = this.g.findEdge(A, C);
@@ -1905,12 +2016,12 @@ public class CSTN {
 							continue;
 					}
 
-					if (A.isObservator()) {
+					if (A.isObserver()) {
 						// R0 on the resulting new values
-						this.labelModificationR0(A, C, Z, AC);
+						labelModificationR0(A, C, Z, AC);
 					}
 
-					// if (!this.excludeR1R2 && C.isObservator()) {
+					// if (!this.excludeR1R2 && C.isObserver()) {
 					// // R2 on the resulting new values.
 					// this.labelModificationR2(currentGraph, C, A, AC, status);
 					// }
@@ -1918,15 +2029,15 @@ public class CSTN {
 					// R3 on the resulting new values
 					this.labelModificationR3(A, C, Z, AC);
 
-					if (A.isObservator()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
+					if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 						// R0 on the resulting new values
-						this.labelModificationR0(A, C, Z, AC);
+						labelModificationR0(A, C, Z, AC);
 					}
 
 					// if (!this.excludeR1R2) {
 					// // R1 on the resulting new values.
 					// this.labelModificationR1(currentGraph, A, C, AC, status);
-					// if (C.isObservator()) {
+					// if (C.isObserver()) {
 					// this.labelModificationR2(currentGraph, C, A, AC, status);// It should be like R0! To verify
 					// // experimentally.
 					// }
@@ -1957,7 +2068,7 @@ public class CSTN {
 			}
 		}
 		for (final char unknownLit : label.getAllUnknown()) {
-			label.remove(this.g.getChildrenOf(this.g.getObservator(unknownLit)));
+			label.remove(this.g.getChildrenOf(this.g.getObserver(unknownLit)));
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST) && !label.equals(old)) {

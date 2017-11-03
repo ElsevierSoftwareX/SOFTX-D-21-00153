@@ -64,7 +64,7 @@ public class ObservableValidator implements Validator<String> {
 	public void validate(final Problems problems, final String compName, final String model) {
 		if ((model == null) || (model.length() == 0))
 			return;
-		final LabeledNode currentNodeForProposition = this.graph.getObservator(model.charAt(0));
+		final LabeledNode currentNodeForProposition = this.graph.getObserver(model.charAt(0));
 
 		// LOG.finest("Validate: p=" + p + "; currentNodeForProposition=" + currentNodeForProposition + "; editedNode="
 		// + node);
@@ -72,7 +72,7 @@ public class ObservableValidator implements Validator<String> {
 		if (currentNodeForProposition == null)
 			return;
 		if (currentNodeForProposition != this.node) {
-			problems.append("An observator for '" + model.charAt(0) + "' already exists: " + currentNodeForProposition);
+			problems.append("An observer for '" + model.charAt(0) + "' already exists: " + currentNodeForProposition);
 		}
 	}
 

@@ -4,7 +4,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -31,14 +30,14 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
+import org.xml.sax.SAXException;
 
 import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
-import edu.uci.ics.jung.io.GraphIOException;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
-import it.univr.di.cstnu.graph.GraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
@@ -284,10 +283,11 @@ public class CSTNU2UppaalTiga {
 	 * Reads a CSTNU file and converts it into <a href="http://people.cs.aau.dk/~adavid/tiga/index.html">UPPAAL TIGA</a> format.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws GraphIOException
-	 * @throws FileNotFoundException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	public static void main(String[] args) throws FileNotFoundException, GraphIOException {
+	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 		LOG.finest("Start...");
 		CSTNU2UppaalTiga translator = new CSTNU2UppaalTiga();
 
@@ -624,7 +624,7 @@ public class CSTNU2UppaalTiga {
 						// So, (a¬b => (A-B <= t)) has to be represented as (!`a` | 'b' | `(A-B <= t)`)
 						String labelNegatedandEscaped = label.toLogicalExpr(true, jboolNot, jboolAnd, jboolOr);
 
-						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("([" + Constants.PROPOSITION_RANGES + "])", "`$1`");// tutto a 1
+						labelNegatedandEscaped = labelNegatedandEscaped.replaceAll("(" + Literal.PROPOSITION_RANGE + ")", "`$1`");// tutto a 1
 						// LOG.finest("labelNegatedandEscaped= " + labelNegatedandEscaped);
 						psi2dirty.append("(" + labelNegatedandEscaped + jboolOr + "`((" + sourceClock + " - " + destClock + ") <= " + value + ")`)" + jboolAnd);
 					}
@@ -663,8 +663,8 @@ public class CSTNU2UppaalTiga {
 
 				// A literal "`l`" has to be transformed to "(l == 1)"
 				// while "!`l`" to "(l == -1)"
-				psi2DnfJbool = psi2DnfJbool.replaceAll("`([" + Constants.PROPOSITION_RANGES + "])`", "\\($1 == 1\\)");// tutto a 1
-				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\(([" + Constants.PROPOSITION_RANGES + "]) == 1", "\\($1 == -1");// mentre si mette a -1 chi è
+				psi2DnfJbool = psi2DnfJbool.replaceAll("`(" + Literal.PROPOSITION_RANGE + ")`", "\\($1 == 1\\)");// tutto a 1
+				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\((" + Literal.PROPOSITION_RANGE + ") == 1", "\\($1 == -1");// mentre si mette a -1 chi è
 																																// negato!
 
 				psi2DNF = jbool2TigaExpr(psi2DnfJbool, null, null, " | ");
@@ -835,11 +835,12 @@ public class CSTNU2UppaalTiga {
 	 * 
 	 * @param fileName
 	 * @return graph if the file was load successfully; null otherwise.
-	 * @throws GraphIOException
-	 * @throws FileNotFoundException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	private boolean loadCSTNU(File fileName) throws GraphIOException, FileNotFoundException {
-		GraphMLReader<LabeledIntGraph> graphMLReader = new GraphMLReader<>(fileName, LabeledIntTreeMap.class);
+	private boolean loadCSTNU(File fileName) throws IOException, ParserConfigurationException, SAXException {
+		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(fileName, LabeledIntTreeMap.class);
 		this.cstnu = graphMLReader.readGraph();
 		return checkCSTNUSyntax();
 	}
@@ -931,11 +932,11 @@ public class CSTNU2UppaalTiga {
 			LabeledNode d = this.cstnu.getDest(e);
 			if (e.isContingentEdge()) {
 				LOG.fine("Found a contingent link: " + e);
-				int lower = e.getMinLowerLabeledValue(), upper;// TODO This works only for CSTNU without guarded links.
+				int lower = e.getLowerCaseValue().getValue(), upper;// TODO This works only for CSTNU without guarded links.
 				if (lower != Constants.INT_NULL) {
 					LOG.fine("Add contingent node: " + d);
 					this.contingentNode.add(d);
-					upper = -this.cstnu.findEdge(d, s).getMinUpperLabeledValue();
+					upper = -this.cstnu.findEdge(d, s).getMinUpperCaseValue();
 					if (upper == Constants.INT_NULL)
 						throw new IllegalArgumentException("There is no a companion upper case value in edge " + this.cstnu.findEdge(d, s) + " w.r.t. the edge" + e);
 					LOG.fine("Add contingent edge: (" + s.getName() + ", " + lower + ", " + upper + ", " + d.getName() + ").");

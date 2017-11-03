@@ -11,27 +11,6 @@ import java.io.Serializable;
 public final class Constants implements Serializable {
 
 	/**
-	 * A-Letter
-	 */
-	public static final String ALETTER = "A-Za-z0-9α-μ_ ωΩ?";
-
-	/**
-	 * A-Letter range
-	 */
-	public static final String ALETTER_RANGE = "["+ALETTER+"]+";
-
-	/**
-	 * ALabel separator '∙'.
-	 */
-	public static final String ALABEL_SEPARATOR = "∙";
-
-	/**
-	 * Regular expression representing an A-Label.
-	 * The re checks only that label chars are allowed.
-	 */
-	public static final String ALABEL_RE = "["+ALETTER + ALABEL_SEPARATOR + "]+|" + Constants.EMPTY_UPPER_CASE_LABELstring;
-
-	/**
 	 * Char representing labeled-value closing ")"
 	 */
 	public static final String CLOSE_PAIR = ")";// '⟩';
@@ -55,10 +34,6 @@ public final class Constants implements Serializable {
 	 */
 	public static final String EMPTY_UPPER_CASE_LABELstring = String.valueOf(Constants.EMPTY_UPPER_CASE_LABEL);
 
-	/**
-	 * First proposition
-	 */
-	public static final char[] FIRST_PROPOSITION = { 'A', 'a', 'α' };
 	/**
 	 * Char representing infinity symbol: ∞.
 	 */
@@ -91,10 +66,6 @@ public final class Constants implements Serializable {
 	 */
 	public static final String LabeledValueRE = "[-[0-9]|[0-9]]*";
 
-	/**
-	 * Last proposition
-	 */
-	public static final char[] LAST_PROPOSITION = { 'Z', 'z', 'μ' };
 
 	/**
 	 * Regular expression for an acceptable positive integer
@@ -112,26 +83,9 @@ public final class Constants implements Serializable {
 	public static final String NOTstring = String.valueOf(Constants.NOT);
 
 	/**
-	 * Maximal number of possible proposition in a network.
-	 */
-	public static final int NUMBER_OF_POSSIBLE_PROPOSITION = 64;// LastPossibleProposition - FirstPossibleProposition + 1;
-
-	/**
-	 * Char representing labeled-value opening
+	 * String representing labeled-value opening
 	 */
 	public static final String OPEN_PAIR = "(";// '⟨';//It is not possible... to much saved file with (
-	
-	/**
-	 * Set of char ranges allowed for a proposition name in RE range format.
-	 * For memory and performance issue, we limit the number of possible propositions to be less or equal to 64.
-	 */
-	public static final String PROPOSITION_RANGES = FIRST_PROPOSITION[0] + "-" + LAST_PROPOSITION[0]
-			+ FIRST_PROPOSITION[1] + "-" + LAST_PROPOSITION[1]
-			+ FIRST_PROPOSITION[2] + "-" + LAST_PROPOSITION[2];
-	/**
-	 * 
-	 */
-	public static final int PROPOSITIONS_BLOCKS = 3;
 	
 	/**
 	 *
@@ -154,16 +108,6 @@ public final class Constants implements Serializable {
 	public static final String UNKNOWNstring = String.valueOf(Constants.UNKNOWN);
 
 	/**
-	 * Regular expression representing a Label.
-	 * The re checks only that label chars are allowed.
-	 */
-	public static final String LABEL_RE = "(("
-			+ Constants.NOTstring + "[" + PROPOSITION_RANGES + "]|"
-			+ Constants.UNKNOWN + "[" + PROPOSITION_RANGES + "]|"
-			+ "[" + PROPOSITION_RANGES + "])+|"
-			+ Constants.EMPTY_LABELstring+")";
-
-	/**
 	 * @param n a int.
 	 * @return the value of n as String using ∞ for infinitive number and null for not valid int.
 	 */
@@ -176,7 +120,7 @@ public final class Constants implements Serializable {
 		case Constants.INT_NULL:
 			return "null";
 		default:
-			return String.valueOf(n);
+			return Integer.toString(n);
 		}
 	}
 

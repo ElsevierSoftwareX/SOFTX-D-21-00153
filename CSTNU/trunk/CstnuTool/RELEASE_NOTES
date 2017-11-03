@@ -2,7 +2,7 @@ RELEASE NOTES
 =============START SNIPPET: rn
 v1.20.0
 ------
-	date:	2017-06-29
+	date:	2017-11-03
 	
 	Jung library has been upgraded to 2.1.1 version.
 	Such update required an adaptation of all GUI classes of the package.
@@ -15,7 +15,10 @@ v1.20.0
 		3. it.univr.di.algorithms.CSTNir: it checks a CSTN instance assuming instantaneous reactions.
 		4. it.univr.di.algorithms.CSTNirRestricted: as it.univr.di.algorithms.CSTNir but the used rules are 3 instead of 6. Such checking can be faster than it.univr.di.algorithms.CSTNir one.
 		5. it.univr.di.algorithms.CSTNU: it checks a CSTNU instance assuming instantaneous reactions.
-		6. it.univr.di.algorithms.CSTNwoNodeLabel: it checks a CSTN instance assuming the standard semantics. The instance is translate into an equivalent CSTN instance without node labels and, then, checked. 
+		6. it.univr.di.algorithms.CSTNwoNodeLabel: it checks a CSTN instance assuming the standard semantics. The instance is translate into an equivalent CSTN instance without node labels and, then, checked.
+	GraphMLReader has been rewritten because based on Jung GraphMLReader2 that is not able to manage big attribute data.
+	GraphMLReader has been renamed CSTNUGraphMLReader.
+	GraphMLWriter has been renamed CSTNUGraphMLWriter.   
 
 v1.10.0
 ------

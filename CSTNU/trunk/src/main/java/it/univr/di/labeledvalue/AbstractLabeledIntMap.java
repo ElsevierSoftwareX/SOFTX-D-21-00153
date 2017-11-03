@@ -2,12 +2,14 @@ package it.univr.di.labeledvalue;
 
 import java.io.Serializable;
 import java.util.Comparator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.univr.di.Debug;
 
 /**
  * Abstract class for {@link it.univr.di.labeledvalue.LabeledIntMap} interface.
@@ -23,7 +25,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 */
 	static final String valueRE = "[ ,0-9∞" + Pattern.quote("-") + "]+";
 	@SuppressWarnings("javadoc")
-	static final String labeledValueRE = "(" + Constants.LABEL_RE + valueRE + "|" + valueRE + Constants.LABEL_RE + ")";
+	static final String labeledValueRE = "(" + Label.LABEL_RE + valueRE + "|" + valueRE + Label.LABEL_RE + ")";
 
 	/**
 	 * logger
@@ -88,7 +90,11 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 			return null;
 
 		if (!AbstractLabeledIntMap.patternLabelCharsRE.matcher(inputMap).matches()) {
-			AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a set of labeled values: " + patternLabelCharsRE);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.WARNING)) {
+					AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a set of labeled values: " + patternLabelCharsRE);
+				}
+			}
 			return null;
 		}
 
@@ -100,7 +106,11 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		Label l;
 		int value;
 		for (final String s : entryPair) {
-			AbstractLabeledIntMap.LOG.finest("s: " + s);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					AbstractLabeledIntMap.LOG.finest("s: " + s);
+				}
+			}
 			if (s.length() != 0) {
 				final String[] labInt = AbstractLabeledIntMap.splitterPair.split(s);
 				// LabeledValueTreeMap.LOG.finest("labInt: " + Arrays.toString(labInt));
