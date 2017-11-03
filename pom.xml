@@ -172,7 +172,10 @@
 	<distributionManagement>
 		<site>
 			<id>profs</id>
-			<!-- la password è data dal file ~/.m2/setting.xml -->
+			<!-- la gestione della password è come spiegato in 
+				 https://maven.apache.org/guides/mini/guide-encryption.html
+				Master password: quella del 17	
+-->
 			<url>scp://profs.scienze.univr.it/home/posenato/public_html/software/cstnu/</url>
 		</site>
 	</distributionManagement>
