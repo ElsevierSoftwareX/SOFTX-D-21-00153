@@ -1,20 +1,22 @@
 package it.univr.di.cstnu.algorithms;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.uci.ics.jung.io.GraphIOException;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.GraphMLWriter;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
@@ -24,7 +26,6 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
-import it.univr.di.labeledvalue.Literal.State;
 
 /**
  * Simple class to represent and check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -53,10 +54,11 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * Just for using this class also from a terminal.
 	 * 
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws FileNotFoundException
-	 * @throws GraphIOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	public static void main(final String[] args) throws FileNotFoundException, GraphIOException {
+	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON)
 			LOG.finest("Start...");
 		final CSTNwoNodeLabel cstn = new CSTNwoNodeLabel();
@@ -73,7 +75,7 @@ public class CSTNwoNodeLabel extends CSTN {
 
 		if (Debug.ON)
 			LOG.finest("Loading graph...");
-		GraphMLReader<LabeledIntGraph> graphMLReader = new GraphMLReader<>(cstn.fInput, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstn.fInput, LabeledIntTreeMap.class);
 		cstn.setG(graphMLReader.readGraph());
 
 		if (Debug.ON)
@@ -104,7 +106,7 @@ public class CSTNwoNodeLabel extends CSTN {
 		}
 
 		if (cstn.fOutput != null) {
-			final GraphMLWriter graphWriter = new GraphMLWriter(new StaticLayout<>(cstn.g));
+			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(cstn.g));
 			try {
 				graphWriter.save(cstn.g, new PrintWriter(cstn.output));
 			} catch (final IOException e) {
@@ -143,6 +145,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @return true if the graph is a well formed
 	 * @throws WellDefinitionException if the initial graph is not well defined.
 	 */
+	@Override
 	public boolean initAndCheck() throws WellDefinitionException {
 
 		super.initAndCheck();
@@ -194,14 +197,14 @@ public class CSTNwoNodeLabel extends CSTN {
 				final LabeledNode d = this.g.getDest(e);
 
 				// Normalize with respect to R0--R3
-				if (s.isObservator()) {
+				if (s.isObserver()) {
 					// if (d.isObservator()) { //it seems that considering dynamic children requires too much time!
 					// updateChildrenOf(d, s, e);
 					// }
 					this.labelModificationR0(s, d, Z, e);
 				}
 				this.labelModificationR3(s, d, Z, e);
-				if (s.isObservator()) {
+				if (s.isObserver()) {
 					// again because R3 could have add a new value;
 					this.labelModificationR0(s, d, Z, e);
 				}
@@ -231,6 +234,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @return true if the rule has been applied one time at least.
 	 * @see CSTN#labelModificationR0(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge)
 	 */
+	@Override
 	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge eObsX) {
 		// Visibility is package because there is Junit Class test that checks this method.
 		boolean ruleApplied = false;
@@ -280,8 +284,6 @@ public class CSTNwoNodeLabel extends CSTN {
 				}
 			}
 
-			eObsX.putLabeledValueToRemovedList(edgeLabel, w);
-			// PXinNextGraph.removeLabel(l); It is not necessary, the introduction of new label remove it!
 			this.checkStatus.r0calls++;
 			ruleApplied = true;
 			boolean merged = eObsX.mergeLabeledValue(alphaPrime, w);
@@ -314,6 +316,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @return true if a rule has been applied.
 	 * @see CSTN#labelModificationR3(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge)
 	 */
+	@Override
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
 
@@ -324,8 +327,8 @@ public class CSTNwoNodeLabel extends CSTN {
 		}
 		boolean ruleApplied = false;
 
-		ObjectArraySet<LabeledIntEdge> Obs2nDEdges = this.getEdgeFromObservatorsToNode(nD);
-		if (Obs2nDEdges.isEmpty())
+		ObjectList<LabeledIntEdge> Obs2nDEdges = this.getEdgeFromObserversToNode(nD);
+		if (Obs2nDEdges == null || Obs2nDEdges.isEmpty())
 			return false;
 
 		final ObjectSet<Label> SDLabelSet = eSD.getLabeledValueMap().keySet();
@@ -368,7 +371,6 @@ public class CSTNwoNodeLabel extends CSTN {
 						continue;
 					}
 
-					eSD.putLabeledValueToRemovedList(SDLabel, v);
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 					if (ruleApplied) {
 						if (Debug.ON) {
@@ -406,6 +408,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @return true if a reduction has been applied.
 	 * @see CSTN#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge)
 	 */
+	@Override
 	boolean labeledPropagationRule(final LabeledNode nA, final LabeledNode nB, final LabeledNode nC, final LabeledIntEdge eAB,
 			final LabeledIntEdge eBC, LabeledIntEdge eAC) {
 		// Visibility is package because there is Junit Class test that checks this method.
@@ -500,6 +503,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	/**
 	 * @param g the g to set
 	 */
+	@Override
 	void setG(LabeledIntGraph g) {
 		super.setG(g);
 		this.horizon = Constants.INT_POS_INFINITE;
@@ -533,14 +537,14 @@ public class CSTNwoNodeLabel extends CSTN {
 		if (dProp == Constants.UNKNOWN || sProp == Constants.UNKNOWN)
 			return;
 
-		Label dPropAsLabel = new Label(dProp, State.unknown);
+		Label dPropAsLabel = new Label(dProp, Literal.UNKNONW);
 		for (Entry<Label> entry : eSD.getLabeledValueSet()) {
 			if (entry.getIntValue() > 0)
 				continue;
 			Label label = entry.getKey();
 			if (dPropAsLabel.subsumes(label)) {
 				// q is child of p
-				this.g.addChildToObservatioNode(nD, sProp);
+				this.g.addChildToObserverNode(nD, sProp);
 			}
 		}
 	}
@@ -558,6 +562,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @param labelToClean
 	 * @return alphaBetaGamma' if all conditions are satisfied. null otherwise.
 	 */
+	@Override
 	// Visibility is package because there is Junit Class test that checks this method.
 	Label makeAlphaBetaGammaPrime4R3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nObs, final char observed,
 			final Label labelFromObs, Label labelToClean) {
@@ -622,6 +627,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @param labelToClean
 	 * @return αβγ'
 	 */
+	@Override
 	// Visibility is package because there is Junit Class test that checks this method.
 	Label makeBetaGammaDagger4qR3(final LabeledNode nS, final LabeledNode nZ, final LabeledNode nObs, final char observed,
 			final Label labelFromObs, Label labelToClean) {

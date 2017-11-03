@@ -6,8 +6,11 @@ package it.univr.di.labeledvalue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Iterator;
 
+import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -822,4 +825,214 @@ public class LabeledIntTreeMapTest {
 		assertEquals("{(20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (22, b¬d¿ef) (19, ¬c¬e) (23, ¬ce) (11, c¬e) (22, ce) }",
 				this.actual.toString());
 	}
+
+	/**
+	 * Main.
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
+	 */
+	static public void main(final String[] args) {
+		testEntrySet();
+	}
+
+	/**
+	 * Simple test to verify time cost of entrySet() vs. keySet().
+	 * On 2017-10-26 it resulted that there is no appreciable difference between accessing to the map using entrySet() & its get()
+	 * and accessing to the map using keySet() and, then, find().
+	 */
+	private static void testEntrySet() {
+		final int nTest = (int) 1E2;
+		LabeledIntTreeMap map = new LabeledIntTreeMap();
+		SummaryStatistics entrySetStats = new SummaryStatistics(), keySetStats = new SummaryStatistics();
+		int[] value = { 5, 10, 25, 50, 100, 1000 };
+		int nChar = 'z' - 'a' + 1;
+		char[] chars = new char[nChar];
+		for (int j = 'a'; j <= 'z'; j++)
+			chars[j - 'a'] = (char) j;
+
+		for (int k = 0; k < value.length; k++) {
+			int nLabel = value[k];
+			for (int i = 0; i < nLabel; i++) {
+				Label label = new Label();
+				int l = 1;
+				for (int j = 0; j < nChar; j++, l = l << 1) {
+					label.conjunct(chars[j], ((i & l) != 0 ? Literal.STRAIGHT : Literal.NEGATED));
+				}
+				map.put(label, i);
+			}
+			// System.out.println("Map size: " + map);
+			testEntrySetTime(map, nTest, entrySetStats, keySetStats);
+			System.out.println("Time to retrieve " + map.size() + " elements using entrySet(): " + entrySetStats.getMean() + "ms");
+			System.out.println("Time to retrieve " + map.size() + " elements using keySet(): " + keySetStats.getMean() + "ms");
+			System.out.println("The difference is " + (entrySetStats.getMean() - keySetStats.getMean()) + " ms. It is better to use: "
+					+ ((entrySetStats.getMean() < keySetStats.getMean()) ? "entrySet()" : "keySet()") + " approach.\n");
+		}
+	}
+
+	/**
+	 * @param map
+	 * @param nTest
+	 * @param entrySetStats
+	 * @param keySetStats
+	 */
+	private static void testEntrySetTime(LabeledIntTreeMap map, int nTest, SummaryStatistics entrySetStats, SummaryStatistics keySetStats) {
+		entrySetStats.clear();
+		keySetStats.clear();
+		Instant startInstant;
+
+		for (int i = 0; i < nTest; i++) {
+			startInstant = Instant.now();
+			for (Entry<Label> entry : map.entrySet()) {
+				entry.getKey();
+				entry.getIntValue();
+			}
+			Instant endInstant = Instant.now();
+			entrySetStats.addValue(Duration.between(startInstant, endInstant).toNanos() / 10E6);
+		}
+
+		for (int i = 0; i < nTest; i++) {
+			startInstant = Instant.now();
+			for (Label l : map.keySet()) {
+				map.get(l);
+			}
+			Instant endInstant = Instant.now();
+			keySetStats.addValue(Duration.between(startInstant, endInstant).toNanos() / 10E6);
+		}
+
+	}
+
+	/**
+	 * Simple test to verify time cost of constructor.
+	 */
+	@SuppressWarnings("unused")
+	private static void testConstructor() {
+
+		final int nTest = (int) 1E3;
+		final double msNorm = 1.0E6 * nTest;
+
+		final LabeledIntMap map = new LabeledIntTreeMap();
+
+		final Label l1 = Label.parse("abc¬f");
+		final Label l2 = Label.parse("abcdef");
+		final Label l3 = Label.parse("a¬bc¬de¬f");
+		final Label l4 = Label.parse("¬b¬d¬f");
+		final Label l5 = Label.parse("ec");
+		final Label l6 = Label.parse("¬fedcba");
+		final Label l7 = Label.parse("ae¬f");
+		final Label l8 = Label.parse("¬af¿b");
+		final Label l9 = Label.parse("¬af¿b");
+		final Label l10 = Label.parse("¬ec");
+		final Label l11 = Label.parse("abd¿f");
+		final Label l12 = Label.parse("a¿d¬f");
+		final Label l13 = Label.parse("¬b¿d¿f");
+		final Label l14 = Label.parse("b¬df¿e");
+		final Label l15 = Label.parse("e¬c");
+		final Label l16 = Label.parse("ab¿d¿f");
+		final Label l17 = Label.parse("ad¬f");
+		final Label l18 = Label.parse("b¿d¿f");
+		final Label l19 = Label.parse("¬b¬df¿e");
+		final Label l20 = Label.parse("¬e¬c");
+
+		final Label ll1 = Label.parse("gabc¬f");
+		final Label ll2 = Label.parse("gabcdef");
+		final Label ll3 = Label.parse("ga¬bc¬de¬f");
+		final Label ll4 = Label.parse("g¬b¬d¬f");
+		final Label ll5 = Label.parse("gec");
+		final Label ll6 = Label.parse("g¬fedcba");
+		final Label ll7 = Label.parse("gae¬f");
+		final Label ll8 = Label.parse("g¬af¿b");
+		final Label ll9 = Label.parse("g¬af¿b");
+		final Label ll0 = Label.parse("g¬ec");
+		final Label ll21 = Label.parse("gabd¿f");
+		final Label ll22 = Label.parse("ga¿d¬f");
+		final Label ll23 = Label.parse("g¬b¿d¿f");
+		final Label ll24 = Label.parse("gb¬df¿e");
+		final Label ll25 = Label.parse("ge¬c");
+		final Label ll26 = Label.parse("gab¿d¿f");
+		final Label ll27 = Label.parse("gad¬f");
+		final Label ll28 = Label.parse("gb¿d¿f");
+		final Label ll29 = Label.parse("g¬b¬df¿e");
+		final Label ll20 = Label.parse("g¬e¬c");
+
+		long startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			map.clear();
+			map.put(Label.emptyLabel, 109);
+			map.put(l1, 10);
+			map.put(l2, 20);
+			map.put(l3, 25);
+			map.put(l4, 23);
+			map.put(l5, 22);
+			map.put(l6, 23);
+			map.put(l7, 20);
+			map.put(l8, 20);
+			map.put(l9, 21);
+			map.put(l10, 11);
+			map.put(l11, 11);
+			map.put(l12, 11);
+			map.put(l13, 24);
+			map.put(l14, 22);
+			map.put(l15, 23);
+			map.put(l16, 20);
+			map.put(l17, 23);
+			map.put(l18, 23);
+			map.put(l19, 23);
+			map.put(l20, 23);
+			map.put(ll1, 10);
+			map.put(ll2, 20);
+			map.put(ll3, 25);
+			map.put(ll4, 23);
+			map.put(ll5, 22);
+			map.put(ll6, 23);
+			map.put(ll7, 20);
+			map.put(ll8, 20);
+			map.put(ll9, 21);
+			map.put(ll0, 11);
+			map.put(ll21, 11);
+			map.put(ll22, 11);
+			map.put(ll23, 24);
+			map.put(ll24, 22);
+			map.put(ll25, 23);
+			map.put(ll26, 20);
+			map.put(ll27, 23);
+			map.put(ll28, 23);
+			map.put(ll29, 23);
+			map.put(ll20, 23);
+
+		}
+		long endTime = System.nanoTime();
+		System.out.println("LABELED VALUE SET-TREE MANAGED\nExecution time for some merge operations (mean over " + nTest + " tests).\nFirst map: " + map
+				+ ".\nTime: (ms): "
+				+ ((endTime - startTime) / msNorm));
+		String rightAnswer = "{(⊡, 23) (¬a¿bf, 20) (abcdef, 20) (abc¬f, 10) (abd¿f, 11) (a¿d¬f, 11) (ae¬f, 20) (b¬d¿ef, 22) (c, 22) (c¬e, 11) }";
+		System.out.println("The right final set is " + rightAnswer + ".");
+		System.out.println("Is equal? " + AbstractLabeledIntMap.parse(rightAnswer).equals(map));
+
+		startTime = System.nanoTime();
+		int min = 1000;
+		for (int i = 0; i < nTest; i++) {
+			min = map.getMinValue();
+		}
+		endTime = System.nanoTime();
+		System.out.println("Execution time for determining the min value (" + min + ") (mean over " + nTest + " tests). (ms): "
+				+ ((endTime - startTime) / msNorm));
+
+		startTime = System.nanoTime();
+		Label l = Label.parse("abd¿f");
+		for (int i = 0; i < nTest; i++) {
+			min = map.get(l);
+		}
+		endTime = System.nanoTime();
+		System.out.println("Execution time for retrieving value of label " + l + " (mean over " + nTest + " tests). (ms): "
+				+ ((endTime - startTime) / msNorm));
+
+		startTime = System.nanoTime();
+		map.put(Label.parse("c"), 11);
+		map.put(Label.parse("¬c"), 11);
+		endTime = System.nanoTime();
+		System.out.println("After the insertion of (c,11) and (¬c,11) the map becomes: " + map);
+		System.out.println("Execution time for simplification (ms): "
+				+ ((endTime - startTime) / 1.0E6));
+	}
+
 }

@@ -3,20 +3,18 @@
  */
 package it.univr.di.cstnu.graph;
 
-import java.util.Set;
-import java.util.SortedSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang.NotImplementedException;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntMapFactory;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -113,6 +111,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * Clear (remove) all labeled values associated to this edge.
 	 */
+	@Override
 	public void clear() {
 		super.clear();
 		this.labeledValue.clear();
@@ -121,6 +120,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * Clears all ordinary labeled values.
 	 */
+	@Override
 	public void clearLabels() {
 		this.removedLabeledValue.clear();
 		this.labeledValue.clear();
@@ -172,6 +172,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */
+	@Override
 	public LabeledIntMap getLabeledValueMap() {
 		return this.labeledValue;
 	}
@@ -179,6 +180,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * @return the minimal value among all ordinary labeled values if there are some values, {@link Constants#INT_NULL} otherwise.
 	 */
+	@Override
 	public int getMinValue() {
 		return this.labeledValue.getMinValue();
 	}
@@ -187,19 +189,22 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @return the minimal value among all ordinary labeled values having label without unknown literals, if there are some; {@link Constants#INT_NULL}
 	 *         otherwise.
 	 */
+	@Override
 	public int getMinValueAmongLabelsWOUnknown() {
 		return this.labeledValue.getMinValueAmongLabelsWOUnknown();
 	}
 
 	/** {@inheritDoc} */
+	@Override
 	public int getMinValueSubsumedBy(Label l) {
 		return this.labeledValue.getMinValueSubsumedBy(l);
 	}
-	
+
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the value of label l or the minimal value of labels consistent with l if it exists, null otherwise.
 	 */
+	@Override
 	public int getMinValueConsistentWith(final Label l) {
 		return this.labeledValue.getMinValueConsistentWith(l);
 	}
@@ -215,13 +220,14 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 *         exists, null otherwise.
 	 */
 	public int getMinValueConsistentWith(final Label l, final ALabel upperL) {
-		return this.upperLabel.getMinValueConsistentWith(l, upperL);
+		return this.upperCaseValue.getMinValueConsistentWith(l, upperL);
 	}
 
 	/**
 	 * @param label label
 	 * @return the value associated to label it it exists, {@link Constants#INT_NULL} otherwise.
 	 */
+	@Override
 	public int getValue(final Label label) {
 		return this.labeledValue.get(label);
 	}
@@ -231,12 +237,13 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 */
 	@Override
 	public boolean isEmpty() {
-		return this.labeledValue.size() == 0 && this.lowerLabel.size() == 0 && this.upperLabel.size() == 0;
+		return this.labeledValue.size() == 0 && this.lowerCaseValue.isEmpty() && this.upperCaseValue.size() == 0;
 	}
 
 	/**
 	 * @return the labeled values as a set
 	 */
+	@Override
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
 		return this.labeledValue.entrySet();
 	}
@@ -244,6 +251,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * @return the labeled values as a set
 	 */
+	@Override
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse) {
 		return this.labeledValue.entrySet(setToReuse);
 	}
@@ -255,6 +263,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @param i a integer.
 	 * @return true if the operation was successful, false otherwise.
 	 */
+	@Override
 	public boolean mergeLabeledValue(final Label l, final int i) {
 		if ((l == null) || (i == Constants.INT_NULL))
 			return false;
@@ -269,28 +278,55 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 			}
 			return false;
 		}
-		this.removedLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again
+		this.removedLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again in the future.
+		int nBeforeAdd = this.labeledValue.size();
 		boolean added = this.labeledValue.put(l, i);
 		if (added) {// I try to clean UPPER values
-			//Since this.labeledValue.put(l, i) can simplify labeled value, it is necessary to check every UPPER CASE with any labeled value, not only the last one inserted!
-			ObjectSet<Entry<java.util.Map.Entry<Label, ALabel>>> upperLabelValueSet = this.getUpperLabelSet();
-			if (upperLabelValueSet.size() > 0) {
-				int maxValueWOUpperCase = this.labeledValue.getMaxValue();
-				for (Entry<java.util.Map.Entry<Label, ALabel>> entry : upperLabelValueSet) {
-					Label label = entry.getKey().getKey();
-					int value = entry.getIntValue();
-					//FIXME 
-					if (value >= maxValueWOUpperCase) {
-						ALabel alabel = entry.getKey().getValue();
-						this.putUpperLabeledValueToRemovedList(label, alabel, value);
-						this.removeUpperLabel(label, alabel);
-						continue;
+			// Since this.labeledValue.put(l, i) can simplify labeled value set,
+			// it is necessary to check every UPPER CASE with any labeled value, not only the last
+			// one inserted!
+			// 2017-10-31 I verified that it is necessary to improve the performance!
+			LabeledALabelIntTreeMap upperCaseValueValueMap = this.getUpperCaseValueMap();
+			if (upperCaseValueValueMap.size() > 0) {
+				// FIXME IT IS VERY EXPENSIVE!
+				// int maxValueWOUpperCase = this.labeledValue.getMaxValue();
+				if (this.labeledValue.size() >= nBeforeAdd && (this.labeledValue.get(l) == i)) {
+					// the added element did not simplify the set, we compare UC values only with it.
+					for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
+						LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
+						for (Label UCLabel : labeledUCValues.keySet()) {
+							int UCaseValue = labeledUCValues.get(UCLabel);
+							// if (UCaseValue >= maxValueWOUpperCase) {
+							// //this wait is useless because a normal constraint
+							// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+							// this.removeUpperCaseValue(UCLabel, UCALabel);
+							// continue;
+							// }
+							// int valueWOUpperCase = this.labeledValue.getMinValueSubsumedBy(UCLabel);
+							// if (valueWOUpperCase != Constants.INT_NULL && UCaseValue >= valueWOUpperCase) {
+							// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+							// this.removeUpperCaseValue(UCLabel, UCALabel);
+							// }
+							if (i <= UCaseValue && UCLabel.subsumes(l)) {
+								this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+								this.removeUpperCaseValue(UCLabel, UCALabel);
+							}
+						}
 					}
-					int valueWOUpperCase = this.labeledValue.getMinValueSubsumedBy(label);
-					if (valueWOUpperCase!= Constants.INT_NULL && value >= valueWOUpperCase) {
-						ALabel alabel = entry.getKey().getValue();
-						this.putUpperLabeledValueToRemovedList(label, alabel, value);
-						this.removeUpperLabel(label, alabel);
+				} else {
+					// this.labeledvalue set has been simplified. We consider all values of this.labeledvalue
+					for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
+						LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
+						for (Label UCLabel : labeledUCValues.keySet()) {
+							int UCaseValue = labeledUCValues.get(UCLabel);
+							int min = this.labeledValue.getMinValueSubsumedBy(UCLabel);
+							if (min == Constants.INT_NULL)
+								continue;
+							if (min <= UCaseValue) {
+								this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+								this.removeUpperCaseValue(UCLabel, UCALabel);
+							}
+						}
 					}
 				}
 			}
@@ -356,19 +392,33 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the old value if it exists, null otherwise.
 	 */
+	@Override
 	public int removeLabel(final Label l) {
-		if (Debug.ON)
-			LabeledIntEdgePluggable.LOG.finer("Removing label '" + l + "' from the edge " + this.toString());
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LabeledIntEdgePluggable.LOG.finer("Removing label '" + l + "' from the edge " + this.toString());
+			}
+		}
+		this.removedLabeledValue.remove(l);
 		return this.labeledValue.remove(l);
 	}
 
 	@Override
-	public void setLabeledValue(final LabeledIntMap labeledValue) {
+	public void copyLabeledValueMap(final LabeledIntMap inputLabeledValue) {
 		LabeledIntMap map = this.labeledValueMapFactory.get();
-		for (Object2IntMap.Entry<Label> entry : labeledValue.entrySet()) {
+		for (Object2IntMap.Entry<Label> entry : inputLabeledValue.entrySet()) {
 			map.put(entry.getKey(), entry.getIntValue());
 		}
 		this.labeledValue = map;
+	}
+
+	@Override
+	public void setLabeledValueMap(LabeledIntMap inputLabeledValue) {
+		if (inputLabeledValue == null) {
+			this.labeledValue.clear();
+		} else {
+			this.labeledValue = inputLabeledValue;
+		}
 	}
 
 	@Override
@@ -386,10 +436,10 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 			return;
 		this.constraintType = e.constraintType;
 		this.labeledValue = e.labeledValue;
-		this.upperLabel = e.upperLabel;
-		this.lowerLabel = e.lowerLabel;
+		this.upperCaseValue = e.upperCaseValue;
+		this.lowerCaseValue = e.lowerCaseValue;
 		this.removedLabeledValue = e.removedLabeledValue;
-		this.removedUpperLabel = e.removedUpperLabel;
+		this.removedUpperCaseValue = e.removedUpperCaseValue;
 	}
 
 	/**
@@ -399,8 +449,8 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	public String toString() {
 		return "❮" + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "
 				+ ((this.labeledValue.size() > 0) ? this.labeledValue.toString() + "; " : "")
-				+ ((this.upperLabel.size() > 0) ? "UL: " + this.upperLabel.toString() + "; " : "")
-				+ ((this.lowerLabel.size() > 0) ? "LL: " + this.lowerLabel.toString() + ";" : "")
+				+ ((this.upperCaseValue.size() > 0) ? "UL: " + this.upperCaseValue.toString() + "; " : "")
+				+ ((!this.lowerCaseValue.isEmpty()) ? "LL: " + this.lowerCaseValue.toString() + ";" : "")
 				+ "❯";
 	}
 

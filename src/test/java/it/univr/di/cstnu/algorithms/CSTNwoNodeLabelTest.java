@@ -12,8 +12,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
-import it.univr.di.cstnu.algorithms.CSTNwoNodeLabel;
-import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
@@ -333,7 +331,7 @@ public class CSTNwoNodeLabelTest {
 
 		this.cstn.labelModificationR3(this.X, this.Z, this.Z, xz);
 
-		assertEquals("R3: yx labeled values.", "{abc¬p->-11, ab¿p->-15, ab¿c->-11, ab->-10}", xz.getLabeledValueSet().toString());
+		assertEquals("R3: yx labeled values.", "{abc¬p=>-11, ab¿c=>-11, ab¿p=>-15, ab=>-10}", xz.getLabeledValueSet().toString());
 	}
 
 	/**

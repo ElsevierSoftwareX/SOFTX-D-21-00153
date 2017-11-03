@@ -6,6 +6,7 @@ package it.univr.di.cstnu.graph;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 
+import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
@@ -27,7 +28,7 @@ public class LabeledNode extends AbstractComponent {
 		return new Supplier<LabeledNode>() {
 			@Override
 			public LabeledNode get() {
-				return new LabeledNode("n" + idSeq++, Label.emptyLabel);// if you change this default, change also in GraphMLReader
+				return new LabeledNode("n" + idSeq++, Label.emptyLabel);// if you change this default, change also in CSTNUGraphMLReader
 			}
 		};
 	}
@@ -45,6 +46,7 @@ public class LabeledNode extends AbstractComponent {
 		/**
 		 * Returns a label for the node
 		 */
+		@Override
 		public String apply(final LabeledNode v) {
 			return v.getName() + (v.getLabel().isEmpty() ? "" : "_[" + v.getLabel() + "]");
 		}
@@ -64,6 +66,13 @@ public class LabeledNode extends AbstractComponent {
 	 * Label associated to this node.
 	 */
 	private Label label = null;
+
+	/**
+	 * ALabel associated to this node.
+	 * This field has the scope to speed up the DC checking.
+	 * It is used to represent the name of a contingent time point as ALabel, instead of to calculate it every time.
+	 */
+	private ALabel alabel = null;
 
 	/**
 	 * Position Coordinates. It must be double even if it is not necessary for Jung library compatibility.
@@ -90,6 +99,7 @@ public class LabeledNode extends AbstractComponent {
 		this.label = Label.emptyLabel;
 		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
+		this.alabel = null;
 	}
 
 	/**
@@ -103,6 +113,7 @@ public class LabeledNode extends AbstractComponent {
 		this.label = Label.emptyLabel;
 		this.propositionObserved = (Literal.check(proposition)) ? proposition : Constants.UNKNOWN;
 		this.x = this.y = 0;
+		this.alabel = null;
 	}
 
 	/**
@@ -116,6 +127,7 @@ public class LabeledNode extends AbstractComponent {
 		this.propositionObserved = n.getPropositionObserved();
 		this.x = n.x;
 		this.y = n.y;
+		this.alabel = n.alabel;
 	}
 
 	/**
@@ -129,6 +141,7 @@ public class LabeledNode extends AbstractComponent {
 		this.label = l;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.x = this.y = 0;
+		this.alabel = null;
 	}
 
 	/**
@@ -137,7 +150,7 @@ public class LabeledNode extends AbstractComponent {
 	 * @return the label
 	 */
 	public Label getLabel() {
-		return new Label(this.label);
+		return this.label;
 	}
 
 	/**
@@ -150,7 +163,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * @return true if this node is an observator one (it is associated to a proposition letter), false otherwise;
 	 */
-	public boolean isObservator() {
+	public boolean isObserver() {
 		return this.propositionObserved != Constants.UNKNOWN;
 	}
 
@@ -253,6 +266,22 @@ public class LabeledNode extends AbstractComponent {
 			notifyObservers("Name:" + old);
 		}
 		return old;
+	}
+
+	/**
+	 * @return the alabel
+	 */
+	public ALabel getAlabel() {
+		return this.alabel;
+	}
+
+	/**
+	 * It is responsability of programmer to maintain the correspondence between name and alabel.
+	 * 
+	 * @param alabel the alabel to set
+	 */
+	public void setAlabel(ALabel alabel) {
+		this.alabel = alabel;
 	}
 
 }

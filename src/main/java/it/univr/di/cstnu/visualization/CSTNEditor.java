@@ -17,11 +17,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
@@ -41,15 +41,16 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.border.EmptyBorder;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.swing.ValidationPanel;
+import org.xml.sax.SAXException;
 
 import com.google.common.base.Supplier;
 
 import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
-import edu.uci.ics.jung.io.GraphIOException;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
 import edu.uci.ics.jung.visualization.RenderContext;
@@ -59,12 +60,11 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
 import edu.uci.ics.jung.visualization.decorators.ConstantDirectionalEdgeValueTransformer;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.CSTN;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
-import it.univr.di.cstnu.algorithms.CSTNPSU;
+import it.univr.di.cstnu.algorithms.CSTN.EdgesToCheck;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNepsilon;
@@ -72,8 +72,8 @@ import it.univr.di.cstnu.algorithms.CSTNir;
 import it.univr.di.cstnu.algorithms.CSTNirRestricted;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.GraphMLWriter;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
@@ -125,7 +125,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 					jl.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTN consistent.");
 					jl.setBackground(Color.green);
-					CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
 				} else {
 					// The distance graph is not consistent
 					jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTN consistent.</b>");
@@ -173,7 +177,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 					jl.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTN consistent.");
 					jl.setBackground(Color.green);
-					CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
 				} else {
 					// The distance graph is not consistent
 					jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTN consistent.</b>");
@@ -226,7 +234,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cstn.initAndCheck();
 			} catch (final Exception ec) {
 				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
-				CSTNEditor.LOG.warning(msg);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						CSTNEditor.LOG.warning(msg);
+					}
+				}
 				jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>" + msg + "</b>");
 				// jl.setIcon(CSTNEditor.warnIcon);
 				jl.setOpaque(true);
@@ -305,8 +317,14 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is inconsistent.<b>");
 					// jl.setIcon(CSTNEditor.warnIcon);
 					CSTNEditor.this.cycle = -1;
-					CSTNEditor.LOG.fine("INCONSISTENT GRAPH: " + CSTNEditor.this.oneStepBackGraph);
-					CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnStatus);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINE)) {
+							CSTNEditor.LOG.fine("INCONSISTENT GRAPH: " + CSTNEditor.this.oneStepBackGraph);
+						}
+						if (LOG.isLoggable(Level.INFO)) {
+							CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnStatus);
+						}
+					}
 				} else if (reductionsApplied) {
 					jl.setText("Step " + CSTNEditor.this.cycle + " of consistency check is done.");
 					// jl.setIcon(CSTNEditor.warnIcon);
@@ -316,7 +334,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					// jl.setIcon(CSTNEditor.infoIcon);
 					CSTNEditor.this.cycle = -1;
 					jl.setBackground(Color.green);
-					CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnStatus);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.INFO)) {
+							CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnStatus);
+						}
+					}
 				}
 			} catch (final WellDefinitionException ex) {
 				jl.setText("There is a problem in the code: " + ex.getMessage());
@@ -381,7 +403,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTNU controllable.</b>");
 					// jl.setIcon(CSTNUEditor.infoIcon);
 					jl1.setBackground(Color.green);
-					CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
 				} else {
 					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTNU controllable.</b>");
 					// jl.setIcon(CSTNUEditor.warnIcon);
@@ -423,7 +449,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cstnu.initAndCheck();
 			} catch (final IllegalArgumentException | WellDefinitionException ec) {
 				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
-				CSTNEditor.LOG.warning(msg);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						CSTNEditor.LOG.warning(msg);
+					}
+				}
 				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>" + msg + "</b>");
 				// jl.setIcon(CSTNUEditor.warnIcon);
 				jl1.setOpaque(true);
@@ -473,7 +503,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					return;
 				}
 				CSTNEditor.this.cstnuStatus = new CSTNUCheckStatus();
-				CSTNEditor.this.edgesToCheck = new ObjectArraySet<>(CSTNEditor.this.checkedGraph.getEdges());
+				CSTNEditor.this.edgesToCheck = new EdgesToCheck(CSTNEditor.this.checkedGraph.getEdges());
 			}
 			CSTNEditor.this.cycle++;
 
@@ -487,8 +517,14 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is inconsistent.</b>");
 					// jl.setIcon(CSTNEditor.warnIcon);
 					CSTNEditor.this.cycle = -1;
-					CSTNEditor.LOG.fine("INCONSISTENT GRAPH: " + CSTNEditor.this.checkedGraph);
-					CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnuStatus);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINE)) {
+							CSTNEditor.LOG.fine("INCONSISTENT GRAPH: " + CSTNEditor.this.checkedGraph);
+						}
+						if (LOG.isLoggable(Level.INFO)) {
+							CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnuStatus);
+						}
+					}
 				} else if (reductionsApplied) {
 					jl1.setText("Step " + CSTNEditor.this.cycle + " of consistency check is done.");
 					// jl.setIcon(CSTNEditor.warnIcon);
@@ -497,7 +533,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					// jl.setIcon(CSTNEditor.infoIcon);
 					CSTNEditor.this.cycle = -1;
 					jl1.setBackground(Color.green);
-					CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnuStatus);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.INFO)) {
+							CSTNEditor.LOG.info("Status stats: " + CSTNEditor.this.cstnuStatus);
+						}
+					}
 				}
 			} catch (final WellDefinitionException ex) {
 				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
@@ -519,46 +559,46 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * @author posenato
 	 */
-	@SuppressWarnings("javadoc")
-	private class CSTNPSUCheckListener implements ActionListener {
-
-		public CSTNPSUCheckListener() {
-		}
-
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-			CSTNEditor.this.cstnpsu = new CSTNPSU(CSTNEditor.this.checkedGraph);
-			jl1.setBackground(Color.orange);
-			try {
-				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnpsu.dynamicControllabilityCheck();
-				if (CSTNEditor.this.cstnuStatus.consistency) {
-					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTNPSU controllable.</b>");
-					// jl.setIcon(CSTNUEditor.infoIcon);
-					jl1.setBackground(Color.green);
-					CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
-				} else {
-					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTNPSU controllable.</b>");
-					// jl.setIcon(CSTNUEditor.warnIcon);
-				}
-			} catch (final WellDefinitionException ex) {
-				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
-				// jl.setIcon(CSTNUEditor.warnIcon);
-			}
-			jl1.setOpaque(true);
-			updateNodePositions();
-			CSTNEditor.this.vv2.setVisible(true);
-
-			CSTNEditor.this.vv2.validate();
-			CSTNEditor.this.vv2.repaint();
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
+	// @SuppressWarnings("javadoc")
+	// private class CSTNPSUCheckListener implements ActionListener {
+	//
+	// public CSTNPSUCheckListener() {
+	// }
+	//
+	// @Override
+	// public void actionPerformed(final ActionEvent e) {
+	// final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
+	// CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+	// CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+	// CSTNEditor.this.cstnpsu = new CSTNPSU(CSTNEditor.this.checkedGraph);
+	// jl1.setBackground(Color.orange);
+	// try {
+	// CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnpsu.dynamicControllabilityCheck();
+	// if (CSTNEditor.this.cstnuStatus.consistency) {
+	// jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTNPSU controllable.</b>");
+	// // jl.setIcon(CSTNUEditor.infoIcon);
+	// jl1.setBackground(Color.green);
+	// CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+	// } else {
+	// jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTNPSU controllable.</b>");
+	// // jl.setIcon(CSTNUEditor.warnIcon);
+	// }
+	// } catch (final WellDefinitionException ex) {
+	// jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
+	// // jl.setIcon(CSTNUEditor.warnIcon);
+	// }
+	// jl1.setOpaque(true);
+	// updateNodePositions();
+	// CSTNEditor.this.vv2.setVisible(true);
+	//
+	// CSTNEditor.this.vv2.validate();
+	// CSTNEditor.this.vv2.repaint();
+	//
+	// CSTNEditor.this.validate();
+	// CSTNEditor.this.repaint();
+	// CSTNEditor.this.cycle = 0;
+	// }
+	// }
 
 	/**
 	 * @author posenato
@@ -669,12 +709,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					CSTNEditor.this.graphInfoLabel.setText(CSTNEditor.getGraphLabelDescription(CSTNEditor.this.inputGraph));
 					CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
-				} catch (ClassNotFoundException | FileNotFoundException | GraphIOException e1) {
+				} catch (IOException | ParserConfigurationException | SAXException e1) {
 					CSTNEditor.this.inputGraph.clear();
 					CSTNEditor.this.vv2.setVisible(false);
 					CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 					String msg = "The graph has a problem in the definition:" + e1.getMessage();
-					CSTNEditor.LOG.warning(msg);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.WARNING)) {
+							CSTNEditor.LOG.warning(msg);
+						}
+					}
 					jl.setText("<b>" + msg + "</b>");
 					// jl.setIcon(CSTNUEditor.warnIcon);
 					jl.setOpaque(true);
@@ -920,7 +964,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * CSTNPSU checker
 	 */
-	CSTNPSU cstnpsu;
+	// CSTNPSU cstnpsu;
 
 	/**
 	 * Number of cycles of CSTN(U) check step-by-step
@@ -940,7 +984,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Edges to check in CSTN(U) check step-by-step
 	 */
-	ObjectArraySet<LabeledIntEdge> edgesToCheck;
+	CSTN.EdgesToCheck edgesToCheck;
 
 	/**
 	 * The epsilon panel
@@ -1011,8 +1055,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = env.getMaximumWindowBounds();
-		if (Debug.ON)
-			LOG.finest("Screen Bounds: " + bounds);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Screen Bounds: " + bounds);
+			}
+		}
 		CSTNEditor.preferredSize = new Dimension((bounds.width - 30) / 2, bounds.height - 260);
 
 		this.inputGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
@@ -1144,9 +1191,15 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		jreactionTime.addPropertyChangeListener("value", new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
-				CSTNEditor.LOG.finest("Property: " + evt.getPropertyName());
 				CSTNEditor.this.reactionTime = ((Number) jreactionTime.getValue()).intValue();
-				CSTNEditor.LOG.info("New reaction time: " + CSTNEditor.this.reactionTime);
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						CSTNEditor.LOG.finest("Property: " + evt.getPropertyName());
+					}
+					if (LOG.isLoggable(Level.INFO)) {
+						CSTNEditor.LOG.info("New reaction time: " + CSTNEditor.this.reactionTime);
+					}
+				}
 			}
 		});
 		validationGroupCSTN.add(jreactionTime, StringValidators.regexp(Constants.NonNegIntValueRE, "A > 0 integer!", false));
@@ -1189,11 +1242,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new CSTNUOneStepListener());
 		rowForCSTNUButtons.add(buttonCheck);
 
-		// CSTNPSU row
-		buttonCheck = new JButton("CSTNPSU Check");
-		buttonCheck.addActionListener(new CSTNPSUCheckListener());
-		// rowForCSTNPSUButtons.add(buttonCheck);
-		rowForCSTNUButtons.add(buttonCheck);
+		// // CSTNPSU row
+		// buttonCheck = new JButton("CSTNPSU Check");
+		// buttonCheck.addActionListener(new CSTNPSUCheckListener());
+		// // rowForCSTNPSUButtons.add(buttonCheck);
+		// rowForCSTNUButtons.add(buttonCheck);
 
 		// MENU
 		final JMenu menu = new JMenu("File");
@@ -1275,33 +1328,22 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * Load graph stored in file 'fileName' into attribute this.g. Moreover, it create this.layout1 using this.g.
 	 * 
 	 * @param fileName
-	 * @throws ClassNotFoundException
-	 * @throws FileNotFoundException
-	 * @throws GraphIOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	void loadGraphG(final File fileName) throws ClassNotFoundException, FileNotFoundException, GraphIOException {
-		try (FileReader fileReader = new FileReader(fileName)) {
-			final GraphMLReader<LabeledIntGraph> graphReader = new GraphMLReader<>(fileReader, CSTNEditor.labeledIntValueMap);
-			CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
-			CSTNEditor.this.inputGraph.setFileName(fileName);
-			fileReader.close();
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
+	void loadGraphG(final File fileName) throws IOException, ParserConfigurationException, SAXException {
+		final CSTNUGraphMLReader graphReader = new CSTNUGraphMLReader(fileName, CSTNEditor.labeledIntValueMap);
+		CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
+		CSTNEditor.this.inputGraph.setFileName(fileName);
 	}
 
 	/**
-	 * The following elements are saved in the order specified:<br>
-	 * 1. LabeledIntGraph g<br>
-	 * For each node i:<br>
-	 * i: LabeledNode i <Br>
-	 * i+1: Point2D position
-	 *
 	 * @param graphToSave graph to save
 	 * @param file
 	 */
 	void saveGraphToFile(final LabeledIntGraph graphToSave, final File file) {
-		final GraphMLWriter graphWriter = new GraphMLWriter(this.layout1);
+		final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(this.layout1);
 		graphToSave.setName(file.getName());
 		try (Writer out = new BufferedWriter(new FileWriter(file))) {
 			graphWriter.save(graphToSave, out);
@@ -1318,8 +1360,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		for (final LabeledNode v : this.checkedGraph.getVertices()) {
 			gV = this.inputGraph.getNode(v.getName());
 			if (gV != null) {
-				CSTNEditor.LOG.finest("Vertex of original graph: " + gV);
-				CSTNEditor.LOG.finest("Original position (" + CSTNEditor.this.layout1.getX(gV) + ";" + CSTNEditor.this.layout1.getY(gV) + ")");
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						CSTNEditor.LOG.finest("Vertex of original graph: " + gV +
+								"\nOriginal position (" + CSTNEditor.this.layout1.getX(gV) + ";" + CSTNEditor.this.layout1.getY(gV) + ")");
+					}
+				}
 				CSTNEditor.this.layout2.setLocation(v, CSTNEditor.this.layout1.getX(gV), CSTNEditor.this.layout1.getY(gV));
 			} else {
 				CSTNEditor.this.layout2.setLocation(v, v.getX(), v.getY());
@@ -1344,7 +1390,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		sb.append(", #edges: ");
 		sb.append(g.getEdgeCount());
 		sb.append(", #obs: ");
-		sb.append(g.getObservators().size());
+		sb.append(g.getObserverCount());
 		if (g.getContingentCount() > 0) {
 			sb.append(", #contingent: ");
 			sb.append(g.getContingentCount());

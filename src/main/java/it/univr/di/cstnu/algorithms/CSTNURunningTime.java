@@ -1,7 +1,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -18,18 +17,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
+import org.xml.sax.SAXException;
 
-import edu.uci.ics.jung.io.GraphIOException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.GraphMLWriter;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
@@ -53,8 +54,8 @@ public class CSTNURunningTime {
 	// static final String VERSIONandDATE = "1.2, September, 29 2015";
 	// static final String VERSIONandDATE = "1.3, December, 30 2015";
 	// static final String VERSIONandDATE = "1.6, October, 05 2017";
-//	static final String VERSIONandDATE = "1.8, October, 12 2017";
-	static final String VERSIONandDATE = "1.9, October, 13 2017";//improved log of timeout instances
+	// static final String VERSIONandDATE = "1.8, October, 12 2017";
+	static final String VERSIONandDATE = "1.9, October, 13 2017";// improved log of timeout instances
 
 	/**
 	 * class logger
@@ -79,6 +80,7 @@ public class CSTNURunningTime {
 			this.cstnuChecker = cstnChecker;
 		}
 
+		@Override
 		public CSTNUCheckStatus call() throws WellDefinitionException {
 			return this.cstnuChecker.dynamicControllabilityCheck();
 		}
@@ -262,14 +264,15 @@ public class CSTNURunningTime {
 
 	/**
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws FileNotFoundException
-	 * @throws GraphIOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	public static void main(String[] args) throws FileNotFoundException, GraphIOException {
+	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 		CSTNURunningTime tester = new CSTNURunningTime();
 
 		LOG.finest("Start...");
-		System.out.println(tester.getClass().getName() + " " + VERSIONandDATE +"\nStart of execution...");
+		System.out.println(tester.getClass().getName() + " " + VERSIONandDATE + "\nStart of execution...");
 
 		if (!tester.manageParameters(args))
 			return;
@@ -286,7 +289,7 @@ public class CSTNURunningTime {
 		CSTNU cstnu;
 		CSTNU.CSTNUCheckStatus status = new CSTNUCheckStatus();
 		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
-		GraphMLReader<LabeledIntGraph> graphMLReader;
+		CSTNUGraphMLReader graphMLReader;
 		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
 		Future<CSTNUCheckStatus> future;
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
@@ -295,7 +298,7 @@ public class CSTNURunningTime {
 		for (File file : tester.inputCSTNUFile) {
 			System.out.println("Analyzing file " + file.getName() + "...");
 			LOG.fine("Loading " + file.getName() + "...");
-			graphMLReader = new GraphMLReader<>(file, labeledIntValueMap);
+			graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);
 			g = graphMLReader.readGraph();
 			LOG.fine("...done!");
 			if (g == null) {
@@ -337,7 +340,7 @@ public class CSTNURunningTime {
 						((LabeledIntEdgePluggable) e).takeIn((LabeledIntEdgePluggable) e1);
 					}
 				}
-				GraphMLWriter graphWrite = new GraphMLWriter(new StaticLayout<>(g));
+				CSTNUGraphMLWriter graphWrite = new CSTNUGraphMLWriter(new StaticLayout<>(g));
 				try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + "_cutted"))) {
 					graphWrite.save(g, writer);
 				} catch (Exception e) {
@@ -380,7 +383,7 @@ public class CSTNURunningTime {
 					file.getName(),
 					g.getVertexCount(),
 					nEdges,
-					g.getObservatorCount(),
+					g.getObserverCount(),
 					g.getContingentCount(),
 					min,
 					max);
@@ -397,12 +400,11 @@ public class CSTNURunningTime {
 				localStdDev = Double.NaN;
 				for (int j = 0; j < tester.nDCRepetition && cstnOK; j++) {
 					LOG.fine("Test " + j + ", CSTNU: " + file.getName());
-					if (j != 0) {
-						// It is necessary to reset the graph!
-						graphMLReader = new GraphMLReader<>(file, labeledIntValueMap);// to be sure that the reader reloads the graph!
-						g = graphMLReader.readGraph();
-						cstnu.g = g;
-					}
+					// It is necessary to reset the graph even for the first time becuse it has been already initialized!
+					graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);// to be sure that the reader reloads the graph!
+					g = graphMLReader.readGraph();
+					g.setFileName(file);
+					cstnu.setG(g);
 
 					future = executor.submit(new DCTask(cstnu));
 					try {

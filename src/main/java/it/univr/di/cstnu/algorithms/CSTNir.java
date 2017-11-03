@@ -6,10 +6,14 @@ import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.uci.ics.jung.io.GraphIOException;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import it.unimi.dsi.fastutil.objects.ObjectSet;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.GraphMLWriter;
+import it.univr.di.Debug;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
@@ -27,6 +31,7 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  */
 public class CSTNir extends CSTN {
 
+
 	/**
 	 * logger
 	 */
@@ -37,36 +42,52 @@ public class CSTNir extends CSTN {
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
-//	static public final String VERSIONandDATE = "Version  1.0 - April, 03 2017";// first release i.r.
+	// static public final String VERSIONandDATE = "Version 1.0 - April, 03 2017";// first release i.r.
 	static public final String VERSIONandDATE = "Version  1.1 - October, 10 2017";// removed qLables
 
 	/**
 	 * Just for using this class also from a terminal.
 	 * 
 	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 * @throws FileNotFoundException
-	 * @throws GraphIOException
 	 */
-	public static void main(final String[] args) throws FileNotFoundException, GraphIOException {
-		LOG.finest("Start...");
+	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("Start...");
+			}
+		}
 		final CSTNir cstn = new CSTNir();
 
 		if (!cstn.manageParameters(args))
 			return;
-		LOG.finest("Parameters ok!");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("Parameters ok!");
+			}
+		}
 		if (cstn.versionReq) {
 			System.out.println(CSTNir.class.getName() + " " + CSTNir.VERSIONandDATE + ". Academic and non-commercial use only.\n"
 					+ "Copyright © 2017, Roberto Posenato");
 			return;
 		}
 
-		LOG.finest("Loading graph...");
-		GraphMLReader<LabeledIntGraph> graphMLReader = new GraphMLReader<>(cstn.fInput,LabeledIntTreeMap.class);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("Loading graph...");
+			}
+		}
+		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstn.fInput, LabeledIntTreeMap.class);
 		cstn.setG(graphMLReader.readGraph());
 
-		LOG.finest("LabeledIntGraph loaded!");
-
-		LOG.finest("Instantaneous reaction DC Checking...");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("LabeledIntGraph loaded!\nInstantaneous reaction DC Checking...");
+			}
+		}
 		CSTNCheckStatus status;
 		try {
 			status = cstn.dynamicConsistencyCheck();
@@ -74,7 +95,11 @@ public class CSTNir extends CSTN {
 			System.out.print("An error has been occured during the checking: " + e.getMessage());
 			return;
 		}
-		LOG.finest("LabeledIntGraph minimized!");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("LabeledIntGraph minimized!");
+			}
+		}
 		if (status.finished) {
 			System.out.println("Checking finished!");
 			if (status.consistency) {
@@ -89,7 +114,7 @@ public class CSTNir extends CSTN {
 		}
 
 		if (cstn.fOutput != null) {
-			final GraphMLWriter graphWriter = new GraphMLWriter(new StaticLayout<>(cstn.getG()));
+			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(cstn.getG()));
 			try {
 				graphWriter.save(cstn.getG(), new PrintWriter(cstn.output));
 			} catch (final IOException e) {
@@ -105,11 +130,11 @@ public class CSTNir extends CSTN {
 		super();
 		this.wd2epsilon = 0;
 	}
-	
 
 	/**
 	 * Constructor for CSTN.
-	 * @param g the labeled int valued graph to check 
+	 * 
+	 * @param g the labeled int valued graph to check
 	 */
 	public CSTNir(LabeledIntGraph g) {
 		super(g);
@@ -132,26 +157,31 @@ public class CSTNir extends CSTN {
 	 * </pre>
 	 * 
 	 * Rule qR0 has X==Z.
+	 * 
 	 * @param nObs the observation node
 	 * @param nX the other node
 	 * @param nZ
 	 * @param ePX the edge connecting P? ---&gt; X
-	 * 
 	 * @return true if the rule has been applied one time at least.
 	 */
+	@Override
 	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge ePX) {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false, mergeStatus;
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+				}
 			}
 			return false;
 		}
-		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R0: start.");
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, "Label Modification R0: start.");
+			}
 		}
 		if (nX.getLabel().contains(p)) {
 			// Table 1 ICAPS
@@ -184,23 +214,29 @@ public class CSTNir extends CSTN {
 			}
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
 			String logMessage = null;
-			if (LOG.isLoggable(Level.FINER)) {
-				logMessage = "R0 simplifies a label of edge " + ePX.getName()
-						+ ":\nsource: " + nObs.getName() + " ---" + CSTN.pairAsString(l, w) + "---> " + nX.getName()
-						+ "\nresult: " + nObs.getName() + " ---" + CSTN.pairAsString(alphaPrime, w) + "---> " + nX.getName();
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					logMessage = "R0 simplifies a label of edge " + ePX.getName()
+							+ ":\nsource: " + nObs.getName() + " ---" + CSTN.pairAsString(l, w) + "---> " + nX.getName()
+							+ "\nresult: " + nObs.getName() + " ---" + CSTN.pairAsString(alphaPrime, w) + "---> " + nX.getName();
+				}
 			}
 
-			ePX.putLabeledValueToRemovedList(l, w);
-			// PXinNextGraph.removeLabel(l); It is not necessary, the introduction of new label remove it!
 			this.checkStatus.r0calls++;
 			ruleApplied = true;
 			mergeStatus = ePX.mergeLabeledValue(alphaPrime, w);
-			if (mergeStatus && LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, logMessage);
+			if (mergeStatus) {
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, logMessage);
+					}
+				}
 			}
 		}
+		if (Debug.ON) {
 		if (LOG.isLoggable(Level.FINEST)) {
-			LOG.log(Level.FINEST, "Label Modification R0: end.");
+				LOG.log(Level.FINEST, "Label Modification R0: end.");
+			}
 		}
 		return ruleApplied;
 	}

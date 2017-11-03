@@ -9,7 +9,6 @@ import java.io.File;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -32,6 +31,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
@@ -40,6 +40,7 @@ import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
+import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -82,6 +83,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			this.colAdj = col;
 		}
 
+		@Override
 		public String toString() {
 			return String.format("%s->(%dX%d)", this.edge.getName(), this.rowAdj, this.colAdj);
 		}
@@ -105,7 +107,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * Children of observation nodes
 	 */
-	private Map<LabeledNode, Label> childrenOfObservator;
+	private Map<LabeledNode, Label> childrenOfObserver;
 
 	/**
 	 * In order to guarantee a fast mapping edge-->adjacency position, a map is maintained.
@@ -145,20 +147,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * Set of edges with lower case label set not empty
+	 * List of edges with lower case label set not empty
 	 */
-	private ObjectSet<LabeledIntEdge> lowerCaseEdgesSet;
+	private ObjectList<LabeledIntEdge> lowerCaseEdges;
 
 	/**
 	 * Name
 	 */
 	private String name;
-	
+
 	/**
 	 * A possible file name containing this graph.
 	 */
 	private File fileName;
-
 
 	/**
 	 * In order to guarantee a fast mapping node-->adjacency position, a map is maintained.
@@ -171,9 +172,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private int order;
 
 	/**
-	 * Set of propositions observed in the graph.
+	 * Map of propositions observed in the graph.
 	 */
-	private Char2ObjectMap<LabeledNode> proposition2Node;
+	private Char2ObjectMap<LabeledNode> proposition2Observer;
+
+	/**
+	 * List of edges from observers to Z
+	 */
+	private ObjectList<LabeledIntEdge> observer2Z;
 
 	/**
 	 * Zero node. In temporal constraint network such node is the first node to execute.
@@ -219,6 +225,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return;
 		this.name = g.name;
 		this.aLabelAlphabet = g.aLabelAlphabet;
+		this.fileName = g.fileName;
 
 		// clone all nodes
 		LabeledNode vNew;
@@ -288,21 +295,30 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return false;
 
 		if (this.edge2index.containsKey(e.getName())) {
-			if (Debug.ON)
-				LOG.info("An edge with name " + e.getName() + " already exists. The new edge is not added.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.WARNING)) {
+					LOG.warning("An edge with name " + e.getName() + " already exists. The new edge is not added.");
+				}
+			}
 			return false;
 		}
 		int sourceIndex = this.nodeName2index.getInt(v1Name);
 		if (sourceIndex == Constants.INT_NULL) {
-			if (Debug.ON)
-				LOG.info("Source node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.info("Source node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
+				}
+			}
 			return false;
 		}
 
 		int destIndex = this.nodeName2index.get(v2Name);
 		if (destIndex == Constants.INT_NULL) {
-			if (Debug.ON)
-				LOG.info("Destination node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.info("Destination node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
+				}
+			}
 			return false;
 		}
 
@@ -313,7 +329,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.adjacency[sourceIndex][destIndex] = e;
 
 		this.edge2index.put(e.getName(), new EdgeIndex(e, sourceIndex, destIndex));
-		this.lowerCaseEdgesSet = null;
+		this.lowerCaseEdges = null;
 		e.addObserver(this);
 		return true;
 	}
@@ -358,8 +374,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	@Override
 	public boolean addVertex(LabeledNode vertex) {
 		if (vertex == null || this.nodeName2index.containsKey(vertex.name)) {
-			if (Debug.ON)
-				LOG.info("The new vertex for adding is null or is already present.");
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.INFO)) {
+					LOG.info("The new vertex for adding is null or is already present.");
+				}
+			}
 			return false;
 		}
 
@@ -416,9 +435,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * Caches are automatically created during any modification or query about the graph structure.
 	 */
 	public void clearCache() {
-		this.lowerCaseEdgesSet = null;
-		this.proposition2Node = null;
-		this.childrenOfObservator = null;
+		this.lowerCaseEdges = null;
+		this.proposition2Observer = null;
+		this.childrenOfObserver = null;
+		this.observer2Z = null;
 	}
 
 	@Override
@@ -512,12 +532,15 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					continue;
 				eNew.mergeLabeledValue(entry.getKey(), value);
 			}
-			for (Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getUpperLabelSet()) {
-				eNew.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
+			for (ALabel alabel : e.getUpperCaseValueMap().keySet()) {
+				LabeledIntTreeMap labeledValues = e.getUpperCaseValueMap().get(alabel);
+				 for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+					eNew.mergeUpperCaseValue(entry1.getKey(), alabel, entry1.getIntValue());
+				 }
 			}
-			for (Object2IntMap.Entry<Entry<Label, ALabel>> entry : e.getLowerLabelSet()) {
-				eNew.mergeLowerLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue());
-			}
+			//lower case value
+			eNew.setLowerCaseValue(e.getLowerCaseValue());
+
 			addEdge((AbstractLabeledIntEdge) eNew, g.getSource(e).getName(), g.getDest(e).getName());
 		}
 	}
@@ -541,6 +564,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		return g1.getEdges().equals(this.getEdges()) && g1.getVertices().equals(this.getVertices());
 	}
 
+	@Override
 	public LabeledIntEdge findEdge(LabeledNode s, LabeledNode d) {
 		if (s == null || s.getName() == null || d == null || d.getName() == null)
 			return null;
@@ -574,15 +598,15 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param obs
 	 * @param child
 	 */
-	public void addChildToObservatioNode(LabeledNode obs, char child) {
-		if (this.childrenOfObservator == null)
-			this.childrenOfObservator = newChildrenOfObservatorInstance();
-		Label children = this.childrenOfObservator.get(obs);
+	public void addChildToObserverNode(LabeledNode obs, char child) {
+		if (this.childrenOfObserver == null)
+			this.childrenOfObserver = newChildrenObserverInstance();
+		Label children = this.childrenOfObserver.get(obs);
 		if (children == null) {
 			children = new Label();
-			this.childrenOfObservator.put(obs, children);
+			this.childrenOfObserver.put(obs, children);
 		}
-		children.conjunct(child, Literal.State.straight);
+		children.conjunct(child, Literal.STRAIGHT);
 	}
 
 	/**
@@ -600,26 +624,26 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return null;
 
 		// The soundness of this method is based on the property that the observed proposition of an observation node is represented as a straight literal.
-		if (this.childrenOfObservator == null) {
-			// Build the cache map of childrenOfObservator
-			this.childrenOfObservator = newChildrenOfObservatorInstance();
+		if (this.childrenOfObserver == null) {
+			// Build the cache map of childrenOfObserver
+			this.childrenOfObserver = newChildrenObserverInstance();
 
-			for (Char2ObjectMap.Entry<LabeledNode> entryObservedObservatorNode : this.getObservedAndObservator().char2ObjectEntrySet()) {
-				char observedProposition = entryObservedObservatorNode.getCharKey();
-				LabeledNode observator = entryObservedObservatorNode.getValue();
+			for (Char2ObjectMap.Entry<LabeledNode> entryObservedObserverNode : this.getObservedAndObserver().char2ObjectEntrySet()) {
+				char observedProposition = entryObservedObserverNode.getCharKey();
+				LabeledNode observator = entryObservedObserverNode.getValue();
 				Label observatorLabel = observator.getLabel();
 				for (char propInObsLabel : observatorLabel.getPropositions()) {
-					LabeledNode father = this.getObservator(propInObsLabel);// for the well property, father must exist!
-					Label children = this.childrenOfObservator.get(father);
+					LabeledNode father = this.getObserver(propInObsLabel);// for the well property, father must exist!
+					Label children = this.childrenOfObserver.get(father);
 					if (children == null) {
 						children = new Label();
-						this.childrenOfObservator.put(father, children);
+						this.childrenOfObserver.put(father, children);
 					}
-					children.conjunct(observedProposition, Literal.State.straight);
+					children.conjunct(observedProposition, Literal.STRAIGHT);
 				}
 			}
 		}
-		return this.childrenOfObservator.get(obs);
+		return this.childrenOfObserver.get(obs);
 	}
 
 	@Override
@@ -750,19 +774,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 *
 	 * @return the set of edges containing Lower Case Labels!
 	 */
-	public Set<LabeledIntEdge> getLowerLabeledEdges() {
-		if (this.lowerCaseEdgesSet == null) {
-			this.lowerCaseEdgesSet = new ObjectArraySet<>();
+	public ObjectList<LabeledIntEdge> getLowerLabeledEdges() {
+		if (this.lowerCaseEdges == null) {
+			this.lowerCaseEdges = new ObjectArrayList<>();
 			LabeledIntEdge edge;
 			for (int i = 0; i < this.order; i++) {
 				for (int j = 0; j < this.order; j++) {
-					if ((edge = this.adjacency[i][j]) != null && edge.lowerLabelSize() > 0) {
-						this.lowerCaseEdgesSet.add(edge);
+					if ((edge = this.adjacency[i][j]) != null && edge.getLowerCaseValue() != null) {
+						this.lowerCaseEdges.add(edge);
 					}
 				}
 			}
 		}
-		return this.lowerCaseEdgesSet;
+		return this.lowerCaseEdges;
 	}
 
 	/**
@@ -813,13 +837,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * getObservator.
-	 *
 	 * @param c the request proposition
 	 * @return the node that observes the proposition l if it exists, null otherwise.
 	 */
-	public LabeledNode getObservator(final char c) {
-		final Char2ObjectMap<LabeledNode> observer = this.getObservedAndObservator();
+	public LabeledNode getObserver(final char c) {
+		final Char2ObjectMap<LabeledNode> observer = this.getObservedAndObserver();
 		if (observer == null)
 			return null;
 
@@ -833,29 +855,54 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return the set of observator time-points.
 	 */
-	public Collection<LabeledNode> getObservators() {
-		if (this.proposition2Node == null) {
-			getObservedAndObservator();
+	public Collection<LabeledNode> getObservers() {
+		if (this.proposition2Observer == null) {
+			getObservedAndObserver();
 		}
-		return this.proposition2Node.values();
+		return this.proposition2Observer.values();
 	}
 
 	/**
-	 * getObservedAndObservator.
-	 *
-	 * @return the map of propositions and their observator nodes. If there is no observator node, it returns an empty map. The key is the literal observed.
+	 * @return the map of propositions and their observers (nodes). If there is no observer node, it returns an empty map. The key is the literal observed.
 	 */
-	public Char2ObjectMap<LabeledNode> getObservedAndObservator() {
-		if (this.proposition2Node == null) {
-			this.proposition2Node = newProposition2NodeInstance();
+	public Char2ObjectMap<LabeledNode> getObservedAndObserver() {
+		if (this.proposition2Observer == null) {
+			this.proposition2Observer = newProposition2NodeInstance();
 			char proposition;
 			for (final LabeledNode n : getVertices()) {
 				if ((proposition = n.getPropositionObserved()) != Constants.UNKNOWN) {
-					this.proposition2Node.put(proposition, n);
+					this.proposition2Observer.put(proposition, n);
 				}
 			}
 		}
-		return this.proposition2Node;
+		return this.proposition2Observer;
+	}
+
+	/**
+	 * Be careful! The returned value is not a copy as the edges contained!
+	 * 
+	 * @return the set of edges from observers to Z if Z is defined, empty set otherwise.
+	 */
+	public ObjectList<LabeledIntEdge> getObserver2ZEdges() {
+		if (this.observer2Z == null) {
+			this.buildObserver2ZEdgesSet();
+		}
+		return this.observer2Z;
+	}
+
+	/**
+	 * builds this.observer2Z;
+	 */
+	private void buildObserver2ZEdgesSet() {
+		this.observer2Z = new ObjectArrayList<>();
+		if (this.Z == null)
+			return;
+		Char2ObjectMap<LabeledNode> observers = getObservedAndObserver();
+		for (final LabeledNode node : observers.values()) {
+			LabeledIntEdge e = this.findEdge(node, this.Z);
+			if (e != null)
+				this.observer2Z.add(e);
+		}
 	}
 
 	@Override
@@ -885,10 +932,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the set of propositions of the graph.
 	 */
 	public CharSet getPropositions() {
-		if (this.proposition2Node == null) {
-			this.getObservedAndObservator();
+		if (this.proposition2Observer == null) {
+			this.getObservedAndObserver();
 		}
-		return this.proposition2Node.keySet();
+		return this.proposition2Observer.keySet();
 	}
 
 	@Override
@@ -914,7 +961,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	public Set<LabeledIntEdge> getUpperLabeledEdges() {
 		final ObjectArraySet<LabeledIntEdge> es1 = new ObjectArraySet<>();
 		for (final LabeledIntEdge e : this.getEdges())
-			if (e.upperLabelSize() > 0) {
+			if (e.upperCaseValueSize() > 0) {
 				es1.add(e);
 			}
 		return es1;
@@ -1037,7 +1084,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 		this.adjacency[ei.rowAdj][ei.colAdj] = null;
 		this.edge2index.remove(ei.edge.getName());
-		this.lowerCaseEdgesSet = null;
+		this.lowerCaseEdges = null;
 		return true;
 	}
 
@@ -1141,16 +1188,18 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	public void takeIn(final LabeledIntGraph g) {
 		this.adjacency = g.adjacency;
 		this.aLabelAlphabet = g.aLabelAlphabet;
-		this.childrenOfObservator = g.childrenOfObservator;
+		this.childrenOfObserver = g.childrenOfObserver;
 		this.edge2index = g.edge2index;
 		this.growFactor = g.growFactor;
 		this.index2node = g.index2node;
 		this.internalMapImplementationClass = g.internalMapImplementationClass;
-		this.lowerCaseEdgesSet = g.lowerCaseEdgesSet;
+		this.lowerCaseEdges = g.lowerCaseEdges;
 		this.name = g.name;
 		this.nodeName2index = g.nodeName2index;
 		this.order = g.order;
-		this.proposition2Node = g.proposition2Node;
+		this.proposition2Observer = g.proposition2Observer;
+		this.observer2Z = g.observer2Z;
+		this.fileName = g.fileName;
 		this.Z = g.Z;
 		this.Ω = g.Ω;
 	}
@@ -1163,7 +1212,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 						+ this.name
 						+ "\n%LabeledIntGraph Syntax\n"
 						+ "%LabeledNode: <name, label, proposition observed>\n"
-						+ "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{lower case labeled values}, UL:{upper case labeled values}>\n");
+						+ "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>\n");
 		sb.append("Nodes:\n");
 
 		for (final LabeledNode n : this.getVertices()) {
@@ -1173,8 +1222,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		for (final LabeledIntEdge e : this.getEdges()) {
 			sb.append("<" + e.getName() + ",\t" + e.getConstraintType() + ",\t" + this.getSource(e).getName() + ",\t"
 					+ this.getDest(e).getName() + ",\tL:" + e.getLabeledValueMap().toString() + ", LL:"
-					+ e.lowerLabelsAsString()
-					+ ", UL:" + e.upperLabelsAsString() + ">\n");
+					+ e.lowerCaseValueAsString()
+					+ ", UL:" + e.upperCaseValuesAsString() + ">\n");
 		}
 		return sb.toString();
 	}
@@ -1213,17 +1262,18 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 								+ "\nValues in nodeName2index: " + this.nodeName2index.toString());
 					}
 				}
+				node.setAlabel(null);
 				return;
 			}
 			if (obj.equals("Proposition")) {
 				char newP = node.propositionObserved;
 				char oldP = oldValue.charAt(0);
 				if (newP != Constants.UNKNOWN) {
-					LabeledNode obsNewProp = this.proposition2Node.get(newP);
+					LabeledNode obsNewProp = this.proposition2Observer.get(newP);
 					if (obsNewProp != null) {
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER))
-								LOG.finer("Values in proposition2Node: " + this.proposition2Node.toString());
+								LOG.finer("Values in proposition2Node: " + this.proposition2Observer.toString());
 						}
 						if (Debug.ON)
 							LOG.severe("It is not possible to set observed proposition " + newP + " to node " + node.getName()
@@ -1233,20 +1283,22 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					}
 				}
 				if (oldP != Constants.UNKNOWN) {
-					this.proposition2Node.remove(oldP);
+					this.proposition2Observer.remove(oldP);
 				}
-				this.proposition2Node.put(newP, node);
+				this.proposition2Observer.put(newP, node);
+
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
 						LOG.finer("The proposition2Node is updated. Removed old key " + oldP + ". Add the new one: " + newP + " with node " + node +
-								"\nValues in proposition2Node: " + this.proposition2Node.toString());
+								"\nValues in proposition2Node: " + this.proposition2Observer.toString());
 					}
 				}
-				this.childrenOfObservator = null;
+				this.childrenOfObserver = null;
+				this.observer2Z = null;
 				return;
 			}
 			if (obj.equals("Label")) {
-				this.childrenOfObservator = null;
+				this.childrenOfObserver = null;
 			}
 		} // LabeledNode
 
@@ -1277,7 +1329,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				return;
 			}
 			if (obj.equals("LowerLabel")) {
-				this.lowerCaseEdgesSet = null;
+				this.lowerCaseEdges.remove(edge);
 			}
 		}
 	}
@@ -1296,9 +1348,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * @return an instance for childrenOfObservator field.
+	 * @return an instance for childrenOfObserver field.
 	 */
-	private static final Object2ObjectMap<LabeledNode, Label> newChildrenOfObservatorInstance() {
+	private static final Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
 		return new Object2ObjectArrayMap<>();// in Label I showed that for small map, ArrayMap is faster than Object2ObjectRBTreeMap and
 												// Object2ObjectAVLTreeMap.
 	}
@@ -1323,10 +1375,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * @return the number of observators
+	 * @return the number of observers.
 	 */
-	public int getObservatorCount() {
-		return this.getObservators().size();
+	public int getObserverCount() {
+		return this.getObservers().size();
 	}
 
 	/**

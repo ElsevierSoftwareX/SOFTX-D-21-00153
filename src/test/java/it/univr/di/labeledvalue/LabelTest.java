@@ -11,8 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import it.univr.di.labeledvalue.Literal.State;
-
 /**
  * @author posenato
  */
@@ -25,7 +23,7 @@ public class LabelTest {
 	@Test
 	public final void testAllComponentsOfBaseGenerator() {
 		Label ab = Label.parse("a¬b");
-		Literal uC = Literal.create('c', State.unknown);
+		Literal uC = Literal.create('c', Literal.UNKNONW);
 		Label[] abV = Label.allComponentsOfBaseGenerator(ab.getPropositions());
 		assertArrayEquals(new Label[] { Label.parse("ab"), Label.parse("¬ab"), Label.parse("a¬b"), Label.parse("¬a¬b") }, abV);
 
@@ -41,7 +39,7 @@ public class LabelTest {
 	@Test
 	public final void testCompareTo() {
 		Label ab = Label.parse("a¬b");
-		Literal uC = Literal.create('c', State.unknown);
+		Literal uC = Literal.create('c', Literal.UNKNONW);
 		Label ab1 = new Label(ab);
 		assertTrue(ab.compareTo(ab1) == 0);
 
@@ -70,7 +68,7 @@ public class LabelTest {
 		ab.conjunct(Literal.create('c'));
 		assertEquals(Label.parse("a¬bc"), ab);
 		assertTrue("ab.size=" + ab.size(), 3 == ab.size());
-		ab.conjunct(Literal.create('d', State.unknown));
+		ab.conjunct(Literal.create('d', Literal.UNKNONW));
 		assertEquals(Label.parse("a¬bc"), ab);
 		assertTrue(3 == ab.size());
 	}
@@ -82,12 +80,12 @@ public class LabelTest {
 	@Test
 	public final void testConjunctExtended() {
 		Label ab = Label.parse("a¬b");
-		ab.conjunctExtended(Literal.create('b', State.unknown));
+		ab.conjunctExtended(Literal.create('b', Literal.UNKNONW));
 		// System.out.println(ab);
-		assertTrue(ab.getStateLiteralWithSameName('b') == State.unknown);
+		assertTrue(ab.getStateLiteralWithSameName('b') == Literal.UNKNONW);
 
-		ab.conjunctExtended(Literal.create('d', State.unknown));
-		assertTrue(ab.getStateLiteralWithSameName('d') == State.unknown);
+		ab.conjunctExtended(Literal.create('d', Literal.UNKNONW));
+		assertTrue(ab.getStateLiteralWithSameName('d') == Literal.UNKNONW);
 	}
 
 	/**
@@ -100,7 +98,7 @@ public class LabelTest {
 		Label aNb = Label.parse("a¬b");
 		assertNull(ab.conjunction(aNb));
 
-		Label uC = new Label('b', State.unknown);
+		Label uC = new Label('b', Literal.UNKNONW);
 		assertNull(ab.conjunction(uC));
 
 		Label b = Label.parse("¬b");
@@ -118,9 +116,9 @@ public class LabelTest {
 		Label ab = Label.parse("ab");
 		Label aNb = Label.parse("a¬b");
 		// System.out.println(ab.conjunctionExtended(aNb));
-		assertTrue(ab.conjunctionExtended(aNb).contains(Literal.create('b', State.unknown)));
-		assertFalse(ab.conjunctionExtended(aNb).contains(Literal.create('b', State.straight)));
-		assertFalse(ab.conjunctionExtended(aNb).contains(Literal.create('b', State.negated)));
+		assertTrue(ab.conjunctionExtended(aNb).contains(Literal.create('b', Literal.UNKNONW)));
+		assertFalse(ab.conjunctionExtended(aNb).contains(Literal.create('b', Literal.STRAIGHT)));
+		assertFalse(ab.conjunctionExtended(aNb).contains(Literal.create('b', Literal.NEGATED)));
 	}
 
 	/**
@@ -134,7 +132,7 @@ public class LabelTest {
 		assertTrue(ab.contains(Literal.create('a')));
 		assertTrue(aNb.contains(Literal.parse("¬b")));
 		// ¿literals
-		assertFalse(ab.contains(Literal.create('a', State.unknown)));
+		assertFalse(ab.contains(Literal.create('a', Literal.UNKNONW)));
 	}
 
 	/**
@@ -154,7 +152,7 @@ public class LabelTest {
 	@Test
 	public final void testGetAllStraight() {
 		Label ab = Label.parse("a¬b");
-		ab.conjunctExtended(Literal.create('c', State.unknown));
+		ab.conjunctExtended(Literal.create('c', Literal.UNKNONW));
 		char[] expected = Label.parse("abc").getPropositions();
 		char[] obtained = ab.getPropositions();
 		assertArrayEquals(expected, obtained);
@@ -167,11 +165,11 @@ public class LabelTest {
 	@Test
 	public final void testGetLiteralWithSameName() {
 		Label ab = Label.parse("a¬b");
-		ab.conjunctExtended(Literal.create('c', State.unknown));
+		ab.conjunctExtended(Literal.create('c', Literal.UNKNONW));
 
-		assertEquals(State.straight, ab.getStateLiteralWithSameName('a'));
+		assertEquals(Literal.STRAIGHT, ab.getStateLiteralWithSameName('a'));
 
-		assertEquals(State.unknown, ab.getStateLiteralWithSameName('c'));
+		assertEquals(Literal.UNKNONW, ab.getStateLiteralWithSameName('c'));
 	}
 
 	/**
@@ -203,10 +201,10 @@ public class LabelTest {
 
 		assertTrue(ab.isConsistentWith(Label.parse("a¬b")));
 		assertFalse(ab.isConsistentWith(Label.parse("ab")));
-		ab.conjunctExtended(Literal.create('c', State.unknown));
+		ab.conjunctExtended(Literal.create('c', Literal.UNKNONW));
 		assertTrue(ab.isConsistentWith(Label.parse("a¬b")));
 		assertFalse(ab.isConsistentWith(Label.parse("¬a¬b")));
-		ab.conjunctExtended(Literal.create('a', State.unknown));
+		ab.conjunctExtended(Literal.create('a', Literal.UNKNONW));
 		assertTrue(ab.isConsistentWith(Label.parse("a¬b")));
 		assertTrue(ab.isConsistentWith(Label.parse("¬a¬b")));
 	}
@@ -219,11 +217,11 @@ public class LabelTest {
 	public final void testIsConsistentWithLiteral() {
 		Label ab = Label.parse("a¬b");
 
-		assertFalse(ab.isConsistentWith(Literal.index('b'), State.unknown));
-		assertFalse(ab.isConsistentWith(Literal.index('b'), State.straight));
-		ab.conjunctExtended(Literal.create('a', State.unknown));
-		assertFalse(ab.isConsistentWith(Literal.index('a'), State.straight));
-		assertTrue(ab.isConsistentWith(Literal.index('a'), State.unknown));
+		assertFalse(ab.isConsistentWith(Literal.index('b'), Literal.UNKNONW));
+		assertFalse(ab.isConsistentWith(Literal.index('b'), Literal.STRAIGHT));
+		ab.conjunctExtended(Literal.create('a', Literal.UNKNONW));
+		assertFalse(ab.isConsistentWith(Literal.index('a'), Literal.STRAIGHT));
+		assertTrue(ab.isConsistentWith(Literal.index('a'), Literal.UNKNONW));
 	}
 
 	/**
@@ -251,7 +249,7 @@ public class LabelTest {
 
 		assertArrayEquals(litA, new Literal[] { Literal.parse("¬a"), Literal.create('b') });
 
-		ab.conjunctExtended(Literal.create('c', State.unknown));
+		ab.conjunctExtended(Literal.create('c', Literal.UNKNONW));
 		litA = ab.negation();
 		assertArrayEquals(litA, new Literal[] { Literal.parse("¬a"), Literal.create('b'), null });
 
@@ -426,7 +424,7 @@ public class LabelTest {
 		Label ab = Label.parse("¬b¬a¬d¬c");
 
 		assertEquals("¬a¬b¬c¬d", ab.toString());
-		ab.conjunctExtended(Literal.create('c', State.unknown));
+		ab.conjunctExtended(Literal.create('c', Literal.UNKNONW));
 		assertEquals("¬a¬b" + Constants.UNKNOWN + "c¬d", ab.toString());
 
 	}
@@ -486,7 +484,7 @@ public class LabelTest {
 		Label empty = Label.emptyLabel;
 
 		try {
-			empty.conjunct('a', State.negated);
+			empty.conjunct('a', Literal.NEGATED);
 		} catch (IllegalAccessError e) {
 			assertTrue(true);
 			return;
@@ -501,13 +499,13 @@ public class LabelTest {
 	@Test
 	public final void compateTo() {
 		Label empty = Label.emptyLabel;
-		Label a = new Label('a', State.straight);
+		Label a = new Label('a', Literal.STRAIGHT);
 		assertTrue(empty.compareTo(a) < 0);
 
-		Label an = new Label('a', State.negated);
+		Label an = new Label('a', Literal.NEGATED);
 		assertTrue(an.compareTo(a) < 0);
 
-		Label b = new Label('b', State.negated);
+		Label b = new Label('b', Literal.NEGATED);
 		assertTrue(an.compareTo(b) < 0);
 
 		a = Label.parse("¬a¬b");
@@ -534,5 +532,105 @@ public class LabelTest {
 		b = Label.parse("¬b¬c");
 		assertTrue(a.compareTo(b) == 0);
 
+	}
+
+	/**
+	 * Proposes only some execution time estimates about some class methods.
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
+	 */
+	public static void main(final String[] args) {
+		final int nTest = 1000;
+		final double msNorm = 1.0 / (1000000.0 * nTest);
+
+		final Literal d = Literal.create('d'), z = Literal.create('z');
+
+		Label empty = Label.emptyLabel;
+		System.out.println("Empty: " + empty);
+		Label result;
+		// System.out.println("Empty: " + result);
+		result = new Label('a', Literal.STRAIGHT);
+		System.out.println("a: " + result);
+		result = new Label('b', Literal.NEGATED);
+		System.out.println("¬b: " + result);
+		result = new Label('a', Literal.ABSENT);
+		System.out.println("Null: " + result);
+
+		Label l1 = Label.parse(Constants.NOT + "abcd");
+		Label l2 = Label.parse(Constants.NOT + "aejfsd");
+		System.out.println("l1: " + l1 + "\nl2: " + l2);
+		long startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			result = l1.conjunction(l2);
+		}
+		long endTime = System.nanoTime();
+		System.out.println(
+				"Execution time for a simple conjunction of '" + l1 + "' with '" + l2 + "'='" + result + "' (ms): " + ((endTime - startTime) * msNorm));
+
+		l1 = Label.parse(Constants.NOT + "abcd");
+		l2 = Label.parse("a¬d¬cejfs");
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			result = l1.conjunctionExtended(l2);
+		}
+		endTime = System.nanoTime();
+		System.out.println(
+				"Execution time for an extended conjunction of '" + l1 + "' with '" + l2 + "'='" + result + "' (ms): " + ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.isConsistentWith(l2);
+		}
+		endTime = System.nanoTime();
+		System.out.println("Execution time for checking if two (inconsistent) labels are consistent. Details '" + l1 + "' with '" + l2 + "' (ms): "
+				+ ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.isConsistentWith(l1);
+		}
+		endTime = System.nanoTime();
+		System.out.println("Execution time for checking if two (consistent) labels are consistent. Details '" + l1 + "' with '" + l1 + "' (ms): "
+				+ ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.contains(d);
+		}
+		endTime = System.nanoTime();
+		System.out.println(
+				"Execution time for checking if a literal is present in a label (the literal is the last inserted) (ms): " + ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.contains('d');
+		}
+		endTime = System.nanoTime();
+		System.out.println(
+				"Execution time for checking if a literal is present in a label (given the name) (ms): " + ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.contains(z);
+		}
+		endTime = System.nanoTime();
+		System.out.println(
+				"Execution time for checking if a literal is present in a label (the literal is not present) (ms): " + ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.contains('d');
+		}
+		endTime = System.nanoTime();
+		System.out.println("Execution time for get the literal in the label with the same proposition letter (the literal is present) (ms): "
+				+ ((endTime - startTime) * msNorm));
+
+		startTime = System.nanoTime();
+		for (int i = 0; i < nTest; i++) {
+			l1.contains('z');
+		}
+		endTime = System.nanoTime();
+		System.out.println("Execution time for get the literal in the label with the same proposition letter (the literal is not present) (ms): "
+				+ ((endTime - startTime) * msNorm));
 	}
 }

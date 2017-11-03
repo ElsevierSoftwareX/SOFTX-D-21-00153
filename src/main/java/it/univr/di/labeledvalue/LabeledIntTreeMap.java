@@ -9,9 +9,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -54,6 +54,7 @@ import it.univr.di.Debug;
  * <td>~0.328194</td>
  * </tr>
  * </table>
+ * <b>All code for performance tests is in {@link LabeledIntTreeMapTest}.</b>
  * 
  * @author Roberto Posenato
  * @see LabeledIntMap
@@ -77,145 +78,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	static private final char[] emptyBase = new char[0];
 
 	/**
-	 * Main.
-	 *
-	 * @param args an array of {@link java.lang.String} objects.
-	 */
-	static public void main(final String[] args) {
-
-		final int nTest = (int) 1E3;
-		final double msNorm = 1.0E6 * nTest;
-
-		final LabeledIntMap map = new LabeledIntTreeMap();
-
-		final Label l1 = Label.parse("abc¬f");
-		final Label l2 = Label.parse("abcdef");
-		final Label l3 = Label.parse("a¬bc¬de¬f");
-		final Label l4 = Label.parse("¬b¬d¬f");
-		final Label l5 = Label.parse("ec");
-		final Label l6 = Label.parse("¬fedcba");
-		final Label l7 = Label.parse("ae¬f");
-		final Label l8 = Label.parse("¬af¿b");
-		final Label l9 = Label.parse("¬af¿b");
-		final Label l10 = Label.parse("¬ec");
-		final Label l11 = Label.parse("abd¿f");
-		final Label l12 = Label.parse("a¿d¬f");
-		final Label l13 = Label.parse("¬b¿d¿f");
-		final Label l14 = Label.parse("b¬df¿e");
-		final Label l15 = Label.parse("e¬c");
-		final Label l16 = Label.parse("ab¿d¿f");
-		final Label l17 = Label.parse("ad¬f");
-		final Label l18 = Label.parse("b¿d¿f");
-		final Label l19 = Label.parse("¬b¬df¿e");
-		final Label l20 = Label.parse("¬e¬c");
-
-		final Label ll1 = Label.parse("gabc¬f");
-		final Label ll2 = Label.parse("gabcdef");
-		final Label ll3 = Label.parse("ga¬bc¬de¬f");
-		final Label ll4 = Label.parse("g¬b¬d¬f");
-		final Label ll5 = Label.parse("gec");
-		final Label ll6 = Label.parse("g¬fedcba");
-		final Label ll7 = Label.parse("gae¬f");
-		final Label ll8 = Label.parse("g¬af¿b");
-		final Label ll9 = Label.parse("g¬af¿b");
-		final Label ll0 = Label.parse("g¬ec");
-		final Label ll21 = Label.parse("gabd¿f");
-		final Label ll22 = Label.parse("ga¿d¬f");
-		final Label ll23 = Label.parse("g¬b¿d¿f");
-		final Label ll24 = Label.parse("gb¬df¿e");
-		final Label ll25 = Label.parse("ge¬c");
-		final Label ll26 = Label.parse("gab¿d¿f");
-		final Label ll27 = Label.parse("gad¬f");
-		final Label ll28 = Label.parse("gb¿d¿f");
-		final Label ll29 = Label.parse("g¬b¬df¿e");
-		final Label ll20 = Label.parse("g¬e¬c");
-
-		long startTime = System.nanoTime();
-		for (int i = 0; i < nTest; i++) {
-			map.clear();
-			map.put(Label.emptyLabel, 109);
-			map.put(l1, 10);
-			map.put(l2, 20);
-			map.put(l3, 25);
-			map.put(l4, 23);
-			map.put(l5, 22);
-			map.put(l6, 23);
-			map.put(l7, 20);
-			map.put(l8, 20);
-			map.put(l9, 21);
-			map.put(l10, 11);
-			map.put(l11, 11);
-			map.put(l12, 11);
-			map.put(l13, 24);
-			map.put(l14, 22);
-			map.put(l15, 23);
-			map.put(l16, 20);
-			map.put(l17, 23);
-			map.put(l18, 23);
-			map.put(l19, 23);
-			map.put(l20, 23);
-			map.put(ll1, 10);
-			map.put(ll2, 20);
-			map.put(ll3, 25);
-			map.put(ll4, 23);
-			map.put(ll5, 22);
-			map.put(ll6, 23);
-			map.put(ll7, 20);
-			map.put(ll8, 20);
-			map.put(ll9, 21);
-			map.put(ll0, 11);
-			map.put(ll21, 11);
-			map.put(ll22, 11);
-			map.put(ll23, 24);
-			map.put(ll24, 22);
-			map.put(ll25, 23);
-			map.put(ll26, 20);
-			map.put(ll27, 23);
-			map.put(ll28, 23);
-			map.put(ll29, 23);
-			map.put(ll20, 23);
-
-		}
-		long endTime = System.nanoTime();
-		System.out.println("LABELED VALUE SET-TREE MANAGED\nExecution time for some merge operations (mean over " + nTest + " tests).\nFirst map: " + map
-				+ ".\nTime: (ms): "
-				+ ((endTime - startTime) / msNorm));
-		String rightAnswer = "{(⊡, 23) (¬a¿bf, 20) (abcdef, 20) (abc¬f, 10) (abd¿f, 11) (a¿d¬f, 11) (ae¬f, 20) (b¬d¿ef, 22) (c, 22) (c¬e, 11) }";
-		System.out.println("The right final set is " + rightAnswer + ".");
-		System.out.println("Is equal? " + AbstractLabeledIntMap.parse(rightAnswer).equals(map));
-
-		startTime = System.nanoTime();
-		int min = 1000;
-		for (int i = 0; i < nTest; i++) {
-			min = map.getMinValue();
-		}
-		endTime = System.nanoTime();
-		System.out.println("Execution time for determining the min value (" + min + ") (mean over " + nTest + " tests). (ms): "
-				+ ((endTime - startTime) / msNorm));
-
-		startTime = System.nanoTime();
-		Label l = Label.parse("abd¿f");
-		for (int i = 0; i < nTest; i++) {
-			min = map.get(l);
-		}
-		endTime = System.nanoTime();
-		System.out.println("Execution time for retrieving value of label " + l + " (mean over " + nTest + " tests). (ms): "
-				+ ((endTime - startTime) / msNorm));
-
-		startTime = System.nanoTime();
-		map.put(Label.parse("c"), 11);
-		map.put(Label.parse("¬c"), 11);
-		endTime = System.nanoTime();
-		System.out.println("After the insertion of (c,11) and (¬c,11) the map becomes: " + map);
-		System.out.println("Execution time for simplification (ms): "
-				+ ((endTime - startTime) / 1.0E6));
-	}
-
-	/**
 	 * @return an Object2IntMap<Label> object
 	 */
 	private static final Object2IntMap<Label> makeObject2IntMap() {
-		return new Object2IntArrayMap<>();
+		return new Object2IntRBTreeMap<>();// it is better than Object2IntArrayMap when the set is larger than 1000 elements!
 	}
 
 	/**
@@ -277,11 +143,18 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		return new LabeledIntTreeMap(lim);
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 * Up to 1000 items in the map it is better to use {@link #entrySet()} instead of {@link #keySet()} and, then, {@link #get(Label)}. With 1000 or more items,
+	 * it is better to use {@link #keySet()} approach.
+	 */
 	@Override
 	public ObjectSet<Entry<Label>> entrySet() {
 		final ObjectSet<Entry<Label>> coll = new ObjectArraySet<>();
-		return entrySet(coll);
+		for (final Object2IntMap<Label> mapI : this.mainInt2SetMap.values()) {
+			coll.addAll(mapI.object2IntEntrySet());
+		}
+		return coll;
 	}
 
 	/** {@inheritDoc} */
@@ -718,7 +591,9 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 			if (baseValue == Constants.INT_NULL) {
 				if (Debug.ON)
-					LabeledIntTreeMap.LOG.severe("The base is not sound: base=" + Arrays.toString(this.base) + ". Map1=" + map1);
+					if (LOG.isLoggable(Level.SEVERE)) {
+						LabeledIntTreeMap.LOG.severe("The base is not sound: base=" + Arrays.toString(this.base) + ". Map1=" + map1);
+					}
 				this.base = emptyBase;
 				return false;
 				// throw new IllegalStateException("A base component has a null value. It is not possible.");

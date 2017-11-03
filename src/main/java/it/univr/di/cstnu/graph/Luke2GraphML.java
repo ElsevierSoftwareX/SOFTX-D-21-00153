@@ -198,7 +198,7 @@ public class Luke2GraphML {
 		SpringLayout2<LabeledNode, LabeledIntEdge> layout = new SpringLayout2<>(g);
 		layout.setSize(new Dimension(1024, 800));
 		layout.initialize();
-		GraphMLWriter graphWriter = new GraphMLWriter(layout);
+		CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(layout);
 
 		try (PrintWriter writer = new PrintWriter(converter.output)) {
 			graphWriter.save(g, writer);

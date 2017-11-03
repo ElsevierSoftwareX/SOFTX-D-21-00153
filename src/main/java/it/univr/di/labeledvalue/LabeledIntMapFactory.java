@@ -22,6 +22,11 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 	/**
 	 * 
 	 */
+	static final public Class<LabeledIntTreeMap> DEFAULT_LABELEDINTMAP_CLASS = LabeledIntTreeMap.class;
+
+	/**
+	 * 
+	 */
 	private C internal;
 
 	/**
@@ -37,17 +42,22 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 	}
 
 	/**
-	 * Use LabeledIntTreeMap as implementing class.
+	 * Use {@link #DEFAULT_LABELEDINTMAP_CLASS} as implementing class.
 	 */
 	@SuppressWarnings("unchecked")
 	public LabeledIntMapFactory() {
 		super();
-		this.internal = (C) new LabeledIntTreeMap();
+		try {
+			this.internal = (C) DEFAULT_LABELEDINTMAP_CLASS.newInstance();
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * @return a new LabeledIntMap concrete object.
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public C get() {
 		return (C) this.internal.createLabeledIntMap();
@@ -62,6 +72,7 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 		return (C) this.internal.createLabeledIntMap(lim);
 	}
 
+	@Override
 	public String toString() {
 		return this.internal.getClass().getSimpleName();
 	}
@@ -71,3 +82,4 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 		return (Class<C>) this.internal.getClass();
 	}
 }
+

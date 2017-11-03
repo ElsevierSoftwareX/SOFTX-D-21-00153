@@ -18,19 +18,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
+import org.xml.sax.SAXException;
 
-import edu.uci.ics.jung.io.GraphIOException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
-import it.univr.di.cstnu.graph.GraphMLReader;
-import it.univr.di.cstnu.graph.GraphMLWriter;
+import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
+import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
@@ -73,6 +75,7 @@ public class CSTNRunningTime {
 			this.cstnChecker = cstnChecker;
 		}
 
+		@Override
 		public CSTNCheckStatus call() throws WellDefinitionException {
 			return this.cstnChecker.dynamicConsistencyCheck();
 		}
@@ -292,11 +295,12 @@ public class CSTNRunningTime {
 
 	/**
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws FileNotFoundException
-	 * @throws GraphIOException
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
 	@SuppressWarnings("null")
-	public static void main(String[] args) throws FileNotFoundException, GraphIOException {
+	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 		LOG.finest("Start...");
 		System.out.println("Start of execution...");
 		CSTNRunningTime tester = new CSTNRunningTime();
@@ -315,7 +319,7 @@ public class CSTNRunningTime {
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
 		CSTN cstn = null;
 		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(g.getInternalLabeledValueMapImplementationClass());
-		GraphMLReader<LabeledIntGraph> graphMLReader;
+		CSTNUGraphMLReader graphMLReader;
 		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
 		Future<CSTNCheckStatus> future;
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
@@ -347,7 +351,7 @@ public class CSTNRunningTime {
 		for (File file : tester.inputCSTNFile) {
 			System.out.println("Analyzing file " + file.getName() + "...");
 			LOG.fine("Loading " + file.getName() + "...");
-			graphMLReader = new GraphMLReader<>(file, g.getInternalLabeledValueMapImplementationClass());
+			graphMLReader = new CSTNUGraphMLReader(file, g.getInternalLabeledValueMapImplementationClass());
 			g = graphMLReader.readGraph();
 			LOG.fine("...done!");
 			if (g == null) {
@@ -394,7 +398,7 @@ public class CSTNRunningTime {
 					}
 				}
 				String suffix = (tester.convertToNewFormat) ? "_converted" : "_cutted";
-				GraphMLWriter graphWrite = new GraphMLWriter(null);
+				CSTNUGraphMLWriter graphWrite = new CSTNUGraphMLWriter(null);
 				try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + suffix));) {
 					graphWrite.save(g, writer);
 				} catch (FileNotFoundException e1) {
@@ -439,7 +443,7 @@ public class CSTNRunningTime {
 					file.getName(),
 					g.getVertexCount(),
 					nEdges,
-					g.getObservatorCount(),
+					g.getObserverCount(),
 					min,
 					max);
 
@@ -459,7 +463,7 @@ public class CSTNRunningTime {
 					LOG.fine("Test " + j + ", CSTN: " + file.getName());
 					if (j != 0) {
 						// It is necessary to reset the graph!
-						graphMLReader = new GraphMLReader<>(file, labeledIntValueMap);// reader must reload g.
+						graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);// reader must reload g.
 						g = graphMLReader.readGraph();
 						cstn.setG(g);
 					}

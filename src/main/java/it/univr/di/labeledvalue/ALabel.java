@@ -2,13 +2,14 @@ package it.univr.di.labeledvalue;
 
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
-import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.ALabelAlphabet.State;
 
@@ -23,12 +24,27 @@ import it.univr.di.labeledvalue.ALabelAlphabet.State;
  * Since in CSTNU project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
  * to represent a A-label is to limit the possible A-letters to 64 distinct strings and to use one int for representing the state of A-letters composing a
  * A-label: present/absent.
- * <p>
- *
+ * 
  * @author Roberto Posenato
  * @version $Id: $Id
  */
 public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
+
+	/**
+	 * ALabel separator '∙'.
+	 */
+	public static final char ALABEL_SEPARATOR = '∙';
+
+	/**
+	 * ALabel separator '∙'.
+	 */
+	public static final String ALABEL_SEPARATORstring = String.valueOf(ALABEL_SEPARATOR);
+
+	/**
+	 * Regular expression representing an A-Label.
+	 * The re checks only that label chars are allowed.
+	 */
+	public static final String ALABEL_RE = "[" + ALabelAlphabet.ALETTER + ALABEL_SEPARATORstring + "]+|" + Constants.EMPTY_UPPER_CASE_LABELstring;
 
 	/**
 	 * @author posenato
@@ -67,10 +83,12 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 				throw new ConcurrentModificationException();
 		}
 
+		@Override
 		public boolean hasNext() {
 			return this.cursor < size();
 		}
 
+		@Override
 		public ALetter next() {
 			checkForComodification();
 			byte i = this.cursor;
@@ -82,6 +100,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			return next;
 		}
 
+		@Override
 		public void remove() {
 			if (this.lastRet < 0)
 				throw new IllegalStateException();
@@ -145,14 +164,19 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			return false;
 		}
 
-		@Override
-		public ALetter[] getAllLetter() {
-			return new ALetter[0];
-		}
+		// @Override
+		// public ALetter[] getAllLetter() {
+		// return new ALetter[0];
+		// }
 
 		@Override
 		public Iterator<ALetter> iterator() {
 			return null;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return true;
 		}
 
 		@Override
@@ -172,7 +196,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 		@Override
 		public String toString() {
-			return String.valueOf(Constants.EMPTY_UPPER_CASE_LABEL);
+			return Constants.EMPTY_UPPER_CASE_LABELstring;
 		}
 	}
 
@@ -196,7 +220,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			if ((model == null) || (model.length() == 0))
 				return;
 
-			if (!Pattern.matches(Constants.ALABEL_RE, model)) {
+			if (!Pattern.matches(ALABEL_RE, model)) {
 				problems.append("Highlighted label is not well-formed.");
 				return;
 			}
@@ -209,64 +233,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	private static final Logger LOG = Logger.getLogger(ALabel.class.getName());
 
 	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		ALabelAlphabet alpha = new ALabelAlphabet();
-		ALabel a = new ALabel(new ALetter("A"), alpha);
-		System.out.println("ALabel A: " + a);
-
-		ALabel b = new ALabel(new ALetter("b"), a.getAlphabet());
-		System.out.println("ALabel b: " + b);
-
-		ALabel c = new ALabel(new ALetter("C"), b.getAlphabet());
-		System.out.println("ALabel C: " + c);
-
-		System.out.println("ALabel b: " + b);
-
-		a = a.conjunction(b);
-		System.out.println("ALabel dopo conjunction con b [Ab]: " + a);
-
-		ALabel e = ALabel.emptyLabel;
-		System.out.println("Empty label: " + e);
-
-		a = a.conjunction(e);
-		System.out.println("ALabel dopo conjunction con empty [Ab]: " + a);
-
-		System.out.println("Empty conjunction con Ab [Ab]: " + e.conjunction(a));
-
-		a = a.conjunction(a);
-		System.out.println("ALabel dopo conjunction con a [Ab]: " + a);
-
-		a = a.conjunction(c);
-		System.out.println("ALabel dopo conjunction con C [AbC]: " + a);
-
-		a.remove(new ALetter("C"));
-		System.out.println("ALabel dopo rimozione C [Ab]: " + a);
-
-		System.out.println("ALabel contiene 'b' [true]: " + a.contains(new ALetter("b")));
-		System.out.println("ALabel contiene 'C' [false]: " + a.contains(new ALetter("C")));
-
-		System.out.println("ALabel confronto con 'C' [<0]: " + a.compareTo(c));
-		System.out.println("ALabel confronto a [0]: " + a.compareTo(a));
-		System.out.println("C confronto con 'A∙b' [>0]: " + c.compareTo(a));
-		a.conjunct(new ALetter("C"));
-		System.out.println("ALabel A: " + a);
-		for (ALetter l : a) {
-			System.out.println("Letter: " + l);
-		}
-
-		System.out.println("A intersect with empty: " + a.intersect(emptyLabel));
-		System.out.println("A intersect with a: " + a.intersect(a));
-		System.out.println("A intersect with b: " + a.intersect(b));
-		System.out.println("A intersect with c: " + a.intersect(c));
-		System.out.println("A intersect with 'A': " + a.intersect(new ALabel("A", a.alphabet)));
-
-	}
-
-	/**
 	 * Parse a string representing a A-label and return an equivalent A-Label object if no errors are found, null otherwise.<br>
-	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Constants#LABEL_RE}.
+	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Label#LABEL_RE}.
 	 *
 	 * @param s a {@link java.lang.String} object.
 	 * @param alphabet A {@link ALabelAlphabet} to use. If null, it will be generated and added to the return label.
@@ -278,10 +246,10 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		int n = s.length();
 		if (n == 0 || Pattern.matches(Constants.EMPTY_UPPER_CASE_LABELstring, s))
 			return ALabel.emptyLabel;
-		if (!Pattern.matches(Constants.ALABEL_RE, s))
+		if (!Pattern.matches(ALABEL_RE, s))
 			return null;
 		// split all possible letters
-		String[] letters = s.split(Constants.ALABEL_SEPARATOR);
+		String[] letters = s.split(ALABEL_SEPARATORstring);
 		int size = letters.length;
 		if (size == 0)
 			return ALabel.emptyLabel;
@@ -289,7 +257,11 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		// build alphabet
 		if (alphabet == null) {
 			alphabet = new ALabelAlphabet(size);
-			LOG.info("Created a new ALabelAlphabet: " + alphabet);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finer("Created a new ALabelAlphabet: " + alphabet);
+				}
+			}
 		}
 
 		// build alabel
@@ -326,7 +298,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	private byte cacheOfSize;
 
 	/**
-	 * Index of the last significant A-Letter of label w.r.t. lexicographical order.
+	 * Index of the last significant A-Letter of label.
 	 * On 2016-03-30 I showed by SizeofUtilTest.java that using byte it is possible to define also 'size' field without incrementing the memory footprint of the
 	 * object.
 	 */
@@ -366,7 +338,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * Default constructor using a given alphabet. 
+	 * Default constructor using a given alphabet.
 	 * 
 	 * @param alphabet
 	 */
@@ -379,7 +351,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 	/**
 	 * Builds an a-label using the a-letter 'l' and 'alphabet'.
-	 * Be aware that if 'l' is not present into alphabet, it will be added. 
+	 * Be aware that if 'l' is not present into alphabet, it will be added.
 	 * 
 	 * @param l first a-letter of label
 	 * @param alphabet alphabet of a-letters. It may be empty!
@@ -392,7 +364,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Helper constructor. It calls {@link #ALabel(ALetter, ALabelAlphabet)}
 	 * Be aware that if 's' is not present into alphabet as a-letter, it will be added as a-letter.
-	 *  
+	 * 
 	 * @param s the string to add.
 	 * @param alphabet alphabet of a-letters. It may be empty!
 	 */
@@ -410,7 +382,9 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * {@inheritDoc} Determines a lexicographical order between labels based on the natural order of type {@link Literal}.
+	 * In order to speed up this method and considering that the {@link ALabelAlphabet} order may be not the expected alphabetic one,
+	 * (first letter in an {@link ALabelAlphabet} can be 'nodeZ' and the last one 'aNode'), the order of labels is given w.r.t. their indexes in
+	 * the their {@link ALabelAlphabet}.
 	 */
 	@Override
 	public int compareTo(final ALabel label) {
@@ -418,33 +392,34 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			return 1;
 		if (this.alphabet != label.alphabet)
 			throw new IllegalArgumentException("Comparison is not possible because the input label has a different alphabet!");
-		byte i = 0, j = 0, cmp = 0;
-		State thisState, labelState;
-
-		while (i <= this.maxIndex && j <= label.maxIndex) {
-			while ((thisState = getState(i)) == State.absent && i <= this.maxIndex) {
-				i++;
-			}
-			while ((labelState = label.getState(j)) == State.absent && j <= label.maxIndex) {
-				j++;
-			}
-			if (i != j)
-				return i - j;
-			cmp = (byte) thisState.compareTo(labelState);
-			if (cmp != 0)
-				return cmp;
-			i++;
-			j++;
-		}
-		if (i > this.maxIndex) {
-			if (j <= label.maxIndex)
-				return -1;
-			return 0;
-		}
-		// i<=maxIndex
-		if (j > label.maxIndex)
-			return 1;
-		return 0;// impossible
+		// byte i = 0, j = 0, cmp = 0;
+		// State thisState, labelState;
+		//
+		// while (i <= this.maxIndex && j <= label.maxIndex) {
+		// while ((thisState = getState(i)) == State.absent && i <= this.maxIndex) {
+		// i++;
+		// }
+		// while ((labelState = label.getState(j)) == State.absent && j <= label.maxIndex) {
+		// j++;
+		// }
+		// if (i != j)
+		// return i - j;
+		// cmp = (byte) thisState.compareTo(labelState);
+		// if (cmp != 0)
+		// return cmp;
+		// i++;
+		// j++;
+		// }
+		// if (i > this.maxIndex) {
+		// if (j <= label.maxIndex)
+		// return -1;
+		// return 0;
+		// }
+		// // i<=maxIndex
+		// if (j > label.maxIndex)
+		// return 1;
+		// return 0;// impossible
+		return Long.compareUnsigned(this.bit0, label.bit0);
 	}
 
 	/**
@@ -479,10 +454,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			return new ALabel(this);
 		}
 
-		long unionB0 = this.bit0 | label.bit0;
-
 		final ALabel newLabel = new ALabel(this.alphabet);
-		newLabel.bit0 = unionB0;
+		newLabel.bit0 = this.bit0 | label.bit0;
 		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
 		newLabel.cacheOfSize = -1;// it has to be calculated... delay the stuff.
 		return newLabel;
@@ -499,17 +472,19 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			return true;
 		if (this.alphabet != label.alphabet)
 			throw new IllegalArgumentException(
-					"alabel is not defined using the same alphabet: " + this.alphabet.toString() + " vs " + label.alphabet.toString());
-		int max = (this.maxIndex > label.maxIndex) ? this.maxIndex : label.maxIndex;
-		for (byte i = (byte) (max + 1); (--i) >= 0;) {
-			State thisState = getState(i);
-			State labelState = label.getState(i);
-			if (thisState == labelState || labelState == State.absent)
-				continue;
-			if (thisState == State.absent)
-				return false;
-		}
-		return true;
+					"label is not defined using the same alphabet: " + this.alphabet.toString() + " vs " + label.alphabet.toString());
+		// int max = (this.maxIndex > label.maxIndex) ? this.maxIndex : label.maxIndex;
+		// for (byte i = (byte) (max + 1); (--i) >= 0;) {
+		// State thisState = getState(i);
+		// State labelState = label.getState(i);
+		// if (thisState == labelState || labelState == State.absent)
+		// continue;
+		// if (thisState == State.absent)
+		// return false;
+		// }
+		// return true;
+		// 1st xor shows different bits. Masking them with the complement of this, shows the bits 1 in label.bit0 that are not presente in this.bit0.
+		return (((this.bit0 ^ label.bit0) & (~this.bit0)) == 0);
 	}
 
 	/**
@@ -537,32 +512,35 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * @return true if this contains proposition in any state: straight, negated or unknown.
 	 */
 	public boolean contains(final ALetter name) {
+		if (name == null)
+			return true;
 		return this.getState(getIndex(name)) != State.absent;
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean equals(final Object obj) {
 		if ((obj == null) || !(obj instanceof ALabel))
-			throw new IllegalArgumentException("Argument must be an ALabel object");
-		final ALabel l1 = (ALabel) obj;
-		return this.alphabet == l1.alphabet && this.bit0 == l1.bit0;
-	}
-
-	/**
-	 * Compare the letter with a node name.
-	 * 
-	 * @param node
-	 * @return true if the label represents the node name.
-	 */
-	public boolean equals(final LabeledNode node) {
-		if (node == null)
 			return false;
-		return this.toString().equals(node.getName());
+		return equals((ALabel) obj);
 	}
 
 	/**
-	 * Compare the letter with a a-letter name.
+	 * Compare this with an alabel.
+	 * 
+	 * @param alabel
+	 * @return true if the label is equal to given alabel
+	 */
+	public boolean equals(final ALabel alabel) {
+		if (alabel == null)
+			return false;
+		return this.alphabet == alabel.alphabet && this.bit0 == alabel.bit0;
+	}
+
+	/**
+	 * Compare the letter with an a-letter name.
 	 * 
 	 * @param name
 	 * @return true if the label is equal to the a-letter name.
@@ -574,18 +552,18 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * @return The array of a-letters of present literals in this label in alphabetic order.
+	 * @return The array of a-letters of present literals in this label.
+	 *         public ALetter[] getAllLetter() {
+	 *         ALetter[] letters = new ALetter[size()];
+	 *         int j = 0;
+	 *         for (byte i = 0; i <= this.maxIndex; i++) {
+	 *         if (getState(i) != State.absent) {
+	 *         letters[j++] = this.getLetter(i);
+	 *         }
+	 *         }
+	 *         return letters;
+	 *         }
 	 */
-	public ALetter[] getAllLetter() {
-		ALetter[] letters = new ALetter[size()];
-		int j = 0;
-		for (byte i = 0; i <= this.maxIndex; i++) {
-			if (getState(i) != State.absent) {
-				letters[j++] = this.getLetter(i);
-			}
-		}
-		return letters;
-	}
 
 	/**
 	 * @return the alphabet
@@ -692,6 +670,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		 * present      1
 		 * </pre>
 		 */
+		if (aLetterIndex < 0 || aLetterIndex > ALabelAlphabet.MAX_ALABELALPHABET_SIZE)
+			return;
 		long mask = 1L << aLetterIndex;
 		switch (letterStatus) {
 		case present:
@@ -747,7 +727,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	@Override
 	public String toString() {
 		if (this.isEmpty())
-			return emptyLabel.toString();
+			return Constants.EMPTY_UPPER_CASE_LABELstring;
 		final StringBuilder s = new StringBuilder();
 		State st;
 		for (byte i = 0, j = 0; i <= this.maxIndex; i++) {
@@ -755,7 +735,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			if (st == State.present) {
 				s.append(getLetter(i));
 				if (++j < this.size()) {
-					s.append(Constants.ALABEL_SEPARATOR);
+					s.append(ALABEL_SEPARATOR);
 				}
 			}
 		}

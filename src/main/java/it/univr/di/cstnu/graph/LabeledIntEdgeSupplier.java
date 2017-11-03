@@ -50,16 +50,16 @@ public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier
 	}
 
 	/**
-	 * @param lim
-	 * @return a new LabeledIntMap concrete object.
+	 * @param edge the edge to clone.
+	 * @return a new edge
 	 */
-	public LabeledIntEdgePluggable get(LabeledIntEdge lim) {
-		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(lim, this.labeledIntValueMapImpl);
+	public LabeledIntEdgePluggable get(LabeledIntEdge edge) {
+		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(edge, this.labeledIntValueMapImpl);
 	}
 
 	/**
 	 * @param name a name for the new edge
-	 * @return a new LabeledIntMap concrete object.
+	 * @return  a new edge
 	 */
 	public LabeledIntEdgePluggable get(String name) {
 		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(name, this.labeledIntValueMapImpl);

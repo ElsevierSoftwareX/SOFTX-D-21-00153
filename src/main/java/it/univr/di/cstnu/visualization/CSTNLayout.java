@@ -7,6 +7,7 @@ package it.univr.di.cstnu.visualization;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.base.Function;
@@ -135,7 +136,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 		if (firstNode == null)
 			return;
 		if (Debug.ON) {
-			LOG.finest("Node root " + firstNode.getName() + ": (" + firstNodeX + ", " + firstNodeY + ")");
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("Node root " + firstNode.getName() + ": (" + firstNodeX + ", " + firstNodeY + ")");
+			}
 		}
 		firstNode.setX(firstNodeX);
 		firstNode.setY(firstNodeY);
@@ -150,7 +153,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			double xNode = node.getX();
 			double yNode = node.getY();
 			if (Debug.ON) {
-				LOG.finest("Node father " + node.getName() + ": (" + xNode + ", " + yNode + ")");
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finest("Node father " + node.getName() + ": (" + xNode + ", " + yNode + ")");
+				}
 			}
 
 			ObjectArrayList<LabeledIntEdge> inEdge = new ObjectArrayList<>();
@@ -214,7 +219,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				}
 				double x = xNode + this.xShift;
 				double y;
-				if (node.isObservator() || nodeName.endsWith("E AND SPLIT")) {
+				if (node.isObserver() || nodeName.endsWith("E AND SPLIT")) {
 					if (i == halfLength)
 						i++; // no child straight under the father.
 					y = yNode + this.yShiftA[i++] * nObs;
@@ -228,7 +233,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				}
 
 				if (Debug.ON) {
-					LOG.finest("Node adjacent " + adjacent.getName() + ": (" + x + ", " + y + ")");
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.finest("Node adjacent " + adjacent.getName() + ": (" + x + ", " + y + ")");
+					}
 				}
 				adjacent.setX(x);
 				adjacent.setY(y);
@@ -239,7 +246,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				marked.add(adjacent);
 				queue.enqueue(adjacent);
 			}
-			if (node.isObservator())
+			if (node.isObserver())
 				nObs--;
 		}
 	}
@@ -261,7 +268,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 		double shiftX = nodeX - firstNode.getX();
 		double shiftY = nodeY - firstNode.getY();
 		if (Debug.ON) {
-			LOG.finest("Shift to apply: (" + shiftX + ", " + shiftY + ")");
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("Shift to apply: (" + shiftX + ", " + shiftY + ")");
+			}
 		}
 		ObjectArrayFIFOQueue<LabeledNode> queue = new ObjectArrayFIFOQueue<>();
 		ObjectArraySet<LabeledNode> markedInternal = new ObjectArraySet<>();
@@ -273,8 +282,10 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				continue;
 			}
 			if (Debug.ON) {
-				LOG.finest("Relocated node " + node.getName() + ": (" + node.getX() + ", " + node.getY() + ")-->" + "(" + (node.getX() + shiftX) + ", "
-						+ (node.getY() + shiftY) + ")");
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finest("Relocated node " + node.getName() + ": (" + node.getX() + ", " + node.getY() + ")-->" + "(" + (node.getX() + shiftX) + ", "
+							+ (node.getY() + shiftY) + ")");
+				}
 			}
 			node.setX(node.getX() + shiftX);
 			node.setY(node.getY() + shiftY);
@@ -332,10 +343,11 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 		return this.yShift;
 	}
 
+	@Override
 	public void initialize() {
 		LabeledIntGraph g = (LabeledIntGraph) this.graph;
 		LabeledNode Z = g.getZ();
-		int nObs = g.getObservators().size();
+		int nObs = g.getObserverCount();
 		this.yShiftA = new double[9];
 		halfLength = this.yShiftA.length / 2;
 		double y = -this.yShift / 2 * 4;
@@ -343,8 +355,11 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			this.yShiftA[i] = y;
 			y += this.yShift / 2;
 		}
-		if (Debug.ON)
-			LOG.finest("yShiftA = " + Arrays.toString(this.yShiftA));
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("yShiftA = " + Arrays.toString(this.yShiftA));
+			}
+		}
 
 		this.halfYShift = this.yShift / 2;
 		this.maxX = this.initialX;
@@ -357,7 +372,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			if (lY < this.halfYShift) {
 				if (lY < negativeY) {
 					if (Debug.ON) {
-						LOG.finest("Trovato un nuovo valore negativo per Y " + lY + " associato al nodo " + node.getName());
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.finest("Trovato un nuovo valore negativo per Y " + lY + " associato al nodo " + node.getName());
+						}
 					}
 					negativeY = lY;
 				}
@@ -367,7 +384,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			// it is necessary to shift every thing
 			negativeY = (negativeY < 0) ? negativeY = -negativeY + this.yShift / 2 : this.yShift / 2;
 			if (Debug.ON) {
-				LOG.info("It is necessary to translate the graph of " + negativeY + " pixels.");
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.info("It is necessary to translate the graph of " + negativeY + " pixels.");
+				}
 			}
 			for (LabeledNode node : g.getVertices()) {
 				double lY = node.getY();
@@ -378,7 +397,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 
 		this.size = new Dimension((int) (this.maxX + this.xShift / 4), (int) (this.maxY + this.yShift / 4));
 		if (Debug.ON) {
-			LOG.finest("This size is " + this.size + " pixels.");
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.finest("This size is " + this.size + " pixels.");
+			}
 		}
 	}
 
