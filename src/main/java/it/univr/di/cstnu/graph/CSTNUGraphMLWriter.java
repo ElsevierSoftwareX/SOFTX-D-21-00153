@@ -190,14 +190,14 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 					}
 				});
 
-		this.addEdgeData(EDGE_LABELED_VALUE_KEY, "Labeled Values. Format: {[[\\('integer', 'label'\\) ]+}|{}", "",
+		this.addEdgeData(EDGE_LABELED_VALUE_KEY, "Labeled Values. Format: {[('integer', 'label') ]+}|{}", "",
 				new Function<LabeledIntEdge, String>() {
 					@Override
 					public String apply(final LabeledIntEdge e) {
 						return e.getLabeledValueMap().toString();
 					}
 				});
-		this.addEdgeData(EDGE_LABELED_UC_VALUE_KEY, "Labeled Upper-Case Values. Format: {[[\\('node name (no case modification)', 'integer', 'label'\\) ]+}|{}",
+		this.addEdgeData(EDGE_LABELED_UC_VALUE_KEY, "Labeled Upper-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
 				"",
 				new Function<LabeledIntEdge, String>() {
 					@Override
@@ -206,7 +206,7 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 						return (s.startsWith("{}")) ? null : s;
 					}
 				});
-		this.addEdgeData(EDGE_LABELED_LC_VALUE_KEY, "Labeled Lower-Case Values. Format: {[[\\('node name (no case modification)', 'integer', 'label'\\) ]+}|{}",
+		this.addEdgeData(EDGE_LABELED_LC_VALUE_KEY, "Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
 				"",
 				new Function<LabeledIntEdge, String>() {
 					@Override

@@ -9,7 +9,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Assert;
 import org.junit.Test;
+
+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
+import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 
 /**
  * @author posenato
@@ -38,23 +42,25 @@ public class LabelTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testCompareTo() {
-		Label ab = Label.parse("a¬b");
+		Label aNotB = Label.parse("a¬b");
 		Literal uC = Literal.create('c', Literal.UNKNONW);
-		Label ab1 = new Label(ab);
-		assertTrue(ab.compareTo(ab1) == 0);
+		Label aNotB1 = new Label(aNotB);
+		assertTrue(aNotB.compareTo(aNotB1) == 0);
 
-		ab.conjunctExtended(uC.getNegated());
-		ab1.conjunctExtended(uC);
-		assertTrue(ab.compareTo(ab1) < 0);
-		assertTrue("ab1.size:" + ab1.size(), 3 == ab1.size());
+		aNotB.conjunctExtended(uC.getNegated());
+		aNotB1.conjunctExtended(uC);
+		assertTrue(aNotB.compareTo(aNotB1) < 0);
+		assertTrue("ab1.size:" + aNotB1.size(), 3 == aNotB1.size());
 
-		ab1.remove(uC);
-		ab1.conjunctExtended(uC.getStraight());
-		assertTrue(ab.compareTo(ab1) < 0);
+		aNotB1.remove(uC);
+		aNotB1.conjunctExtended(uC.getStraight());
+		// aNotB=a¬b¬c aNotB1=a¬bc
+		assertTrue(aNotB.compareTo(aNotB1) > 0);
 
-		ab.remove(uC.getNegated());
-		ab.conjunctExtended(uC);
-		assertTrue(ab.compareTo(ab1) > 0);
+		aNotB.remove(uC.getNegated());
+		aNotB.conjunctExtended(uC);
+		// aNotB=a¬b¿c aNotB1=a¬bc
+		assertTrue(aNotB.compareTo(aNotB1) > 0);
 	}
 
 	/**
@@ -502,11 +508,11 @@ public class LabelTest {
 		Label a = new Label('a', Literal.STRAIGHT);
 		assertTrue(empty.compareTo(a) < 0);
 
-		Label an = new Label('a', Literal.NEGATED);
-		assertTrue(an.compareTo(a) < 0);
+		Label notA = new Label('a', Literal.NEGATED);
+		assertTrue(notA.compareTo(a) > 0);
 
 		Label b = new Label('b', Literal.NEGATED);
-		assertTrue(an.compareTo(b) < 0);
+		assertTrue(notA.compareTo(b) < 0);
 
 		a = Label.parse("¬a¬b");
 		b = Label.parse("¬d¬e");
@@ -518,7 +524,7 @@ public class LabelTest {
 
 		a = Label.parse("¬a¬b");
 		b = Label.parse("¬b");
-		assertTrue(a.compareTo(b) < 0);
+		assertTrue(a.compareTo(b) > 0);
 
 		a = Label.parse("¬b");
 		b = Label.parse("¬bc");
@@ -526,11 +532,15 @@ public class LabelTest {
 
 		a = Label.parse("¬b¬c");
 		b = Label.parse("¬bc");
-		assertTrue(a.compareTo(b) < 0);
+		assertTrue(a.compareTo(b) > 0);
 
 		a = Label.parse("¬b¬c");
 		b = Label.parse("¬b¬c");
 		assertTrue(a.compareTo(b) == 0);
+
+		a = Label.parse("ac");
+		b = Label.parse("ab");
+		assertTrue(a.compareTo(b) > 0);
 
 	}
 
@@ -546,6 +556,7 @@ public class LabelTest {
 		final Literal d = Literal.create('d'), z = Literal.create('z');
 
 		Label empty = Label.emptyLabel;
+
 		System.out.println("Empty: " + empty);
 		Label result;
 		// System.out.println("Empty: " + result);
@@ -632,5 +643,42 @@ public class LabelTest {
 		endTime = System.nanoTime();
 		System.out.println("Execution time for get the literal in the label with the same proposition letter (the literal is not present) (ms): "
 				+ ((endTime - startTime) * msNorm));
+	}
+
+	@SuppressWarnings({ "javadoc", "static-method" })
+	public final void longTest() {
+		System.out.println("-2: " + Long.toBinaryString(1 << 63));
+		System.out.println("0: " + Long.toBinaryString(0));
+		System.out.println("1: " + Long.toBinaryString(1));
+		System.out.println("-1*2+1: " + Long.toUnsignedString(-1 * 2 + 1, 2));
+		System.out.println("0: " + Long.toUnsignedString(0, 2));
+		System.out.println("1: " + Long.toUnsignedString(1, 2));
+		System.out.println(Long.toString(1 << 62) + ": " + Long.toUnsignedString(1 << 62));
+		System.out.println(Long.compareUnsigned(-1, 1 << 60));
+	}
+
+	@SuppressWarnings({ "javadoc", "static-method" })
+	@Test
+	public final void comparatorOrder() {
+		ObjectSortedSet<Label> order = new ObjectRBTreeSet<>();
+
+		order.add(new Label('a', Literal.STRAIGHT));
+		order.add(new Label('a', Literal.NEGATED));
+		order.add(new Label('a', Literal.UNKNONW));
+		order.add(new Label('b', Literal.STRAIGHT));
+		order.add(new Label('b', Literal.NEGATED));
+		order.add(new Label('b', Literal.UNKNONW));
+		order.add(new Label('c', Literal.STRAIGHT));
+		order.add(new Label('c', Literal.NEGATED));
+		order.add(new Label('c', Literal.UNKNONW));
+		order.add(Label.parse("ab"));
+		order.add(Label.parse("a¬b"));
+		order.add(Label.parse("¬ab"));
+		order.add(Label.parse("¬a¬b"));
+		order.add(Label.parse("ac"));
+		order.add(Label.parse("¬ac"));
+		// System.out.println("Order: " + order);
+		Assert.assertEquals("{a, ¬a, ¿a, b, ¬b, ¿b, c, ¬c, ¿c, ab, a¬b, ac, ¬ab, ¬a¬b, ¬ac}", order.toString());
+		Assert.assertEquals(15, order.size());
 	}
 }

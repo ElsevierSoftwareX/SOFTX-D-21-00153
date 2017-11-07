@@ -40,9 +40,9 @@ public class LiteralTest {
 		Literal notA = Literal.parse("¬a");
 		Literal unkA = Literal.create('a', Literal.UNKNONW);
 		
-		assertTrue(a.compareTo(notA)>0);
+		assertTrue(a.compareTo(notA) < 0);
 		assertTrue(a.compareTo(a)==0);
-		assertTrue(notA.compareTo(a)<0);
+		assertTrue(notA.compareTo(a) > 0);
 //		assertEquals(1, unkA.compareTo(a));
 //		assertEquals(2, unkA.compareTo(notA));
 //		assertEquals(0, unkA.compareTo(unkA));

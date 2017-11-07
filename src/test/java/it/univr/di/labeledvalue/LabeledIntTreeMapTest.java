@@ -434,7 +434,7 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("cp"), -1);
 		// System.out.println(map);
 
-		assertEquals("{(10, bgp) (-1, cp) }", this.actual.toString());
+		assertEquals("{(-1, cp) (10, bgp) }", this.actual.toString());
 	}
 
 	/**
@@ -485,7 +485,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("b"), 24);
 		// expected.put(Label.parse("¬ab"), 24);
 
-		assertEquals("Base con valori differenti:\n", "{(25, ¬a) (24, ¬ab) (30, a) (23, ab) }", this.actual.toString());
+		assertEquals("Base con valori differenti:\n", "{(30, a) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
 		// assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual,
 		// expected.equals(actual));
 	}
@@ -505,7 +505,7 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("a"), 24);
 		this.actual.put(Label.emptyLabel, 31);
 
-		assertEquals("Base con valori differenti:\n", "{(25, ¬a) (24, ¬ab) (24, a) (23, ab) (21, ¿a¬b) }", this.actual.toString());
+		assertEquals("Base con valori differenti:\n", "{(24, a) (25, ¬a) (23, ab) (24, ¬ab) (21, ¿a¬b) }", this.actual.toString());
 		// assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual,
 		// expected.equals(actual));
 	}
@@ -524,7 +524,7 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("c"), 32);
 		this.actual.put(Label.emptyLabel, 31);
 
-		assertEquals("{(25, ¬a) (24, ¬ab) (30, a) (23, ab) }", this.actual.toString());
+		assertEquals("{(30, a) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
 	}
 
 	/**
@@ -541,7 +541,7 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("¿ac"), 4);
 		this.actual.put(Label.parse("d"), 31);
 
-		assertEquals("{(25, ¬a) (4, ¬ae) (30, a) (4, ¿ac) (2, b) (25, c) }", this.actual.toString());
+		assertEquals("{(30, a) (25, ¬a) (2, b) (25, c) (4, ¬ae) (4, ¿ac) }", this.actual.toString());
 	}
 
 	/**
@@ -769,7 +769,7 @@ public class LabeledIntTreeMapTest {
 
 		this.expected.clear();
 		// assertEquals("{(8, ⊡) (-2, ¬ab) (-1, b) (-11, ¿b) }", actual.toString());
-		assertEquals("{(-2, ¬ab) (8, ¬b) (-1, b) (-11, ¿b) }", this.actual.toString());
+		assertEquals("{(-1, b) (8, ¬b) (-11, ¿b) (-2, ¬ab) }", this.actual.toString());
 	}
 
 	/**
@@ -783,46 +783,46 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("abc¬f"), 10);
 		this.actual.put(Label.parse("abcdef"), 20);
 		this.actual.put(Label.parse("a¬bc¬de¬f"), 25);
-		assertEquals("{(109, ⊡) (25, a¬bc¬de¬f) (20, abcdef) (10, abc¬f) }", this.actual.toString());
+		assertEquals("{(109, ⊡) (10, abc¬f) (20, abcdef) (25, a¬bc¬de¬f) }", this.actual.toString());
 
 		this.actual.put(Label.parse("¬b¬d¬f"), 23);// toglie (25, a¬bc¬de¬f)
 		this.actual.put(Label.parse("ec"), 22);
 		this.actual.put(Label.parse("¬fedcba"), 23);// non serve a nulla
-		assertEquals("{(109, ⊡) (20, abcdef) (10, abc¬f) (23, ¬b¬d¬f) (22, ce) }", this.actual.toString());
+		assertEquals("{(109, ⊡) (22, ce) (23, ¬b¬d¬f) (10, abc¬f) (20, abcdef) }", this.actual.toString());
 
 		this.actual.put(Label.parse("ae¬f"), 20);
 		this.actual.put(Label.parse("¬af¿b"), 20);
 		this.actual.put(Label.parse("¬af¿b"), 21);
-		assertEquals("{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (20, ae¬f) (23, ¬b¬d¬f) (22, ce) }", this.actual.toString());
+		assertEquals("{(109, ⊡) (22, ce) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (20, abcdef) }", this.actual.toString());
 
 		this.actual.put(Label.parse("¬ec"), 11);
 		this.actual.put(Label.parse("abd¿f"), 11);
 		this.actual.put(Label.parse("a¿d¬f"), 11);
-		assertEquals("{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¬f) (11, c¬e) (22, ce) }",
+		assertEquals("{(109, ⊡) (22, ce) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("¬b¿d¿f"), 24);// non inserito perché c'è (23, ¬b¬d¬f)
 		this.actual.put(Label.parse("b¬df¿e"), 22);
 		this.actual.put(Label.parse("e¬c"), 23);
 		assertEquals(
-				"{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¬f) (22, b¬d¿ef) (23, ¬ce) (11, c¬e) (22, ce) }",
+				"{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("ab¿d¿f"), 20);// non iserito perché c'è (11, abd¿f)
 		this.actual.put(Label.parse("ad¬f"), 23);
 		this.actual.put(Label.parse("b¿d¿f"), 23);
 		assertEquals(
-				"{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¬f) (22, b¬d¿ef) (23, b¿d¿f) (23, ¬ce) (11, c¬e) (22, ce) }",
+				"{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("¬b¬d¿ef"), 23);
 		assertEquals(
-				"{(109, ⊡) (20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (23, ¬b¬d¿ef) (23, ¬b¬d¬f) (22, b¬d¿ef) (23, b¿d¿f) (23, ¬ce) (11, c¬e) (22, ce) }",
+				"{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (23, ¬b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("¬e¬c"), 19);
 
-		assertEquals("{(20, ¬a¿bf) (20, abcdef) (10, abc¬f) (11, abd¿f) (11, a¿d¬f) (20, ae¬f) (22, b¬d¿ef) (19, ¬c¬e) (23, ¬ce) (11, c¬e) (22, ce) }",
+		assertEquals("{(22, ce) (11, c¬e) (23, ¬ce) (19, ¬c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 	}
 

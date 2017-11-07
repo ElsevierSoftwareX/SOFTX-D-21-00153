@@ -16,8 +16,10 @@ import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
@@ -35,7 +37,7 @@ import it.univr.di.labeledvalue.Constants;
 public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements IterativeContext {
 
 	/**
-	 * half of the yShiftA lenght
+	 * half of the yShiftA length
 	 */
 	private static int halfLength;
 
@@ -145,11 +147,16 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 
 		// Breadth-first traversal
 		ObjectArrayFIFOQueue<LabeledNode> queue = new ObjectArrayFIFOQueue<>();
-		ObjectArraySet<LabeledNode> marked = new ObjectArraySet<>();
+		ObjectSet<LabeledNode> marked = new ObjectOpenHashSet<>(g.getVertexCount());
 		queue.enqueue(firstNode);
 		marked.add(firstNode);
 		while (!queue.isEmpty()) {
 			LabeledNode node = queue.dequeue();
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finer(String.format("DRAW. Queue length: %4d. Marked size: %4d.", queue.size(), marked.size()));
+				}
+			}
 			double xNode = node.getX();
 			double yNode = node.getY();
 			if (Debug.ON) {
@@ -158,12 +165,13 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				}
 			}
 
-			ObjectArrayList<LabeledIntEdge> inEdge = new ObjectArrayList<>();
+			ObjectList<LabeledIntEdge> inEdge;
 			String nodeName = node.getName();
 			if (nodeName.endsWith("S") && !nodeName.equals("1S")) {
 				// Consider only the corresponding node
 				String adjName = nodeName.substring(0, nodeName.length() - 1) + "E";
 				LabeledIntEdge e = g.findEdge(adjName, nodeName);
+				inEdge = new ObjectArrayList<>();
 				if (e != null) {
 					inEdge.add(e);
 				} else {
@@ -176,13 +184,13 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 					}
 				}
 			} else {
-				inEdge = (ObjectArrayList<LabeledIntEdge>) g.getInEdges(node);
+				inEdge = (ObjectList<LabeledIntEdge>) g.getInEdges(node);
 			}
-			ObjectListIterator<LabeledIntEdge> eIte = inEdge.listIterator();
+			ObjectIterator<LabeledIntEdge> eIte = inEdge.iterator();
 			while (eIte.hasNext()) {
 				LabeledIntEdge e = eIte.next();
 				if ((e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
-						|| e.getMinValue() > 0) {
+						|| e.getMinValue() > 0 || (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
 			}
@@ -252,8 +260,8 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	}
 
 	/**
-	 * Recolocate some marked adjacent nodes of given node because node has been relocated.
-	 * The recolocation is realized by shifting nodes as much as the given node has been shifted.
+	 * Relocate some marked adjacent nodes of given node because node has been relocated.
+	 * The relocation is realized by shifting nodes as much as the given node has been shifted.
 	 * 
 	 * @param firstNode
 	 * @param nodeX
@@ -262,7 +270,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	 * @param marked
 	 * @param nObs
 	 */
-	private void redraw(LabeledNode firstNode, double nodeX, double nodeY, LabeledIntGraph g, ObjectArraySet<LabeledNode> marked, int nObs) {
+	private void redraw(LabeledNode firstNode, double nodeX, double nodeY, LabeledIntGraph g, ObjectSet<LabeledNode> marked, int nObs) {
 		if (firstNode == null)
 			return;
 		double shiftX = nodeX - firstNode.getX();
@@ -273,28 +281,33 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			}
 		}
 		ObjectArrayFIFOQueue<LabeledNode> queue = new ObjectArrayFIFOQueue<>();
-		ObjectArraySet<LabeledNode> markedInternal = new ObjectArraySet<>();
+		ObjectSet<LabeledNode> markedInternal = new ObjectOpenHashSet<>();
 		queue.enqueue(firstNode);
 		markedInternal.add(firstNode);
 		while (!queue.isEmpty()) {
 			LabeledNode node = queue.dequeue();
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finer(String.format("REDRAW. Queue length: %4d. Marked size: %4d.", queue.size(), marked.size()));
+				}
+			}
 			if (!marked.contains(node)) {
 				continue;
 			}
 			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
+				if (LOG.isLoggable(Level.FINEST)) {
 					LOG.finest("Relocated node " + node.getName() + ": (" + node.getX() + ", " + node.getY() + ")-->" + "(" + (node.getX() + shiftX) + ", "
 							+ (node.getY() + shiftY) + ")");
 				}
 			}
 			node.setX(node.getX() + shiftX);
 			node.setY(node.getY() + shiftY);
-			ObjectArrayList<LabeledIntEdge> inEdge = (ObjectArrayList<LabeledIntEdge>) g.getInEdges(node);
-			ObjectListIterator<LabeledIntEdge> eIte = inEdge.listIterator();
+			ObjectList<LabeledIntEdge> inEdge = (ObjectList<LabeledIntEdge>) g.getInEdges(node);
+			ObjectIterator<LabeledIntEdge> eIte = inEdge.iterator();
 			while (eIte.hasNext()) {
 				LabeledIntEdge e = eIte.next();
 				if ((e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
-						|| e.getMinValue() > 0) {
+						|| e.getMinValue() > 0 || (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
 			}
@@ -364,7 +377,11 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 		this.halfYShift = this.yShift / 2;
 		this.maxX = this.initialX;
 		this.maxY = this.initialY;
+		/*
+		 * Draw the graph
+		 */
 		draw(Z, this.initialX, this.initialY, g, nObs);
+
 		// check if some node has a negative y
 		double negativeY = this.halfYShift;
 		for (LabeledNode node : g.getVertices()) {
@@ -373,7 +390,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				if (lY < negativeY) {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							LOG.finest("Trovato un nuovo valore negativo per Y " + lY + " associato al nodo " + node.getName());
+							LOG.finest("A negative value for y coordinate found: " + lY + ". It belongs to node " + node.getName());
 						}
 					}
 					negativeY = lY;
@@ -439,13 +456,11 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 
 	@Override
 	public void step() {
-		// TODO Auto-generated method stub
-
+		// no action
 	}
 
 	@Override
 	public boolean done() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

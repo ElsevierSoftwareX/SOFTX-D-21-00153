@@ -21,10 +21,12 @@ import it.univr.di.Debug;
 public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializable {
 
 	/**
-	 * Admissible chars in a label and associated value.
+	 * Admissible values as regular expression.
 	 */
 	static final String valueRE = "[ ,0-9∞" + Pattern.quote("-") + "]+";
-	@SuppressWarnings("javadoc")
+	/**
+	 * format of a labeled value as regular expression.
+	 */
 	static final String labeledValueRE = "(" + Label.LABEL_RE + valueRE + "|" + valueRE + Label.LABEL_RE + ")";
 
 	/**
@@ -33,7 +35,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	static private Logger LOG = Logger.getLogger(AbstractLabeledIntMap.class.getName());
 
 	/**
-	 * Matcher for labeled values.
+	 * Matcher for a set of labeled values.
 	 */
 	static final Pattern patternLabelCharsRE = Pattern
 			.compile(Pattern.quote("{")

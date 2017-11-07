@@ -2,7 +2,6 @@ package it.univr.di.cstnu.algorithms;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,32 +23,29 @@ import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
-import it.univr.di.labeledvalue.Literal;
 
 /**
  * Simple class to represent and check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * In this class, a input CSTN graph is transformed into an equivalent CSTN instance where node labels are empty.<br>
- * The dynamic consistency check is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1).
+ * The dynamic consistency check is done assuming Instantaneous Reaction semantics (cf. ICAPS 2016 paper, table 1).
  * This class uses LP, R0, qR0, R3* and qR3* rules.
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNwoNodeLabel extends CSTN {
+public class CSTNirwoNodeLabel extends CSTNir {
 
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNwoNodeLabel.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNirwoNodeLabel.class.getName());
 
 	/**
 	 * Version of the class
 	 */
-	// static public final String VERSIONandDATE = "Version 1.2 - April, 25 2017";
-	// static public final String VERSIONandDATE = "Version 1.3 - October, 10 2017";// removed qLabels from LP
 	@SuppressWarnings("hiding")
-	static public final String VERSIONandDATE = "Version  1.4 - November, 07 2017";// restored original LP
+	static public final String VERSIONandDATE = "Version 1.0 - November, 07 2017";
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -62,14 +58,14 @@ public class CSTNwoNodeLabel extends CSTN {
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON)
 			LOG.finest("Start...");
-		final CSTNwoNodeLabel cstn = new CSTNwoNodeLabel();
+		final CSTNirwoNodeLabel cstn = new CSTNirwoNodeLabel();
 
 		if (!cstn.manageParameters(args))
 			return;
 		if (Debug.ON)
 			LOG.finest("Parameters ok!");
 		if (cstn.versionReq) {
-			System.out.println(CSTNwoNodeLabel.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
+			System.out.println(CSTNirwoNodeLabel.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
 					+ "Copyright © 2017, Roberto Posenato");
 			return;
 		}
@@ -117,14 +113,9 @@ public class CSTNwoNodeLabel extends CSTN {
 	}
 
 	/**
-	 * Auxiliary constraints switch
-	 */
-	boolean addAuxiliaryConstraints = false;
-
-	/**
 	 * Default constructor.
 	 */
-	private CSTNwoNodeLabel() {
+	private CSTNirwoNodeLabel() {
 		super();
 	}
 
@@ -133,8 +124,8 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * 
 	 * @param g graph to check
 	 */
-	public CSTNwoNodeLabel(LabeledIntGraph g) {
-		this.setG(g);
+	public CSTNirwoNodeLabel(LabeledIntGraph g) {
+		super(g);
 	}
 
 	/**
@@ -158,60 +149,10 @@ public class CSTNwoNodeLabel extends CSTN {
 		}
 
 		// Substitutes node labels with corresponding edges with horizon value
-		final Collection<LabeledNode> nodeSet = this.g.getVertices();
-		LabeledNode Z = this.g.getZ();
-		for (final LabeledNode node : nodeSet) {
-			if (this.addAuxiliaryConstraints) {
-				Label nodeLabel = node.getLabel();
-				LabeledIntEdge edgeToZ = this.g.findEdge(node, Z);
-				// Now, it removes label from node and adds equivalent constraints as shown in TIME17
-				// Add lower bounds
-				for (Literal l : nodeLabel.negation()) {
-					/**
-					 * [2017-04-25] After an experimentation, it has been proved that the lower bound must be -∞ to avoid a lot of useless labeled value
-					 * propagations.
-					 * The theoretical bound is (-this.horizon - 1).
-					 */
-					edgeToZ.mergeLabeledValue(new Label(l.getName(), l.getState()), Constants.INT_NEG_INFINITE);
-				}
-				// Add the upper bound: since Ω has been already add, this is not more necessary
-				// LabeledIntEdge edgeFromZ = this.g.findEdge(Z, node);
-				// if (edgeFromZ == null) {
-				// edgeFromZ = makeNewEdge(this.ZeroNodeName + "_" + node.getName(), ConstraintType.internal);
-				// this.g.addEdge(edgeFromZ, Z, node);
-				// }
-				// edgeFromZ.mergeLabeledValue(nodeLabel, this.horizon);
-			}
+		for (final LabeledNode node : this.g.getVertices()) {
 			node.setLabel(Label.emptyLabel);
 		}
 
-		// It is better to normalize with respect to the label modification rules before starting the DC check.
-		// Such normalization assures only that redundant labels are removed (w.r.t. R0)
-		// Q* are not solved by this normalization!
-		this.checkStatus.reset();
-		this.g.clearCache();
-		try {
-			for (final LabeledIntEdge e : this.g.getEdges()) {
-				//
-				final LabeledNode s = this.g.getSource(e);
-				final LabeledNode d = this.g.getDest(e);
-
-				// Normalize with respect to R0--R3
-				if (s.isObserver()) {
-					this.labelModificationR0qR0(s, d, Z, e);
-				}
-				this.labelModificationR3qR3(s, d, Z, e);
-				if (s.isObserver()) {
-					// again because R3 could have add a new value;
-					this.labelModificationR0qR0(s, d, Z, e);
-				}
-			}
-		} catch (IllegalStateException ex) {
-			String logMsg = "Graph is not well defined: " + ex.getMessage();
-			if (Debug.ON)
-				LOG.severe(logMsg);
-			throw new WellDefinitionException(logMsg);
-		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
 				LOG.log(Level.INFO, "The conversion to a CSTN without labels on nodes has been done. ");
@@ -219,13 +160,6 @@ public class CSTNwoNodeLabel extends CSTN {
 		}
 		this.checkStatus.initialized = true;
 		return true;
-	}
-
-	/**
-	 * @return the addAuxiliaryConstraints
-	 */
-	public boolean isAddAuxiliaryConstraints() {
-		return this.addAuxiliaryConstraints;
 	}
 
 	/**
@@ -361,8 +295,7 @@ public class CSTNwoNodeLabel extends CSTN {
 				continue;
 			}
 
-			if (w > 0) {// Table 1 ICAPS paper.
-				// When X==Z, w must be < 0 to apply rule. w==0 is not considered because it doesn't occur since each node is at least 0 distance from Z.
+			if (w >= 0) {// Table 1 ICAPS paper for IR semantics!
 				continue;
 			}
 
@@ -571,13 +504,6 @@ public class CSTNwoNodeLabel extends CSTN {
 	}
 
 	/**
-	 * @param addAuxiliaryConstraints the addAuxiliaryConstraints to set
-	 */
-	public void setAddAuxiliaryConstraints(boolean addAuxiliaryConstraints) {
-		this.addAuxiliaryConstraints = addAuxiliaryConstraints;
-	}
-
-	/**
 	 * @param g the g to set
 	 */
 	@Override
@@ -585,5 +511,4 @@ public class CSTNwoNodeLabel extends CSTN {
 		super.setG(g);
 		this.horizon = Constants.INT_POS_INFINITE;
 	}
-
 }

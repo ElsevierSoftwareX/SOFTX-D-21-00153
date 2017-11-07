@@ -189,7 +189,7 @@ public class CSTNUTest {
 
 		this.cstnu.setG(g);
 		this.cstnu.initAndCheck();
-		this.cstnu.labelModificationR0(P,this.Z, pz);
+		this.cstnu.labelModificationqR0(P,this.Z, pz);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		//if R0 is applied!
@@ -240,7 +240,7 @@ public class CSTNUTest {
 		g.setZ(this.Z);
 		this.cstnu.setG(g);
 		this.cstnu.initAndCheck();
-		this.cstnu.labelModificationR0(P, this.Z, pz);
+		this.cstnu.labelModificationqR0(P, this.Z, pz);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.emptyLabel, 0);
@@ -301,7 +301,7 @@ public class CSTNUTest {
 
 		wellDefinition(g);
 
-		this.cstnu.labelModificationR3(Y, this.Z, yx);
+		this.cstnu.labelModificationqR3(Y, this.Z, yx);
 
 		// <YX, normal, Y, X, L:{(¬ABGp, -4) (ABG, -4) }, LL:{}, UL:{(¬ABG¬p,C:-4) (¬ABGp,C:-7) (ABG,C:-7) }>
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
@@ -353,7 +353,7 @@ public class CSTNUTest {
 		g.addEdge(eAZ, A, this.Z);
 
 		System.out.println(eN8Z);
-		this.cstnu.labelModificationR3(N8, this.Z, eN8Z);
+		this.cstnu.labelModificationqR3(N8, this.Z, eN8Z);
 		
 		LabeledIntEdgePluggable eN8ZOK = new LabeledIntEdgePluggable("n8_Z", this.labeledIntValueMapClass);
 		map = AbstractLabeledIntMap.parse("{(-20, ab) (-∞, ¿ab) (-8, ¬b) (-17, b) }");
@@ -364,7 +364,7 @@ public class CSTNUTest {
 		assertEquals("R3: eN8Z labeled values.", eN8ZOK.getLabeledValueMap(), eN8Z.getLabeledValueMap());
 		assertEquals("R3: eN8ZOK upper case labedled values.", eN8ZOK.getUpperCaseValueMap(), eN8Z.getUpperCaseValueMap());
 
-		this.cstnu.labelModificationR3(N8, this.Z, eN8Z);
+		this.cstnu.labelModificationqR3(N8, this.Z, eN8Z);
 
 		assertEquals("R3: eN8Z labeled values.", eN8ZOK.getLabeledValueMap(), eN8Z.getLabeledValueMap());
 		assertEquals("R3: eN8ZOK upper case labedled values.", eN8ZOK.getUpperCaseValueMap(), eN8Z.getUpperCaseValueMap());
@@ -418,7 +418,7 @@ public class CSTNUTest {
 
 		wellDefinition(g);
 
-		this.cstnu.labelModificationR3(Y, this.Z, yz);
+		this.cstnu.labelModificationqR3(Y, this.Z, yz);
 
 		// <YX, normal, Y, X, L:{(¬ABGp, -4) (ABG, -4) }, LL:{}, UL:{(¬ABG¬p,C:-4) (¬ABGp,C:-7) (ABG,C:-7) }>
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
@@ -553,7 +553,7 @@ public class CSTNUTest {
 		g.addEdge(ca, C, A);
 		g.addEdge(da, D, A);
 		this.cstnu.setG(g);
-		this.cstnu.labeledPropagationRule(D, C, A, dc, ca, da);
+		this.cstnu.labeledPropagationLP(D, C, A, dc, ca, da);
 
 		LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
 		daOk.mergeUpperCaseValue(Label.parse("abc"), new ALabel("B", this.alpha), 14);
@@ -563,8 +563,8 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
-	 * 
+	 * Test method for
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_lncRule() {
@@ -604,7 +604,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationRule(X, Y, W, XY, YW,  XW);
+		this.cstnu.labeledPropagationLP(X, Y, W, XY, YW, XW);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
@@ -621,8 +621,8 @@ public class CSTNUTest {
 	
 	
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
-	 * 
+	 * Test method for
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_lucRule() {
@@ -667,7 +667,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationRule(X, Y, W, XY, YW,  XW);
+		this.cstnu.labeledPropagationLP(X, Y, W, XY, YW, XW);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
@@ -688,8 +688,8 @@ public class CSTNUTest {
 	
 	
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
-	 * 
+	 * Test method for
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_flucRule() {
@@ -728,7 +728,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationRule(X, Y, this.Z, XY, YZ,  XZ);
+		this.cstnu.labeledPropagationLP(X, Y, this.Z, XY, YZ, XZ);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xzOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
@@ -744,8 +744,8 @@ public class CSTNUTest {
 
 	
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationRule(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
-	 * 
+	 * Test method for
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_lcucRule() {
@@ -784,7 +784,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationRule(X, Y, this.Z, XY, YZ,  XZ);
+		this.cstnu.labeledPropagationLP(X, Y, this.Z, XY, YZ, XZ);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xzOK = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);

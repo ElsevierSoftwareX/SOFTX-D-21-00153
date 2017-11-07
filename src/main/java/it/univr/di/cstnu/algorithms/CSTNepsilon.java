@@ -27,6 +27,7 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
 /**
  * Simple class to represent and check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * In this class, the dynamic consistency check is done assuming ε-reaction-time DC semantics (cf. ICAPS 2016 paper, table 2).
+ * This class uses LP, R0, qR0, R3* and qR3* rules.
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -175,7 +176,7 @@ public class CSTNepsilon extends CSTN {
 	 * @return true if the rule has been applied one time at least.
 	 */
 	@Override
-	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge ePX) {
+	boolean labelModificationR0qR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge ePX) {
 		// Visibility is package because there is Junit Class test that checks this method.
 
 		boolean ruleApplied = false, mergeStatus;
@@ -293,7 +294,7 @@ public class CSTNepsilon extends CSTN {
 	 */
 	@Override
 	// Visibility is package because there is Junit Class test that checks this method.
-	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
+	boolean labelModificationR3qR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {

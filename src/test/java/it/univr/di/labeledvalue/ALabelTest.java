@@ -149,6 +149,35 @@ public class ALabelTest {
 	}
 
 	/**
+	 *
+	 */
+	@Test
+	public final void count() {
+		this.alpha.clear();
+
+		Assert.assertEquals(0, ALabel.emptyLabel.size());
+		
+		ALabel n9 = ALabel.parse("N9" + ALabel.ALABEL_SEPARATORstring + "N12" + ALabel.ALABEL_SEPARATORstring + "N13", this.alpha);
+		Assert.assertEquals(3, n9.size());
+
+		n9.remove(new ALetter("N9"));
+		Assert.assertEquals(2, n9.size());
+		
+		n9 = n9.conjunction(new ALabel("N9", this.alpha));
+		Assert.assertEquals(3, n9.size());
+		
+		n9 = n9.conjunction(new ALabel("N9", this.alpha));
+		Assert.assertEquals(3, n9.size());
+
+		n9.remove(new ALetter[] { new ALetter("N9"), new ALetter("N12"), new ALetter("N3") });
+		Assert.assertEquals(1, n9.size());
+
+		n9.remove(new ALetter[] { new ALetter("N9"), new ALetter("N12"), new ALetter("N13") });
+		Assert.assertEquals(0, n9.size());
+
+	}
+
+	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {

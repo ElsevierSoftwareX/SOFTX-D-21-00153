@@ -115,15 +115,15 @@ public class CSTNUGraphMLWriterTest {
 			"<default>normal</default>\n" +
 			"</key>\n" +
 			"<key id=\"LowerCaseLabeledValues\" for=\"edge\">\n" +
-			"<desc>Labeled Lower-Case Values. Format: {[[\\('node name (no case modification)', 'integer', 'label'\\) ]+}|{}</desc>\n" +
+			"<desc>Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>\n" +
 			"<default></default>\n" +
 			"</key>\n" +
 			"<key id=\"UpperCaseLabeledValues\" for=\"edge\">\n" +
-			"<desc>Labeled Upper-Case Values. Format: {[[\\('node name (no case modification)', 'integer', 'label'\\) ]+}|{}</desc>\n" +
+			"<desc>Labeled Upper-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>\n" +
 			"<default></default>\n" +
 			"</key>\n" +
 			"<key id=\"LabeledValues\" for=\"edge\">\n" +
-			"<desc>Labeled Values. Format: {[[\\('integer', 'label'\\) ]+}|{}</desc>\n" +
+			"<desc>Labeled Values. Format: {[('integer', 'label') ]+}|{}</desc>\n" +
 			"<default></default>\n" +
 			"</key>\n" +
 			"<graph edgedefault=\"directed\">\n" +

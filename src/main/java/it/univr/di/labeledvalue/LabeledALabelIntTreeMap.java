@@ -20,7 +20,7 @@ import it.univr.di.Debug;
  * A specialized class has been developed to represent such values: {@link LabeledLowerCaseValue}.
  * <p>
  * At first time, I made some experiments for evaluating if it is better to use a Object2ObjectRBTreeMap or a ObjectArrayMap for representing the internal map.
- * The below table shows that for very small network, the two implementation are almost equivalent. SO, ObjectArrayMap was chosen.
+ * The below table shows that for very small network, the two implementation are almost equivalent. So, ObjectArrayMap was chosen.
  * *
  * <table border="1">
  * <caption>Execution time (ms) for some operations w.r.t the core data structure of the class.</caption>
@@ -51,22 +51,51 @@ import it.univr.di.Debug;
  * </tr>
  * </table>
  * <p>
- * In October 2017, I verified that even with medium size network, some edges can contain around 10000 labeled UC values.
- * So, I tested the two implementation again considering up to 50000 labeled UC values.
- * It resulted that up to 1000 values, the two implementation show still almost equivalent performance, BUT when the keys are 50000, using ObjectArrayMap
+ * In October 2017, I verified that even with medium size network, some edges can contain around 5000 labeled UC values.
+ * So, I tested the two implementation again considering up to 10000 labeled UC values.
+ * It resulted that up to 1000 values, the two implementation show still almost equivalent performance, BUT when the keys are 5000, using ObjectArrayMap
  * retrieve the keys requires more than ONE hour, while using Object2ObjectRBTreeMap it requires almost 96. ms!!!
  * Details using Object2ObjectRBTreeMap:
  * 
  * <pre>
+ * Time to retrieve 50 elements using entrySet(): ---
+ * Time to retrieve 50 elements using keySet(): 0.012000000000000004ms
+ * 
+ * Time to retrieve 100 elements using entrySet(): ---
+ * Time to retrieve 100 elements using keySet(): 0.006000000000000003ms
+ *
  * Time to retrieve 1000 elements using entrySet(): 0.045ms
- * Time to retrieve 1000 elements using keySet(): 0.019999999999999983ms
+ * Time to retrieve 1000 elements using keySet(): 0.034ms
  * The difference is 0.025000000000000015 ms. It is better to use: keySet() approach.
  * 
- * Time to retrieve 50000 elements using entrySet(): 96.23700000000001ms
- * Time to retrieve 50000 elements using keySet(): 34.84299999999999ms
- * The difference is 61.39400000000002 ms. It is better to use: keySet() approach.
+ * Time to retrieve 5000 elements using entrySet(): 0.9623700000000001ms
+ * Time to retrieve 5000 elements using keySet(): 0.352ms
+ * The difference is 0.6139400000000002 ms. It is better to use: keySet() approach.
+ *
+ * Time to retrieve 10000 elements using entrySet(): --
+ * Time to retrieve 10000 elements using keySet(): 1.292ms
  * </pre>
  * 
+ * Considering then, RB Tree instead of RB Tree:
+ * 
+ * <pre>
+ * Time to retrieve 50 elements using keySet(): 0.012000000000000002ms
+ * 
+ * Time to retrieve 100 elements using keySet(): 0.007ms
+ *
+ * Time to retrieve 1000 elements using entrySet(): ---
+ * Time to retrieve 1000 elements using keySet(): 0.038ms
+ * The difference is 0.025000000000000015 ms. It is better to use: keySet() approach.
+ * 
+ * Time to retrieve 5000 elements using entrySet(): ---
+ * Time to retrieve 5000 elements using keySet(): 0.388ms
+ * The difference is 0.6139400000000002 ms. It is better to use: keySet() approach.
+ *
+ * Time to retrieve 10000 elements using entrySet(): --
+ * Time to retrieve 10000 elements using keySet(): 1.314ms
+ * </pre>
+ * 
+ * <pre>
  * <b>All code for testing is in {@link LabeledALabelIntTreeMapTest}.</b>
  * 
  * @author Roberto Posenato
@@ -94,7 +123,6 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 *
 	 */
 	private static final long serialVersionUID = 2L;
-
 
 	/**
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
