@@ -9,9 +9,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
-import it.unimi.dsi.fastutil.objects.Object2IntRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -81,7 +81,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @return an Object2IntMap<Label> object
 	 */
 	private static final Object2IntMap<Label> makeObject2IntMap() {
-		return new Object2IntRBTreeMap<>();// it is better than Object2IntArrayMap when the set is larger than 1000 elements!
+		return new Object2IntArrayMap<>();// Object2IntRBTreeMap is better than Object2IntArrayMap when the set is larger than 5000 elements!
 	}
 
 	/**
@@ -587,7 +587,6 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		final Object2IntMap<Label> map1 = this.mainInt2SetMap.get(this.base.length);
 		for (final Label baseLabel : Label.allComponentsOfBaseGenerator(this.base)) {
 			final int baseValue = map1.getInt(baseLabel);
-			// SortedSet<String> nodeSet1 = map1.get(l1).nodeSet;
 
 			if (baseValue == Constants.INT_NULL) {
 				if (Debug.ON)

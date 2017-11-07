@@ -325,13 +325,21 @@ public class CSTNRunningTime {
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
 
 		if (tester.woOnlyNodeLabels || tester.woNodeLabelsAuxConstraints) {
-			cstn = new CSTNwoNodeLabel(g);
-			if (tester.woOnlyNodeLabels) {
-				((CSTNwoNodeLabel) cstn).setAddAuxiliaryConstraints(true);
+			if (tester.dcSemantics==DCSemantics.IR) {
+				if (tester.onlyLPQR0QR3) {
+					cstn = new CSTNir3RwoNodeLabel(g);
+				} else {
+					cstn = new CSTNirwoNodeLabel(g);
+				}
+			} else {
+				cstn = new CSTNwoNodeLabel(g);
+				if (tester.woOnlyNodeLabels) {
+					((CSTNwoNodeLabel) cstn).setAddAuxiliaryConstraints(true);
+				}
 			}
 		} else {
 			if (tester.onlyLPQR0QR3) {
-				cstn = new CSTNirRestricted(g);
+				cstn = new CSTNir3R(g);
 			} else {
 				switch (tester.dcSemantics) {
 				case ε:

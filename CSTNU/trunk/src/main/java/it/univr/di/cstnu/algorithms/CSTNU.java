@@ -50,7 +50,7 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNU extends CSTNirRestricted {
+public class CSTNU extends CSTNir3R {
 	/**
 	 * Simple class to represent the status of the checking algorithm during an execution.<br>
 	 * controllability = super.consistency!
@@ -440,7 +440,7 @@ public class CSTNU extends CSTNirRestricted {
 				}
 			}
 			LabeledIntGraph allMaxCSTN = makeAllMaxProjection();
-			CSTNirRestricted cstnChecker = new CSTNirRestricted(allMaxCSTN);
+			CSTNir3R cstnChecker = new CSTNir3R(allMaxCSTN);
 			CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO))
@@ -488,7 +488,7 @@ public class CSTNU extends CSTNirRestricted {
 		// controllable && finished
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
-				LOG.log(Level.INFO, "Stable state reached. The newtork is DC controllable.\nNumber of cycles: " + (i - 1) + " over the maximum allowed "
+				LOG.log(Level.INFO, "Stable state reached. The network is DC controllable.\nNumber of cycles: " + (i - 1) + " over the maximum allowed "
 						+ maxCycles + ".\nStatus: " + this.checkStatus);
 			}
 		}
@@ -948,7 +948,7 @@ public class CSTNU extends CSTNirRestricted {
 	 */
 	@Override
 	// Don't rename such method because it has to overwrite the CSTN one!
-	boolean labeledPropagationRule(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final LabeledIntEdge eXY, final LabeledIntEdge eYW,
+	boolean labeledPropagationLP(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final LabeledIntEdge eXY, final LabeledIntEdge eYW,
 			final LabeledIntEdge eXW) {
 
 		Label nXnWLabel = nX.getLabel().conjunction(nW.getLabel());
@@ -1201,7 +1201,7 @@ public class CSTNU extends CSTNirRestricted {
 	 * @return true if the rule has been applied one time at least.
 	 */
 	@Override
-	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nZ, final LabeledIntEdge ePZ) {
+	boolean labelModificationqR0(final LabeledNode nObs, final LabeledNode nZ, final LabeledIntEdge ePZ) {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, "Label Modification qR0: start.");
@@ -1271,11 +1271,6 @@ public class CSTNU extends CSTNirRestricted {
 		return ruleApplied;
 	}
 
-	@Override
-	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge ePZ) {
-		throw new IllegalAccessError("R0 cannot be used in a CSTNU. Only qR0!");
-	}
-
 	/**
 	 * <h1>Rule qR3*</h1>
 	 * <b>Instantaneous reaction semantics is assumed.</b><br>
@@ -1305,7 +1300,7 @@ public class CSTNU extends CSTNirRestricted {
 	 */
 	@Override
 	// Visibility is package because there is Junit Class test that checks this method.
-	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nZ, final LabeledIntEdge eSZ) {
+	boolean labelModificationqR3(final LabeledNode nS, final LabeledNode nZ, final LabeledIntEdge eSZ) {
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -1401,17 +1396,13 @@ public class CSTNU extends CSTNirRestricted {
 		return ruleApplied;
 	}
 
-	@Override
-	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSZ) {
-		throw new IllegalAccessError("R3* cannot be used in a CSTNU");
-	}
-
 	/**
 	 * Create a copy of this.g merging, for each each of g, all ordinary and upper case values.
 	 * Moreover, for each edge representing lower bound of a contingent, sets its ordinary value to the maximum of the contingent.
 	 *
 	 * @return the all-max projection of the graph g (CSTN graph) without edges connecting nodes with non consistent labels.
 	 */
+	@SuppressWarnings("null")
 	LabeledIntGraph makeAllMaxProjection() {
 		LabeledIntGraph allMax = new LabeledIntGraph(this.g.getInternalLabeledValueMapImplementationClass());
 		// clone all nodes
@@ -1428,6 +1419,7 @@ public class CSTNU extends CSTNirRestricted {
 		LabeledIntEdge eNew;
 		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = allMax.getEdgeFactory();
 		for (final LabeledIntEdge e : this.g.getEdges()) {
+			boolean toAdd = false;
 			LabeledNode s = this.g.getSource(e);
 			LabeledNode d = this.g.getDest(e);
 			String sName = s.getName();
@@ -1436,7 +1428,8 @@ public class CSTNU extends CSTNirRestricted {
 			if (sdLabel == null)
 				continue;
 			eNew = allMax.findEdge(sName, dName);
-			if (eNew == null)
+			toAdd = (eNew == null);
+			if (toAdd)
 				eNew = edgeFactory.get(e); // to preserve the name
 			eNew.setConstraintType(ConstraintType.normal);
 			LabeledALabelIntTreeMap allValueMapE = e.getAllUpperCaseAndLabeledValuesMaps();
@@ -1452,12 +1445,16 @@ public class CSTNU extends CSTNirRestricted {
 						eNewInverted = edgeFactory.get(this.g.findEdge(d, s));
 						allMax.addEdge((AbstractLabeledIntEdge) eNewInverted, dName, sName);
 					}
-					eNewInverted.clearLowerCaseValue();
-					eNewInverted.clearUpperCaseValues();
-					eNewInverted.mergeLabeledValue(sdLabel, -map.getValue(sdLabel, new ALabel(dName, this.g.getALabelAlphabet())));
+					// eNewInverted.clearLowerCaseValue();
+					// eNewInverted.clearUpperCaseValues();
+					int ub = map.getValue(sdLabel, new ALabel(dName, this.g.getALabelAlphabet()));
+					if (ub != Constants.INT_NULL) {
+						eNewInverted.mergeLabeledValue(sdLabel, -ub);
+					}
 				}
 			}
-			allMax.addEdge((AbstractLabeledIntEdge) eNew, sName, dName);
+			if (toAdd)
+				allMax.addEdge((AbstractLabeledIntEdge) eNew, sName, dName);
 		}
 		return allMax;
 	}
@@ -1513,12 +1510,12 @@ public class CSTNU extends CSTNirRestricted {
 			if (B == Z) {
 				if (A.isObserver()) {
 					// R0 on the resulting new values
-					labelModificationR0(A, Z, AB);
+					labelModificationqR0(A, Z, AB);
 				}
-				labelModificationR3(A, Z, AB);
+				labelModificationqR3(A, Z, AB);
 				if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 					// R0 on the resulting new values
-					labelModificationR0(A, Z, AB);
+					labelModificationqR0(A, Z, AB);
 				}
 
 			} // end if B==Z
@@ -1566,7 +1563,7 @@ public class CSTNU extends CSTNirRestricted {
 					edgeCopy = null;
 				}
 
-				this.labeledPropagationRule(A, B, C, AB, BC, AC);
+				this.labeledPropagationLP(A, B, C, AB, BC, AC);
 
 				/**
 				 * The following rule are called if there are condition (avoid to call for nothing)
@@ -1633,7 +1630,7 @@ public class CSTNU extends CSTNirRestricted {
 					edgeCopy = null;
 				}
 
-				labeledPropagationRule(C, A, B, CA, AB, CB);
+				labeledPropagationLP(C, A, B, CA, AB, CB);
 
 				if (!CA.getLowerCaseValue().isEmpty()) {
 					labeledCrossLowerCaseRule(C, A, B, CA, AB, CB, Z);

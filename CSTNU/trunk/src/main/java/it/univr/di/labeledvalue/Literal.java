@@ -25,27 +25,22 @@ public class Literal implements Comparable<Literal> {
 	/**
 	 * On 20171027 using VisualVM it has been shown that representing the state values of a literal using an enum consumes a lot of memory
 	 * in this kind of application.<br>
-	 * Therefore I decided to simplify the representation using 4 constants value: {@link #ABSENT}, {@link #NEGATED}, {@link #STRAIGHT} and {@link #UNKNONW}.
+	 * Therefore I decided to simplify the representation using 4 constants value: {@link #ABSENT}, {@link #STRAIGHT}, {@link #NEGATED}, and {@link #UNKNONW}.
 	 * The char corresponding to each such constant is exploit in the method (to make them more efficient).
 	 * So, don't change them without revising all the class.<br>
 	 * {@link #ABSENT} is useful only for internal methods. It is not admitted for defining a literal.
 	 */
 	@SuppressWarnings("javadoc")
 	public static final char ABSENT = '\u0000',
-			NEGATED = Constants.NOT,
 			STRAIGHT = '\u0001',
+			NEGATED = Constants.NOT,
 			UNKNONW = Constants.UNKNOWN;
 
-	/**
-	 * Maximal number of possible proposition in a network.<br>
-	 * This limit cannot be change without revising all this class code.
-	 */
-	public static final int NUMBER_OF_POSSIBLE_PROPOSITIONS = 64;
 
 	/**
 	 * Literal object cache
 	 */
-	private static final Literal[] CREATED_LITERAL = new Literal[NUMBER_OF_POSSIBLE_PROPOSITIONS * 3];
+	private static final Literal[] CREATED_LITERAL = new Literal[Label.NUMBER_OF_POSSIBLE_PROPOSITIONS * 3];
 
 	/**
 	 * R.E. representation of allowed propositions.
@@ -92,7 +87,7 @@ public class Literal implements Comparable<Literal> {
 	 * @return char at position i in {@link Literal#PROPOSITION_ARRAY}.
 	 */
 	static public final char charValue(final int i) {
-		if (i < 0 || i > Literal.NUMBER_OF_POSSIBLE_PROPOSITIONS)
+		if (i < 0 || i > Label.NUMBER_OF_POSSIBLE_PROPOSITIONS)
 			throw new IllegalArgumentException("Index '" + i + "' is not valid.");
 		return PROPOSITION_ARRAY[i];
 	}
@@ -164,9 +159,9 @@ public class Literal implements Comparable<Literal> {
 	 */
 	public static final byte getStateOrdinal(char state) {
 		switch (state) {
-		case NEGATED:
-			return 1;
 		case STRAIGHT:
+			return 1;
+		case NEGATED:
 			return 2;
 		case UNKNONW:
 			return 3;

@@ -21,9 +21,9 @@ import org.kohsuke.args4j.OptionHandlerFilter;
 import org.xml.sax.SAXException;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
@@ -40,9 +40,9 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
- * Simple class to represent and check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
- * In this class, the dynamic consistency check is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1).
- * This class is the base class for some other specialized in which DC semantics is defined in a different way.
+ * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
+ * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1).
+ * This class uses LP, R0, qR0, R3* and qR3* rules and is the base class for some other specialized in which DC semantics is defined in a different way.
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -81,6 +81,22 @@ public class CSTN {
 		 */
 		boolean initialized = false;
 
+		/**
+		 * Reset all indexes.
+		 */
+		public void reset() {
+			this.consistency = true;
+			this.cycles = 0;
+			this.r0calls = 0;
+			this.r3calls = 0;
+			this.labeledValuePropagationcalls = 0;
+			// this.qAllNegLoop = 0;
+			// this.qSemiNegLoop = 0;
+			this.executionTimeNS = Constants.INT_NULL;
+			this.finished = false;
+			this.initialized = false;
+		}
+
 		@Override
 		public String toString() {
 			return ("The check is "
@@ -101,22 +117,6 @@ public class CSTN {
 					+ ((this.executionTimeNS != Constants.INT_NULL)
 							? "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)"
 							: ""));
-		}
-
-		/**
-		 * Reset all indexes.
-		 */
-		public void reset() {
-			this.consistency = true;
-			this.cycles = 0;
-			this.r0calls = 0;
-			this.r3calls = 0;
-			this.labeledValuePropagationcalls = 0;
-			// this.qAllNegLoop = 0;
-			// this.qSemiNegLoop = 0;
-			this.executionTimeNS = Constants.INT_NULL;
-			this.finished = false;
-			this.initialized = false;
 		}
 	}
 
@@ -145,7 +145,7 @@ public class CSTN {
 		/**
 		 * It must be a set because an edge could be added more times!
 		 */
-		public ObjectAVLTreeSet<LabeledIntEdge> edgesToCheck;
+		public ObjectRBTreeSet<LabeledIntEdge> edgesToCheck;
 		/**
 		 * 
 		 */
@@ -155,7 +155,7 @@ public class CSTN {
 		 * 
 		 */
 		public EdgesToCheck() {
-			this.edgesToCheck = new ObjectAVLTreeSet<>();
+			this.edgesToCheck = new ObjectRBTreeSet<>();
 			this.alreadyAddAllIncidentsToZ = false;
 		}
 
@@ -165,7 +165,7 @@ public class CSTN {
 		 * @param coll
 		 */
 		public EdgesToCheck(Collection<LabeledIntEdge> coll) {
-			this.edgesToCheck = new ObjectAVLTreeSet<>(coll);
+			this.edgesToCheck = new ObjectRBTreeSet<>(coll);
 			this.alreadyAddAllIncidentsToZ = false;
 		}
 
@@ -211,26 +211,6 @@ public class CSTN {
 		}
 
 		/**
-		 * @return the number of edges in the set.
-		 */
-		public int size() {
-			return (this.edgesToCheck != null) ? this.edgesToCheck.size() : 0;
-		}
-
-		/**
-		 * @return the set of edges.
-		 *         public ObjectAVLTreeSet<LabeledIntEdge> get() {
-		 *         return this.edgesToCheck;
-		 *         }
-		 */
-
-		@Override
-		public Iterator<LabeledIntEdge> iterator() {
-			// TODO Auto-generated method stub
-			return this.edgesToCheck.iterator();
-		}
-
-		/**
 		 * Clear the set.
 		 */
 		public void clear() {
@@ -238,14 +218,17 @@ public class CSTN {
 			this.alreadyAddAllIncidentsToZ = false;
 		}
 
+		@Override
+		public Iterator<LabeledIntEdge> iterator() {
+			return this.edgesToCheck.iterator();
+		}
+
 		/**
-		 * @param coll
-		 * @return true if this set changed.
-		 *         public boolean addAll(Collection<LabeledIntEdge> coll) {
-		 *         this.alreadyAddAllIncidentsToZ = false;
-		 *         return this.edgesToCheck.addAll(coll);
-		 *         }
+		 * @return the number of edges in the set.
 		 */
+		public int size() {
+			return (this.edgesToCheck != null) ? this.edgesToCheck.size() : 0;
+		}
 
 		/**
 		 * Copy fields reference of into this.
@@ -277,12 +260,195 @@ public class CSTN {
 																					// horizon!
 
 	/**
+	 * The name for the initial node.
+	 */
+	public static String ZeroNodeName = "Z";
+
+	/**
+	 * The name for the initial node.
+	 */
+	public static String OmegaNodeName = "Ω";
+
+	/**
+	 * Just for using this class also from a terminal.
+	 * 
+	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 */
+	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Start...");
+			}
+		}
+		final CSTN cstn = new CSTN();
+
+		if (!cstn.manageParameters(args))
+			return;
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Parameters ok!");
+			}
+		}
+		if (cstn.versionReq) {
+			System.out.println(CSTN.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
+					+ "Copyright © 2017, Roberto Posenato");
+			return;
+		}
+
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("Loading graph...");
+			}
+		}
+		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstn.fInput, LabeledIntTreeMap.class);
+		cstn.setG(graphMLReader.readGraph());
+
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("LabeledIntGraph loaded!\nStandard DC Checking...");
+			}
+		}
+		CSTNCheckStatus status;
+		try {
+			status = cstn.dynamicConsistencyCheck();
+		} catch (final WellDefinitionException e) {
+			System.out.print("An error has been occured during the checking: " + e.getMessage());
+			return;
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.finest("LabeledIntGraph minimized!");
+			}
+		}
+		if (status.finished) {
+			System.out.println("Checking finished!");
+			if (status.consistency) {
+				System.out.println("The given CSTN is Dynamic consistent!");
+			} else {
+				System.out.println("The given CSTN is not Dynamic consistent!");
+			}
+			System.out.println("Details: " + status);
+		} else {
+			System.out.println("Checking has not been finished!");
+			System.out.println("Details: " + status);
+		}
+
+		if (cstn.fOutput != null) {
+			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(cstn.g));
+			try {
+				graphWriter.save(cstn.g, new PrintWriter(cstn.output));
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
 	 * @param label
 	 * @param value
 	 * @return the conventional representation of a labeled value
 	 */
 	static final String pairAsString(Label label, int value) {
 		return AbstractLabeledIntMap.entryAsString(label, value);
+	}
+
+	/**
+	 * Check status
+	 */
+	CSTNCheckStatus checkStatus = new CSTNCheckStatus();
+
+	/**
+	 * The input file containing the CSTN graph in GraphML format.
+	 */
+	@Argument(required = true, index = 0, usage = "input file. Input file has to be a CSTN graph in GraphML format.", metaVar = "CSTN_file_name")
+	File fInput;
+
+	/**
+	 * Output file where to write the XML representing the minimal CSTN graph.
+	 */
+	@Option(required = false, name = "-o", aliases = "--output", usage = "output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output.", metaVar = "CSTN_file_name")
+	File fOutput = null;
+
+	/**
+	 * Graph on which to operate.
+	 */
+	LabeledIntGraph g = null;
+
+	/**
+	 * WD2.2 epsilon value.
+	 * It is 1 to assert that involved time points have to be just after relative observation time points.<br>
+	 * <b>Such value and WD2.2 property is not necessary as required in the past because Dynamic Execution definition already contains them.</b>
+	 * On the other hand, propagation rules needs such value to be complete.
+	 * Therefore, WD2.2 is not more required as CSTN property but it is imposed as propagation rules.
+	 */
+	int wd2epsilon = 1;
+
+	/**
+	 * Absolute value of the max negative weight determined during initialization phase.
+	 */
+	int maxWeight = Constants.INT_NULL;
+
+	/**
+	 * Horizon value. A node that has to be executed after such time means that it has not to be executed!
+	 */
+	int horizon;
+
+	/**
+	 * Output stream to fOutput
+	 */
+	PrintStream output = null;
+
+	/**
+	 * Software Version.
+	 */
+	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
+	boolean versionReq = false;
+
+	/**
+	 * Default constructor.
+	 */
+	CSTN() {
+	}
+
+	/**
+	 * Constructor for
+	 * 
+	 * @param g graph to check
+	 */
+	public CSTN(LabeledIntGraph g) {
+		this();
+		this.setG(g);// sets also checkStatus!
+	}
+
+	/**
+	 * checkWellDefinitionProperties.
+	 * It checks only WD1, WD2 (light version).
+	 *
+	 * @return true if the g is a CSTN well defined.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
+	 */
+	public boolean checkWellDefinitionProperties() throws WellDefinitionException {
+		boolean flag = false;
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "Checking if graph is well defined...");
+			}
+		}
+		for (final LabeledIntEdge e : this.g.getEdges()) {
+			flag = checkWellDefinitionProperty1and3(this.g.getSource(e), this.g.getDest(e), e, false);
+		}
+		for (final LabeledNode node : this.g.getNodes()) {
+			flag = flag && checkWellDefinitionProperty2(node, false);
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, ((flag) ? "done: all is well defined.\n" : "done: something is wrong. Not well-defined graph!\n"));
+			}
+		}
+		return flag;
 	}
 
 	/**
@@ -455,7 +621,7 @@ public class CSTN {
 				newNodeLabel = nodeLabel.conjunction(obsLabel);
 				if (newNodeLabel == null) {
 					msg = "Label of node " + node + " is not consistent with label of obs node " + obs
-							+ " but it should be subsume it! Thenetwork is not well defined.";
+							+ " but it should be subsume it! The network is not well defined.";
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.SEVERE)) {
 							LOG.log(Level.SEVERE, msg);
@@ -511,189 +677,6 @@ public class CSTN {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * Just for using this class also from a terminal.
-	 * 
-	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 */
-	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Start...");
-			}
-		}
-		final CSTN cstn = new CSTN();
-
-		if (!cstn.manageParameters(args))
-			return;
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Parameters ok!");
-			}
-		}
-		if (cstn.versionReq) {
-			System.out.println(CSTN.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2017, Roberto Posenato");
-			return;
-		}
-
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Loading graph...");
-			}
-		}
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstn.fInput, LabeledIntTreeMap.class);
-		cstn.setG(graphMLReader.readGraph());
-
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("LabeledIntGraph loaded!\nStandard DC Checking...");
-			}
-		}
-		CSTNCheckStatus status;
-		try {
-			status = cstn.dynamicConsistencyCheck();
-		} catch (final WellDefinitionException e) {
-			System.out.print("An error has been occured during the checking: " + e.getMessage());
-			return;
-		}
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("LabeledIntGraph minimized!");
-			}
-		}
-		if (status.finished) {
-			System.out.println("Checking finished!");
-			if (status.consistency) {
-				System.out.println("The given CSTN is Dynamic consistent!");
-			} else {
-				System.out.println("The given CSTN is not Dynamic consistent!");
-			}
-			System.out.println("Details: " + status);
-		} else {
-			System.out.println("Checking has not been finished!");
-			System.out.println("Details: " + status);
-		}
-
-		if (cstn.fOutput != null) {
-			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(cstn.g));
-			try {
-				graphWriter.save(cstn.g, new PrintWriter(cstn.output));
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Check status
-	 */
-	CSTNCheckStatus checkStatus = new CSTNCheckStatus();
-
-	/**
-	 * The input file containing the CSTN graph in GraphML format.
-	 */
-	@Argument(required = true, index = 0, usage = "input file. Input file has to be a CSTN graph in GraphML format.", metaVar = "CSTN_file_name")
-	File fInput;
-
-	/**
-	 * Output file where to write the XML representing the minimal CSTN graph.
-	 */
-	@Option(required = false, name = "-o", aliases = "--output", usage = "output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output.", metaVar = "CSTN_file_name")
-	File fOutput = null;
-
-	/**
-	 * Graph on which to operate.
-	 */
-	LabeledIntGraph g = null;
-
-	/**
-	 * WD2.2 epsilon value.
-	 * It is 1 to assert that involved time points have to be just after relative observation time points.<br>
-	 * <b>Such value and WD2.2 property is not necessary as required in the past because Dynamic Execution definition already contains them.</b>
-	 * On the other hand, propagation rules needs such value to be complete.
-	 * Therefore, WD2.2 is not more required as CSTN property but it is imposed as propagation rules.
-	 */
-	int wd2epsilon = 1;
-
-	/**
-	 * Absolute value of the max negative weight determined during initialization phase.
-	 */
-	int maxWeight = Constants.INT_NULL;
-
-	/**
-	 * Horizon value. A node that has to be executed after such time means that it has not to be executed!
-	 */
-	int horizon;
-
-	/**
-	 * Output stream to fOutput
-	 */
-	PrintStream output = null;
-
-	/**
-	 * Software Version.
-	 */
-	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
-	boolean versionReq = false;
-
-	/**
-	 * The name for the initial node.
-	 */
-	public static String ZeroNodeName = "Z";
-
-	/**
-	 * The name for the initial node.
-	 */
-	public static String OmegaNodeName = "Ω";
-
-	/**
-	 * Default constructor.
-	 */
-	CSTN() {
-	}
-
-	/**
-	 * Constructor for
-	 * 
-	 * @param g graph to check
-	 */
-	public CSTN(LabeledIntGraph g) {
-		this();
-		this.setG(g);// sets also checkStatus!
-	}
-
-	/**
-	 * checkWellDefinitionProperties.
-	 * It checks only WD1, WD2 (light version).
-	 *
-	 * @return true if the g is a CSTN well defined.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
-	 */
-	public boolean checkWellDefinitionProperties() throws WellDefinitionException {
-		boolean flag = false;
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Checking if graph is well defined...");
-			}
-		}
-		for (final LabeledIntEdge e : this.g.getEdges()) {
-			flag = checkWellDefinitionProperty1and3(this.g.getSource(e), this.g.getDest(e), e, false);
-		}
-		for (final LabeledNode node : this.g.getNodes()) {
-			flag = flag && checkWellDefinitionProperty2(node, false);
-		}
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, ((flag) ? "done: all is well defined.\n" : "done: something is wrong. Not well-defined graph!\n"));
-			}
-		}
-		return flag;
 	}
 
 	/**
@@ -1075,12 +1058,12 @@ public class CSTN {
 
 				// Normalize with respect to R0--R3
 				if (s.isObserver()) {
-					labelModificationR0(s, d, Z, e);
+					labelModificationR0qR0(s, d, Z, e);
 				}
-				this.labelModificationR3(s, d, Z, e);
+				this.labelModificationR3qR3(s, d, Z, e);
 				if (s.isObserver()) {
 					// again because R3 could have add a new value;
-					labelModificationR0(s, d, Z, e);
+					labelModificationR0qR0(s, d, Z, e);
 				}
 			}
 		} catch (IllegalStateException ex) {
@@ -1098,6 +1081,147 @@ public class CSTN {
 		}
 		this.checkStatus.initialized = true;
 		return true;
+	}
+
+	/**
+	 * Applies the labeled propagation rule:<br>
+	 * <b>Standard DC semantics is assumed.</b><br>
+	 * <b>This method is also valid assuming Instantaneous Reaction semantics or epsilon-reaction time.</b>
+	 * The rule is the EqLp+ not yet published.
+	 * 
+	 * <pre>
+	 * if A --[α, u]--&gt; B --[β, v]--&gt; C, then A --[(α★β)†, u+v]--&gt; C if u<0
+	 * 
+	 * α,β in Q*
+	 * (α★β)† is the label without children of unknown.
+	 *
+	 * If A==C and u+v < 0, then
+	 * - if (α★β)† does not contain ¿ literals, the network is not DC
+	 * - if (α★β)† contains ¿ literals, the u+v becomes -∞
+	 * 
+	 * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with nodes A == B or B==C!
+	 * </pre>
+	 * 
+	 * @param nA CANNOT BE NULL!
+	 * @param nB CANNOT BE NULL!
+	 * @param nC CANNOT BE NULL!
+	 * @param eAB CANNOT BE NULL! This parameter is necessary only to speed up the method!
+	 * @param eBC CANNOT BE NULL! This parameter is necessary only to speed up the method!
+	 * @param eAC CANNOT BE NULL! This parameter is necessary only to speed up the method!
+	 * @return true if a reduction has been applied.
+	 */
+	boolean labeledPropagationqLP(final LabeledNode nA, final LabeledNode nB, final LabeledNode nC, final LabeledIntEdge eAB,
+			final LabeledIntEdge eBC, LabeledIntEdge eAC) {
+		// Visibility is package because there is Junit Class test that checks this method.
+
+		boolean ruleApplied = false;
+		Label nAnCLabel = nA.getLabel().conjunction(nC.getLabel());
+		if (nAnCLabel == null)
+			return false;
+
+		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
+			final Label labelAB = ABEntry.getKey();
+			/**
+			 * If there is a self loop containing a (-∞, q*), it must be propagated! NO MORE USED!
+			 */
+			final int u = ABEntry.getIntValue();
+			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
+				final Label labelBC = BCEntry.getKey();
+				final int v = BCEntry.getIntValue();
+				boolean qLabel = false;
+				Label newLabelAC = null;
+				if ((u >= 0) && (v < 0)) {
+					newLabelAC = labelAB.conjunction(labelBC);
+					if (newLabelAC == null) {
+						continue;
+					}
+				} else {
+					newLabelAC = labelAB.conjunctionExtended(labelBC);
+					qLabel = newLabelAC.containsUnknown();
+					if (qLabel) {
+						removeChildrenOfUnknown(newLabelAC);
+					}
+				}
+				if (!newLabelAC.subsumes(nAnCLabel)) {
+					if (Debug.ON)
+						LOG.log(Level.FINEST,
+								"New alphaBeta label " + newLabelAC + " does not subsume node labels " + nAnCLabel + ". New value cannot be added.");
+					continue;
+				}
+
+				/**
+				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
+				 */
+				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
+				int oldValue = eAC.getValue(newLabelAC);
+
+				if (nA == nC) {
+					if (sum >= 0) {
+						// it would be a redundant edge
+						continue;
+					}
+					// sum is negative!
+					if (!qLabel) {
+						eAC.mergeLabeledValue(newLabelAC, sum);
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								String log = "Label Propagation Rule applied to edge " + eAC.getName()
+										+ ":\nsource: "
+										+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
+										+ "---> "
+										+ nC.getName()
+										+ "\nresult: "
+										+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
+										+ "; old value: " + Constants.formatInt(oldValue);
+								LOG.log(Level.FINER, log + "\n***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
+							}
+						}
+						this.checkStatus.consistency = false;
+						this.checkStatus.finished = true;
+						this.checkStatus.labeledValuePropagationcalls++;
+						return true;
+					}
+					sum = Constants.INT_NEG_INFINITE;
+				} else {
+					// in the case of A != C, a value is stored only if it is more negative than the current one.
+					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+						continue;
+					}
+				}
+				// here sum has to be add!
+				// I have to prepare the log before the execution of the merge!
+				String log = null;
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						log = "Label Propagation Rule applied to edge " + eAC.getName()
+								+ ":\nsource: "
+								+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
+								+ "---> "
+								+ nC.getName()
+								+ "\nresult: "
+								+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
+								+ "; old value: " + Constants.formatInt(oldValue);
+					}
+				}
+
+				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
+					ruleApplied = true;
+					this.checkStatus.labeledValuePropagationcalls++;
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.log(Level.FINER, log);
+						}
+					}
+					// if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
+					// if (v >= 0)
+					// this.checkStatus.qSemiNegLoop++;
+					// else
+					// this.checkStatus.qAllNegLoop++;
+					// }
+				}
+			}
+		}
+		return ruleApplied;
 	}
 
 	/**
@@ -1124,7 +1248,7 @@ public class CSTN {
 	 * @param eObsX the edge connecting nObs? ---&gt; X
 	 * @return true if the rule has been applied one time at least.
 	 */
-	boolean labelModificationR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge eObsX) {
+	boolean labelModificationR0qR0(final LabeledNode nObs, final LabeledNode nX, final LabeledNode nZ, final LabeledIntEdge eObsX) {
 		// Visibility is package because there is Junit Class test that checks this method.
 		boolean ruleApplied = false, mergeStatus;
 		final char p = nObs.getPropositionObserved();
@@ -1245,7 +1369,7 @@ public class CSTN {
 	 * @return true if a rule has been applied.
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
-	boolean labelModificationR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
+	boolean labelModificationR3qR3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nZ, final LabeledIntEdge eSD) {
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
@@ -1322,150 +1446,6 @@ public class CSTN {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, "Label Modification R3: end.");
-			}
-		}
-		return ruleApplied;
-	}
-
-	/**
-	 * Applies the labeled propagation rule:<br>
-	 * <b>Standard DC semantics is assumed.</b><br>
-	 * <b>This method is also valid assuming Instantaneous Reaction semantics.</b>
-	 * The rule is the EqLp+ not yet published.
-	 * 
-	 * <pre>
-	 * if A --[α, u]--&gt; B --[β, v]--&gt; C, then A --[(α★β)†, u+v]--&gt; C if u<0
-	 * 
-	 * α,β in Q*
-	 * (α★β)† is the label without children of unknown.
-	 *
-	 * If A==C and u+v < 0, then
-	 * - if (α★β)† does not contain ¿ literals, the network is not DC
-	 * - if (α★β)† contains ¿ literals, the u+v becomes -∞
-	 * 
-	 * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with nodes A == B or B==C!
-	 * </pre>
-	 * 
-	 * @param nA CANNOT BE NULL!
-	 * @param nB CANNOT BE NULL!
-	 * @param nC CANNOT BE NULL!
-	 * @param eAB CANNOT BE NULL! This parameter is necessary only to speed up the method!
-	 * @param eBC CANNOT BE NULL! This parameter is necessary only to speed up the method!
-	 * @param eAC CANNOT BE NULL! This parameter is necessary only to speed up the method!
-	 * @return true if a reduction has been applied.
-	 */
-	boolean labeledPropagationRule(final LabeledNode nA, final LabeledNode nB, final LabeledNode nC, final LabeledIntEdge eAB,
-			final LabeledIntEdge eBC, LabeledIntEdge eAC) {
-		// Visibility is package because there is Junit Class test that checks this method.
-
-		boolean ruleApplied = false;
-		Label nAnCLabel = nA.getLabel().conjunction(nC.getLabel());
-		if (nAnCLabel == null)
-			return false;
-
-		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
-			final Label labelAB = ABEntry.getKey();
-			/**
-			 * If there is a self loop containing a (-∞, q*), it must be propagated! NO MORE USED!
-			 */
-			final int u = ABEntry.getIntValue();
-			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
-				final Label labelBC = BCEntry.getKey();
-				Label newLabelAC = labelAB.conjunction(labelBC);
-				if (newLabelAC == null) {
-					continue;
-				}
-				if (!newLabelAC.subsumes(nAnCLabel)) {
-					if (Debug.ON)
-						LOG.log(Level.FINEST,
-								"New alphaBeta label " + newLabelAC + " does not subsume node labels " + nAnCLabel + ". New value cannot be added.");
-					continue;
-				}
-
-				final int v = BCEntry.getIntValue();
-				boolean qLabel = false;
-				if ((u >= 0) && (v < 0)) {
-					newLabelAC = labelAB.conjunction(labelBC);
-					if (newLabelAC == null) {
-						continue;
-					}
-				} else {
-					newLabelAC = labelAB.conjunctionExtended(labelBC);
-					qLabel = newLabelAC.containsUnknown();
-					if (qLabel) {
-						removeChildrenOfUnknown(newLabelAC);
-					}
-				}
-				/**
-				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
-				 */
-				int sum = AbstractLabeledIntMap.sumWithOverflowCheck(u, v);
-				int oldValue = eAC.getValue(newLabelAC);
-
-				if (nA == nC) {
-					if (sum >= 0) {
-						// it would be a redundant edge
-						continue;
-					}
-					// sum is negative!
-					if (!qLabel) {
-						eAC.mergeLabeledValue(newLabelAC, sum);
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINER)) {
-								String log = "Label Propagation Rule applied to edge " + eAC.getName()
-										+ ":\nsource: "
-										+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
-										+ "---> "
-										+ nC.getName()
-										+ "\nresult: "
-										+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
-										+ "; old value: " + Constants.formatInt(oldValue);
-								LOG.log(Level.FINER, log + "\n***\nFound a negative loop " + pairAsString(newLabelAC, sum) + " in the edge  " + eAC + "\n***");
-							}
-						}
-						this.checkStatus.consistency = false;
-						this.checkStatus.finished = true;
-						this.checkStatus.labeledValuePropagationcalls++;
-						return true;
-					}
-					sum = Constants.INT_NEG_INFINITE;
-				} else {
-					// in the case of A != C, a value is stored only if it is more negative than the current one.
-					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
-						continue;
-					}
-				}
-				// here sum has to be add!
-				// I have to prepare the log before the execution of the merge!
-				String log = null;
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
-						log = "Label Propagation Rule applied to edge " + eAC.getName()
-								+ ":\nsource: "
-								+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
-								+ "---> "
-								+ nC.getName()
-								+ "\nresult: "
-								+ nA.getName() + " ---" + pairAsString(newLabelAC, sum) + "---> " + nC.getName()
-								+ "; old value: " + Constants.formatInt(oldValue);
-					}
-				}
-
-				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
-					ruleApplied = true;
-					this.checkStatus.labeledValuePropagationcalls++;
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
-							LOG.log(Level.FINER, log);
-						}
-					}
-					// if (sum == Constants.INT_NEG_INFINITE && nA == nC && u != Constants.INT_NEG_INFINITE && v != Constants.INT_NEG_INFINITE) {
-					// if (v >= 0)
-					// this.checkStatus.qSemiNegLoop++;
-					// else
-					// this.checkStatus.qAllNegLoop++;
-					// }
-				}
 			}
 		}
 		return ruleApplied;
@@ -1815,12 +1795,12 @@ public class CSTN {
 			edgeCopy = this.g.getEdgeFactory().get(AB);
 			if (A.isObserver()) {
 				// R0 on the resulting new values
-				labelModificationR0(A, B, Z, AB);
+				labelModificationR0qR0(A, B, Z, AB);
 			}
-			labelModificationR3(A, B, Z, AB);
+			labelModificationR3qR3(A, B, Z, AB);
 			if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 				// R0 on the resulting new values
-				labelModificationR0(A, B, Z, AB);
+				labelModificationR0qR0(A, B, Z, AB);
 			}
 			if (!AB.equalsAllLabeledValues(edgeCopy)) {
 				newEdgesToCheck.add(AB, A, B, Z, this.g);
@@ -1843,7 +1823,7 @@ public class CSTN {
 					edgeCopy = null;
 				}
 
-				this.labeledPropagationRule(A, B, C, AB, BC, AC);
+				this.labeledPropagationqLP(A, B, C, AB, BC, AC);
 
 				/**
 				 * I need to clean values on AC
@@ -1905,7 +1885,7 @@ public class CSTN {
 					edgeCopy = null;
 				}
 
-				this.labeledPropagationRule(C, A, B, CA, AB, CB);
+				this.labeledPropagationqLP(C, A, B, CA, AB, CB);
 
 				if (edgeCopy == null && !CB.isEmpty()) {
 					// the new CB has to be added to the graph!
@@ -1973,12 +1953,12 @@ public class CSTN {
 				// Since in some graphs it is possible that there is not BC, we apply R0 and R3 to AB
 				if (A.isObserver()) {
 					// R0 on the resulting new values
-					labelModificationR0(A, B, Z, AB);
+					labelModificationR0qR0(A, B, Z, AB);
 				}
-				this.labelModificationR3(A, B, Z, AB);
+				this.labelModificationR3qR3(A, B, Z, AB);
 				if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 					// R0 on the resulting new values
-					labelModificationR0(A, B, Z, AB);
+					labelModificationR0qR0(A, B, Z, AB);
 				}
 				for (LabeledIntEdge BC : this.g.getOutEdges(B)) {
 					C = this.g.getDest(BC);
@@ -1986,12 +1966,12 @@ public class CSTN {
 
 					if (B.isObserver()) {
 						// R0 on the resulting new values
-						labelModificationR0(B, C, Z, BC);
+						labelModificationR0qR0(B, C, Z, BC);
 					}
-					this.labelModificationR3(B, C, Z, BC);
+					this.labelModificationR3qR3(B, C, Z, BC);
 					if (B.isObserver()) {// R3 can add new values that have to be minimized.
 						// R0 on the resulting new values
-						labelModificationR0(B, C, Z, BC);
+						labelModificationR0qR0(B, C, Z, BC);
 					}
 					// Now it is possible to propagate the labels with the standard rules
 					AC = this.g.findEdge(A, C);
@@ -2001,7 +1981,7 @@ public class CSTN {
 						AC = makeNewEdge(A.getName() + "_" + C.getName(), LabeledIntEdge.ConstraintType.derived);
 					}
 
-					this.labeledPropagationRule(A, B, C, AB, BC, AC);
+					this.labeledPropagationqLP(A, B, C, AB, BC, AC);
 
 					if (!this.checkStatus.consistency)
 						return this.checkStatus;
@@ -2018,7 +1998,7 @@ public class CSTN {
 
 					if (A.isObserver()) {
 						// R0 on the resulting new values
-						labelModificationR0(A, C, Z, AC);
+						labelModificationR0qR0(A, C, Z, AC);
 					}
 
 					// if (!this.excludeR1R2 && C.isObserver()) {
@@ -2027,11 +2007,11 @@ public class CSTN {
 					// }
 
 					// R3 on the resulting new values
-					this.labelModificationR3(A, C, Z, AC);
+					this.labelModificationR3qR3(A, C, Z, AC);
 
 					if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
 						// R0 on the resulting new values
-						labelModificationR0(A, C, Z, AC);
+						labelModificationR0qR0(A, C, Z, AC);
 					}
 
 					// if (!this.excludeR1R2) {

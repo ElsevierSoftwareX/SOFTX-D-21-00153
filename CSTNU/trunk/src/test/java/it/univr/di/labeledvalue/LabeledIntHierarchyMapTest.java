@@ -446,7 +446,7 @@ public class LabeledIntHierarchyMapTest {
 		this.actual.put(NaNb, -20);
 		this.actual.put(Label.emptyLabel, -16);
 
-		assertEquals("{(-16, ⊡) (-20, ¬a¬b) (-46, ¬a¬b¬c¬de) (-56, a) }", this.actual.toString());
+		assertEquals("{(-16, ⊡) (-56, a) (-20, ¬a¬b) (-46, ¬a¬b¬c¬de) }", this.actual.toString());
 		// System.out.println("actual: " + actual);
 
 	}
@@ -485,7 +485,7 @@ public class LabeledIntHierarchyMapTest {
 		this.actual.put(Label.parse("a"), 642);
 		this.actual.put(Label.parse("a"), 642);
 		
-		assertEquals("{(916, ⊡) (459, ¬a¬b) (373, ¬a¬b¬c¬de) (775, ¬ab¬d¬e) (752, ¬a¬c¬de) (642, a) (890, ¬d¬e) }", this.actual.toString());
+		assertEquals("{(916, ⊡) (642, a) (459, ¬a¬b) (890, ¬d¬e) (775, ¬ab¬d¬e) (752, ¬a¬c¬de) (373, ¬a¬b¬c¬de) }", this.actual.toString());
 	}
 
 	@SuppressWarnings("javadoc")
@@ -868,7 +868,7 @@ public class LabeledIntHierarchyMapTest {
 		this.actual.put(Label.parse("cp"), -1);
 		// System.out.println(map);
 
-		assertEquals("{(10, bgp) (-1, cp) }", this.actual.toString());
+		assertEquals("{(-1, cp) (10, bgp) }", this.actual.toString());
 	}
 
 	/**

@@ -271,7 +271,7 @@ public class LabeledALabelIntTreeMapTest {
 		final int nTest = (int) 1E2;
 		LabeledALabelIntTreeMap map = new LabeledALabelIntTreeMap();
 		SummaryStatistics entrySetStats = new SummaryStatistics(), keySetStats = new SummaryStatistics();
-		int[] value = { 50, 100, 1000, 50000 };
+		int[] value = { 50, 100, 1000, 5000, 10000 };
 		int nChar = 'z' - 'a' + 1;
 		char[] chars = new char[nChar];
 		for (int j = 'a'; j <= 'z'; j++)
@@ -291,10 +291,10 @@ public class LabeledALabelIntTreeMapTest {
 			}
 			// System.out.println("Map size: " + map);
 			testEntrySetTime(map, nTest, entrySetStats, keySetStats);
-			System.out.println("Time to retrieve " + map.size() + " elements using entrySet(): " + entrySetStats.getMean() + "ms");
+			// System.out.println("Time to retrieve " + map.size() + " elements using entrySet(): " + entrySetStats.getMean() + "ms");
 			System.out.println("Time to retrieve " + map.size() + " elements using keySet(): " + keySetStats.getMean() + "ms");
-			System.out.println("The difference is " + (entrySetStats.getMean() - keySetStats.getMean()) + " ms. It is better to use: "
-					+ ((entrySetStats.getMean() < keySetStats.getMean()) ? "entrySet()" : "keySet()") + " approach.\n");
+			// System.out.println("The difference is " + (entrySetStats.getMean() - keySetStats.getMean()) + " ms. It is better to use: "
+			// + ((entrySetStats.getMean() < keySetStats.getMean()) ? "entrySet()" : "keySet()") + " approach.\n");
 		}
 	}
 

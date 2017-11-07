@@ -22,7 +22,7 @@ import org.netbeans.validation.api.Validator;
  * composing a label:
  * the two long are used in pair; each position of them is associated to a possible literal (position 0 to 'A',...,position 63 to 'μ'); given a position,
  * the two corresponding bits in the two long can represent all possible four states ({@link Literal#ABSENT},
- * {@link Literal#STRAIGHT},{@link Literal#NEGATED},{@link Literal#UNKNONW}) of the literal associated to the position.
+ * {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}) of the literal associated to the position.
  * </p>
  * <p>
  * The following table represent execution times of some Label operations determined using different implementation of this class.
@@ -125,7 +125,6 @@ import org.netbeans.validation.api.Validator;
  */
 public class Label implements Comparable<Label> {
 
-
 	/**
 	 * An unmodifiable empty label.
 	 * 
@@ -137,6 +136,20 @@ public class Label implements Comparable<Label> {
 		 */
 		public EmptyLabel() {
 			super();
+		}
+
+		@Override
+		public void clear() {
+			return;
+		}
+
+		@Override
+		public int compareTo(Label label) {
+			if (label == null)
+				return 1;
+			if (label.isEmpty())
+				return 0;
+			return -1;
 		}
 
 		@Override
@@ -160,6 +173,31 @@ public class Label implements Comparable<Label> {
 		}
 
 		@Override
+		public boolean contains(char proposition) {
+			return false;
+		}
+
+		@Override
+		public boolean contains(Literal l) {
+			return false;
+		}
+
+		@Override
+		public boolean containsUnknown() {
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return 0;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return true;
+		}
+
+		@Override
 		public final void remove(char c) {
 			return;
 		}
@@ -173,6 +211,17 @@ public class Label implements Comparable<Label> {
 		public final boolean remove(Literal l) {
 			return false;
 		}
+
+		@Override
+		public int size() {
+			return 0;
+		}
+
+		@Override
+		public String toString() {
+			return Constants.EMPTY_LABELstring;
+		}
+
 	}
 
 	/**
@@ -181,16 +230,22 @@ public class Label implements Comparable<Label> {
 	public static final Label emptyLabel = new EmptyLabel();
 
 	/**
+	 * Maximal number of possible proposition in a network.<br>
+	 * This limit cannot be change without revising all this class code.
+	 */
+	public static final int NUMBER_OF_POSSIBLE_PROPOSITIONS = 64;
+
+	/**
 	 * <pre>
 	 * Possible status of a literal
 	 * 				bit1[i] bit0[i]
 	 * not present 		0 		0
-	 * negated 			0		1
-	 * straight 			1		0
+	 * straight 			0		1
+	 * negated 			1		0
 	 * unknown 			1		1
 	 * </pre>
 	 */
-	private static final char[] LITERAL_STATE = { Literal.ABSENT, Literal.NEGATED, Literal.STRAIGHT, Literal.UNKNONW };
+	private static final char[] LITERAL_STATE = { Literal.ABSENT, Literal.STRAIGHT, Literal.NEGATED, Literal.UNKNONW };
 
 	/**
 	 * Regular expression representing a Label.
@@ -271,8 +326,6 @@ public class Label implements Comparable<Label> {
 		}
 		return newLabel;
 	}
-
-
 
 	/**
 	 * Parse a string representing a label and return an equivalent Label object if no errors are found, null otherwise.<br>
@@ -357,8 +410,8 @@ public class Label implements Comparable<Label> {
 	 * Status of i-th literal
 	 *              bit1[i] bit0[i]
 	 * not present          0   0
-	 * negated              0   1
-	 * straight             1   0
+	 * straight             0   1
+	 * negated              1   0
 	 * unknown              1   1
 	 * </pre>
 	 */
@@ -366,7 +419,7 @@ public class Label implements Comparable<Label> {
 	private long bit1, bit0;
 
 	/**
-	 * Index of the last significant literal of label w.r.t. lexicographical order.
+	 * Index of the highest-order ("leftmost") literal of label w.r.t. lexicographical order.
 	 * On 2016-03-30 I showed by SizeofUtilTest.java that using byte it is possible to define also 'size' field without incrementing the memory footprint of the
 	 * object.
 	 */
@@ -428,38 +481,52 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * {@inheritDoc} Determines a lexicographical order between labels based on the natural order of type {@link Literal}.
+	 * {@inheritDoc} Determines an order based on length of label. Same length labels are in lexicographical order based on the natural order of type
+	 * {@link Literal}.
 	 */
 	@Override
 	public int compareTo(final Label label) {
 		if (label == null)
 			return 1;
-		byte i = 0, j = 0, cmp = 0;
-		char thisState, labelState;
+		if (this.equals(label))
+			return 0;// fast comparison!
+		if (this.size() < label.size())
+			return -1;
+		if (this.size() > label.size())
+			return 1;
+
+		int i = 0, j = 0, cmp = 0;
+		int thisState, labelState;
+		long maskI = 1L, maskJ = 1L;
 		while (i <= this.maxIndex && j <= label.maxIndex) {
-			while ((thisState = get(i)) == Literal.ABSENT && i <= this.maxIndex) {
+			while ((thisState = ((((this.bit1 & maskI) != 0) ? 2 : 0) + (((this.bit0 & maskI) != 0) ? 1 : 0))) == 0 && i <= this.maxIndex) {
 				i++;
+				maskI <<= 1;
 			}
-			while ((labelState = label.get(j)) == Literal.ABSENT && j <= label.maxIndex) {
+			while ((labelState = ((((label.bit1 & maskJ) != 0) ? 2 : 0) + (((label.bit0 & maskJ) != 0) ? 1 : 0))) == 0 && j <= label.maxIndex) {
 				j++;
+				maskJ <<= 1;
 			}
 			if (i != j)
 				return i - j;
-			cmp = (byte) (Literal.getStateOrdinal(thisState) - Literal.getStateOrdinal(labelState));
+			cmp = thisState - labelState;
 			if (cmp != 0)
 				return cmp;
 			i++;
+			maskI <<= 1;
 			j++;
+			maskJ <<= 1;
 		}
-		if (i > this.maxIndex) {
-			if (j <= label.maxIndex)
-				return -1;
-			return 0;
-		}
+		// the following part of code will never reached if the two labels have the same length!
+		// if (i > this.maxIndex) {
+		// if (j <= label.maxIndex)
+		// return -1;
+		// return 0;
+		// }
 		// i<=maxIndex
-		if (j > label.maxIndex)
-			return 1;
-		return 0;// impossible
+		// if (j > label.maxIndex)
+		// return 1;
+		return 0;// impossible but necessary for avoiding the warning!
 	}
 
 	/**
@@ -525,6 +592,30 @@ public class Label implements Comparable<Label> {
 	 */
 	public boolean conjunctExtended(final Literal literal) {
 		return conjunctExtended(literal.getName(), literal.getState());
+	}
+
+	/**
+	 * It conjuncts the given label to this using also {@link Literal#UNKNONW} literals.
+	 * A {@link Literal#UNKNONW} literal represent the fact that in the two input labels a proposition letter is present as straight state in
+	 * one label and in negated state in the other.<br>
+	 * For a detail about the conjunction of unknown literals, see {@link #conjunctExtended(char, char)}.
+	 * 
+	 * @param label the input label.
+	 * @return boolean true if the conjunction changed this.
+	 */
+	public boolean conjunctExtended(final Label label) {
+		if (label == null)
+			return false;
+		long unionB0 = this.bit0 | label.bit0;
+		long unionB1 = this.bit1 | label.bit1;
+		boolean changed = (this.bit0 != unionB0) || (this.bit1 != unionB1);
+		if (!changed)
+			return false;
+		this.bit0 = unionB0;
+		this.bit1 = unionB1;
+		this.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
+		this.cacheOfSize = -1;// it has to be calculated... delay the stuff.
+		return true;
 	}
 
 	/**
@@ -608,8 +699,17 @@ public class Label implements Comparable<Label> {
 	public boolean equals(final Object obj) {
 		if ((obj == null) || !(obj instanceof Label))
 			return false;
-		final Label l1 = (Label) obj;
-		return this.bit1 == l1.bit1 && this.bit0 == l1.bit0;
+		return this.equals((Label) obj);
+	}
+
+	/**
+	 * This method is for a faster check. Not null check is not done!
+	 * 
+	 * @param label a not null label!
+	 * @return true if the two labels are equal!
+	 */
+	public boolean equals(final Label label) {
+		return this.bit1 == label.bit1 && this.bit0 == label.bit0;
 	}
 
 	/**
@@ -624,14 +724,14 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @return The array of literal with unknown status in this label.
+	 * @return The array of propositions (char) that have unknown status in this label.
 	 */
 	public char[] getAllUnknown() {
 		if (this.maxIndex <= 0)
 			return new char[0];
 		char[] indexes = new char[size()];
 		int j = 0;
-		for (byte i = 0; i <= this.maxIndex; i++) {
+		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			if (get(i) == Literal.UNKNONW) {
 				indexes[j++] = Literal.charValue(i);
 			}
@@ -640,13 +740,13 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @return The array of proposition of present literals in this label.
+	 * @return An array containing a copy of literals in this label.
 	 */
 	public Literal[] getLiterals() {
 		Literal[] indexes = new Literal[size()];
 		int j = 0;
 		char state;
-		for (byte i = 0; i <= this.maxIndex; i++) {
+		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			if ((state = get(i)) != Literal.ABSENT) {
 				indexes[j++] = Literal.create(Literal.charValue(i), state);
 			}
@@ -674,6 +774,43 @@ public class Label implements Comparable<Label> {
 	 */
 	public final char getStateLiteralWithSameName(final char c) {
 		return get(Literal.index(c));
+	}
+
+	/**
+	 * Determines the sub label of <code>this</code> that is also present (not present) in label <code>lab</code>.
+	 * <p>
+	 *
+	 * @param label the label in which to find the common/uncommon sub-part.
+	 * @param inCommon true if the common sub-label is wanted, false if the sub-label present in <code>this</code> and not in <code>lab</code> is wanted.
+	 * @return the sub label of <code>this</code> that is in common/not in common (if inCommon is true/false) with <code>lab</code>. The label returned is a new
+	 *         object that shares only literals with this or with from. If there is no common part, an empty label is returned.
+	 */
+	public Label getSubLabelIn(final Label label, final boolean inCommon) {
+		final Label sub = new Label();
+		if (this.isEmpty())
+			return sub;
+		if ((label == null) || label.isEmpty())
+			return (inCommon) ? sub : new Label(this);
+		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
+			char thisState = get(i);
+			if (thisState == Literal.ABSENT)
+				continue;
+			char labelState = label.get(i);
+			if (inCommon) {
+				if (labelState == Literal.ABSENT)
+					continue;
+				if (thisState == labelState) {
+					sub.set(i, labelState);
+					continue;
+				}
+			} else {
+				if (labelState != thisState) {
+					sub.set(i, thisState);
+					continue;
+				}
+			}
+		}
+		return sub;
 	}
 
 	/**
@@ -714,43 +851,6 @@ public class Label implements Comparable<Label> {
 				}
 			} else {
 				if (labelState == Literal.ABSENT) {
-					sub.set(i, thisState);
-					continue;
-				}
-			}
-		}
-		return sub;
-	}
-
-	/**
-	 * Determines the sub label of <code>this</code> that is also present (not present) in label <code>lab</code>.
-	 * <p>
-	 *
-	 * @param label the label in which to find the common/uncommon sub-part.
-	 * @param inCommon true if the common sub-label is wanted, false if the sub-label present in <code>this</code> and not in <code>lab</code> is wanted.
-	 * @return the sub label of <code>this</code> that is in common/not in common (if inCommon is true/false) with <code>lab</code>. The label returned is a new
-	 *         object that shares only literals with this or with from. If there is no common part, an empty label is returned.
-	 */
-	public Label getSubLabelIn(final Label label, final boolean inCommon) {
-		final Label sub = new Label();
-		if (this.isEmpty())
-			return sub;
-		if ((label == null) || label.isEmpty())
-			return (inCommon) ? sub : new Label(this);
-		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
-			char thisState = get(i);
-			if (thisState == Literal.ABSENT)
-				continue;
-			char labelState = label.get(i);
-			if (inCommon) {
-				if (labelState == Literal.ABSENT)
-					continue;
-				if (thisState == labelState) {
-					sub.set(i, labelState);
-					continue;
-				}
-			} else {
-				if (labelState != thisState) {
 					sub.set(i, thisState);
 					continue;
 				}
@@ -847,12 +947,12 @@ public class Label implements Comparable<Label> {
 		 * We consider L<sub>1</sub> &#x2605; L<sub>2</sub>,
 		 */
 		// both this and label have bit0 | bit1 != 0
-		long xBit0 = this.bit0 ^ label.bit0;// each bit=1 corresponds to 1) a negative literal present only in one label
-		// or 2) a unknown literal present only in one label
-		// or 3) a negative literal present in one label and the opposite present in the other
-		long xBit1 = this.bit1 ^ label.bit1;// each bit=1 corresponds to 1) a positive literal present only in one label
+		long xBit0 = this.bit0 ^ label.bit0;// each bit=1 corresponds to 1) a positive literal present only in one label
 		// or 2) a unknown literal present only in one label
 		// or 3) a positive literal present in one label and the opposite present in the other
+		long xBit1 = this.bit1 ^ label.bit1;// each bit=1 corresponds to 1) a negative literal present only in one label
+		// or 2) a unknown literal present only in one label
+		// or 3) a negative literal present in one label and the opposite present in the other
 		long aBit = xBit0 & xBit1;
 		aBit = aBit & ~(this.bit0 & this.bit1) & ~(label.bit0 & label.bit1);// ~(this.bit0 & this.bit1) contains 0 in correspondence of possible ¿p in this
 		return aBit == 0;
@@ -980,8 +1080,8 @@ public class Label implements Comparable<Label> {
 		 * Status of i-th literal
 		 *             bit1[i] bit0[i]
 		 * not present       0 0
-		 * negated           0 1
-		 * straight          1 0
+		 * straight          0 1
+		 * negated           1 0
 		 * unknown           1 1
 		 * </pre>
 		 */
@@ -990,18 +1090,18 @@ public class Label implements Comparable<Label> {
 		case Literal.STRAIGHT:
 			if (((this.bit1 | this.bit0) & mask) == 0)
 				this.cacheOfSize++;
-			this.bit1 |= mask;
+			this.bit0 |= mask;
 			mask = ~mask;
-			this.bit0 &= mask;
+			this.bit1 &= mask;
 			if (this.maxIndex < literalIndex)
 				this.maxIndex = literalIndex;
 			return;
 		case Literal.NEGATED:
 			if (((this.bit1 | this.bit0) & mask) == 0)
 				this.cacheOfSize++;
-			this.bit0 |= mask;
+			this.bit1 |= mask;
 			mask = ~mask;
-			this.bit1 &= mask;
+			this.bit0 &= mask;
 			if (this.maxIndex < literalIndex)
 				this.maxIndex = literalIndex;
 			return;
@@ -1039,14 +1139,16 @@ public class Label implements Comparable<Label> {
 		if (this.cacheOfSize >= 0) {
 			return this.cacheOfSize;
 		}
-		byte _cacheOfSize = 0;
-		long or = this.bit0 | this.bit1;
-		for (int i = this.maxIndex + 1; (--i) >= 0;) {
-			_cacheOfSize += (or & 1);
-			or = or >>> 1;
-		}
-		this.cacheOfSize = _cacheOfSize;
-		return _cacheOfSize;
+		// byte _cacheOfSize = 0;
+		// long or = this.bit0 | this.bit1;
+		// for (int i = this.maxIndex + 1; (--i) >= 0;) {
+		// _cacheOfSize += (or & 1);
+		// or = or >>> 1;
+		// }
+		// this.cacheOfSize = _cacheOfSize;
+		// return _cacheOfSize;
+		this.cacheOfSize = (byte) Long.bitCount(this.bit0 | this.bit1);
+		return this.cacheOfSize;
 	}
 
 	/**

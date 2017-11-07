@@ -88,6 +88,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public boolean equalsByName(final Component c) {
 		if (c == null) return false;
 		return this.name.equals(c.getName());
@@ -98,6 +99,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 *
 	 * @return the name of the component
 	 */
+	@Override
 	public String getName() {
 		return this.name;
 	}

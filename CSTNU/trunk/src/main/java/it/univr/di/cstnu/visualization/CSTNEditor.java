@@ -69,7 +69,7 @@ import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNepsilon;
 import it.univr.di.cstnu.algorithms.CSTNir;
-import it.univr.di.cstnu.algorithms.CSTNirRestricted;
+import it.univr.di.cstnu.algorithms.CSTNir3R;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
 import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
@@ -168,7 +168,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			CSTNEditor.this.cstn = new CSTNirRestricted(CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstn = new CSTNir3R(CSTNEditor.this.checkedGraph);
 
 			jl.setBackground(Color.orange);
 			try {

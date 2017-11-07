@@ -706,14 +706,14 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		if (this.cacheOfSize >= 0) {
 			return this.cacheOfSize;
 		}
-		byte _cacheOfSize = 0;
-		long or = this.bit0;
-		for (int i = this.maxIndex + 1; (--i) >= 0;) {
-			_cacheOfSize += (or & 1);
-			or = or >>> 1;
-		}
-		this.cacheOfSize = _cacheOfSize;
-		return _cacheOfSize;
+		// byte _cacheOfSize = 0;
+		// long or = this.bit0;
+		// for (int i = this.maxIndex + 1; (--i) >= 0;) {
+		// _cacheOfSize += (or & 1);
+		// or = or >>> 1;
+		// }
+		this.cacheOfSize = (byte) Long.bitCount(this.bit0);
+		return this.cacheOfSize;
 	}
 
 	/**

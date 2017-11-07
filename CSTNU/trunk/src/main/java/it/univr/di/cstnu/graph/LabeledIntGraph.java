@@ -29,10 +29,10 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectList;
-import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
@@ -100,6 +100,21 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private static final long serialVersionUID = 1L;
 
 	/**
+	 * @return an instance for childrenOfObserver field.
+	 */
+	private static final Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
+		return new Object2ObjectArrayMap<>();// in Label I showed that for small map, ArrayMap is faster than Object2ObjectRBTreeMap and
+												// Object2ObjectAVLTreeMap.
+	}
+
+	/**
+	 * @return an instance for propositionToNode field.
+	 */
+	private static final Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
+		return new Char2ObjectArrayMap<>();// I verified that Char2ObjectArrayMap is faster than Openhash when proposition are limited, as in this application.
+	}
+
+	/**
 	 * The graph is represented by its adjacency matrix.
 	 */
 	private LabeledIntEdge[][] adjacency;
@@ -138,13 +153,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * Alphabet for A-Label
 	 */
 	private ALabelAlphabet aLabelAlphabet;
-
-	/**
-	 * @return the aLabelAlphabet
-	 */
-	public ALabelAlphabet getALabelAlphabet() {
-		return this.aLabelAlphabet;
-	}
 
 	/**
 	 * List of edges with lower case label set not empty
@@ -192,8 +200,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private LabeledNode Ω;
 
 	/**
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
-	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
+	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
+	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
 	public <C extends LabeledIntMap> LabeledIntGraph(Class<C> internalMapImplementationClass) {
 		super(EdgeType.DIRECTED);
@@ -216,8 +224,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * A constructor that copy a given graph g using copy constructor even for internal structures. If g is null, this new graph will be empty.
 	 *
 	 * @param g the graph to be cloned
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
-	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
+	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
+	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
 	public <C extends LabeledIntMap> LabeledIntGraph(final LabeledIntGraph g, Class<C> internalMapImplementationClass) {
 		this(internalMapImplementationClass);
@@ -280,6 +288,25 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this(internalMapImplementationClass);
 		this.name = name;
 		this.aLabelAlphabet = alphabet;
+	}
+
+	/**
+	 * Add child to obs.
+	 * It is user responsibility to assure that 'child' is a children in CSTN sense of 'obs'.
+	 * No validity check is made by the method.
+	 * 
+	 * @param obs
+	 * @param child
+	 */
+	public void addChildToObserverNode(LabeledNode obs, char child) {
+		if (this.childrenOfObserver == null)
+			this.childrenOfObserver = newChildrenObserverInstance();
+		Label children = this.childrenOfObserver.get(obs);
+		if (children == null) {
+			children = new Label();
+			this.childrenOfObserver.put(obs, children);
+		}
+		children.conjunct(child, Literal.STRAIGHT);
 	}
 
 	/**
@@ -404,6 +431,21 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		clearCache();
 		vertex.addObserver(this);
 		return true;
+	}
+
+	/**
+	 * builds this.observer2Z;
+	 */
+	private void buildObserver2ZEdgesSet() {
+		this.observer2Z = new ObjectArrayList<>();
+		if (this.Z == null)
+			return;
+		Char2ObjectMap<LabeledNode> observers = getObservedAndObserver();
+		for (final LabeledNode node : observers.values()) {
+			LabeledIntEdge e = this.findEdge(node, this.Z);
+			if (e != null)
+				this.observer2Z.add(e);
+		}
 	}
 
 	/**
@@ -534,11 +576,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			}
 			for (ALabel alabel : e.getUpperCaseValueMap().keySet()) {
 				LabeledIntTreeMap labeledValues = e.getUpperCaseValueMap().get(alabel);
-				 for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+				for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
 					eNew.mergeUpperCaseValue(entry1.getKey(), alabel, entry1.getIntValue());
-				 }
+				}
 			}
-			//lower case value
+			// lower case value
 			eNew.setLowerCaseValue(e.getLowerCaseValue());
 
 			addEdge((AbstractLabeledIntEdge) eNew, g.getSource(e).getName(), g.getDest(e).getName());
@@ -591,22 +633,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * Add child to obs.
-	 * It is user responsibility to assure that 'child' is a children in CSTN sense of 'obs'.
-	 * No validity check is made by the method.
-	 * 
-	 * @param obs
-	 * @param child
+	 * @return the aLabelAlphabet
 	 */
-	public void addChildToObserverNode(LabeledNode obs, char child) {
-		if (this.childrenOfObserver == null)
-			this.childrenOfObserver = newChildrenObserverInstance();
-		Label children = this.childrenOfObserver.get(obs);
-		if (children == null) {
-			children = new Label();
-			this.childrenOfObserver.put(obs, children);
-		}
-		children.conjunct(child, Literal.STRAIGHT);
+	public ALabelAlphabet getALabelAlphabet() {
+		return this.aLabelAlphabet;
 	}
 
 	/**
@@ -646,6 +676,18 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		return this.childrenOfObserver.get(obs);
 	}
 
+	/**
+	 * @return the number of contingents
+	 */
+	public int getContingentCount() {
+		int c = 0;
+		for (LabeledIntEdge e : this.getEdges()) {
+			if (e.isContingentEdge())
+				c++;
+		}
+		return c / 2;
+	}
+
 	@Override
 	public LabeledNode getDest(LabeledIntEdge directedEdge) {
 		EdgeIndex ei = this.edge2index.get(directedEdge.getName());
@@ -683,7 +725,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * {@inheritDoc} Specific implementation: In order to compare saved files more easily, we save nodes and edges in lexicographical order.
+	 * {@inheritDoc}
 	 */
 	@Override
 	public Collection<LabeledIntEdge> getEdges() {
@@ -699,7 +741,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * getEdgesArray.
 	 *
-	 * @return the set of edges as an array ordered w.r.t the name of edge in ascending order.
+	 * @return the set of edges as an array.
 	 */
 	public LabeledIntEdge[] getEdgesArray() {
 		final LabeledIntEdge[] edgesA = this.getEdges().toArray(this.edgeFactory.get(this.getEdgeCount()));
@@ -723,6 +765,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return null;
 
 		return new Pair<>(this.index2node.get(ei.rowAdj), this.index2node.get(ei.colAdj));
+	}
+
+	/**
+	 * @return the name of the file that contains this graph.
+	 */
+	public File getFileName() {
+		return this.fileName;
 	}
 
 	@Override
@@ -810,9 +859,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			if (this.adjacency[i][nodeIndex] != null)
 				neighbors.add(this.index2node.get(i));
 		}
-		if (neighbors.size() > 0)
-			return neighbors;
-		return null;
+		return neighbors;
 	}
 
 	/**
@@ -837,32 +884,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * @param c the request proposition
-	 * @return the node that observes the proposition l if it exists, null otherwise.
-	 */
-	public LabeledNode getObserver(final char c) {
-		final Char2ObjectMap<LabeledNode> observer = this.getObservedAndObserver();
-		if (observer == null)
-			return null;
-
-		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST))
-				LabeledIntGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
-		}
-		return observer.get(c);
-	}
-
-	/**
-	 * @return the set of observator time-points.
-	 */
-	public Collection<LabeledNode> getObservers() {
-		if (this.proposition2Observer == null) {
-			getObservedAndObserver();
-		}
-		return this.proposition2Observer.values();
-	}
-
-	/**
 	 * @return the map of propositions and their observers (nodes). If there is no observer node, it returns an empty map. The key is the literal observed.
 	 */
 	public Char2ObjectMap<LabeledNode> getObservedAndObserver() {
@@ -879,6 +900,22 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
+	 * @param c the request proposition
+	 * @return the node that observes the proposition l if it exists, null otherwise.
+	 */
+	public LabeledNode getObserver(final char c) {
+		final Char2ObjectMap<LabeledNode> observer = this.getObservedAndObserver();
+		if (observer == null)
+			return null;
+
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				LabeledIntGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
+		}
+		return observer.get(c);
+	}
+
+	/**
 	 * Be careful! The returned value is not a copy as the edges contained!
 	 * 
 	 * @return the set of edges from observers to Z if Z is defined, empty set otherwise.
@@ -891,18 +928,20 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * builds this.observer2Z;
+	 * @return the number of observers.
 	 */
-	private void buildObserver2ZEdgesSet() {
-		this.observer2Z = new ObjectArrayList<>();
-		if (this.Z == null)
-			return;
-		Char2ObjectMap<LabeledNode> observers = getObservedAndObserver();
-		for (final LabeledNode node : observers.values()) {
-			LabeledIntEdge e = this.findEdge(node, this.Z);
-			if (e != null)
-				this.observer2Z.add(e);
+	public int getObserverCount() {
+		return this.getObservers().size();
+	}
+
+	/**
+	 * @return the set of observator time-points.
+	 */
+	public Collection<LabeledNode> getObservers() {
+		if (this.proposition2Observer == null) {
+			getObservedAndObserver();
 		}
+		return this.proposition2Observer.values();
 	}
 
 	@Override
@@ -1027,7 +1066,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		final String g1name = g1.name;
 
 		boolean sameEdges = true;
-		ObjectSet<LabeledIntEdge> allEdges = new ObjectRBTreeSet<>(getEdges());
+		ObjectSet<LabeledIntEdge> allEdges = new ObjectAVLTreeSet<>(getEdges());
 		allEdges.addAll(g1.getEdges());
 		LabeledIntEdge eg, eg1;
 		for (LabeledIntEdge e : allEdges) {
@@ -1149,6 +1188,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		clearCache();
 
 		return true;
+	}
+
+	/**
+	 * @param fileName
+	 */
+	public void setFileName(File fileName) {
+		this.fileName = fileName;
 	}
 
 	/**
@@ -1345,53 +1391,5 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		EdgeIndex ei = this.edge2index.get(e.getName());
 		ei.rowAdj = row;
 		ei.colAdj = col;
-	}
-
-	/**
-	 * @return an instance for childrenOfObserver field.
-	 */
-	private static final Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
-		return new Object2ObjectArrayMap<>();// in Label I showed that for small map, ArrayMap is faster than Object2ObjectRBTreeMap and
-												// Object2ObjectAVLTreeMap.
-	}
-
-	/**
-	 * @return an instance for propositionToNode field.
-	 */
-	private static final Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
-		return new Char2ObjectArrayMap<>();// I verified that Char2ObjectArrayMap is faster than Openhash can work better for such application.
-	}
-
-	/**
-	 * @return the number of contingents
-	 */
-	public int getContingentCount() {
-		int c = 0;
-		for (LabeledIntEdge e : this.getEdges()) {
-			if (e.isContingentEdge())
-				c++;
-		}
-		return c / 2;
-	}
-
-	/**
-	 * @return the number of observers.
-	 */
-	public int getObserverCount() {
-		return this.getObservers().size();
-	}
-
-	/**
-	 * @return the name of the file that contains this graph.
-	 */
-	public File getFileName() {
-		return this.fileName;
-	}
-
-	/**
-	 * @param fileName
-	 */
-	public void setFileName(File fileName) {
-		this.fileName = fileName;
 	}
 }

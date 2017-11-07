@@ -110,19 +110,23 @@ public class LabeledIntEdgeSimpleTest {
 		e.setName("e");
 		LabeledIntMap map = AbstractLabeledIntMap.parse("{(-20, ab) }");
 		assertEquals(map.toString(), "{(-20, ab) }");
+
 		map = AbstractLabeledIntMap.parse("{(-20, ab) (-∞, ¿ab) }");
 		assertEquals(map.toString(), "{(-20, ab) (-∞, ¿ab) }");
+
 		map = AbstractLabeledIntMap.parse("{(-20, ab) (-∞, ¿ab) (-8, ¬b)  }");
-		assertEquals(map.toString(), "{(-20, ab) (-∞, ¿ab) (-8, ¬b) }");
+		assertEquals("{(-8, ¬b) (-20, ab) (-∞, ¿ab) }", map.toString());
+
 		map = AbstractLabeledIntMap.parse("{(-20, ab) (-∞, ¿ab) (-8, ¬b) (-17, b) }");
-		assertEquals(map.toString(), "{(-20, ab) (-∞, ¿ab) (-8, ¬b) (-17, b) }");
+		assertEquals("{(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }", map.toString());
+
 		e.setLabeledValueMap(map);
 		LabeledALabelIntTreeMap map1 = LabeledALabelIntTreeMap
 				.parse("{(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }", this.alpha);
 		e.setUpperCaseValueMap(map1);
 
 		assertEquals(
-				"❮e; normal; {(-20, ab) (-∞, ¿ab) (-8, ¬b) (-17, b) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		LabeledIntEdgePluggable e1 = edgeFactory.get(e);
@@ -203,31 +207,31 @@ public class LabeledIntEdgeSimpleTest {
 		e.setUpperCaseValueMap(mapUC);
 
 		assertEquals(
-				"❮e; normal; {(0, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(0, ⊡) }; UL: {(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("¬ab"), -20);
 
 		assertEquals(
-				"❮e; normal; {(0, ⊡) (-20, ¬ab) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(0, ⊡) (-20, ¬ab) }; UL: {(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("ab"), -20);
 
 		assertEquals(
-				"❮e; normal; {(0, ⊡) (-20, b) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(0, ⊡) (-20, b) }; UL: {(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("¬b"), -20);
 
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(-20, ⊡) }; UL: {(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("a"), -30);
 
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) (-30, a) }; UL: {(D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(-20, ⊡) (-30, a) }; UL: {(D, -∞, ¿ab) (D, -∞, a¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 	}

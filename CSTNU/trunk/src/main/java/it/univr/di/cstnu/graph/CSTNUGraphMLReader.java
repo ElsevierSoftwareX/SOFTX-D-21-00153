@@ -46,14 +46,24 @@ public class CSTNUGraphMLReader {
 	static final Logger LOG = Logger.getLogger(CSTNUGraphMLReader.class.getName());
 
 	/**
+	 * 
+	 */
+	static final String prefix = "__";
+
+	/**
 	 * ALabel alphabet for UC a-labels
 	 */
-	ALabelAlphabet aLabelAlphabet = new ALabelAlphabet();
+	private ALabelAlphabet aLabelAlphabet = new ALabelAlphabet();
 
 	/**
 	 * Input file reader
 	 */
-	Reader fileReader;
+	private Reader fileReader;
+
+	/**
+	 * true if the given file ends with '.cstn'
+	 */
+	private boolean isCSTN;
 
 	/**
 	 * The result of the loading action.
@@ -63,16 +73,57 @@ public class CSTNUGraphMLReader {
 	/**
 	 * Class for representing internal labeled values.
 	 */
-	Class<? extends LabeledIntMap> mapTypeImplementation;
+	private Class<? extends LabeledIntMap> mapTypeImplementation;
 
 	/**
 	 * 
 	 */
-	Supplier<LabeledNode> vertexFactory = LabeledNode.getFactory();
+	private Supplier<LabeledNode> vertexFactory = new Supplier<LabeledNode>() {
+
+		Supplier<LabeledNode> factory = LabeledNode.getFactory();
+
+		@Override
+		public LabeledNode get() {
+			LabeledNode node = this.factory.get();
+			node.setName(prefix + node.getName());
+			return node;
+		}
+	};
+
+	/**
+	 * * Since we want to preserve edge names given by in the file and such namescan conflict with the ones given by the standard edgeFactory,
+	 * we modify the standard factory altering the default name
+	 * 
+	 * @author posenato
+	 * @param <C>
+	 */
+	private static class InternalEdgeFactory<C extends LabeledIntMap> implements Supplier<LabeledIntEdge> {
+
+		/**
+		 * 
+		 */
+		Supplier<LabeledIntEdge> edgeFactory;
+
+		/**
+		 * @param mapTypeImplementation
+		 */
+		public InternalEdgeFactory(Class<C> mapTypeImplementation) {
+			super();
+			this.edgeFactory = new LabeledIntEdgeSupplier<>(mapTypeImplementation);
+		}
+
+		@Override
+		public LabeledIntEdge get() {
+			LabeledIntEdge e = this.edgeFactory.get();
+			e.setName(prefix + e.getName());
+			return e;
+		}
+	}
+
 	/**
 	 * 
 	 */
-	Supplier<LabeledIntEdge> edgeFactory;
+	private Supplier<LabeledIntEdge> edgeFactory;
 
 	/**
 	 * Allows to read a graph from a file written in GraphML format.<br>
@@ -81,13 +132,17 @@ public class CSTNUGraphMLReader {
 	 * under CstnuTool one.
 	 * 
 	 * @param graphFile
-	 * @param labeledValueSetImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!)
+	 * @param labeledValueSetImplementationClass it is necessary for creating the right factory.
 	 * @throws FileNotFoundException if the graphFile is not found
 	 */
 	public CSTNUGraphMLReader(final File graphFile, Class<? extends LabeledIntMap> labeledValueSetImplementationClass) throws FileNotFoundException {
+		if (graphFile == null) {
+			throw new FileNotFoundException("The given file does not exist.");
+		}
 		this.fileReader = new FileReader(graphFile);
+		this.isCSTN = graphFile.getName().endsWith(".cstn");
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
-		this.edgeFactory = new LabeledIntEdgeSupplier<>(this.mapTypeImplementation);
+		this.edgeFactory = new InternalEdgeFactory<>(this.mapTypeImplementation);
 		this.graph = new LabeledIntGraph(this.mapTypeImplementation);
 		this.graph.setFileName(graphFile);
 	}
@@ -167,23 +222,6 @@ public class CSTNUGraphMLReader {
 		Function<LabeledIntEdge, String> edgeTypeF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_TYPE_KEY).transformer;
 		// Labeled Value
 		Function<LabeledIntEdge, String> edgeLabeledValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_VALUE_KEY).transformer;
-		// Labeled UC Value
-		Function<LabeledIntEdge, String> edgeLabeledUCValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_UC_VALUE_KEY).transformer;
-		if (edgeLabeledUCValueF == null)
-			throw new IllegalArgumentException("The input file does not contain the meta declaration for upper case value. Please, fix it adding" +
-					"<key id=\"UpperCaseLabeledValues\" for=\"edge\"> \n" +
-					"<default></default> \n" +
-					"</key>\n" +
-					"before <graph> tag.");
-		// Labeled UC Value
-		Function<LabeledIntEdge, String> edgeLabeledLCValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_LC_VALUE_KEY).transformer;
-		if (edgeLabeledLCValueF == null)
-			throw new IllegalArgumentException("The input file does not contain the meta declaration for lower case value. Please, fix it adding" +
-					"<key id=\"LowerCaseLabeledValues\" for=\"edge\"> \n" +
-					"<default></default> \n" +
-					"</key>\n" +
-					"before <graph> tag.");
-
 		// I parse also value parameter that was present in the first version of the graph file
 		Function<LabeledIntEdge, String> edgeOldValueF = null;
 		if (graphReader.getEdgeMetadata().get("Value") != null)
@@ -201,8 +239,39 @@ public class CSTNUGraphMLReader {
 				}
 				e.setLabeledValueMap(map);
 			}
+			// I parse also value parameter that was present in the first version of the graph file
+			if (edgeOldValueF != null) {
+				data = edgeOldValueF.apply(e);
+				if (data != null && !data.isEmpty()) {
+					e.putLabeledValue(Label.emptyLabel, Integer.parseInt(data));
+				}
+			}
+		}
+		if (this.isCSTN)
+			return this.graph;
+
+		// FROM HERE the graph is asumed to be a CSTNU graph!
+
+		// Labeled UC Value
+		Function<LabeledIntEdge, String> edgeLabeledUCValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_UC_VALUE_KEY).transformer;
+		if (edgeLabeledUCValueF == null)
+			throw new IllegalArgumentException("The input file does not contain the meta declaration for upper case value. Please, fix it adding" +
+					"<key id=\"UpperCaseLabeledValues\" for=\"edge\"> \n" +
+					"<default></default> \n" +
+					"</key>\n" +
+					"before <graph> tag.");
+		// Labeled UC Value
+		Function<LabeledIntEdge, String> edgeLabeledLCValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_LC_VALUE_KEY).transformer;
+		if (edgeLabeledLCValueF == null)
+			throw new IllegalArgumentException("The input file does not contain the meta declaration for lower case value. Please, fix it adding" +
+					"<key id=\"LowerCaseLabeledValues\" for=\"edge\"> \n" +
+					"<default></default> \n" +
+					"</key>\n" +
+					"before <graph> tag.");
+
+		for (LabeledIntEdge e : this.graph.getEdges()) {
 			// Labeled UC Value
-			data = edgeLabeledUCValueF.apply(e);
+			String data = edgeLabeledUCValueF.apply(e);
 			LabeledALabelIntTreeMap upperCaseMap = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
 			if (data != null && data.length() > 2 && (upperCaseMap == null || upperCaseMap.isEmpty()))
 				throw new IllegalArgumentException("Upper Case values in a wrong format: " + data + " in edge " + e);
@@ -217,15 +286,8 @@ public class CSTNUGraphMLReader {
 			if (lowerCaseValue == null)
 				lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 			e.setLowerCaseValue(lowerCaseValue);
-			// I parse also value parameter that was present in the first version of the graph file
-			if (edgeOldValueF != null) {
-				data = edgeOldValueF.apply(e);
-				if (data != null && !data.isEmpty()) {
-					e.putLabeledValue(Label.emptyLabel, Integer.parseInt(data));
-				}
-			}
-
 		}
+
 		return this.graph;
 	}
 }
