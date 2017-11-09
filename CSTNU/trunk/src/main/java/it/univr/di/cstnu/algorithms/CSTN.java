@@ -394,7 +394,7 @@ public class CSTN {
 	/**
 	 * Horizon value. A node that has to be executed after such time means that it has not to be executed!
 	 */
-	int horizon;
+	int horizon = Constants.INT_NULL;
 
 	/**
 	 * Output stream to fOutput
@@ -526,7 +526,7 @@ public class CSTN {
 				}
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 			}
-			// Checks if label subsumes all observation time point labels of involved obs t.p.
+			// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 			// WD3 property.
 			Label currentLabelModified = new Label(currentLabel);
 			for (final char l : currentLabel.getPropositions()) {
@@ -2066,6 +2066,7 @@ public class CSTN {
 			throw new IllegalArgumentException("Input graph is null!");
 		this.g = g;
 		this.maxWeight = Constants.INT_NEG_INFINITE;
+		this.horizon = Constants.INT_NEG_INFINITE;
 		this.checkStatus.reset();
 	}
 

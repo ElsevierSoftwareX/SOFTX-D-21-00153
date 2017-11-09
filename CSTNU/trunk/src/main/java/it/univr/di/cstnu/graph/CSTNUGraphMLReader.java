@@ -41,6 +41,36 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  */
 public class CSTNUGraphMLReader {
 	/**
+	 * * Since we want to preserve edge names given by in the file and such namescan conflict with the ones given by the standard edgeFactory,
+	 * we modify the standard factory altering the default name
+	 * 
+	 * @author posenato
+	 * @param <C>
+	 */
+	static private class InternalEdgeFactory<C extends LabeledIntMap> implements Supplier<LabeledIntEdge> {
+
+		/**
+		 * 
+		 */
+		Supplier<LabeledIntEdge> edgeFactory;
+
+		/**
+		 * @param mapTypeImplementation
+		 */
+		public InternalEdgeFactory(Class<C> mapTypeImplementation) {
+			super();
+			this.edgeFactory = new LabeledIntEdgeSupplier<>(mapTypeImplementation);
+		}
+
+		@Override
+		public LabeledIntEdge get() {
+			LabeledIntEdge e = this.edgeFactory.get();
+			e.setName(prefix + e.getName());
+			return e;
+		}
+	}
+
+	/**
 	 * logger
 	 */
 	static final Logger LOG = Logger.getLogger(CSTNUGraphMLReader.class.getName());
@@ -51,9 +81,24 @@ public class CSTNUGraphMLReader {
 	static final String prefix = "__";
 
 	/**
+	 * 
+	 */
+	private static Supplier<LabeledNode> vertexFactory = new Supplier<LabeledNode>() {
+
+		Supplier<LabeledNode> factory = LabeledNode.getFactory();
+
+		@Override
+		public LabeledNode get() {
+			LabeledNode node = this.factory.get();
+			node.setName(prefix + node.getName());
+			return node;
+		}
+	};
+
+	/**
 	 * ALabel alphabet for UC a-labels
 	 */
-	private ALabelAlphabet aLabelAlphabet = new ALabelAlphabet();
+	private ALabelAlphabet aLabelAlphabet;
 
 	/**
 	 * Input file reader
@@ -78,51 +123,6 @@ public class CSTNUGraphMLReader {
 	/**
 	 * 
 	 */
-	private Supplier<LabeledNode> vertexFactory = new Supplier<LabeledNode>() {
-
-		Supplier<LabeledNode> factory = LabeledNode.getFactory();
-
-		@Override
-		public LabeledNode get() {
-			LabeledNode node = this.factory.get();
-			node.setName(prefix + node.getName());
-			return node;
-		}
-	};
-
-	/**
-	 * * Since we want to preserve edge names given by in the file and such namescan conflict with the ones given by the standard edgeFactory,
-	 * we modify the standard factory altering the default name
-	 * 
-	 * @author posenato
-	 * @param <C>
-	 */
-	private static class InternalEdgeFactory<C extends LabeledIntMap> implements Supplier<LabeledIntEdge> {
-
-		/**
-		 * 
-		 */
-		Supplier<LabeledIntEdge> edgeFactory;
-
-		/**
-		 * @param mapTypeImplementation
-		 */
-		public InternalEdgeFactory(Class<C> mapTypeImplementation) {
-			super();
-			this.edgeFactory = new LabeledIntEdgeSupplier<>(mapTypeImplementation);
-		}
-
-		@Override
-		public LabeledIntEdge get() {
-			LabeledIntEdge e = this.edgeFactory.get();
-			e.setName(prefix + e.getName());
-			return e;
-		}
-	}
-
-	/**
-	 * 
-	 */
 	private Supplier<LabeledIntEdge> edgeFactory;
 
 	/**
@@ -141,6 +141,7 @@ public class CSTNUGraphMLReader {
 		}
 		this.fileReader = new FileReader(graphFile);
 		this.isCSTN = graphFile.getName().endsWith(".cstn");
+		this.aLabelAlphabet = new ALabelAlphabet();
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
 		this.edgeFactory = new InternalEdgeFactory<>(this.mapTypeImplementation);
 		this.graph = new LabeledIntGraph(this.mapTypeImplementation);
@@ -159,7 +160,7 @@ public class CSTNUGraphMLReader {
 		 * edge attributes that are very long, like the labeled upper case values of a checked CSTNU.
 		 * CSTNUGraphMLReader is a little less intuitive but it manages all attributes in a right way!
 		 */
-		GraphMLReader<LabeledIntGraph, LabeledNode, LabeledIntEdge> graphReader = new GraphMLReader<>(this.vertexFactory, this.edgeFactory);
+		GraphMLReader<LabeledIntGraph, LabeledNode, LabeledIntEdge> graphReader = new GraphMLReader<>(vertexFactory, this.edgeFactory);
 		// populate the graph.
 		graphReader.load(this.fileReader, this.graph);
 

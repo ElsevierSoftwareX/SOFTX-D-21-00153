@@ -1,7 +1,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -55,7 +54,8 @@ public class CSTNRunningTime {
 	// static final String VERSIONandDATE = "1.0, March, 22 2015";
 	// static final String VERSIONandDATE = "1.1, November, 18 2015";
 	// static final String VERSIONandDATE = "1.2, October, 10 2017";
-	static final String VERSIONandDATE = "1.3, October, 16 2017";// executor code cleaned
+	// static final String VERSIONandDATE = "1.3, October, 16 2017";// executor code cleaned
+	static final String VERSIONandDATE = "1.4, November, 09 2017";// code cleaned
 
 	/**
 	 * Represent a DC check task that can be interrupted by a timeout.
@@ -122,7 +122,7 @@ public class CSTNRunningTime {
 	private boolean convertToNewFormat = false;
 
 	/**
-	 * Parameter for asking how much to cut all edge values (for studying pseudo-polynomial characteristics)
+	 * Parameter for asking to remove a value from all constraints.
 	 */
 	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is null.")
 	private int removeValue = Constants.INT_NULL;
@@ -165,14 +165,8 @@ public class CSTNRunningTime {
 	/**
 	 * Parameter for asking whether to consider node labels during the DC check.
 	 */
-	@Option(required = false, name = "-woOnlyNodeLabel", usage = "Check DC transforming the netwrok in an equivalent CSTN without node labels and with auxiliary constraints.")
-	private boolean woOnlyNodeLabels = false;
-
-	/**
-	 * Parameter for asking whether to add auxiliary constraints when node labels are not considered during the DC check.
-	 */
-	@Option(required = false, name = "-woNodeLabelandAuxConstraints", usage = "Check DC transforming the network in an equivalent CSTN without node labels and without auxiliary constraints.")
-	private boolean woNodeLabelsAuxConstraints = false;
+	@Option(required = false, name = "-woNodeLabel", usage = "Check DC transforming the network in an equivalent CSTN without node labels.")
+	private boolean woNodeLabels = false;
 
 	/**
 	 * Parameter for asking whether to consider only Lp,qR0, qR3* rules.
@@ -200,11 +194,6 @@ public class CSTNRunningTime {
 	 * 
 	 */
 	private File[] inputCSTNFile;
-
-	/**
-	 * Execution times
-	 */
-	long[] executionTime;
 
 	/**
 	 * Simple method to manage command line parameters using args4j library.
@@ -299,33 +288,26 @@ public class CSTNRunningTime {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
-		LOG.finest("Start...");
-		System.out.println("Start of execution...");
+
+		LOG.finest("CSTNRunningTime " + VERSIONandDATE + "\nStart...");
+		System.out.println("CSTNRunningTime " + VERSIONandDATE + "\nStart of execution...");
 		CSTNRunningTime tester = new CSTNRunningTime();
 
 		if (!tester.manageParameters(args))
 			return;
-
 		LOG.finest("Parameters ok!");
-		System.out.println("Parameters ok!");
+
 		if (tester.versionReq) {
 			System.out.print(tester.getClass().getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2016, Roberto Posenato");
+					+ "Copyright © 2017, Roberto Posenato");
 			return;
 		}
 
-		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
+		LabeledIntGraph g = new LabeledIntGraph(labeledIntValueMap);
 		CSTN cstn = null;
-		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(g.getInternalLabeledValueMapImplementationClass());
-		CSTNUGraphMLReader graphMLReader;
-		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
-		Future<CSTNCheckStatus> future;
-		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
-
-		if (tester.woOnlyNodeLabels || tester.woNodeLabelsAuxConstraints) {
-			if (tester.dcSemantics==DCSemantics.IR) {
+		if (tester.woNodeLabels) {
+			if (tester.dcSemantics == DCSemantics.IR) {
 				if (tester.onlyLPQR0QR3) {
 					cstn = new CSTNir3RwoNodeLabel(g);
 				} else {
@@ -333,9 +315,6 @@ public class CSTNRunningTime {
 				}
 			} else {
 				cstn = new CSTNwoNodeLabel(g);
-				if (tester.woOnlyNodeLabels) {
-					((CSTNwoNodeLabel) cstn).setAddAuxiliaryConstraints(true);
-				}
 			}
 		} else {
 			if (tester.onlyLPQR0QR3) {
@@ -355,11 +334,16 @@ public class CSTNRunningTime {
 			}
 		}
 
+		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
+		CSTNUGraphMLReader graphMLReader;
+		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
+		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
+
 		// For each graph, solve it, save its times in an array
 		for (File file : tester.inputCSTNFile) {
 			System.out.println("Analyzing file " + file.getName() + "...");
 			LOG.fine("Loading " + file.getName() + "...");
-			graphMLReader = new CSTNUGraphMLReader(file, g.getInternalLabeledValueMapImplementationClass());
+			graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);
 			g = graphMLReader.readGraph();
 			LOG.fine("...done!");
 			if (g == null) {
@@ -371,37 +355,26 @@ public class CSTNRunningTime {
 				if (tester.convertToNewFormat)
 					System.out.println("Convert the CSTN file to the recent format...");
 				else {
-					if (tester.cuttingEdgeFactor > 1)
-						System.out.println("Cutting all edge values by a factor " + tester.cuttingEdgeFactor + "...");
-					if (tester.removeValue != Constants.INT_NULL)
-						System.out.println("Removing all edge values equal to " + tester.removeValue + "...");
 					if (tester.cuttingEdgeFactor > 1) {
+						System.out.println("Cutting all edge values by a factor " + tester.cuttingEdgeFactor + "...");
 						for (LabeledIntEdge e : g.getEdgesArray()) {
 							LabeledIntEdgePluggable e1 = edgeFactory.get(e);
 							for (Entry<Label> entry : e.getLabeledValueSet()) {
 								int v = entry.getIntValue() / tester.cuttingEdgeFactor;
 								e1.mergeLabeledValue(entry.getKey(), v);
 							}
-							// for (Entry<java.util.Map.Entry<Label, String>> entry : e.getLowerLabelSet()) {
-							// e1.mergeLowerLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue() / tester.cuttingEdgeFactor);
-							// }
-							// for (Entry<java.util.Map.Entry<Label, String>> entry : e.getUpperLabelSet()) {
-							// e1.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue() / tester.cuttingEdgeFactor);
-							// }
 							((LabeledIntEdgePluggable) e).takeIn(e1);
 						}
 					}
 					if (tester.removeValue != Constants.INT_NULL) {
+						System.out.println("Removing all edge values equal to " + tester.removeValue + "...");
+
 						int value = tester.removeValue;
 						for (LabeledIntEdge e : g.getEdgesArray()) {
-							LabeledIntEdge e1 = edgeFactory.get(e);
 							for (Entry<Label> entry : e.getLabeledValueSet()) {
-								int v = entry.getIntValue();
-								if (v == value)
-									continue;
-								e1.mergeLabeledValue(entry.getKey(), entry.getIntValue() / tester.cuttingEdgeFactor);
+								if (entry.getIntValue() == value)
+									e.removeLabel(entry.getKey());
 							}
-							((LabeledIntEdgePluggable) e).takeIn((LabeledIntEdgePluggable) e1);
 						}
 					}
 				}
@@ -409,15 +382,14 @@ public class CSTNRunningTime {
 				CSTNUGraphMLWriter graphWrite = new CSTNUGraphMLWriter(null);
 				try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + suffix));) {
 					graphWrite.save(g, writer);
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				} catch (IOException e1) {
-					e1.printStackTrace();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 				if (tester.convertToNewFormat)
 					continue;
 			}
-			// In order to determine the exac values of lower case edges, I exploit CSTNU init method
+
+			// In order to start with well-defined cstn, we preliminary make a check.
 			cstn.setG(g);
 			String msg;
 			try {
@@ -455,67 +427,82 @@ public class CSTNRunningTime {
 					min,
 					max);
 
-			Double localAvg = Double.NaN, localStdDev = Double.NaN;
-			CSTNCheckStatus status = new CSTNCheckStatus();
-			boolean cstnOK = true;
+			if (tester.noDCCheck) {
+				tester.output.printf("\n");
+				continue;
+			}
 
-			if (!tester.noDCCheck) {
-				msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
-						+ " repeating DC check for " + tester.nDCRepetition + " times.";
-				System.out.println(msg);
-				LOG.info(msg);
-				localSummaryStat.clear();
-				localAvg = Double.NaN;
-				localStdDev = Double.NaN;
-				for (int j = 0; j < tester.nDCRepetition && cstnOK; j++) {
-					LOG.fine("Test " + j + ", CSTN: " + file.getName());
-					if (j != 0) {
-						// It is necessary to reset the graph!
-						graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);// reader must reload g.
-						g = graphMLReader.readGraph();
-						cstn.setG(g);
-					}
-					future = executor.submit(new DCTask(cstn));
-					try {
-						// status = cstn.dynamicConsistencyCheck();
-						status = future.get(tester.timeOut, TimeUnit.SECONDS);
-					} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
-						msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
-								+ " CSTNU is ignored.\nError details:"
-								+ ex.getMessage();
-						System.out.println(msg);
-						LOG.severe(msg);
-						cstnOK = false;
-						status.consistency = false;
-						continue;
-					}
-					localSummaryStat.addValue(status.executionTimeNS);
-				}
-				msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
-				System.out.println(msg);
-				LOG.info(msg);
-				if (!cstnOK) {
-					// There is a problem... in the stats we write TIMEOUT
-					tester.output.printf(CSVSep + "%E"
-							+ CSVSep + "%E"
-							+ CSVSep + "%s"
-							+ "\n",
-							(double) tester.timeOut, 0.0, "TIMEOUT after " + tester.timeOut + " seconds.");
+			msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
+					+ " repeating DC check for " + tester.nDCRepetition + " times.";
+			System.out.println(msg);
+			LOG.info(msg);
+
+			localSummaryStat.clear();
+
+			boolean timeOut = false;
+			boolean cstnOK = true;
+			Future<CSTNCheckStatus> future;
+			CSTNCheckStatus status = new CSTNCheckStatus();
+
+			for (int j = 0; j < tester.nDCRepetition && cstnOK; j++) {
+				LOG.fine("Test " + j + ", CSTN: " + file.getName());
+				// It is necessary to reset the graph!
+				graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);// reader must reload g.
+				g = graphMLReader.readGraph();
+				cstn.setG(g);
+
+				future = executor.submit(new DCTask(cstn));
+
+				try {
+					status = future.get(tester.timeOut, TimeUnit.SECONDS);
+				} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
+					msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
+							+ " CSTNU is ignored.\nError details:"
+							+ ex.getMessage();
+					System.out.println(msg);
+					LOG.severe(msg);
+					cstnOK = false;
+					status.consistency = false;
+					continue;
+				} catch (Exception e) {
+					msg = (new Time(System.currentTimeMillis())).toString() + ": a different exception has occurred. " + file.getName()
+							+ " CSTNU is ignored.\nError details:"
+							+ e.getMessage();
+					System.out.println(msg);
+					LOG.severe(msg);
+					cstnOK = false;
+					status.consistency = false;
 					continue;
 				}
-				localAvg = localSummaryStat.getMean();
-				localStdDev = localSummaryStat.getStandardDeviation();
-				if (tester.timeInS) {
-					localAvg = localAvg / 1E9;
-					localStdDev = localStdDev / 1E9;
-				}
-				LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
-				LOG.info(file.getName() + " is " + status.consistency);
-				LOG.info(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
-				LOG.info(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
-			} // end DC check
+				localSummaryStat.addValue(status.executionTimeNS);
+			} // end for checking repetition for a single file
+
+			msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
+			System.out.println(msg);
+			LOG.info(msg);
+			if (!cstnOK) {
+				// There is a problem... in the stats we write TIMEOUT
+				tester.output.printf(CSVSep + "%E"
+						+ CSVSep + "%E"
+						+ CSVSep + "%s"
+						+ "\n",
+						(double) tester.timeOut, 0.0, ((timeOut) ? "TIMEOUT after " + tester.timeOut + " seconds." : "Generic error. See log."));
+				continue;
+			}
 
 			globalSummaryStat.addValue(localSummaryStat.getMean());
+
+			Double localAvg = localSummaryStat.getMean();
+			Double localStdDev = localSummaryStat.getStandardDeviation();
+			if (tester.timeInS) {
+				localAvg = localAvg / 1E9;
+				localStdDev = localStdDev / 1E9;
+			}
+			LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
+			LOG.info(file.getName() + " is " + status.consistency);
+			LOG.info(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
+			LOG.info(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
+
 			tester.output.printf(CSVSep + "%E"
 					+ CSVSep + "%E"
 					+ CSVSep + "%s"
@@ -538,7 +525,8 @@ public class CSTNRunningTime {
 			// status.qAllNegLoop,
 			// status.qSemiNegLoop
 			);
-		} // end list of files to process
+
+		} // end for of files to process
 
 		if (tester.fOutput != null) {
 			tester.output.close();

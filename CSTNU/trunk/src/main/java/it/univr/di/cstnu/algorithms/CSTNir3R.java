@@ -137,8 +137,7 @@ public class CSTNir3R extends CSTNir {
 	 * @param g
 	 */
 	public CSTNir3R(LabeledIntGraph g) {
-		this();
-		this.setG(g);// sets also checkStatus!
+		super(g);
 	}
 
 	/**

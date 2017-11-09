@@ -2,12 +2,13 @@ RELEASE NOTES
 =============START SNIPPET: rn
 v1.21.0
 ------
-	date:	2017-11-10
+	date:	2017-11-09
 	
 	CSTNUGraphMLReader is able to read CSTN files that do not contain meta information about UC and LC values.
 	CSTNirRestricted renamed CSTNir3R.
 	CSTNwoNodeLabel cleaned.
 	Added classes CSTNirwoNodeLabel and CSTNir3RwoNodeLabel.
+	Simplified CSTNRunningTime.
 
 v1.20.0
 ------
