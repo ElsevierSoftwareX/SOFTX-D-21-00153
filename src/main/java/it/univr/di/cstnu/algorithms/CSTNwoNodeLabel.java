@@ -134,7 +134,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * @param g graph to check
 	 */
 	public CSTNwoNodeLabel(LabeledIntGraph g) {
-		this.setG(g);
+		super(g);
 	}
 
 	/**
@@ -185,32 +185,34 @@ public class CSTNwoNodeLabel extends CSTN {
 			node.setLabel(Label.emptyLabel);
 		}
 
-		// It is better to normalize with respect to the label modification rules before starting the DC check.
-		// Such normalization assures only that redundant labels are removed (w.r.t. R0)
-		// Q* are not solved by this normalization!
-		this.checkStatus.reset();
-		this.g.clearCache();
-		try {
-			for (final LabeledIntEdge e : this.g.getEdges()) {
-				//
-				final LabeledNode s = this.g.getSource(e);
-				final LabeledNode d = this.g.getDest(e);
+		if (this.addAuxiliaryConstraints) {
+			// It is better to normalize with respect to the label modification rules before starting the DC check.
+			// Such normalization assures only that redundant labels are removed (w.r.t. R0)
+			// Q* are not solved by this normalization!
+			this.checkStatus.reset();
+			this.g.clearCache();
+			try {
+				for (final LabeledIntEdge e : this.g.getEdges()) {
+					//
+					final LabeledNode s = this.g.getSource(e);
+					final LabeledNode d = this.g.getDest(e);
 
-				// Normalize with respect to R0--R3
-				if (s.isObserver()) {
-					this.labelModificationR0qR0(s, d, Z, e);
+					// Normalize with respect to R0--R3
+					if (s.isObserver()) {
+						this.labelModificationR0qR0(s, d, Z, e);
+					}
+					this.labelModificationR3qR3(s, d, Z, e);
+					if (s.isObserver()) {
+						// again because R3 could have add a new value;
+						this.labelModificationR0qR0(s, d, Z, e);
+					}
 				}
-				this.labelModificationR3qR3(s, d, Z, e);
-				if (s.isObserver()) {
-					// again because R3 could have add a new value;
-					this.labelModificationR0qR0(s, d, Z, e);
-				}
+			} catch (IllegalStateException ex) {
+				String logMsg = "Graph is not well defined: " + ex.getMessage();
+				if (Debug.ON)
+					LOG.severe(logMsg);
+				throw new WellDefinitionException(logMsg);
 			}
-		} catch (IllegalStateException ex) {
-			String logMsg = "Graph is not well defined: " + ex.getMessage();
-			if (Debug.ON)
-				LOG.severe(logMsg);
-			throw new WellDefinitionException(logMsg);
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
@@ -576,14 +578,4 @@ public class CSTNwoNodeLabel extends CSTN {
 	public void setAddAuxiliaryConstraints(boolean addAuxiliaryConstraints) {
 		this.addAuxiliaryConstraints = addAuxiliaryConstraints;
 	}
-
-	/**
-	 * @param g the g to set
-	 */
-	@Override
-	void setG(LabeledIntGraph g) {
-		super.setG(g);
-		this.horizon = Constants.INT_POS_INFINITE;
-	}
-
 }

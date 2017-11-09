@@ -452,13 +452,4 @@ public class CSTNir3RwoNodeLabel extends CSTNir3R {
 		Label betaGamma = labelFromObs.conjunctionExtended(beta);
 		return betaGamma;
 	}
-
-	/**
-	 * @param g the g to set
-	 */
-	@Override
-	void setG(LabeledIntGraph g) {
-		super.setG(g);
-		this.horizon = Constants.INT_POS_INFINITE;
-	}
 }

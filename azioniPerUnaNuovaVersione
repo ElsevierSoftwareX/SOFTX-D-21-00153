@@ -35,7 +35,7 @@ svn co https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome branc
 
 
 3) Lavorare...
-Se si vuole importare nel brach modifiche fate nel trunk
+Se si vuole importare nel brach modifiche fatte nel trunk
 
 3.0 fare i commit nel trunk
 3.1 andare nella working dir del branch

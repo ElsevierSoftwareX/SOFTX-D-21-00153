@@ -167,10 +167,12 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 
 			ObjectList<LabeledIntEdge> inEdge;
 			String nodeName = node.getName();
-			if (nodeName.endsWith("S") && !nodeName.equals("1S")) {
+			if (nodeName.endsWith("S")) {
 				// Consider only the corresponding node
 				String adjName = nodeName.substring(0, nodeName.length() - 1) + "E";
 				LabeledIntEdge e = g.findEdge(adjName, nodeName);
+				if (e == null && nodeName.equals("1S"))// in some graph, 1E has been replaced by Ω
+					e = g.findEdge("Ω", nodeName);
 				inEdge = new ObjectArrayList<>();
 				if (e != null) {
 					inEdge.add(e);
@@ -190,7 +192,8 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			while (eIte.hasNext()) {
 				LabeledIntEdge e = eIte.next();
 				if ((e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
-						|| e.getMinValue() > 0 || (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
+						|| e.getMinValue() > 0
+						|| (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
 			}
@@ -198,8 +201,10 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			for (LabeledIntEdge e : inEdge) {
 				LabeledNode adjacent = g.getSource(e);
 				if (marked.contains(adjacent)) {
+					// the adjacent has been already laid out.
 					if (adjacent.getX() <= xNode || adjacent.getX() >= xNode + this.xShift) {
 						if (nodeName.endsWith("w1") || nodeName.endsWith("w0")
+								|| node.getLabel().equals(adjacent.getLabel())
 								|| (node.getLabel().subsumes(adjacent.getLabel()) && !adjacent.getLabel().subsumes(node.getLabel()))) {
 							double newY;
 							if (adjacent.getY() > yNode + this.halfYShift) {
@@ -236,7 +241,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 							|| (node.getLabel().subsumes(adjacent.getLabel()) && !adjacent.getLabel().subsumes(node.getLabel()))) {
 						y = yNode + this.halfYShift;
 					} else {
-						y = yNode + this.yShiftA[i++];
+						y = yNode + this.yShiftA[i++];// if there is only one adjacent, this.yShiftA[i++] is 0.
 					}
 				}
 

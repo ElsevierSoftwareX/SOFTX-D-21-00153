@@ -502,13 +502,4 @@ public class CSTNirwoNodeLabel extends CSTNir {
 		Label betaGamma = labelFromObs.conjunctionExtended(beta);
 		return betaGamma;
 	}
-
-	/**
-	 * @param g the g to set
-	 */
-	@Override
-	void setG(LabeledIntGraph g) {
-		super.setG(g);
-		this.horizon = Constants.INT_POS_INFINITE;
-	}
 }

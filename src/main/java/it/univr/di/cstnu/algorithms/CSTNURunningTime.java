@@ -35,7 +35,7 @@ import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
-import it.univr.di.cstnu.visualization.StaticLayout;
+import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
@@ -55,7 +55,8 @@ public class CSTNURunningTime {
 	// static final String VERSIONandDATE = "1.3, December, 30 2015";
 	// static final String VERSIONandDATE = "1.6, October, 05 2017";
 	// static final String VERSIONandDATE = "1.8, October, 12 2017";
-	static final String VERSIONandDATE = "1.9, October, 13 2017";// improved log of timeout instances
+	// static final String VERSIONandDATE = "1.9, October, 13 2017";// improved log of timeout instances
+	static final String VERSIONandDATE = "1.10, November, 09 2017";// code cleaned
 
 	/**
 	 * class logger
@@ -122,7 +123,7 @@ public class CSTNURunningTime {
 	private int cuttingEdgeFactor = 1;
 
 	/**
-	 * Parameter for asking how much to cut all edge values (for studying pseudo-polynomial characteristics)
+	 * Parameter for asking to remove a value from all constraints.
 	 */
 	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is null.")
 	private int removeValue = Constants.INT_NULL;
@@ -165,11 +166,6 @@ public class CSTNURunningTime {
 	 * 
 	 */
 	private File[] inputCSTNUFile;
-
-	/**
-	 * Execution times
-	 */
-	long[] executionTime;
 
 	/**
 	 * Simple method to manage command line parameters using args4j library.
@@ -228,28 +224,6 @@ public class CSTNURunningTime {
 			}
 			try {
 				this.output = new PrintStream(new FileOutputStream(this.fOutput, true), true);
-				this.output.println("\"CSTNUName\""
-						+ CSVSep + "#nodes"
-						+ CSVSep + "#edges"
-						+ CSVSep + "#obs"
-						+ CSVSep + "#ctg"
-						+ CSVSep + "minValue"
-						+ CSVSep + "maxValue"
-						+ CSVSep + "DC"
-						+ CSVSep + "RunningTimeMean" + (this.timeInS ? "[s]" : "[ns]")
-						+ CSVSep + "RunningTimeStdDev" + (this.timeInS ? "[s]" : "[ns]")
-						+ CSVSep + "#R0"
-						// + CSVSep + "\"#R1\" "
-						// + CSVSep + "\"#R2\" "
-						+ CSVSep + "#R3"
-						+ CSVSep + "#LNC"
-						+ CSVSep + "#LowerCaseRuleCall"
-						+ CSVSep + "#LUC+FLUC+LCUC"
-						+ CSVSep + "#CrossCaseRuleCall"
-						+ CSVSep + "#CaseLabelRemovalRuleCall"
-				// + CSVSep + "#NegQLoop"
-				// + CSVSep + "#SemiNegQLopp"
-				);
 			} catch (IOException e) {
 				System.err.println("Output file cannot be created: " + e.getMessage());
 				parser.printUsage(System.err);
@@ -259,6 +233,28 @@ public class CSTNURunningTime {
 		} else {
 			this.output = System.out;
 		}
+		this.output.println("\"CSTNUName\""
+				+ CSVSep + "#nodes"
+				+ CSVSep + "#edges"
+				+ CSVSep + "#obs"
+				+ CSVSep + "#ctg"
+				+ CSVSep + "minValue"
+				+ CSVSep + "maxValue"
+				+ CSVSep + "DC"
+				+ CSVSep + "RunningTimeMean" + (this.timeInS ? "[s]" : "[ns]")
+				+ CSVSep + "RunningTimeStdDev" + (this.timeInS ? "[s]" : "[ns]")
+				+ CSVSep + "#R0"
+				// + CSVSep + "\"#R1\" "
+				// + CSVSep + "\"#R2\" "
+				+ CSVSep + "#R3"
+				+ CSVSep + "#LNC"
+				+ CSVSep + "#LowerCaseRuleCall"
+				+ CSVSep + "#LUC+FLUC+LCUC"
+				+ CSVSep + "#CrossCaseRuleCall"
+				+ CSVSep + "#CaseLabelRemovalRuleCall"
+		// + CSVSep + "#NegQLoop"
+		// + CSVSep + "#SemiNegQLopp"
+		);
 		return true;
 	}
 
@@ -269,30 +265,27 @@ public class CSTNURunningTime {
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
-		CSTNURunningTime tester = new CSTNURunningTime();
 
-		LOG.finest("Start...");
-		System.out.println(tester.getClass().getName() + " " + VERSIONandDATE + "\nStart of execution...");
+		LOG.finest("CSTNURunningTime " + VERSIONandDATE + "\nStart...");
+		System.out.println("CSTNURunningTime " + VERSIONandDATE + "\nStart of execution...");
+		CSTNURunningTime tester = new CSTNURunningTime();
 
 		if (!tester.manageParameters(args))
 			return;
-
 		LOG.finest("Parameters ok!");
-		System.out.println("Parameters ok!");
+
 		if (tester.versionReq) {
 			System.out.print(tester.getClass().getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2016, Roberto Posenato");
+					+ "Copyright © 2017, Roberto Posenato");
 			return;
 		}
 
 		LabeledIntGraph g;
 		CSTNU cstnu;
-		CSTNU.CSTNUCheckStatus status = new CSTNUCheckStatus();
-		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
-		CSTNUGraphMLReader graphMLReader;
-		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
-		Future<CSTNUCheckStatus> future;
 		SummaryStatistics globalSummaryStat = new SummaryStatistics(), localSummaryStat = new SummaryStatistics();
+		CSTNUGraphMLReader graphMLReader;
+		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
+		ExecutorService executor = Executors.newSingleThreadExecutor(); // if tester.noDCCheck is true, executor will not be used!
 
 		// For each graph, solve it, save its times in an array
 		for (File file : tester.inputCSTNUFile) {
@@ -307,48 +300,52 @@ public class CSTNURunningTime {
 			}
 
 			if (tester.cuttingEdgeFactor > 1 || tester.removeValue != Constants.INT_NULL) {
-				if (tester.cuttingEdgeFactor > 1)
-					System.out.println("Cutting all edge values by a factor " + tester.cuttingEdgeFactor + "...");
-				if (tester.removeValue != Constants.INT_NULL)
-					System.out.println("Removing all edge values equal to " + tester.removeValue + "...");
 				if (tester.cuttingEdgeFactor > 1) {
+					System.out.println("Cutting all edge values by a factor " + tester.cuttingEdgeFactor + "...");
 					for (LabeledIntEdge e : g.getEdgesArray()) {
 						LabeledIntEdgePluggable e1 = edgeFactory.get(e);
 						for (Entry<Label> entry : e.getLabeledValueSet()) {
 							int v = entry.getIntValue() / tester.cuttingEdgeFactor;
 							e1.mergeLabeledValue(entry.getKey(), v);
 						}
-						// for (Entry<java.util.Map.Entry<Label, String>> entry : e.getLowerLabelSet()) {
-						// e1.mergeLowerLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue() / tester.cuttingEdgeFactor);
-						// }
-						// for (Entry<java.util.Map.Entry<Label, String>> entry : e.getUpperLabelSet()) {
-						// e1.mergeUpperLabelValue(entry.getKey().getKey(), entry.getKey().getValue(), entry.getIntValue() / tester.cuttingEdgeFactor);
-						// }
+						e1.setLowerCaseValue(e1.getLowerCaseValue().getLabel(), e1.getLowerCaseValue().getNodeName(),
+								e1.getLowerCaseValue().getValue() / tester.cuttingEdgeFactor);
+						for (ALabel entry : e.getUpperCaseValueMap().keySet()) {
+							LabeledIntMap map = e.getUpperCaseValueMap().get(entry);
+							for (Entry<Label> entry1 : map.entrySet()) {
+								e1.mergeUpperCaseValue(entry1.getKey(), entry, entry1.getIntValue() / tester.cuttingEdgeFactor);
+							}
+						}
 						((LabeledIntEdgePluggable) e).takeIn(e1);
 					}
 				}
 				if (tester.removeValue != Constants.INT_NULL) {
+					System.out.println("Removing all edge values equal to " + tester.removeValue + "...");
 					int value = tester.removeValue;
 					for (LabeledIntEdge e : g.getEdgesArray()) {
-						LabeledIntEdge e1 = edgeFactory.get(e);
 						for (Entry<Label> entry : e.getLabeledValueSet()) {
-							int v = entry.getIntValue();
-							if (v == value)
-								continue;
-							e1.mergeLabeledValue(entry.getKey(), entry.getIntValue() / tester.cuttingEdgeFactor);
+							if (entry.getIntValue() == value)
+								e.removeLabel(entry.getKey());
 						}
-						((LabeledIntEdgePluggable) e).takeIn((LabeledIntEdgePluggable) e1);
+						for (ALabel entry : e.getUpperCaseValueMap().keySet()) {
+							LabeledIntMap map = e.getUpperCaseValueMap().get(entry);
+							for (Entry<Label> entry1 : map.entrySet()) {
+								if (entry1.getIntValue() == value)
+									e.removeUpperCaseValue(entry1.getKey(), entry);
+							}
+						}
 					}
+
 				}
-				CSTNUGraphMLWriter graphWrite = new CSTNUGraphMLWriter(new StaticLayout<>(g));
+				CSTNUGraphMLWriter graphWrite = new CSTNUGraphMLWriter(null);
 				try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + "_cutted"))) {
 					graphWrite.save(g, writer);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			System.out.println("Min max edge value determination...");
-			// In order to determine the exac values of lower case edges, I exploit CSTNU init method
+
+			// In order to start with well-defined cstn, we preliminary make a check.
 			cstnu = new CSTNU(g);
 			String msg;
 			try {
@@ -388,97 +385,114 @@ public class CSTNURunningTime {
 					min,
 					max);
 
-			boolean cstnOK = true;
-			Double localAvg = Double.NaN, localStdDev = Double.NaN;
-			if (!tester.noDCCheck) {
-				msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
-						+ " repeating DC check for " + tester.nDCRepetition + " times.";
-				System.out.println(msg);
-				LOG.info(msg);
-				localSummaryStat.clear();
-				localAvg = Double.NaN;
-				localStdDev = Double.NaN;
-				for (int j = 0; j < tester.nDCRepetition && cstnOK; j++) {
-					LOG.fine("Test " + j + ", CSTNU: " + file.getName());
-					// It is necessary to reset the graph even for the first time becuse it has been already initialized!
-					graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);// to be sure that the reader reloads the graph!
-					g = graphMLReader.readGraph();
-					g.setFileName(file);
-					cstnu.setG(g);
+			if (tester.noDCCheck) {
+				tester.output.printf("\n");
+				continue;
+			}
 
-					future = executor.submit(new DCTask(cstnu));
-					try {
-						// status = cstnu.dynamicControllabilityCheck();
-						status = future.get(tester.timeOut, TimeUnit.SECONDS);
-					} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
-						msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
-								+ " CSTNU is ignored.\nError details:"
-								+ ex.getMessage();
-						System.out.println(msg);
-						LOG.severe(msg);
-						cstnOK = false;
-						status.consistency = false;
-						continue;
-					}
-					localSummaryStat.addValue(status.executionTimeNS);
-				}
-				msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
-				System.out.println(msg);
-				LOG.info(msg);
-				if (!cstnOK) {
-					// There is a problem... in the stats we write TIMEOUT
-					tester.output.printf(CSVSep + "%E"
-							+ CSVSep + "%E"
-							+ CSVSep + "%s"
-							+ "\n",
-							(double) tester.timeOut, 0.0, "TIMEOUT after " + tester.timeOut + " seconds.");
+			msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
+					+ " repeating DC check for " + tester.nDCRepetition + " times.";
+			System.out.println(msg);
+			LOG.info(msg);
+
+			localSummaryStat.clear();
+
+			boolean timeOut = false;
+			boolean cstnOK = true;
+			Future<CSTNU.CSTNUCheckStatus> future;
+			CSTNU.CSTNUCheckStatus status = new CSTNUCheckStatus();
+
+			for (int j = 0; j < tester.nDCRepetition && cstnOK; j++) {
+				LOG.fine("Test " + j + ", CSTNU: " + file.getName());
+				// It is necessary to reset the graph even for the first time becuse it has been already initialized!
+				graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);// to be sure that the reader reloads the graph!
+				g = graphMLReader.readGraph();
+				cstnu.setG(g);
+
+				future = executor.submit(new DCTask(cstnu));
+
+				try {
+					status = future.get(tester.timeOut, TimeUnit.SECONDS);
+				} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
+					msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + file.getName()
+							+ " CSTNU is ignored.\nError details:"
+							+ ex.getMessage();
+					System.out.println(msg);
+					LOG.severe(msg);
+					cstnOK = false;
+					status.consistency = false;
+					timeOut = true;
+					continue;
+				} catch (Exception e) {
+					msg = (new Time(System.currentTimeMillis())).toString() + ": a different exception has occurred. " + file.getName()
+							+ " CSTNU is ignored.\nError details:"
+							+ e.getMessage();
+					System.out.println(msg);
+					LOG.severe(msg);
+					cstnOK = false;
+					status.consistency = false;
 					continue;
 				}
-				localAvg = localSummaryStat.getMean();
-				localStdDev = localSummaryStat.getStandardDeviation();
-				if (tester.timeInS) {
-					localAvg = localAvg / 1E9;
-					localStdDev = localStdDev / 1E9;
-				}
-				LOG.finer(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
-				LOG.finer(file.getName() + " is " + status.consistency);
-				LOG.finer(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
-				LOG.finer(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
-			} // end DC check
+				localSummaryStat.addValue(status.executionTimeNS);
+			} // end for checking repetition for a single file
+
+			msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
+			System.out.println(msg);
+			LOG.info(msg);
+			if (!cstnOK) {
+				// There is a problem... in the stats we write TIMEOUT
+				tester.output.printf(CSVSep + "%E"
+						+ CSVSep + "%E"
+						+ CSVSep + "%s"
+						+ "\n",
+						(double) tester.timeOut, 0.0, ((timeOut) ? "TIMEOUT after " + tester.timeOut + " seconds." : "Generic error. See log."));
+				continue;
+			}
 
 			globalSummaryStat.addValue(localSummaryStat.getMean());
-			if (cstnOK && !tester.noDCCheck) {
-				tester.output.printf(
-						CSVSep + "%s"
-								+ CSVSep + "%e"
-								+ CSVSep + "%e"
-								+ CSVSep + "%d"
-								+ CSVSep + "%d"
-								+ CSVSep + "%d"
-								+ CSVSep + "%d"
-								+ CSVSep + "%d"
-								+ CSVSep + "%d"
-								+ CSVSep + "%d"
-								// + CSVSep + "%d"
-								// + CSVSep + "%d"
-								+ "\n",
-						(status.finished ? status.consistency : "false"),
-						localAvg,
-						localStdDev,
-						status.r0calls,
-						// , status.r1calls
-						// , status.r2calls
-						status.r3calls,
-						status.labeledValuePropagationcalls,
-						status.lowerCaseRuleCalls,
-						status.upperCaseRuleCalls,
-						status.crossCaseRuleCalls,
-						status.letterRemovalRuleCalls
-				// status.qAllNegLoop,
-				// status.qSemiNegLoop
-				);
+
+			Double localAvg = localSummaryStat.getMean();
+			Double localStdDev = localSummaryStat.getStandardDeviation();
+			if (tester.timeInS) {
+				localAvg = localAvg / 1E9;
+				localStdDev = localStdDev / 1E9;
 			}
-		} // end list of files to process
+			LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
+			LOG.info(file.getName() + " is " + status.consistency);
+			LOG.info(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
+			LOG.info(file.getName() + " std. deviation " + (tester.timeInS ? "[s]: " : "[ns]: ") + localStdDev);
+
+			tester.output.printf(
+					CSVSep + "%s"
+							+ CSVSep + "%e"
+							+ CSVSep + "%e"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							+ CSVSep + "%d"
+							// + CSVSep + "%d"
+							// + CSVSep + "%d"
+							+ "\n",
+					(status.finished ? status.consistency : "false"),
+					localAvg,
+					localStdDev,
+					status.r0calls,
+					// , status.r1calls
+					// , status.r2calls
+					status.r3calls,
+					status.labeledValuePropagationcalls,
+					status.lowerCaseRuleCalls,
+					status.upperCaseRuleCalls,
+					status.crossCaseRuleCalls,
+					status.letterRemovalRuleCalls
+			// status.qAllNegLoop,
+			// status.qSemiNegLoop
+			);
+
+		} // end for of files to process
 
 		if (tester.fOutput != null) {
 			tester.output.close();

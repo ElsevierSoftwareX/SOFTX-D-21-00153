@@ -88,7 +88,7 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 	/**
 	 * Constructor for CSTNUGraphMLWriter.
 	 *
-	 * @param lay a {@link AbstractLayout} object.
+	 * @param lay a {@link AbstractLayout} object. If it is null, vertex coordinates are determined from the property of the vertex.
 	 */
 	public CSTNUGraphMLWriter(final AbstractLayout<LabeledNode, LabeledIntEdge> lay) {
 		super();
