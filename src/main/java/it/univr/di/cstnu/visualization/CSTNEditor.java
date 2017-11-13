@@ -813,6 +813,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		/**
 		 * 
 		 */
+		@SuppressWarnings("unused")
 		CSTNLayout<LabeledIntEdge> cstnLayout;
 
 		/**
@@ -839,14 +840,15 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				AbstractLayout<LabeledNode, LabeledIntEdge> nextLayout;
 				if (CSTNEditor.this.layoutToggleButton.isSelected()) {
 					this.originalLayout = CSTNEditor.this.layout1;
-					if (this.cstnLayout == null) {
-						nextLayout = new CSTNLayout<>(CSTNEditor.this.inputGraph, CSTNEditor.this.vv1.getSize());
-						((CSTNLayout<LabeledIntEdge>) nextLayout).setInitialY(CSTNEditor.this.vv1.getSize().height / 2);
-						nextLayout.initialize();
-						this.cstnLayout = (CSTNLayout<LabeledIntEdge>) nextLayout;
-					} else {
-						nextLayout = this.cstnLayout;
-					}
+					// if (this.cstnLayout == null) {
+					nextLayout = new CSTNLayout<>(CSTNEditor.this.inputGraph, CSTNEditor.this.vv1.getSize());
+					((CSTNLayout<LabeledIntEdge>) nextLayout).setInitialY(CSTNEditor.this.vv1.getSize().height / 2);
+					((CSTNLayout<LabeledIntEdge>) nextLayout).setCurrentLayout(this.originalLayout);
+					nextLayout.initialize();
+					this.cstnLayout = (CSTNLayout<LabeledIntEdge>) nextLayout;
+					// } else {
+					// nextLayout = this.cstnLayout;
+					// }
 				} else {
 					nextLayout = this.originalLayout;
 				}
