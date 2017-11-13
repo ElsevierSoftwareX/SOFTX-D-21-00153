@@ -7,11 +7,13 @@ package it.univr.di.cstnu.visualization;
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.common.base.Function;
 
+import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
 import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import edu.uci.ics.jung.graph.Graph;
 import it.unimi.dsi.fastutil.objects.ObjectArrayFIFOQueue;
@@ -109,6 +111,11 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	private double[] yShiftA;
 
 	/**
+	 * Current layout from which take current node positions.
+	 */
+	private AbstractLayout<LabeledNode, E> currentLayout = null;
+
+	/**
 	 * Creates an instance for the specified graph and default size; vertex locations are determined by {@link #positionInitializer}.
 	 *
 	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
@@ -133,10 +140,11 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	 * @param firstNodeY
 	 * @param g
 	 * @param nObs
+	 * @return the set of nodes that have been laid out.
 	 */
-	public void draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, LabeledIntGraph g, int nObs) {
+	public ObjectSet<LabeledNode> draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, LabeledIntGraph g, int nObs) {
 		if (firstNode == null)
-			return;
+			return null;
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finest("Node root " + firstNode.getName() + ": (" + firstNodeX + ", " + firstNodeY + ")");
@@ -262,6 +270,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			if (node.isObserver())
 				nObs--;
 		}
+		return marked;
 	}
 
 	/**
@@ -382,10 +391,34 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 		this.halfYShift = this.yShift / 2;
 		this.maxX = this.initialX;
 		this.maxY = this.initialY;
+
+		Collection<LabeledNode> allNodes = g.getVertices();
+		if (this.currentLayout!=null) {
+			for (LabeledNode node : allNodes) {
+				node.setX(this.currentLayout.getX(node));
+				node.setY(this.currentLayout.getY(node));
+			}
+		}
 		/*
 		 * Draw the graph
 		 */
-		draw(Z, this.initialX, this.initialY, g, nObs);
+		ObjectSet<LabeledNode> marked = draw(Z, this.initialX, this.initialY, g, nObs);
+		while (!marked.containsAll(allNodes)) {
+			LabeledNode otherZ = Z;
+			for (LabeledNode node : allNodes) {
+				if (!marked.contains(node)) {
+					otherZ = node;
+					break;
+				}
+			}
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.finest("A node has not laid out because has not negative out outgoing edges: " + otherZ
+							+ "\nStart a new layout phase for such nodes and its successors.");
+				}
+			}
+			marked.addAll(draw(otherZ, otherZ.getX(), otherZ.getY(), g, nObs));
+		}
 
 		// check if some node has a negative y
 		double negativeY = this.halfYShift;
@@ -452,6 +485,13 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	public void setyShift(int yShift) {
 		this.yShift = yShift;
 		this.halfYShift = yShift / 2;
+	}
+
+	/**
+	 * @param currentLayout the currentLayout to set
+	 */
+	public void setCurrentLayout(AbstractLayout<LabeledNode, E> currentLayout) {
+		this.currentLayout = currentLayout;
 	}
 
 	@Override
