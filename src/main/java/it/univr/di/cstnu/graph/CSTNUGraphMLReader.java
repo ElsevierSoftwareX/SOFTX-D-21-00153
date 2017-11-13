@@ -144,7 +144,7 @@ public class CSTNUGraphMLReader {
 		this.aLabelAlphabet = new ALabelAlphabet();
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
 		this.edgeFactory = new InternalEdgeFactory<>(this.mapTypeImplementation);
-		this.graph = new LabeledIntGraph(this.mapTypeImplementation);
+		this.graph = new LabeledIntGraph(this.mapTypeImplementation, this.aLabelAlphabet);
 		this.graph.setFileName(graphFile);
 	}
 
@@ -176,8 +176,6 @@ public class CSTNUGraphMLReader {
 				n.setName(s);
 				if (s.equals(CSTN.ZeroNodeName))
 					CSTNUGraphMLReader.this.graph.setZ(n);
-				if (s.equals(CSTN.OmegaNodeName))
-					CSTNUGraphMLReader.this.graph.setΩ(n);
 			}
 		});
 		// Label
