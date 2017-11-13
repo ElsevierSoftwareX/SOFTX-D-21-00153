@@ -391,7 +391,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		if (label == null)
 			return 1;
 		if (this.alphabet != label.alphabet)
-			throw new IllegalArgumentException("Comparison is not possible because the input label has a different alphabet!");
+			throw new IllegalArgumentException("Comparison is not possible because the given label has a different alphabet from the current one!");
 		// byte i = 0, j = 0, cmp = 0;
 		// State thisState, labelState;
 		//
