@@ -195,11 +195,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private LabeledNode Z;
 
 	/**
-	 * Ω node. In temporal constraint network such node is the last node to execute.
-	 */
-	private LabeledNode Ω;
-
-	/**
 	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
 	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
@@ -218,6 +213,17 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// In general, AVL trees have slightly slower updates but faster searches; however, on very large collections the smaller height may lead in fact to
 		// faster updates, too.
 		this.aLabelAlphabet = new ALabelAlphabet();
+	}
+
+	/**
+	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
+	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
+	 * @param alphabet Alphabet to use for naming Upper Case label
+	 */
+	public <C extends LabeledIntMap> LabeledIntGraph(Class<C> internalMapImplementationClass, ALabelAlphabet alphabet) {
+		this(internalMapImplementationClass);
+		if (alphabet != null)
+			this.aLabelAlphabet = alphabet;
 	}
 
 	/**
@@ -243,17 +249,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
 			}
-			if (v.equalsByName(g.Ω)) {
-				g.setΩ(vNew);
-			}
 		}
 		vNew = g.getZ();
 		if (vNew != null) {
 			this.setZ(this.getNode(vNew.getName()));
-		}
-		vNew = g.getΩ();
-		if (vNew != null) {
-			this.setΩ(this.getNode(vNew.getName()));
 		}
 
 		// clone all edges giving the right new endpoints corresponding the old ones.
@@ -520,9 +519,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
 			}
-			if (v.equalsByName(g.Ω)) {
-				this.Ω = vNew;
-			}
 		}
 
 		// Clone all edges giving the right new endpoints corresponding the old ones.
@@ -551,9 +547,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
-			}
-			if (v.equalsByName(g.Ω)) {
-				this.Ω = vNew;
 			}
 		}
 
@@ -1038,13 +1031,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * @return the Ω node
-	 */
-	public LabeledNode getΩ() {
-		return this.Ω;
-	}
-
-	/**
 	 * {@inheritDoc} Since equals has been specialized, hashCode too.
 	 */
 	@Override
@@ -1216,15 +1202,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * @param o the node to be set as Ω node of the graph.
-	 */
-	public void setΩ(final LabeledNode o) {
-		if (getNode(o.getName()) == null)
-			addVertex(o);
-		this.Ω = o;
-	}
-
-	/**
 	 * Takes in all internal structures of g.<br>
 	 * This method is useful to copy the references of internal data structure of the given graph 'g' into the current. It is not a clone because even if
 	 * g!=this, all internal data structures are the same.
@@ -1236,18 +1213,17 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.aLabelAlphabet = g.aLabelAlphabet;
 		this.childrenOfObserver = g.childrenOfObserver;
 		this.edge2index = g.edge2index;
+		this.fileName = g.fileName;
 		this.growFactor = g.growFactor;
 		this.index2node = g.index2node;
 		this.internalMapImplementationClass = g.internalMapImplementationClass;
 		this.lowerCaseEdges = g.lowerCaseEdges;
 		this.name = g.name;
 		this.nodeName2index = g.nodeName2index;
+		this.observer2Z = g.observer2Z;
 		this.order = g.order;
 		this.proposition2Observer = g.proposition2Observer;
-		this.observer2Z = g.observer2Z;
-		this.fileName = g.fileName;
 		this.Z = g.Z;
-		this.Ω = g.Ω;
 	}
 
 	/** {@inheritDoc} */
