@@ -111,7 +111,7 @@ public final class Constants implements Serializable {
 	 * @param n a int.
 	 * @return the value of n as String using ∞ for infinitive number and null for not valid int.
 	 */
-	static public String formatInt(int n) {
+	static public final String formatInt(int n) {
 		switch (n) {
 		case Constants.INT_NEG_INFINITE:
 			return "-" + Constants.INFINITY_SYMBOLstring;
@@ -122,6 +122,42 @@ public final class Constants implements Serializable {
 		default:
 			return Integer.toString(n);
 		}
+	}
+
+	/**
+	 * Determines the sum of 'a' and 'b'. If any of them is already INFINITY, returns INFINITY.
+	 * If the sum is greater/lesser than the maximum/minimum integer representable by a int,
+	 * it throws an ArithmeticException because the overflow.
+	 *
+	 * @param a an integer.
+	 * @param b an integer.
+	 * @return the controlled sum.
+	 * @throws java.lang.ArithmeticException if any.
+	 */
+	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
+		int max, min;
+		if (a >= b) {
+			max = a;
+			min = b;
+		} else {
+			min = a;
+			max = b;
+		}
+		if (min == Constants.INT_NEG_INFINITE) {
+			if (max == Constants.INT_POS_INFINITE)
+				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+			return Constants.INT_NEG_INFINITE;
+		}
+		if (max == Constants.INT_POS_INFINITE) {
+			if (min == Constants.INT_NEG_INFINITE)
+				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+			return Constants.INT_POS_INFINITE;
+		}
+
+		final long sum = (long) a + (long) b;
+		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
+			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+		return (int) sum;
 	}
 
 }

@@ -1,7 +1,6 @@
 package it.univr.di.labeledvalue;
 
 import java.io.Serializable;
-import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -62,22 +61,31 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	static final Pattern splitterPair = Pattern.compile(", ");
 
 	/**
-	 * A natural comparator for Entry&lt;Label&gt;.
-	 * It orders considering the alphabetical order of Label.
+	 * @param entry (label, value)
+	 * @return string representing the labeled value, i.e., "(value, label)"
 	 */
-	static Comparator<Entry<Label>> entryComparator = new Comparator<Entry<Label>>() {
-		// I wanted a sorted print!
-		@Override
-		public int compare(final Entry<Label> o1, final Entry<Label> o2) {
-			if (o1 == o2)
-				return 0;
-			if (o1 == null)
-				return -1;
-			if (o2 == null)
-				return 1;
-			return o1.getKey().compareTo(o2.getKey());
-		}
-	};
+	static final String entryAsString(final Entry<Label> entry) {
+		if (entry == null)
+			return "";
+		return entryAsString(entry.getKey(), entry.getIntValue());
+	}
+
+	/**
+	 * @param value
+	 * @param label
+	 * @return string representing the labeled value, i.e., "(value, label)"
+	 */
+	static final public String entryAsString(Label label, int value) {
+		if (label == null)
+			return "";
+		final StringBuilder sb = new StringBuilder();
+		sb.append(Constants.OPEN_PAIR);
+		sb.append(Constants.formatInt(value));
+		sb.append(", ");
+		sb.append(label.toString());
+		sb.append(Constants.CLOSE_PAIR);
+		return sb.toString();
+	}
 
 	/**
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
@@ -137,161 +145,21 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	}
 
 	/**
-	 * @param entry (label, value)
-	 * @return string representing the labeled value, i.e., "(value, label)"
+	 * @return true if they contain the same set of values.
 	 */
-	static final String entryAsString(final Entry<Label> entry) {
-		if (entry == null)
-			return "";
-		return entryAsString(entry.getKey(), entry.getIntValue());
-	}
-
-	/**
-	 * @param value
-	 * @param label
-	 * @return string representing the labeled value, i.e., "(value, label)"
-	 */
-	static final public String entryAsString(Label label, int value) {
-		if (label == null)
-			return "";
-		final StringBuilder sb = new StringBuilder();
-		sb.append(Constants.OPEN_PAIR);
-		sb.append(Constants.formatInt(value));
-		sb.append(", ");
-		sb.append(label.toString());
-		sb.append(Constants.CLOSE_PAIR);
-		return sb.toString();
-	}
-
-	/**
-	 * Determines the sum of 'a' and 'b'. If any of them is already INFINITY, returns INFINITY.
-	 * If the sum is greater/lesser than the maximum/minimum integer representable by a int,
-	 * it throws an ArithmeticException because the overflow.
-	 *
-	 * @param a an integer.
-	 * @param b an integer.
-	 * @return the controlled sum.
-	 * @throws java.lang.ArithmeticException if any.
-	 */
-	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
-		int max, min;
-		if (a >= b) {
-			max = a;
-			min = b;
-		} else {
-			min = a;
-			max = b;
-		}
-		if (min == Constants.INT_NEG_INFINITE) {
-			if (max == Constants.INT_POS_INFINITE)
-				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
-			return Constants.INT_NEG_INFINITE;
-		}
-		if (max == Constants.INT_POS_INFINITE) {
-			if (min == Constants.INT_NEG_INFINITE)
-				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
-			return Constants.INT_POS_INFINITE;
-		}
-
-		final long sum = (long) a + (long) b;
-		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
-			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
-		return (int) sum;
-	}
-
-	/** {@inheritDoc} */
 	@Override
-	public boolean equals(final Object o) {
-		if ((o == null) || !(o instanceof LabeledIntMap))
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof LabeledIntMap))
 			return false;
-		final LabeledIntMap lvm = ((LabeledIntMap) o);
+		LabeledIntMap lvm = (LabeledIntMap) o;
 		if (this.size() != lvm.size())
 			return false;
-		return this.entrySet().equals(lvm.entrySet());// Two maps are equals if they contain the same set of values.
-		// The internal representation is not important!.
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int getMinValue() {
-		if (this.size() == 0)
-			return Constants.INT_NULL;
-		int min = Constants.INT_POS_INFINITE;
-
-		for (int value : this.values()) {
-			if (min > value)
-				min = value;
-		}
-		return min;
-	}
-
-	@Override
-	public int getMaxValue() {
-		if (this.size() == 0)
-			return Constants.INT_NULL;
-		int max = Constants.INT_NEG_INFINITE;
-		for (int value : this.values()) {
-			if (max < value)
-				max = value;
-		}
-		return max;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int getMinValueAmongLabelsWOUnknown() {
-		int v = Constants.INT_POS_INFINITE, i;
-		Label l;
-		for (final Entry<Label> entry : this.entrySet()) {
-			l = entry.getKey();
-			if (l.containsUnknown()) {
-				continue;
-			}
-			i = entry.getIntValue();
-			if (v > i) {
-				v = i;
-			}
-		}
-		return (v == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : v;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public int getMinValueConsistentWith(final Label l) {
-		if (l == null)
-			return Constants.INT_NULL;
-		int min = this.get(l);
-		if (min == Constants.INT_NULL) {
-			// the label does not exits, try all consistent labels
-			min = Constants.INT_POS_INFINITE;
-			int v1;
-			Label l1 = null;
-			for (final Entry<Label> e : this.entrySet()) {
-				l1 = e.getKey();
-				if (l.isConsistentWith(l1)) {
-					v1 = e.getIntValue();
-					if (min > v1) {
-						min = v1;
-					}
-				}
-			}
-		}
-		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+		return this.entrySet().equals(lvm.entrySet());// The internal representation is not important!.
 	}
 
 	@Override
 	public int hashCode() {
-		return super.hashCode();
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void putAll(final LabeledIntMap inputMap) {
-		if (inputMap == null)
-			return;
-		for (final Entry<Label> entry : inputMap.entrySet()) {
-			this.put(entry.getKey(), entry.getIntValue());
-		}
+		return this.entrySet().hashCode();
 	}
 
 	/** {@inheritDoc} */
@@ -299,7 +167,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("{");
 		final ObjectList<Entry<Label>> sorted = new ObjectArrayList<>(this.entrySet());
-		sorted.sort(AbstractLabeledIntMap.entryComparator);
+		sorted.sort(LabeledIntMap.entryComparator);
 		for (final Entry<Label> entry : sorted) {
 			sb.append(AbstractLabeledIntMap.entryAsString(entry) + " ");
 		}

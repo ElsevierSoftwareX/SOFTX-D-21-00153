@@ -1,5 +1,6 @@
 package it.univr.di.labeledvalue;
 
+import java.util.Comparator;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -25,6 +26,20 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  */
 public interface LabeledIntMap {
 	// I do not extend Object2IntMap<Label> because I want to avoid a lot of nonsensical declarations.
+
+	/**
+	 * A natural comparator for Entry&lt;Label&gt;.
+	 * It orders considering the alphabetical order of Label.
+	 */
+	static public Comparator<Entry<Label>> entryComparator = (o1, o2) -> {
+		if (o1 == o2)
+			return 0;
+		if (o1 == null)
+			return -1;
+		if (o2 == null)
+			return 1;
+		return o1.getKey().compareTo(o2.getKey());
+	};
 
 	/**
 	 * Remove all entries of the map.
@@ -72,6 +87,7 @@ public interface LabeledIntMap {
 	 */
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse);
 
+
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the value associated to <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise.
@@ -79,23 +95,53 @@ public interface LabeledIntMap {
 	public int get(final Label l);
 
 	/**
-	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
-	 */
-	public int getMinValue();
-
-	/**
 	 * @return the maximum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
 	 */
-	public int getMaxValue();
+	default public int getMaxValue() {
+		if (this.size() == 0)
+			return Constants.INT_NULL;
+		int max = Constants.INT_NEG_INFINITE;
+		for (int value : this.values()) {
+			if (max < value)
+				max = value;
+		}
+		return max;
+	}
+
 
 	/**
-	 * <p>
-	 * getMinValueAmongLabelsWOUnknown.
-	 * </p>
-	 *
+	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 */
+	default public int getMinValue() {
+		if (this.size() == 0)
+			return Constants.INT_NULL;
+		int min = Constants.INT_POS_INFINITE;
+
+		for (int value : this.values()) {
+			if (min > value)
+				min = value;
+		}
+		return min;
+	}
+
+	/**
 	 * @return the min value among all labeled value having label without unknown literals.
 	 */
-	public int getMinValueAmongLabelsWOUnknown();
+	default public int getMinValueAmongLabelsWOUnknown() {
+		int v = Constants.INT_POS_INFINITE, i;
+		Label l;
+		for (final Entry<Label> entry : this.entrySet()) {
+			l = entry.getKey();
+			if (l.containsUnknown()) {
+				continue;
+			}
+			i = entry.getIntValue();
+			if (v > i) {
+				v = i;
+			}
+		}
+		return (v == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : v;
+	}
 
 	/**
 	 * Returns the value associated to the <code>l</code> if it exists, otherwise the minimal value among all labels consistent with <code>l</code>.
@@ -104,7 +150,27 @@ public interface LabeledIntMap {
 	 * @return the value associated to the <code>l</code> if it exists or the minimal value among values associated to labels consistent with <code>l</code>. If
 	 *         no labels are consistent by <code>l</code>, {@link Constants#INT_NULL} is returned.
 	 */
-	public int getMinValueConsistentWith(final Label l);
+	default public int getMinValueConsistentWith(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		int min = this.get(l);
+		if (min == Constants.INT_NULL) {
+			// the label does not exits, try all consistent labels
+			min = Constants.INT_POS_INFINITE;
+			int v1;
+			Label l1 = null;
+			for (final Entry<Label> e : this.entrySet()) {
+				l1 = e.getKey();
+				if (l.isConsistentWith(l1)) {
+					v1 = e.getIntValue();
+					if (min > v1) {
+						min = v1;
+					}
+				}
+			}
+		}
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+	}
 
 	/**
 	 * Returns the minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
@@ -150,7 +216,13 @@ public interface LabeledIntMap {
 	 * @param inputMap a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
 	 * @see Object2IntMap#putAll(Map)
 	 */
-	public void putAll(final LabeledIntMap inputMap);
+	default public void putAll(final LabeledIntMap inputMap) {
+		if (inputMap == null)
+			return;
+		for (final Entry<Label> entry : inputMap.entrySet()) {
+			this.put(entry.getKey(), entry.getIntValue());
+		}
+	}
 
 	/**
 	 * Remove the label <code>l</code> from the map. If the <code>l</code> is not present, it does nothing.
@@ -162,20 +234,12 @@ public interface LabeledIntMap {
 	public int remove(Label l);
 
 	/**
-	 * <p>
-	 * size.
-	 * </p>
-	 *
 	 * @return the number of labeled value (value with empty label included).
 	 * @see Map#size()
 	 */
 	public int size();
 
 	/**
-	 * <p>
-	 * values.
-	 * </p>
-	 *
 	 * @return the set of all integer present in the map as an ordered list.
 	 */
 	public IntSet values();
