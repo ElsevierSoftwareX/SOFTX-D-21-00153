@@ -17,15 +17,8 @@ import edu.uci.ics.jung.graph.Graph;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
- * Extends StaticLayout setting the following initializer:
- * static public Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
+ * Extends StaticLayout retrieving initial node positions from node attributes.
  * 
- * @Override
- * 			public Point2D apply(final LabeledNode v) {
- *           final Point2D p = new Point2D.Double(v.getX(), v.getY());
- *           return p;
- *           }
- *           };
  * @param <E> edge type
  * @version $Id: $Id
  */

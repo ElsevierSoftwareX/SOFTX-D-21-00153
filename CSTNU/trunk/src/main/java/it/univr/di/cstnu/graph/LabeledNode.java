@@ -209,7 +209,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Set the proposition to be observed.
 	 *
-	 * @param c the proposition to observe. If null, the node became not observable node.
+	 * @param c the proposition to observe. If {@link Constants#UNKNOWN}, the node became not observable node.
 	 */
 	public void setObservable(final char c) {
 		char old = this.propositionObserved;

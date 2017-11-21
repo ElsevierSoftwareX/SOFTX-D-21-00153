@@ -20,10 +20,10 @@ Introduction
   For example, in the health-care domain, where workflow management systems are being developed to automate medical-treatment processes, 
   medical tests for any given patient frequently generate information in real time that can affect which pathway that patient will follow [3].  
   The system must guarantee that any possible execution of the workflow strictly satisfies all specified temporal constraints no matter which test outcomes are observed.  
-  A <<Conditional Simple Temporal Network with Uncertainty (CSTNU)>> has been introduced to represent the temporal features of workflows, 
-  and the dynamic controllability property---which captures the temporal <safety> of workflows---has been defined for CSTNUs [4][5][6][7][8].  
+  A <<Conditional Simple Temporal Network (with Uncertainty) (CSTN(U))>> has been introduced to represent the temporal features of workflows, 
+  and the dynamic controllability property---which captures the temporal <safety> of workflows---has been defined for CSTN(U)s [4][5][6][7][8][9][[10]][[11]][[12]].  
 
-  <<The goal of this project is to publish a prototype allowing one to design and check the controllability of a CSTNU by a graphical editor.>>
+  <<The goal of this project is to publish a prototype allowing one to design and check the controllability of a CSTN(U) by a graphical editor.>>
 
 Bibliography
 
@@ -57,3 +57,15 @@ Bibliography
    in 22st International Symposium on Temporal Representation and Reasoning (TIME 2015), pp. 4–18, IEEE Computer Society, Sept. 2015.
    Available online: https://doi.org/10.1109/TIME.2015.26
    
+  [[9]] L. Hunsberger and R. Posenato, “Checking the Dynamic Consistency of Conditional Simple Temporal Networks with Bounded Reaction Times”, 
+   in ICAPS 2016: International Conference on Automated Planning and Scheduling (ICAPS 2016), pp. 175–183, 2016.
+   Available online: http://www.aaai.org/ocs/index.php/ICAPS/ICAPS16/paper/view/13108
+   
+  [[10]] A. Cimatti, L. Hunsberger, A. Micheli, R. Posenato, and M. Roveri, ‘Dynamic controllability via Timed Game Automata’, 
+    Acta Inform., vol. 53, no. 6–8, pp. 681–722, Oct. 2016.
+    
+  [[11]] M. Cairo, L. Hunsberger, R. Posenato, and R. Rizzi, ‘A Streamlined Model of Conditional Simple Temporal Networks – Semantics and Equivalence Results’, 
+    in 24th International Symposium on Temporal Representation and Reasoning (TIME 2017), 2017, vol. 90, no. 10, pp. 1–10.
+    
+  [[12]] M. Cairo, C. Combi, C. Comin, L. Hunsberger, R. Posenato, R. Rizzi, M. Zavatteri, ‘Incorporating Decision Nodes into Conditional Simple Temporal Networks’, 
+    in 24th International Symposium on Temporal Representation and Reasoning (TIME 2017), 2017, vol. 90, p. 9:1--9:18.   

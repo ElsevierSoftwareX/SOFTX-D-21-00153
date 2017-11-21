@@ -362,7 +362,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * Helper constructor. It calls {@link #ALabel(ALetter, ALabelAlphabet)}
+	 * Helper constructor. It calls ALabel(ALetter, ALabelAlphabet).
 	 * Be aware that if 's' is not present into alphabet as a-letter, it will be added as a-letter.
 	 * 
 	 * @param s the string to add.

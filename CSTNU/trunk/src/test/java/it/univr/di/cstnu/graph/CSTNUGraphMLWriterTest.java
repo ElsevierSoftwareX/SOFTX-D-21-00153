@@ -14,7 +14,6 @@ import org.junit.Test;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
-import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
@@ -55,7 +54,7 @@ public class CSTNUGraphMLWriterTest {
 
 		CSTNU cstnu = new CSTNU(g);
 		cstnu.initAndCheck();
-		final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(g));
+		final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(null);
 		try (Writer out = new PrintWriter(new BufferedWriter(new FileWriter(this.fileName)))) {
 			graphWriter.save(g, out);
 		} catch (final Exception e) {
@@ -170,17 +169,17 @@ public class CSTNUGraphMLWriterTest {
 			"<data key=\"Type\">internal</data>\n" +
 			"<data key=\"LabeledValues\">{(0, ⊡) }</data>\n" +
 			"</edge>\n" +
-			"<edge id=\"Z_Ω\" source=\"Z\" target=\"Ω\">\n" +
+			"<edge id=\"Z_X\" source=\"Z\" target=\"X\">\n" +
+			"<data key=\"Type\">internal</data>\n" +
+			"<data key=\"LabeledValues\">{(20, ¬p) }</data>\n" +
+			"</edge>\n" +
+			"<edge id=\"Z_Y\" source=\"Z\" target=\"Y\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
 			"<data key=\"LabeledValues\">{(20, ⊡) }</data>\n" +
 			"</edge>\n" +
-			"<edge id=\"Ω_X\" source=\"Ω\" target=\"X\">\n" +
+			"<edge id=\"Z_Ω\" source=\"Z\" target=\"Ω\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(0, ¬p) }</data>\n" +
-			"</edge>\n" +
-			"<edge id=\"Ω_Y\" source=\"Ω\" target=\"Y\">\n" +
-			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(0, ⊡) }</data>\n" +
+			"<data key=\"LabeledValues\">{(20, ⊡) }</data>\n" +
 			"</edge>\n" +
 			"<edge id=\"Ω_Z\" source=\"Ω\" target=\"Z\">\n" +
 			"<data key=\"Type\">internal</data>\n" +

@@ -118,7 +118,7 @@ import org.netbeans.validation.api.Validator;
  * <td>1.30E-4</td>
  * </tr>
  * </table>
- * <b>All code for performance tests is in {@link LabelTest}.</b>
+ * <b>All code for performance tests is in LabelTest class .</b>
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -198,13 +198,13 @@ public class Label implements Comparable<Label> {
 		}
 
 		@Override
-		public final void remove(char c) {
-			return;
+		public final Label remove(char c) {
+			return this;
 		}
 
 		@Override
-		public final void remove(Label l) {
-			return;
+		public final Label remove(Label l) {
+			return this;
 		}
 
 		@Override
@@ -1026,19 +1026,22 @@ public class Label implements Comparable<Label> {
 	 * Removing a proposition means to remove all literal of the given proposition.
 	 *
 	 * @param proposition the proposition to remove.
+	 * @return return reference a this for allowing concatenation
 	 */
-	public void remove(final char proposition) {
+	public Label remove(final char proposition) {
 		set(Literal.index(proposition), Literal.ABSENT);
+		return this;
 	}
 
 	/**
 	 * It removes all literals with names in <b>inputLabel</b> from the current label.
 	 *
 	 * @param inputLabel names of literals to remove.
+	 * @return this as reference
 	 */
-	public void remove(Label inputLabel) {
+	public Label remove(Label inputLabel) {
 		if (inputLabel == null)
-			return;
+			return this;
 
 		long inputPropositions = inputLabel.bit0 | inputLabel.bit1;
 		inputPropositions = ~inputPropositions;
@@ -1052,6 +1055,7 @@ public class Label implements Comparable<Label> {
 			mask = mask >>> 1;
 		}
 		this.cacheOfSize = -1;
+		return this;
 	}
 
 	/**

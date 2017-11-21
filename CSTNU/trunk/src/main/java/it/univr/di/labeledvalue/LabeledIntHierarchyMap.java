@@ -451,7 +451,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * emptyRoot necessary to initialize the tree. If the definition is changed, then {@link #isEmptyRootNode(Label, int)} and {@link HierarchyNode#clear()} have to be updated!
+	 * EmptyRoot necessary to initialize the tree. If the definition is changed, then {@link #isEmptyRootNode(Label, int)} and
+	 * {@link LabeledIntHierarchyMap.HierarchyNode#clear()} have to be updated!
 	 */
 	private HierarchyNode emptyRootNode = new HierarchyNode(Label.emptyLabel, Constants.INT_POS_INFINITE);
 

@@ -40,7 +40,7 @@ public class CSTNir3RwoNodeLabelTest {
 	/**
 	 * 
 	 */
-	CSTNir3RwoNodeLabel cstn;
+	CSTN3RwoNodeLabelIR cstn;
 	/**
 	 * 
 	 */
@@ -62,7 +62,8 @@ public class CSTNir3RwoNodeLabelTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTNir3RwoNodeLabel(new LabeledIntGraph(this.labeledIntValueMapClass));
+		this.cstn = new CSTN3RwoNodeLabelIR(new LabeledIntGraph(this.labeledIntValueMapClass));
+		this.cstn.Z = this.Z;
 	}
 
 	/**
@@ -91,10 +92,10 @@ public class CSTNir3RwoNodeLabelTest {
 		pz.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
 		pz.mergeLabeledValue(Label.parse("C¬p"), 1);
 		g.addEdge(pz, this.P, this.Z);
-		g.setZ(this.X);
+		g.setZ(this.Z);
 		// wellDefinition(g);
 		this.cstn.setG(g);
-		this.cstn.labelModificationqR0(this.P, this.Z, pz);
+		this.cstn.labelModificationR0qR0(this.P, this.Z, pz);
 
 		LabeledIntEdgePluggable pzOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		// if R0 is applied!
@@ -133,53 +134,14 @@ public class CSTNir3RwoNodeLabelTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.cstn.labelModificationqR0(this.P, this.X, px);
+		this.cstn.Z = this.X;
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.emptyLabel, 0);
 
 		assertEquals("R0: P?Z labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
-	}
-
-	@SuppressWarnings("javadoc")
-	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR3(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
-	 */
-	@Test(expected = IllegalAccessError.class)
-	public final void testLabelModificationR3() {
-		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
-		LabeledNode B = new LabeledNode("B?", 'b');
-		LabeledNode C = new LabeledNode("C?", 'c');
-		LabeledNode G = new LabeledNode("G?", 'g');
-		g.addVertex(this.P);
-		g.addVertex(A);
-		g.addVertex(B);
-		g.addVertex(G);
-		g.addVertex(C);
-		g.addVertex(this.X);
-		g.addVertex(Y);
-		g.setZ(this.Z);
-
-		LabeledIntEdgePluggable px = new LabeledIntEdgePluggable("PX", this.labeledIntValueMapClass);
-		px.mergeLabeledValue(Label.parse("¬b"), 0);
-		px.mergeLabeledValue(Label.parse("ab"), -10);
-
-		LabeledIntEdgePluggable yx = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
-		yx.mergeLabeledValue(Label.parse("bgp"), -4);
-		yx.mergeLabeledValue(Label.parse("cp"), -10);
-		yx.mergeLabeledValue(Label.parse("c¬p"), 11);
-
-		g.addEdge(px, this.P, this.X);
-		g.addEdge(yx, Y, this.X);
-
-		wellDefinition(g);
-
-		// System.out.println(g);
-
-		this.cstn.labelModificationR3qR3(Y, this.X, this.Z, yx);
 	}
 
 	/**
@@ -218,7 +180,7 @@ public class CSTNir3RwoNodeLabelTest {
 
 		this.cstn.setG(g);
 		this.cstn.initAndCheck();
-		this.cstn.labelModificationqR3(Y, this.Z, yz);
+		this.cstn.labelModificationR3qR3(Y, this.Z, yz);
 
 		LabeledIntEdgePluggable yzOK = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
 		yzOK.mergeLabeledValue(Label.emptyLabel, 0);// ok
@@ -237,7 +199,7 @@ public class CSTNir3RwoNodeLabelTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -270,7 +232,7 @@ public class CSTNir3RwoNodeLabelTest {
 
 		wellDefinition(g);
 
-		this.cstn.labeledPropagationLP(this.X, this.P, Y, XP, PY, XY);
+		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);
 
 		// System.out.println(XP);
 		// System.out.println(PY);
@@ -288,7 +250,7 @@ public class CSTNir3RwoNodeLabelTest {
 		XP.mergeLabeledValue(Label.parse("b"), -1);
 		XP.mergeLabeledValue(Label.parse("¬b"), 1);
 		XY.clear();
-		this.cstn.labeledPropagationLP(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
+		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);
 
 		// EqLP+ rule no positive value
 		xyOK.clearLabels();
@@ -307,7 +269,7 @@ public class CSTNir3RwoNodeLabelTest {
 		// System.out.println("py: " +PY);
 		// System.out.println("xy: " +xy);
 
-		this.cstn.labeledPropagationLP(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
+		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);
 
 		// System.out.println("xy: " +xy);
 
@@ -319,7 +281,7 @@ public class CSTNir3RwoNodeLabelTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -356,7 +318,7 @@ public class CSTNir3RwoNodeLabelTest {
 		// System.out.println(g);
 		// System.out.println(g1);
 
-		this.cstn.labeledPropagationLP(this.X, Y, this.Z, XY, YZ, XZ);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.Z, XY, YZ, XZ);
 		this.ok.clear();
 		this.ok.mergeLabeledValue("¬p", -1);
 		this.ok.mergeLabeledValue("p", -2);
@@ -370,7 +332,7 @@ public class CSTNir3RwoNodeLabelTest {
 
 	/**
 	 * Test method for creating a -infty loop
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -404,20 +366,20 @@ public class CSTNir3RwoNodeLabelTest {
 
 		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
 		g.addEdge(XX, this.X, this.X);
-		this.cstn.labeledPropagationLP(this.X, Y, this.X, XY, YX, XX);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
 		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
-		this.cstn.labeledPropagationLP(this.X, Y, this.X, XY, YX, XX);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.X, XY, YX, XX);
 		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());
 
 	}
 
 	/**
 	 * Test method for checking that all propagations are done
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -533,33 +495,23 @@ public class CSTNir3RwoNodeLabelTest {
 
 		wellDefinition(g);
 
-		assertEquals("¬abg",
-				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("pbg")).toString());
-		assertEquals("¬abg",
-				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("¬pbg")).toString());
-
-		assertEquals("bg",
-				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
-		assertEquals("bg",
-				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
-
 		/**
 		 * 'a' in 'ba' is a child supposed not to be present. Here there is no children control... so ¬a is present!
 		 */
 		assertEquals("¬a¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 
-		assertEquals("bg",
-				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
+		assertEquals("¬abg",
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 
 		assertEquals("¬a¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬ag")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬ag")).toString());
 		// assertEquals("bg", this.cstn.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 	}
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -592,14 +544,14 @@ public class CSTNir3RwoNodeLabelTest {
 		g.addEdge(YZ, Y, this.Z);
 		g.addEdge(XZ, this.X, this.Z);
 
-		this.cstn.labeledPropagationLP(this.X, Y, this.Z, XY, YZ, XZ);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.Z, XY, YZ, XZ);
 
 		assertEquals("Label propagation rule with particular values", AbstractLabeledIntMap.parse("{(-1, ¬p) (-2, p) }"), XZ.getLabeledValueMap());
 	}
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -635,23 +587,23 @@ public class CSTNir3RwoNodeLabelTest {
 		g.addEdge(YY, Y, Y);
 
 		this.cstn.setG(g);
-		this.cstn.labeledPropagationLP(this.X, Y, this.Z, XY, YZ, XZ);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) }", XZ.getLabeledValueMap().toString());
 
-		this.cstn.labeledPropagationLP(this.X, Y, this.X, XY, YX, XX);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.X, XY, YX, XX);
 		assertEquals("XX", "{}", XX.getLabeledValueMap().toString());
 
-		this.cstn.labeledPropagationLP(this.X, this.X, Y, XX, XY, XY);
+		this.cstn.labeledPropagationqLP(this.X, this.X, Y, XX, XY, XY);
 		assertEquals("XY", "{(2, p) }", XY.getLabeledValueMap().toString());
 
-		this.cstn.labeledPropagationLP(Y, this.X, Y, YX, XY, YY);
+		this.cstn.labeledPropagationqLP(Y, this.X, Y, YX, XY, YY);
 		assertEquals("", "{}", YY.getLabeledValueMap().toString());
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -687,25 +639,25 @@ public class CSTNir3RwoNodeLabelTest {
 		g.addEdge(YY, Y, Y);
 
 		this.cstn.setG(g);
-		this.cstn.labeledPropagationLP(this.X, Y, this.Z, XY, YZ, XZ);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) }", XZ.getLabeledValueMap().toString());
 
-		this.cstn.labeledPropagationLP(this.X, Y, this.X, XY, YX, XX);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.X, XY, YX, XX);
 		// assertTrue(eNew == null);//if only negative value are q-propagate
 
 		// g.addEdge(XX, X, X);
-		this.cstn.labeledPropagationLP(this.X, this.X, Y, XX, XY, XY);
+		this.cstn.labeledPropagationqLP(this.X, this.X, Y, XX, XY, XY);
 		assertEquals("XY", "{(2, p) }", XY.getLabeledValueMap().toString());
-		this.cstn.labeledPropagationLP(Y, this.X, Y, YX, XY, YY);
+		this.cstn.labeledPropagationqLP(Y, this.X, Y, YX, XY, YY);
 		assertEquals("", "{}", YY.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 
-		this.cstn.labeledPropagationLP(Y, Y, this.X, YY, YX, YX);
+		this.cstn.labeledPropagationqLP(Y, Y, this.X, YY, YX, YX);
 		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 	}
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
 	 * .
 	 */
 	@SuppressWarnings("javadoc")
@@ -738,14 +690,14 @@ public class CSTNir3RwoNodeLabelTest {
 		g.addEdge(XZ, this.X, this.Z);
 		g.addEdge(XX, this.X, this.X);
 
-		this.cstn.labeledPropagationLP(this.X, Y, this.Z, XY, YZ, XZ);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) }", XZ.getLabeledValueMap().toString());
 
-		this.cstn.labeledPropagationLP(this.X, Y, this.X, XY, YX, XX);
+		this.cstn.labeledPropagationqLP(this.X, Y, this.X, XY, YX, XX);
 		assertEquals("XX", "{}", XX.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 
 
-		this.cstn.labeledPropagationLP(Y, this.X, this.X, YX, XX, YX);
+		this.cstn.labeledPropagationqLP(Y, this.X, this.X, YX, XX, YX);
 		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());
 	}
 

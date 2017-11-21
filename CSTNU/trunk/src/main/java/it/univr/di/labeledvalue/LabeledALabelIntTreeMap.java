@@ -96,7 +96,7 @@ import it.univr.di.Debug;
  * </pre>
  * 
  * <pre>
- * <b>All code for testing is in {@link LabeledALabelIntTreeMapTest}.</b>
+ * <b>All code for testing is in LabeledALabelIntTreeMapTest class (not public available).</b>
  * 
  * @author Roberto Posenato
  * @version $Id: $Id

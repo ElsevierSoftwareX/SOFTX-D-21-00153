@@ -53,12 +53,16 @@ import it.univr.di.labeledvalue.Literal;
 public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntEdge> implements DirectedGraph<LabeledNode, LabeledIntEdge>, Observer {
 
 	/**
-	 * In order to associate a adjacency index with its corresponding node. It is not possible to make this class as NodeIndex class because if I extended
-	 * AbstractLabeledIntEdge, then edges are viewed as AbstractLabeledIntEdge and parameterized type T cannot be used as base class for extending.
-	 * 
+	 * Represents the association of an edge with its position in the adjacency matrix of the graph.
+	 * index with its corresponding node.
 	 * @author posenato
 	 */
 	private class EdgeIndex {
+		 /**
+		 * It is not possible to use the technique used for Node (extending LabeledIntNode class) because if I extended
+		 * AbstractLabeledIntEdge, then edges are viewed as AbstractLabeledIntEdge and parameterized type T cannot be used as base class for extending.
+		 */
+
 		/**
 		 * 
 		 */
@@ -456,10 +460,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * clear all internal structures.
-	 * The graph will be empty.
+	 * Clear all internal structures.
+	 * The graph will be erased.
 	 * 
-	 * @param initialAdjSize
+	 * @param initialAdjSize initial number of vertices.
 	 */
 	public void clear(int initialAdjSize) {
 		this.order = 0;// addVertex adjusts the value
@@ -1231,7 +1235,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	public String toString() {
 		final StringBuffer sb = new StringBuffer(
 				"%LabeledIntGraph: "
-						+ this.name
+						+ ((this.name != null) ? this.name : (this.fileName != null) ? this.fileName.toString() : "no name")
 						+ "\n%LabeledIntGraph Syntax\n"
 						+ "%LabeledNode: <name, label, proposition observed>\n"
 						+ "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>\n");
@@ -1307,8 +1311,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				if (oldP != Constants.UNKNOWN) {
 					this.proposition2Observer.remove(oldP);
 				}
-				this.proposition2Observer.put(newP, node);
-
+				if (newP != Constants.UNKNOWN) {
+					this.proposition2Observer.put(newP, node);
+				}
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
 						LOG.finer("The proposition2Node is updated. Removed old key " + oldP + ". Add the new one: " + newP + " with node " + node +

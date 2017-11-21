@@ -39,7 +39,7 @@ public class CSTNirwoNodeLabelTest {
 	/**
 	 * 
 	 */
-	CSTNirwoNodeLabel cstn;
+	CSTNwoNodeLabelIR cstn;
 	/**
 	 * 
 	 */
@@ -61,7 +61,7 @@ public class CSTNirwoNodeLabelTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTNirwoNodeLabel(new LabeledIntGraph(LabeledIntTreeMap.class));
+		this.cstn = new CSTNwoNodeLabelIR(new LabeledIntGraph(LabeledIntTreeMap.class));
 	}
 
 	/**
@@ -137,7 +137,7 @@ public class CSTNirwoNodeLabelTest {
 //		assertEquals("¿bg",//if children are considered
 //				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 		assertEquals("¬a¿bg",//if children are not considered
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 
 //		assertEquals("bg",//if children are considered
 //				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
@@ -147,7 +147,7 @@ public class CSTNirwoNodeLabelTest {
 //		assertEquals("¿bg",//if children are considered
 //				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 		assertEquals("¬a¿bg",//if children are not considered
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 		// assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 	}
 
@@ -168,6 +168,7 @@ public class CSTNirwoNodeLabelTest {
 		g.addVertex(B);
 		g.addVertex(this.X);
 		g.addVertex(Y);
+		g.setZ(this.Z);
 
 		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
@@ -182,8 +183,8 @@ public class CSTNirwoNodeLabelTest {
 		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		
 		g.addEdge(XP, this.X, this.P);
-		g.addEdge(XY, this.X, Y);
 		g.addEdge(PY, this.P, Y);
+		g.addEdge(XY, this.X, Y);
 
 		wellDefinition(g);
 
@@ -200,14 +201,13 @@ public class CSTNirwoNodeLabelTest {
 		XYok.mergeLabeledValue(Label.parse("b"), -1);
 		XYok.mergeLabeledValue(Label.parse("¿b"), -11);
 
-
 		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
 
 		XP.clearLabels();
 		XP.mergeLabeledValue(Label.parse("b"), -1);
 		XP.mergeLabeledValue(Label.parse("¬b"), 1);
 		XY.clear();
-		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
+		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);
 
 		XYok.clearLabels();
 		XYok.mergeLabeledValue(Label.parse("¬b"), 10);
@@ -225,7 +225,7 @@ public class CSTNirwoNodeLabelTest {
 		// System.out.println("py: " +PY);
 		// System.out.println("xy: " +xy);
 
-		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
+		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);
 
 		// System.out.println("xy: " +xy);
 
@@ -472,7 +472,7 @@ public class CSTNirwoNodeLabelTest {
 		// wellDefinition(g);
 
 		this.cstn.setG(g);
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.Z, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
@@ -506,7 +506,7 @@ public class CSTNirwoNodeLabelTest {
 		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
 		assertEquals("R0: P?Z labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.X, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		assertEquals("R0: P?Z labeled values.", pxOK.getLabeledValueMap(), px.getLabeledValueMap());
 	}
@@ -548,7 +548,7 @@ public class CSTNirwoNodeLabelTest {
 
 		// System.out.println(g);
 
-		this.cstn.labelModificationR3qR3(Y, this.X, this.Z, yx);
+		this.cstn.labelModificationR3qR3(Y, this.X, yx);
 
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// std semantics
@@ -598,8 +598,8 @@ public class CSTNirwoNodeLabelTest {
 		g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 		this.cstn.setG(g);
-
-		this.cstn.labelModificationR3qR3(this.X, this.Z, this.Z, xz);
+		this.cstn.Z = this.Z;
+		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		assertEquals("R3: yx labeled values.", AbstractLabeledIntMap.parse("{(-11, abc¬p) (-11, ab¿c) (-15, ab¿p) (-10, ab) }"), xz.getLabeledValueMap());
 	}
