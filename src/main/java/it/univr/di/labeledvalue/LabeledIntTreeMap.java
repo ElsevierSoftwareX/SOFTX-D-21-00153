@@ -54,7 +54,7 @@ import it.univr.di.Debug;
  * <td>~0.328194</td>
  * </tr>
  * </table>
- * <b>All code for performance tests is in {@link LabeledIntTreeMapTest}.</b>
+ * <b>All code for performance tests is in LabeledIntTreeMapTest class (not public available).</b>
  * 
  * @author Roberto Posenato
  * @see LabeledIntMap

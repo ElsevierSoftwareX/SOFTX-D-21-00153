@@ -93,7 +93,7 @@ public class CSTNwoNodeLabelTest {
 		// wellDefinition(g);
 
 		this.cstn.setG(g);
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.Z, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
@@ -125,7 +125,7 @@ public class CSTNwoNodeLabelTest {
 		} catch (WellDefinitionException e) {
 			e.printStackTrace();
 		}
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.X, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
@@ -278,7 +278,7 @@ public class CSTNwoNodeLabelTest {
 
 		// System.out.println(g);
 
-		this.cstn.labelModificationR3qR3(Y, this.X, this.Z, yx);
+		this.cstn.labelModificationR3qR3(Y, this.X, yx);
 
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// std semantics
@@ -328,8 +328,8 @@ public class CSTNwoNodeLabelTest {
 		g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 		this.cstn.setG(g);
-
-		this.cstn.labelModificationR3qR3(this.X, this.Z, this.Z, xz);
+		this.cstn.Z = this.Z;
+		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		assertEquals("R3: yx labeled values.", AbstractLabeledIntMap.parse("{(-11, abc¬p) (-11, ab¿c) (-15, ab¿p) (-10, ab) }"), xz.getLabeledValueMap());
 	}
@@ -647,40 +647,29 @@ public class CSTNwoNodeLabelTest {
 		wellDefinition(g);
 
 
+		// CHILDREN ARE NOT CONSIDERED because it is assumed a streamlined CSTN
 		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("pbg")).toString());
+
 		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("¬pbg")).toString());
 
-//		assertEquals("bg", //if children are considered
-//				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
-
-		assertEquals("¬abg", //if children are not considered
+		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
 
-//		assertEquals("bg",//if children are considered
-//				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
-		assertEquals("¬abg",//if children are not considered
+		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
-		/*
-		 * 'a' in 'ba' is a children supposed not to be present.
-		 */
-		B.setLabel(Label.parse("a"));
-//		assertEquals("¿bg",//if children are considered
-//				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
-		assertEquals("¬a¿bg",//if children are not considered
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 
-//		assertEquals("bg",//if children are considered
-//				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
-		assertEquals("¬abg",//if children are not considered
+		B.setLabel(Label.parse("a"));
+		// now P has only 'a' as child but it doesn't matter!
+		assertEquals("¬a¿bg", // if children are not considered
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
+
+		assertEquals("¬abg", // if children are not considered
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
 
-//		assertEquals("¿bg",//if children are considered
-//				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 		assertEquals("¬a¿bg",//if children are not considered
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
-		// assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 	}
 
 

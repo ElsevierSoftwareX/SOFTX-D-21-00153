@@ -114,9 +114,9 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	/**
 	 * Creates an instance with default values.
 	 *
-	 * @param rc a {@link edu.uci.ics.jung.visualization.RenderContext} object.
-	 * @param vertexFactory a {@link org.apache.commons.collections15.Factory} object.
-	 * @param edgeFactory a {@link org.apache.commons.collections15.Factory} object.
+	 * @param rc a render contest.
+	 * @param vertexFactory a vertex factory.
+	 * @param edgeFactory an edge factory.
 	 */
 	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Supplier<V> vertexFactory, final Supplier<E> edgeFactory, CSTNEditor cstnEditor) {
 		super(rc, vertexFactory,edgeFactory);//this constructor uses local loadPlugins but LabelEditingGraphMousePlugin cannot be initialized correctly.

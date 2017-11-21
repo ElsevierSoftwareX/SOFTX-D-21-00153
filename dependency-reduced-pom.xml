@@ -4,7 +4,7 @@
   <groupId>it.univr.di</groupId>
   <artifactId>CSTNU</artifactId>
   <name>CSTNU</name>
-  <version>1.21.0-SNAPSHOT</version>
+  <version>1.22.0-SNAPSHOT</version>
   <url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
   <developers>
     <developer>
@@ -74,7 +74,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>2.2</version>
+        <version>3.1.0</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -90,12 +90,6 @@
               <minimizeJar>true</minimizeJar>
               <filters>
                 <filter>
-                  <artifact>org.codehaus.woodstox:wstx-asl</artifact>
-                  <includes>
-                    <include>com/ctc/wstx/stax</include>
-                  </includes>
-                </filter>
-                <filter>
                   <artifact>*:*</artifact>
                   <excludes>
                     <exclude>META-INF/*.SF</exclude>
@@ -107,7 +101,10 @@
               </filters>
               <transformers>
                 <transformer>
-                  <mainClass>it.univr.di.cstnu.algorithms.CSTNU2UppaalTiga</mainClass>
+                  <manifestEntries>
+                    <mainClass>it.univr.di.cstnu.algorithms.CSTN</mainClass>
+                    <Build-Number>${project.version}</Build-Number>
+                  </manifestEntries>
                 </transformer>
               </transformers>
             </configuration>

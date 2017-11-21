@@ -8,14 +8,13 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.sql.Time;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -41,9 +40,11 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import net.openhft.affinity.AffinityStrategies;
+import net.openhft.affinity.AffinityThreadFactory;
 
 /**
- * Simple class to determine the average execution time (and std dev) of the CSTN DC checking algorithm given a set of CSTNs.
+ * Simple class to determine the average execution time (and std dev) of the CSTN DC checking algorithm on a input set of CSTNs.
  *
  * @author posenato
  * @version $Id: $Id
@@ -57,7 +58,9 @@ public class CSTNRunningTime {
 	// static final String VERSIONandDATE = "1.2, October, 10 2017";
 	// static final String VERSIONandDATE = "1.3, October, 16 2017";// executor code cleaned
 	// static final String VERSIONandDATE = "1.4, November, 09 2017";// code cleaned
-	static final String VERSIONandDATE = "2.0, November, 13 2017";// Multi-thread version.
+	// static final String VERSIONandDATE = "2.0, November, 13 2017";// Multi-thread version.
+	// static final String VERSIONandDATE = "2.1, November, 14 2017";// Multi-thread version. Fixed a slip!
+	static final String VERSIONandDATE = "2.2, November, 15 2017";// Added the possibility to test CSTNwoNodeLabelEpsilon and CSTN2CSTN0
 
 	/**
 	 * class logger
@@ -100,6 +103,12 @@ public class CSTNRunningTime {
 	private boolean convertToNewFormat = false;
 
 	/**
+	 * Parameter for asking to DC check epsilon DC reducing to IR DC
+	 */
+	@Option(required = false, name = "-cstn2cstn0", usage = "Check the epsilon-DC of the input instance using IR-DC on a correspondig streamlined CSTN. It transforms the input CSTN and then check its IR-DC. Epsilon value can be specified using -reactionTime parameter.")
+	private boolean cstn2cstn0 = false;
+
+	/**
 	 * Parameter for asking to remove a value from all constraints.
 	 */
 	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is null.")
@@ -124,6 +133,12 @@ public class CSTNRunningTime {
 	private int timeOut = 1200; // 20 min
 
 	/**
+	 * Parameter for asking timeout in sec.
+	 */
+	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 1.")
+	private int nCPUs = 1;
+
+	/**
 	 * Output file where to write the determined experimental execution times in CSV format.
 	 */
 	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in CSV format. If file is already present, data will be added.", metaVar = "outputFile")
@@ -131,19 +146,19 @@ public class CSTNRunningTime {
 	/**
 	 * Parameter for asking reaction time.
 	 */
-	@Option(required = false, name = "-reactionTime", usage = "Reaction time. It must be > 0.")
+	@Option(required = false, name = "-reactionTime", depends = "{-semantics ε}", usage = "Reaction time. It must be > 0.")
 	private int reactionTime = 1;
 
 	/**
 	 * Parameter for asking DC semantics.
 	 */
-	@Option(required = false, name = "-semantics", usage = "DC semantics. Default is the std one.")
+	@Option(required = false, name = "-semantics", usage = "DC semantics. Possible values are: IR, ε, Std. Default is Std.")
 	private DCSemantics dcSemantics = DCSemantics.Std;
 
 	/**
 	 * Parameter for asking whether to consider node labels during the DC check.
 	 */
-	@Option(required = false, name = "-woNodeLabel", usage = "Check DC transforming the network in an equivalent CSTN without node labels.")
+	@Option(required = false, name = "-woNodeLabels", usage = "Check DC transforming the network in an equivalent CSTN without node labels.")
 	private boolean woNodeLabels = false;
 
 	/**
@@ -258,18 +273,73 @@ public class CSTNRunningTime {
 		return true;
 	}
 
+	@SuppressWarnings({ "javadoc" })
+	private static class RunState {
+		long startTime;
+		long total;
+		long current;
+
+		/**
+		 * @param startTime in milliseconds
+		 * @param total
+		 * @param current
+		 */
+		public RunState(long startTime, long total, long current) {
+			this.current = current;
+			this.total = total;
+			this.startTime = startTime;
+		}
+
+		/**
+		 */
+		void printProgress() {
+			this.current++;
+			if (this.current > this.total)
+				this.current = this.total;
+
+			long now = System.currentTimeMillis();
+			long eta = this.current == 0 ? 0 : (this.total - this.current) * (now - this.startTime) / this.current;
+
+			String etaHms = this.current == 0 ? "N/A"
+					: String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(eta),
+							TimeUnit.MILLISECONDS.toMinutes(eta) % TimeUnit.HOURS.toMinutes(1),
+							TimeUnit.MILLISECONDS.toSeconds(eta) % TimeUnit.MINUTES.toSeconds(1));
+
+			final int scaleFactor = 50;// [0--100]
+			StringBuilder string = new StringBuilder(140);
+			int percent = (int) (this.current * 100 / this.total);
+			int percentScaled = (int) (this.current * scaleFactor / this.total);
+			string.append('\r')
+					.append(String.format("%s %3d%% [", new Time(now).toString(), percent))
+					.append(String.join("", Collections.nCopies(percentScaled, "=")))
+					.append('>')
+					.append(String.join("", Collections.nCopies(scaleFactor - percentScaled, " ")))
+					.append(']')
+					.append(String.join("", Collections.nCopies((int) (Math.log10(this.total)) - (int) (Math.log10(this.current)), " ")))
+					.append(String.format(" %d/%d, ETA: %s", this.current, this.total, etaHms));
+
+			System.out.print(string);
+		}
+
+	}
+
 	/**
+	 * Allows to check the execution time of DC checking algorithm giving a set of instances.
+	 * The set of instances are checked in parallel if the machine is a multi-cpus one.<br>
+	 * Moreover, this method tries to exploit <a href="https://github.com/OpenHFT/Java-Thread-Affinity">thread affinity</a> if kernel allows it.<br>
+	 * So, if it is possible to reserve some CPU modifying the kernel as explained in <a href="https://github.com/OpenHFT/Java-Thread-Affinity">thread affinity
+	 * page</a>.
+	 * it is possible to run the parallel thread in the better conditions.
+	 * 
 	 * @param args an array of {@link java.lang.String} objects.
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
-	 * @throws InterruptedException
-	 * @throws ExecutionException
 	 */
-	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException, InterruptedException, ExecutionException {
+	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
 		LOG.finest("CSTNRunningTime " + VERSIONandDATE + "\nStart...");
-		System.out.println("CSTNRunningTime " + VERSIONandDATE + "\nStart of execution...");
+		System.out.println("CSTNRunningTime " + VERSIONandDATE + "\n" + (new Time(System.currentTimeMillis())).toString() + ": Start of execution...");
 		final CSTNRunningTime tester = new CSTNRunningTime();
 
 		if (!tester.manageParameters(args))
@@ -282,10 +352,35 @@ public class CSTNRunningTime {
 			return;
 		}
 
-		int nProcessor = Runtime.getRuntime().availableProcessors();
 		final LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
-		final ExecutorService dcCheckingExecutor = Executors.newFixedThreadPool(nProcessor);
+		/**
+		 * <a id="affinity">AffinityLock allows to lock a CPU to a thread.</a>
+		 * It seems that allows better performance when a CPU-bound task has to be executed!
+		 * To work, it requires to reserve some CPUs.
+		 * In our server I modified /boot/grub/grub.cfg adding "isolcpus=4,5,6,7,8,9,10,11" to the line that boot the kernel to reserve 8 CPUs.
+		 * Such CPU have (socketId-coreId): 4(0-4), 5(0-5), 6(1-0), 7(1-1), 8(1-2), 9(1-3), 10(1-4), 11(1-5).
+		 * Then I reboot the server.
+		 * This class has to be started as normal (no using taskset!)
+		 * I don't modify in /etc/default/grub and, then, update-grub because it changes a lot of things.
+		 * **NOTE**
+		 * After some simulations on AMD AMD Opteron™ 4334, I discovered that:
+		 * 0) The best performance is obtained checking one file at time!
+		 * 1) It doesn't worth to run more than 2 processor in parallel because this kind of app does not allow to scale. For each added process,
+		 * the performance lowers about 10%.
+		 * 2) Running two processes in the two different sockets lowers the performance about the 20%! It is better to run the two process on the same socket.
+		 * 3) Therefore, I modified /boot/grub/grub.cfg setting "isolcpus=8,9,10,11"
+		 */
+		int nProcessor = tester.nCPUs;// Runtime.getRuntime().availableProcessors();
 
+		// Logging stuff for learning Affinity behaviour.
+		// System.out.println("Base CPU affinity mask: " + AffinityLock.BASE_AFFINITY);
+		// System.out.println("Reserved CPU affinity mask: " + AffinityLock.RESERVED_AFFINITY);
+		// System.out.println("Current CPU affinity: " + Affinity.getCpu());
+		// CpuLayout cpuLayout = AffinityLock.cpuLayout();
+		// System.out.println("CPU Layout: " + cpuLayout.toString());
+		// for (int k = 11; k > 3; k--) {
+		// System.out.println("Cpu " + k + "\nSocket: " + cpuLayout.socketId(k) + ". Core:" + cpuLayout.coreId(k));
+		// }
 		/**
 		 * check all files in parallel.
 		 */
@@ -298,42 +393,53 @@ public class CSTNRunningTime {
 		// tester.inputCSTNFile.parallelStream().forEach(file -> cstnWorker(tester, file, executor, edgeFactory));
 
 		/*
-		 * 2nd method using Runnable.
-		 * Each cstnWorker (one thread), creates a time-out thread for dc checking.
-		 * So, at most only nProcessor/2 cstnWorkers can be created in parallel.
-		 * <br>
-		 * It is necessary to wait cstnWorker ends not using executor.shutdown() doesn't work because each cstnWorker creates an internal thread. Using
-		 * xecutor.shutdown() we can block such
+		 * 2nd method using Callable.
+		 * A newFixedThreadPool executor create nProcessor threads and pipeline all process associated to file to such pool.
+		 * There is no problem if one thread requires a lot of time.
+		 * Final synchronization is obtained requesting .get from Callable.
+		 * AffinityThreadFactory allows to lock a thread in one core for all the time (less overhead)
 		 */
-		final ExecutorService cstnExecutor = Executors.newFixedThreadPool(nProcessor / 2);
-		List<Future<Boolean>> future = new ArrayList<>();//
+		final ExecutorService cstnExecutor = Executors.newFixedThreadPool(nProcessor,
+				new AffinityThreadFactory("cstnWorker", AffinityStrategies.DIFFERENT_CORE));
+
+		RunState runState = new RunState(System.currentTimeMillis(), tester.inputCSTNFile.size(), 0);
+		List<Future<Boolean>> future = new ArrayList<>();
 		for (File file : tester.inputCSTNFile) {
-			future.add(cstnExecutor.submit(() -> cstnWorker(tester, file, dcCheckingExecutor, edgeFactory)));
+			future.add(cstnExecutor.submit(() -> cstnWorker(tester, file, runState, edgeFactory)));
 		}
-		// wait all tasks have been finished!
+		System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Tasks queued: " + future.size());
+		// wait all tasks have been finished and count!
 		int nTaskSuccessfullyFinished = 0;
 		for (Future<Boolean> f : future) {
-			if (f.get())
-				nTaskSuccessfullyFinished++;
+			try {
+				if (f.get()) {
+					nTaskSuccessfullyFinished++;
+				}
+			} catch (Exception ex) {
+				System.out.println("\nA problem occured during a check: " + ex.getMessage() + ". File ignored.");
+			} finally {
+				if (!f.isDone()) {
+					LOG.warning("It is necessary to cancel the task before continuing.");
+					f.cancel(true);
+				}
+			}
 		}
-		LOG.info("Number of instances processed successfully over total: " + nTaskSuccessfullyFinished + "/" + tester.inputCSTNFile.size() + ".\n");
+		String msg = "Number of instances processed successfully over total: " + nTaskSuccessfullyFinished + "/" + tester.inputCSTNFile.size() + ".";
+		LOG.info(msg);
+		System.out.println("\n" + (new Time(System.currentTimeMillis())).toString() + ": " + msg);
 		// executor shutdown!
 		try {
-			System.out.println("Shutdown executors.");
-			dcCheckingExecutor.shutdown();
+			System.out.println((new Time(System.currentTimeMillis())).toString() + ": Shutdown executors.");
 			cstnExecutor.shutdown();
-
-			dcCheckingExecutor.awaitTermination(2, TimeUnit.SECONDS);
 			cstnExecutor.awaitTermination(2, TimeUnit.SECONDS);
 		} catch (InterruptedException e) {
-			System.err.println("Tasks interrupted.");
+			System.err.println((new Time(System.currentTimeMillis())).toString() + ": Tasks interrupted.");
 		} finally {
-			if (!cstnExecutor.isTerminated() || !dcCheckingExecutor.isTerminated()) {
-				System.err.println("Cancel non-finished tasks.");
+			if (!cstnExecutor.isTerminated()) {
+				System.err.println((new Time(System.currentTimeMillis())).toString() + ": Cancel non-finished tasks.");
 			}
-			dcCheckingExecutor.shutdownNow();
 			cstnExecutor.shutdownNow();
-			System.out.println("Shutdown finished.\nExecution finished.");
+			System.out.println((new Time(System.currentTimeMillis())).toString() + ": Shutdown finished.\nExecution finished.");
 		}
 		if (tester.fOutput != null) {
 			tester.output.close();
@@ -343,26 +449,29 @@ public class CSTNRunningTime {
 	/**
 	 * @param tester
 	 * @param file
-	 * @param executor
+	 * @param runState
 	 * @param edgeFactory
 	 * @return true if required task ends successfully, false otherwise.
 	 */
-	static private boolean cstnWorker(CSTNRunningTime tester, File file, ExecutorService executor,
-			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
+	static private boolean cstnWorker(CSTNRunningTime tester, File file, RunState runState, LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
 		CSTNUGraphMLReader graphMLReader;
 		try {
 			graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);
 		} catch (FileNotFoundException e2) {
-			LOG.warning("File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.");
+			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
+			LOG.warning(msg);
+			System.out.println(msg);
 			return false;
 		}
 		LabeledIntGraph graphToCheck = null;
 		try {
 			graphToCheck = graphMLReader.readGraph();
 		} catch (IOException | ParserConfigurationException | SAXException e2) {
-			LOG.warning("File " + file.getName() + " cannot be parsed. Details: " + e2.getMessage() + ".\nIgnored.");
+			String msg = "File " + file.getName() + " cannot be parsed. Details: " + e2.getMessage() + ".\nIgnored.";
+			LOG.warning(msg);
+			System.out.println(msg);
 			return false;
 		}
 		LOG.finer("...done!");
@@ -423,7 +532,7 @@ public class CSTNRunningTime {
 			msg = (new Time(System.currentTimeMillis())).toString() + ": " + file.getName()
 					+ " is not a not well-defined instance. Details:" + e.getMessage()
 					+ "\nIgnored.";
-			// System.out.println(msg);
+			System.out.println(msg);
 			LOG.severe(msg);
 			return false;
 		}
@@ -455,6 +564,7 @@ public class CSTNRunningTime {
 			synchronized (tester.output) {
 				tester.output.printf(rowToWrite + "\n");
 			}
+			runState.printProgress();
 			return true;
 		}
 
@@ -463,10 +573,9 @@ public class CSTNRunningTime {
 		// System.out.println(msg);
 		LOG.info(msg);
 
-		// Check the CSTN using a thread with a time-out!
-		CSTNCheckStatus status = cstnDCChecker(tester, cstn, graphToCheck, executor);
+		CSTNCheckStatus status = cstnDCChecker(tester, cstn, graphToCheck, runState);
 
-		if (!status.finished) {
+		if (status == null || !status.finished) {
 			// time out or generic error
 			rowToWrite = String.format(rowToWrite
 					+ CSVSep + "%E"
@@ -474,10 +583,12 @@ public class CSTNRunningTime {
 					+ CSVSep + "%s\n",
 					(double) tester.timeOut,
 					0.0,
-					((status.executionTimeNS != Constants.INT_NULL) ? "TIMEOUT after " + tester.timeOut + " seconds." : "Generic error. See log."));
+					((status != null && status.executionTimeNS != Constants.INT_NULL) ? "Timeout of " + tester.timeOut + " seconds."
+							: "Generic error. See log."));
 			synchronized (tester.output) {
 				tester.output.print(rowToWrite);
 			}
+			runState.printProgress();
 			return false;
 		}
 
@@ -503,12 +614,13 @@ public class CSTNRunningTime {
 				localAvg,
 				localStdDev,
 				((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
-				status.labeledValuePropagationcalls,
+				status.labeledValuePropagationCalls,
 				status.r0calls,
 				status.r3calls);
 		synchronized (tester.output) {
 			tester.output.print(rowToWrite);
 		}
+		runState.printProgress();
 		return true;
 	}
 
@@ -519,31 +631,26 @@ public class CSTNRunningTime {
 	 * @param executor
 	 */
 	@SuppressWarnings({ "javadoc" })
-	static private CSTNCheckStatus cstnDCChecker(CSTNRunningTime tester, CSTN cstn, LabeledIntGraph graphToCheck, ExecutorService executor) {
+	static private CSTNCheckStatus cstnDCChecker(CSTNRunningTime tester, CSTN cstn, LabeledIntGraph graphToCheck, RunState runState) {
 		String msg;
-		boolean timeOut = false;
 		boolean cstnOK = true;
-		Future<CSTNCheckStatus> future;
 		LabeledIntGraph g = null;
 		CSTNCheckStatus status = new CSTNCheckStatus();
 		SummaryStatistics localSummaryStat = new SummaryStatistics();
-		for (int j = 0; j < tester.nDCRepetition && cstnOK; j++) {
+		for (int j = 0; j < tester.nDCRepetition && cstnOK && !status.timeout; j++) {
 			LOG.info("Test " + (j + 1) + "/" + tester.nDCRepetition + " for CSTN " + graphToCheck.getFileName().getName());
 
 			// It is necessary to reset the graph!
 			g = new LabeledIntGraph(graphToCheck, labeledIntValueMap);
 			cstn.setG(g);
 
-			future = executor.submit(() -> cstn.dynamicConsistencyCheck());
-
 			try {
-				status = future.get(tester.timeOut, TimeUnit.SECONDS);
-			} catch (CancellationException | InterruptedException | ExecutionException | TimeoutException ex) {
-				msg = (new Time(System.currentTimeMillis())).toString() + ": timeout has occurred. " + graphToCheck.getName() + " CSTNU is ignored.";
+				status = cstn.dynamicConsistencyCheck(tester.timeOut);
+			} catch (CancellationException ex) {
+				msg = (new Time(System.currentTimeMillis())).toString() + ": Cancellation has occurred. " + graphToCheck.getFileName() + " CSTNU is ignored.";
 				System.out.println(msg);
 				LOG.severe(msg);
 				cstnOK = false;
-				timeOut = true;
 				status.consistency = false;
 				continue;
 			} catch (Exception e) {
@@ -555,24 +662,21 @@ public class CSTNRunningTime {
 				cstnOK = false;
 				status.consistency = false;
 				continue;
-			} finally {
-				if (!future.isDone()) {
-					LOG.warning("It is necessary to cancel the task before continuing.");
-					future.cancel(true);
-				}
 			}
 			localSummaryStat.addValue(status.executionTimeNS);
 		} // end for checking repetition for a single file
 
+		if (status.timeout || !cstnOK) {
+			if (status.timeout) {
+				msg = ("\n" + new Time(System.currentTimeMillis())).toString() + ": Timeout occurred. " + graphToCheck.getFileName() + " CSTNU is ignored.";
+				System.out.println(msg);
+			}
+			return status;
+		}
+
 		msg = (new Time(System.currentTimeMillis())).toString() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
 		// System.out.println(msg);
 		LOG.info(msg);
-
-		if (!cstnOK) {
-			// There is a problem... adjust the time. status.finished is false!
-			status.executionTimeNS = (long) ((timeOut) ? tester.timeOut * 10E9 : Constants.INT_NULL);
-			return status;
-		}
 
 		status.executionTimeNS = (long) localSummaryStat.getMean();
 		status.stdDevExecutionTimeNS = (long) localSummaryStat.getStandardDeviation();
@@ -583,32 +687,27 @@ public class CSTNRunningTime {
 	@SuppressWarnings({ "javadoc" })
 	private static CSTN makeCSTNInstance(CSTNRunningTime tester, LabeledIntGraph g) {
 		CSTN cstn;
-		if (tester.woNodeLabels) {
-			if (tester.dcSemantics == DCSemantics.IR) {
-				if (tester.onlyLPQR0QR3) {
-					cstn = new CSTNir3RwoNodeLabel(g);
-				} else {
-					cstn = new CSTNirwoNodeLabel(g);
-				}
-			} else {
-				cstn = new CSTNwoNodeLabel(g);
-			}
-		} else {
+		if (tester.cstn2cstn0) {
+			return new CSTN2CSTN0(tester.reactionTime, g);
+		}
+		switch (tester.dcSemantics) {
+		case ε:
 			if (tester.onlyLPQR0QR3) {
-				cstn = new CSTNir3R(g);
+				cstn = (tester.woNodeLabels) ? new CSTN3RwoNodeLabelEpsilon(tester.reactionTime, g) : null;
 			} else {
-				switch (tester.dcSemantics) {
-				case ε:
-					cstn = new CSTNepsilon(tester.reactionTime, g);
-					break;
-				case IR:
-					cstn = new CSTNir(g);
-					break;
-				default:
-					cstn = new CSTN(g);
-					break;
-				}
+				cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabelEpsilon(tester.reactionTime, g) : new CSTNEpsilon(tester.reactionTime, g);
 			}
+			break;
+		case IR:
+			if (tester.onlyLPQR0QR3) {
+				cstn = (tester.woNodeLabels) ? new CSTN3RwoNodeLabelIR(g) : new CSTN3RIR(g);
+			} else {
+				cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabelIR(g) : new CSTNIR(g);
+			}
+			break;
+		default:
+			cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabel(g) : new CSTN(g);
+			break;
 		}
 		return cstn;
 	}

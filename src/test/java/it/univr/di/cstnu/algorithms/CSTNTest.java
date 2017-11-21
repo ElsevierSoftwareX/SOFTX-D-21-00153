@@ -93,7 +93,7 @@ public class CSTNTest {
 		// wellDefinition(g);
 
 		this.cstn.setG(g);
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.Z, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		//if R0 is applied
@@ -132,7 +132,7 @@ public class CSTNTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.X, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
@@ -285,7 +285,7 @@ public class CSTNTest {
 
 		// System.out.println(g);
 
-		this.cstn.labelModificationR3qR3(Y, this.X, this.Z, yx);
+		this.cstn.labelModificationR3qR3(Y, this.X, yx);
 
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// std semantics
@@ -342,8 +342,8 @@ public class CSTNTest {
 		g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 		this.cstn.setG(g);
-
-		this.cstn.labelModificationR3qR3(this.X, this.Z, this.Z, xz);
+		this.cstn.Z = this.Z;
+		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		assertEquals("R3: yx labeled values.", AbstractLabeledIntMap.parse("{(abc¬p, -11) (ab¿c, -11) (ab¿p, -15) (ab, -10) }"), xz.getLabeledValueMap());
 	}
@@ -665,16 +665,15 @@ public class CSTNTest {
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
 		assertEquals("bg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
-		/*
-		 * 'a' in 'ba' is a children supposed not to be present.
-		 */
+
 		B.setLabel(Label.parse("a"));
+		// now, children of p is only a.
 		assertEquals("¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 		assertEquals("bg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
 		assertEquals("¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 		// assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 	}
 

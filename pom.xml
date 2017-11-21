@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.21.0-SNAPSHOT</version>
+	<version>1.22.0-SNAPSHOT</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -125,6 +125,16 @@
 			<artifactId>freehep-graphicsio-pdf</artifactId>
 			<version>2.4</version>
 		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>affinity</artifactId>
+			<version>3.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-nop</artifactId>
+			<version>1.7.25</version>
+		</dependency>
 	</dependencies>
 
 	<repositories>
@@ -225,7 +235,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>2.2</version>
+				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -240,12 +250,13 @@
 							</artifactSet>
 							<minimizeJar>true</minimizeJar>
 							<filters>
-								<filter>
+<!-- 								<filter>
 									<artifact>org.codehaus.woodstox:wstx-asl</artifact>
 									<includes>
 										<include>com/ctc/wstx/stax</include>
 									</includes>
 								</filter>
+-->
 								<filter>
 									<artifact>*:*</artifact>
 									<excludes>
@@ -259,7 +270,10 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>it.univr.di.cstnu.algorithms.CSTNU2UppaalTiga</mainClass>
+									<manifestEntries>
+									<mainClass>it.univr.di.cstnu.algorithms.CSTN</mainClass>
+									<Build-Number>${project.version}</Build-Number>
+									</manifestEntries>
 								</transformer>
 							</transformers>
 						</configuration>

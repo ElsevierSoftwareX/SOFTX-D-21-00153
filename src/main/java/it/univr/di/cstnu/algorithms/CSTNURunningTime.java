@@ -58,7 +58,8 @@ public class CSTNURunningTime {
 	// static final String VERSIONandDATE = "1.6, October, 05 2017";
 	// static final String VERSIONandDATE = "1.8, October, 12 2017";
 	// static final String VERSIONandDATE = "1.9, October, 13 2017";// improved log of timeout instances
-	static final String VERSIONandDATE = "1.10, November, 09 2017";// code cleaned
+	// static final String VERSIONandDATE = "1.10, November, 09 2017";// code cleaned
+	static final String VERSIONandDATE = "2.1, November, 14 2017";// Multi-thread version. Fixed a slip!
 
 	/**
 	 * class logger
@@ -123,6 +124,12 @@ public class CSTNURunningTime {
 	 */
 	// @Option(required = false, name = "-reactionTime", usage = "Reaction time. It must be >= 0.")
 	// private int reactionTime = 0;
+
+	/**
+	 * Parameter for asking to check reducing to CSTN.
+	 */
+	@Option(required = false, name = "-check2CSTN", usage = "DC check reducing CSTNU to CSTN.")
+	private boolean reduce2CSTN = false;
 
 	/**
 	 * Output stream to fOutput
@@ -271,18 +278,14 @@ public class CSTNURunningTime {
 
 		/*
 		 * 2nd method using Runnable.
-		 * Each cstnWorker (one thread), creates a time-out thread for dc checking.
-		 * So, at most only nProcessor/2 cstnWorkers can be created in parallel.
-		 * <br>
-		 * It is necessary to wait cstnWorker ends not using executor.shutdown() doesn't work because each cstnWorker creates an internal thread. Using
-		 * xecutor.shutdown() we can block such
+		 * Each cstnWorker (one thread), creates one thread with a time-out for dc checking.
 		 */
-		final ExecutorService cstnExecutor = Executors.newFixedThreadPool(nProcessor / 2);
+		final ExecutorService cstnExecutor = Executors.newFixedThreadPool(nProcessor);
 		List<Future<Boolean>> future = new ArrayList<>();//
 		for (File file : tester.inputCSTNUFile) {
 			future.add(cstnExecutor.submit(() -> cstnuWorker(tester, file, dcCheckingExecutor, edgeFactory)));
 		}
-		// wait all tasks have been finished!
+		// wait all tasks have been finished and count!
 		int nTaskSuccessfullyFinished = 0;
 		for (Future<Boolean> f : future) {
 			if (f.get())
@@ -396,7 +399,7 @@ public class CSTNURunningTime {
 		// Use g because next instructions change the structure of graph.
 		LabeledIntGraph g = new LabeledIntGraph(graphToCheck, labeledIntValueMap);
 
-		final CSTNU cstnu = new CSTNU(g);
+		final CSTNU cstnu = makeCSTNUInstance(tester, g);
 
 		String msg;
 		try {
@@ -492,10 +495,10 @@ public class CSTNURunningTime {
 				localAvg,
 				localStdDev,
 				((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
-				status.labeledValuePropagationcalls,
+				status.labeledValuePropagationCalls,
 				status.r0calls,
 				status.r3calls,
-				status.labeledValuePropagationcalls,
+				status.labeledValuePropagationCalls,
 				status.lowerCaseRuleCalls,
 				status.upperCaseRuleCalls,
 				status.crossCaseRuleCalls,
@@ -572,5 +575,10 @@ public class CSTNURunningTime {
 		status.stdDevExecutionTimeNS = (long) localSummaryStat.getStandardDeviation();
 
 		return status;
+	}
+
+	@SuppressWarnings({ "javadoc" })
+	private static CSTNU makeCSTNUInstance(CSTNURunningTime tester, LabeledIntGraph g) {
+		return (tester.reduce2CSTN) ? new CSTNU2CSTN(g) : new CSTNU(g);
 	}
 }

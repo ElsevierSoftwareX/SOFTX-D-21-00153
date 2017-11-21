@@ -2,16 +2,32 @@ RELEASE NOTES
 =============START SNIPPET: rn
 
 v1.22.0
-------
-	date:	2017-11-10
+-------
+	date:	2017-11-21
 	
+	Introduced new classes and renamed old ones.
+	There are 13 classes for checking CSTN/CSTNU:
+	1. it.univr.di.algorithms.CSTN.java
+	2. it.univr.di.algorithms.CSTN2CSTN0.java
+	3. it.univr.di.algorithms.CSTN3RIR.java: as IR CSTN but DC checking uses only three rules.
+	4. it.univr.di.algorithms.CSTN3RwoNodeLabelEpsilon.java
+	5. it.univr.di.algorithms.CSTN3RwoNodeLabelIR.java
+	6. it.univr.di.algorithms.CSTNEpsilon.java
+	7. it.univr.di.algorithms.CSTNIR.java
+	8.it.univr.di.algorithms.CSTNU.java
+	9.it.univr.di.algorithms.CSTNU2CSTN.java
+	10.it.univr.di.algorithms.CSTNU2UppaalTiga.java
+	11.it.univr.di.algorithms.CSTNwoNodeLabel.java
+	12.it.univr.di.algorithms.CSTNwoNodeLabelEpsilon.java
+	13.it.univr.di.algorithms.CSTNwoNodeLabelIR.java
 	Replaced Ω node with equivalent constraints in all CSTN classes.
 	Removed Ω node from LabeledIntGraph and relative reader/writer.
 	Improved CSTN Layout for laying out also nodes without explicit temporal relation with Z.
 	Started classes re-factoring exploiting Java 8 new features.
+	CSTNRunningTime and CSTNURunningTime made multi-thread.
 
 v1.21.0
-------
+-------
 	date:	2017-11-09
 	
 	CSTNUGraphMLReader is able to read CSTN files that do not contain meta information about UC and LC values.
@@ -21,7 +37,7 @@ v1.21.0
 	Simplified CSTNRunningTime.
 
 v1.20.0
-------
+-------
 	date:	2017-11-03
 	
 	Jung library has been upgraded to 2.1.1 version.

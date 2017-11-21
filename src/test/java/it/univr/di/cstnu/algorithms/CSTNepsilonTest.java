@@ -67,7 +67,7 @@ public class CSTNepsilonTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTNepsilon(this.reactionTime, new LabeledIntGraph(LabeledIntTreeMap.class));
+		this.cstn = new CSTNEpsilon(this.reactionTime, new LabeledIntGraph(LabeledIntTreeMap.class));
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class CSTNepsilonTest {
 		g.setZ(this.Z);
 		// wellDefinition(g);
 		this.cstn.setG(g);
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.Z, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		//if R0 is applied!
@@ -132,7 +132,7 @@ public class CSTNepsilonTest {
 		g.addVertex(new LabeledNode("B", 'B'));
 		this.cstn.setG(g);
 
-		this.cstn.labelModificationR0qR0(this.P, this.X, this.X, px);
+		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
@@ -285,7 +285,7 @@ public class CSTNepsilonTest {
 
 		// System.out.println(g);
 
-		this.cstn.labelModificationR3qR3(Y, this.X, this.Z, yx);
+		this.cstn.labelModificationR3qR3(Y, this.X, yx);
 
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// std semantics
@@ -335,7 +335,8 @@ public class CSTNepsilonTest {
 		g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 		this.cstn.setG(g);
-		this.cstn.labelModificationR3qR3(this.X, this.Z, this.Z, xz);
+		this.cstn.Z = this.Z;
+		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		// EqLP+
@@ -659,7 +660,7 @@ public class CSTNepsilonTest {
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
 
 		assertEquals("¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());// 'a'
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());// 'a'
 																																							// in
 																																							// 'ba'
 																																							// is
@@ -674,7 +675,7 @@ public class CSTNepsilonTest {
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 
 		assertEquals("¿bg",
-				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬ag")).toString());
+				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬ag")).toString());
 		// assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 	}
 

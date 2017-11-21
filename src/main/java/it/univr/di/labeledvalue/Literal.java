@@ -14,7 +14,7 @@ package it.univr.di.labeledvalue;
  * <p>
  * A literal object is immutable and must have a propositional letter.
  * <p>
- * Lastly, for efficiency reasons, this class allows to represent literal using at most 64 propositions in the range {@value #PROPOSITION_ARRAY}.
+ * Lastly, for efficiency reasons, this class allows to represent literal using at most 64 propositions in the range {@link #PROPOSITION_ARRAY}.
  * 64 is given by the fact that {@link Label} represents labels using integer (64 bits), so label with at most 64 different propositions.
  *
  * @author Roberto Posenato
@@ -49,7 +49,7 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * List of possible proposition managed by this class.<br>
-	 * There are 3 blocks: a-z, A-Z, α-μ.
+	 * Such list is made concatenating 3 blocks: a-z, A-Z, α-μ.<br>
 	 * If such blocks are changed, please revise {@link #check(char)} and {@link #index(char)} methods because it exploits the bounds of such blocks.
 	 * The length of this array cannot be modified without revising all this class code and {@link Label} class.
 	 * 
@@ -185,7 +185,7 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * @param c
-	 * @return the index of the given proposition in {@value #PROPOSITION_ARRAY} if it is a proposition, -1 otherwise.
+	 * @return the index of the given proposition in {@link #PROPOSITION_ARRAY} if it is a proposition, -1 otherwise.
 	 */
 	static public final byte index(final char c) {
 		if ('a' <= c && c <= 'z')
