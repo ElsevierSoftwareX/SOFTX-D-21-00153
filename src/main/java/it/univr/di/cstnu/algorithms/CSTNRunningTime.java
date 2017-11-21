@@ -275,14 +275,17 @@ public class CSTNRunningTime {
 
 	@SuppressWarnings({ "javadoc" })
 	private static class RunState {
+
+		static final int maxMeterSize = 50;// [0--100]
+
 		long startTime;
 		long total;
 		long current;
 
 		/**
 		 * @param startTime in milliseconds
-		 * @param total
-		 * @param current
+		 * @param total number of time to show
+		 * @param current number of time to show
 		 */
 		public RunState(long startTime, long total, long current) {
 			this.current = current;
@@ -291,11 +294,11 @@ public class CSTNRunningTime {
 		}
 
 		/**
+		 * Each call of method, advance this.current and print the meter.
 		 */
 		void printProgress() {
-			this.current++;
-			if (this.current > this.total)
-				this.current = this.total;
+			if (this.current < this.total)
+				this.current++;
 
 			long now = System.currentTimeMillis();
 			long eta = this.current == 0 ? 0 : (this.total - this.current) * (now - this.startTime) / this.current;
@@ -305,15 +308,15 @@ public class CSTNRunningTime {
 							TimeUnit.MILLISECONDS.toMinutes(eta) % TimeUnit.HOURS.toMinutes(1),
 							TimeUnit.MILLISECONDS.toSeconds(eta) % TimeUnit.MINUTES.toSeconds(1));
 
-			final int scaleFactor = 50;// [0--100]
+
 			StringBuilder string = new StringBuilder(140);
 			int percent = (int) (this.current * 100 / this.total);
-			int percentScaled = (int) (this.current * scaleFactor / this.total);
+			int percentScaled = (int) (this.current * maxMeterSize / this.total);
 			string.append('\r')
 					.append(String.format("%s %3d%% [", new Time(now).toString(), percent))
 					.append(String.join("", Collections.nCopies(percentScaled, "=")))
 					.append('>')
-					.append(String.join("", Collections.nCopies(scaleFactor - percentScaled, " ")))
+					.append(String.join("", Collections.nCopies(maxMeterSize - percentScaled, " ")))
 					.append(']')
 					.append(String.join("", Collections.nCopies((int) (Math.log10(this.total)) - (int) (Math.log10(this.current)), " ")))
 					.append(String.format(" %d/%d, ETA: %s", this.current, this.total, etaHms));
@@ -408,6 +411,7 @@ public class CSTNRunningTime {
 			future.add(cstnExecutor.submit(() -> cstnWorker(tester, file, runState, edgeFactory)));
 		}
 		System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Tasks queued: " + future.size());
+		System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Processors for computation: " + nProcessor);
 		// wait all tasks have been finished and count!
 		int nTaskSuccessfullyFinished = 0;
 		for (Future<Boolean> f : future) {
