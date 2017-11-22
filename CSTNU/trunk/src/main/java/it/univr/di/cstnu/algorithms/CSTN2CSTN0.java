@@ -29,7 +29,7 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTN2CSTN0 extends CSTNwoNodeLabelEpsilon {
+public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 
 	/**
 	 * Default labeledIntValueMap
@@ -47,7 +47,7 @@ public class CSTN2CSTN0 extends CSTNwoNodeLabelEpsilon {
 	 */
 	@SuppressWarnings("hiding")
 	// static final String VERSIONandDATE = "Version 1.0 - November, 15 2017";
-	static final String VERSIONandDATE = "Version  1.1 - November, 20 2017";// It derives from CSTNwoNodeLabelEpsilon
+	static final String VERSIONandDATE = "Version  1.1 - November, 20 2017";// It derives from CSTNEpsilonwoNodeLabels
 
 	/**
 	 * @param args an array of {@link java.lang.String} objects.
@@ -99,7 +99,7 @@ public class CSTN2CSTN0 extends CSTNwoNodeLabelEpsilon {
 		LOG.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG.info("CSTN DC-checking...");
-		CSTN3RwoNodeLabelIR cstnChecker = new CSTN3RwoNodeLabelIR(cstnGraph);
+		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
 		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck(timeOut);
 		LOG.info("CSTN DC-checking done.");
 

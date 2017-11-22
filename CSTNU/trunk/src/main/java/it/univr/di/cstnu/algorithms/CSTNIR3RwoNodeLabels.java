@@ -11,20 +11,20 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
- * The dynamic consistency check (DC check) is done assuming instantaneous reaction DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and
- * qR3* rules.<br>
+ * The dynamic consistency check (DC check) is done assuming instantaneous reaction DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, qR0, and qR3*
+ * rules.<br>
  * In this class, an input CSTN graph is transformed into an equivalent CSTN instance where node labels are empty.<br>
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNwoNodeLabelIR extends CSTNwoNodeLabel {
+public class CSTNIR3RwoNodeLabels extends CSTNIR3R {
 
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNwoNodeLabelIR.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNIR3RwoNodeLabels.class.getName());
 
 	/**
 	 * Version of the class
@@ -32,7 +32,8 @@ public class CSTNwoNodeLabelIR extends CSTNwoNodeLabel {
 	@SuppressWarnings("hiding")
 	// static public final String VERSIONandDATE = "Version 1.0 - November, 07 2017";
 	// static final public String VERSIONandDATE = "Version 1.1 - November, 11 2017";// Replace Ω node with equivalent constraints.
-	static final public String VERSIONandDATE = "Version 2.0 - November, 16 2017";// Now the super class is CSTNwoNodeLabel
+	// static final public String VERSIONandDATE = "Version 1.2 - November, 21 2017";// Now it is derived from CSTNIR3R
+	static final public String VERSIONandDATE = "Version 1.3 - November, 22 2017";// Now it is derived from CSTNIR3R
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -43,15 +44,15 @@ public class CSTNwoNodeLabelIR extends CSTNwoNodeLabel {
 	 * @throws IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		defaultMain(args, new CSTNwoNodeLabelIR(), "Instantaneous Reaction  DC without node labels");
+		defaultMain(args, new CSTNIR3RwoNodeLabels(), "Instantaneous Reaction DC based on 3 Rules and without node labels");
 	}
 
 	/**
 	 * Default constructor.
 	 */
-	CSTNwoNodeLabelIR() {
+	private CSTNIR3RwoNodeLabels() {
 		super();
-		this.wd2epsilon = 0;
+		this.withNodeLabels = false;
 	}
 
 	/**
@@ -59,17 +60,8 @@ public class CSTNwoNodeLabelIR extends CSTNwoNodeLabel {
 	 * 
 	 * @param g graph to check
 	 */
-	public CSTNwoNodeLabelIR(LabeledIntGraph g) {
+	public CSTNIR3RwoNodeLabels(LabeledIntGraph g) {
 		super(g);
-		this.wd2epsilon = 0;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	final boolean R0qR0MainConditionForSkipping(final int w) {
-		// Table 1 ICAPS2016 paper for IR semantics
-		return w >= 0;
+		this.withNodeLabels = false;
 	}
 }

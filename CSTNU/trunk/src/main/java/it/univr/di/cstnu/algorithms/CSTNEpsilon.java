@@ -49,13 +49,13 @@ public class CSTNEpsilon extends CSTN {
 	/**
 	 * Reaction time for CSTN
 	 */
-	@Option(required = false, name = "-r", usage = "Reaction time. It must be > 0.")
-	private int reactionTime = 1;
+	@Option(required = false, name = "-e", usage = "Forced Reaction Time. It must be > 0.")
+	int epsilon = 1;
 
 	/**
 	 * Default constructor. Label optimization.
 	 */
-	private CSTNEpsilon() {
+	CSTNEpsilon() {
 		super();
 	}
 
@@ -69,15 +69,15 @@ public class CSTNEpsilon extends CSTN {
 		super(g);
 		if (reactionTime <= 0)
 			throw new IllegalArgumentException("Reaction time must be > 0.");
+		this.epsilon = reactionTime;
 		this.reactionTime = reactionTime;
-		this.wd2epsilon = reactionTime;
 	}
 
 	/**
 	 * @return the reactionTime
 	 */
-	public int getReactionTime() {
-		return this.reactionTime;
+	public int getEspsilonReactionTime() {
+		return this.epsilon;
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class CSTNEpsilon extends CSTN {
 	@Override
 	final boolean R0qR0MainConditionForSkipping(final int w) {
 		// Table 2 ICAPS2016 paper for epsilon semantics
-		return w >= this.reactionTime;
+		return w >= this.epsilon;
 	}
 
 	/**
@@ -96,13 +96,13 @@ public class CSTNEpsilon extends CSTN {
 	final boolean R3qR3MainConditionForSkipping(final int w, final LabeledNode nD) {
 		// Table 2 ICAPS for epsilon semantics
 		// (w > 0 && nD==Z) is not added because w is always <=0 when nD==Z.
-		return w > this.reactionTime;
+		return w > this.epsilon;
 	}
 
 	@Override
 	final int R3qR3NewValue(final int v, final int w) {
 		// Table 2 ICAPS2016.
-		int w1 = w - this.reactionTime;
+		int w1 = w - this.epsilon;
 		return (v >= w1) ? v : w1;
 	}
 

@@ -49,7 +49,7 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNU extends CSTN3RIR {
+public class CSTNU extends CSTNIR3R {
 	/**
 	 * Simple class to represent the status of the checking algorithm during an execution.<br>
 	 * controllability = super.consistency!
@@ -468,7 +468,7 @@ public class CSTNU extends CSTN3RIR {
 				}
 			}
 			LabeledIntGraph allMaxCSTN = makeAllMaxProjection();
-			CSTN3RIR cstnChecker = new CSTN3RIR(allMaxCSTN);
+			CSTNIR3R cstnChecker = new CSTNIR3R(allMaxCSTN);
 			CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO))

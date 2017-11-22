@@ -93,7 +93,7 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG1.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG1.info("CSTN DC-checking...");
-		CSTN3RwoNodeLabelIR cstnChecker = new CSTN3RwoNodeLabelIR(cstnGraph);
+		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
 		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck(timeOut);
 		LOG1.info("CSTN DC-checking done.");
 

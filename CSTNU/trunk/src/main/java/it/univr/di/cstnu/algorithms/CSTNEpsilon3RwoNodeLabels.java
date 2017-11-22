@@ -5,11 +5,9 @@ import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.kohsuke.args4j.Option;
 import org.xml.sax.SAXException;
 
 import it.univr.di.cstnu.graph.LabeledIntGraph;
-import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -20,25 +18,19 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTN3RwoNodeLabelEpsilon extends CSTN {
+public class CSTNEpsilon3RwoNodeLabels extends CSTNEpsilon3R {
 
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTN3RwoNodeLabelEpsilon.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNEpsilon3RwoNodeLabels.class.getName());
 
 	/**
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
 	static final public String VERSIONandDATE = "Version 1.0 - November, 17 2017";
-
-	/**
-	 * Reaction time for CSTN
-	 */
-	@Option(required = false, name = "-r", usage = "Reaction time. It must be > 0.")
-	private int reactionTime = 1;
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -49,15 +41,14 @@ public class CSTN3RwoNodeLabelEpsilon extends CSTN {
 	 * @throws IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		defaultMain(args, new CSTN3RwoNodeLabelEpsilon(), "Epsilon DC based on 3 Rules and without node labels");
+		defaultMain(args, new CSTNEpsilon3RwoNodeLabels(), "Epsilon DC based on 3 Rules and without node labels");
 	}
 
 	/**
 	 * Default constructor.
 	 */
-	CSTN3RwoNodeLabelEpsilon() {
+	CSTNEpsilon3RwoNodeLabels() {
 		super();
-		this.applyReducedSetOfRules = true;
 		this.withNodeLabels = false;
 	}
 
@@ -67,47 +58,8 @@ public class CSTN3RwoNodeLabelEpsilon extends CSTN {
 	 * @param reactionTime reaction time. It must be strictly positive.
 	 * @param g graph to check
 	 */
-	public CSTN3RwoNodeLabelEpsilon(int reactionTime, LabeledIntGraph g) {
-		super(g);
-		if (reactionTime <= 0)
-			throw new IllegalArgumentException("Reaction time must be > 0.");
-		this.reactionTime = reactionTime;
-		this.wd2epsilon = reactionTime;
-		this.applyReducedSetOfRules = true;
+	public CSTNEpsilon3RwoNodeLabels(int reactionTime, LabeledIntGraph g) {
+		super(reactionTime, g);
 		this.withNodeLabels = false;
 	}
-
-	/**
-	 * @return the reactionTime
-	 */
-	public final int getReactionTime() {
-		return this.reactionTime;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	final boolean R0qR0MainConditionForSkipping(final int w) {
-		// Table 2 ICAPS2016 paper for epsilon semantics
-		return w >= this.reactionTime;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	final boolean R3qR3MainConditionForSkipping(final int w, final LabeledNode nD) {
-		// Table 2 ICAPS for epsilon semantics
-		// (w > 0 && nD==Z) is not added because w is always <=0 when nD==Z.
-		return w > this.reactionTime;
-	}
-
-	@Override
-	final int R3qR3NewValue(final int v, final int w) {
-		// Table 2 ICAPS2016.
-		int w1 = w - this.reactionTime;
-		return (v >= w1) ? v : w1;
-	}
-
 }

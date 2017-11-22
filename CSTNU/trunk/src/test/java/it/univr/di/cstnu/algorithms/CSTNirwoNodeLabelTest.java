@@ -39,7 +39,7 @@ public class CSTNirwoNodeLabelTest {
 	/**
 	 * 
 	 */
-	CSTNwoNodeLabelIR cstn;
+	CSTNIRwoNodeLabels cstn;
 	/**
 	 * 
 	 */
@@ -61,7 +61,7 @@ public class CSTNirwoNodeLabelTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTNwoNodeLabelIR(new LabeledIntGraph(LabeledIntTreeMap.class));
+		this.cstn = new CSTNIRwoNodeLabels(new LabeledIntGraph(LabeledIntTreeMap.class));
 	}
 
 	/**

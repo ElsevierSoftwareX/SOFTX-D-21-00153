@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.22.0-SNAPSHOT</version>
+	<version>1.22.1-SNAPSHOT</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -182,14 +182,29 @@
 	<distributionManagement>
 		<site>
 			<id>profs</id>
-			<!-- la gestione della password è come spiegato in 
-				 https://maven.apache.org/guides/mini/guide-encryption.html
-				Master password: quella del 17	
--->
+			<!-- la gestione della password è come spiegato in https://maven.apache.org/guides/mini/guide-encryption.html 
+				Master password: quella del 17 -->
 			<url>scp://profs.scienze.univr.it/home/posenato/public_html/software/cstnu/</url>
 		</site>
+		<repository>
+			<id>internal.repo</id>
+			<name>Internal repo</name>
+			<url>file:///tmp</url>
+			<layout>default</layout>
+		</repository>
 	</distributionManagement>
+
+
+
 	<build>
+
+		<extensions>
+			<extension>
+				<groupId>org.apache.maven.wagon</groupId>
+				<artifactId>wagon-ssh</artifactId>
+				<version>2.8</version>
+			</extension>
+		</extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -250,13 +265,8 @@
 							</artifactSet>
 							<minimizeJar>true</minimizeJar>
 							<filters>
-<!-- 								<filter>
-									<artifact>org.codehaus.woodstox:wstx-asl</artifact>
-									<includes>
-										<include>com/ctc/wstx/stax</include>
-									</includes>
-								</filter>
--->
+								<!-- <filter> <artifact>org.codehaus.woodstox:wstx-asl</artifact> 
+									<includes> <include>com/ctc/wstx/stax</include> </includes> </filter> -->
 								<filter>
 									<artifact>*:*</artifact>
 									<excludes>
@@ -271,8 +281,8 @@
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-									<mainClass>it.univr.di.cstnu.algorithms.CSTN</mainClass>
-									<Build-Number>${project.version}</Build-Number>
+										<mainClass>it.univr.di.cstnu.algorithms.CSTN</mainClass>
+										<Build-Number>${project.version}</Build-Number>
 									</manifestEntries>
 								</transformer>
 							</transformers>
@@ -370,6 +380,31 @@
 							</target>
 						</configuration>
 					</execution>
+					<execution>
+						<id>Cancellazione e copia in Ulm Prototype</id>
+						<phase>install</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete>
+									<fileset
+										dir="/Users/posenato/Documents/Ricerca/Ulm/Prototypes/trunk/de.uniulm.dbis.aristaflow.randomtemplategenerator/lib/"
+										includes="CSTNU-*" />
+									<fileset
+										dir="/Users/posenato/Documents/Ricerca/Ulm/Prototypes/RandomTemplateSampler/lib/"
+										includes="CSTNU-*" />
+								</delete>
+								<copy preservelastmodified="true"
+									file="${project.build.directory}/${project.jar.filename}"
+									tofile="/Users/posenato/Documents/Ricerca/Ulm/Prototypes/trunk/de.uniulm.dbis.aristaflow.randomtemplategenerator/lib/${project.jar.filename}" />
+								<copy preservelastmodified="true"
+									file="${project.build.directory}/${project.jar.filename}"
+									tofile="/Users/posenato/Documents/Ricerca/Ulm/Prototypes/RandomTemplateSampler/lib/${project.jar.filename}" />
+							</target>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			<plugin>
@@ -392,6 +427,44 @@
 					<additionalparam>-Xdoclint:none</additionalparam>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>Cleaning Vega</id>
+						<phase>install</phase>
+						<goals>
+							<goal>sshexec</goal>
+						</goals>
+						<configuration>
+							<serverId>vega</serverId>
+							<url>scp://vega.di.univr.it</url>
+							<displayCommandOutputs>true</displayCommandOutputs>
+							<commands>
+								<command>ls -l RandomTemplateSampler/lib/CSTNU-*</command>
+								<command>rm -fv RandomTemplateSampler/lib/CSTNU-*</command>
+							</commands>
+						</configuration>
+					</execution>
+					<execution>
+						<id>Uploading in Vega</id>
+						<phase>install</phase>
+						<goals>
+							<goal>upload</goal>
+						</goals>
+						<configuration>
+							<serverId>vega</serverId>
+							<fromDir>${project.basedir}/target/</fromDir>
+							<includes>${project.jar.filename}</includes>
+							<url>scp://vega.di.univr.it/home/posenato</url>
+							<toDir>RandomTemplateSampler/lib</toDir>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 		</plugins>
 	</build>
 	<reporting>
