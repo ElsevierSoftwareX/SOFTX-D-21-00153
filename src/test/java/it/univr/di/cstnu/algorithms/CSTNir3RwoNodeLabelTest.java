@@ -40,7 +40,7 @@ public class CSTNir3RwoNodeLabelTest {
 	/**
 	 * 
 	 */
-	CSTN3RwoNodeLabelIR cstn;
+	CSTNIR3RwoNodeLabels cstn;
 	/**
 	 * 
 	 */
@@ -62,7 +62,7 @@ public class CSTNir3RwoNodeLabelTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTN3RwoNodeLabelIR(new LabeledIntGraph(this.labeledIntValueMapClass));
+		this.cstn = new CSTNIR3RwoNodeLabels(new LabeledIntGraph(this.labeledIntValueMapClass));
 		this.cstn.Z = this.Z;
 	}
 

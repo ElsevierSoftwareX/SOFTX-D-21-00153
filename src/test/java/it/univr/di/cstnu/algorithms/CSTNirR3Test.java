@@ -40,7 +40,7 @@ public class CSTNirR3Test {
 	/**
 	 * 
 	 */
-	CSTN3RIR cstn;
+	CSTNIR3R cstn;
 	/**
 	 * 
 	 */
@@ -62,7 +62,7 @@ public class CSTNirR3Test {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTN3RIR(new LabeledIntGraph(this.labeledIntValueMapClass));
+		this.cstn = new CSTNIR3R(new LabeledIntGraph(this.labeledIntValueMapClass));
 		this.cstn.Z = this.Z;
 
 	}

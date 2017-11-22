@@ -30,6 +30,7 @@ under the License.
       <!-- <item name="FAQ" href="faq.html"/>-->
 <!--      <item name="Migrate" href="migrate.html"/>-->
       <item name="Download" href="download.html"/>
+      <item name="Benchmark Directory" href="http://profs.scienze.univr.it/~posenato/software/benchmarks/"/>
     </menu>
 <!--    <menu name="Configuration">
       <item name="Internationalization" href="i18n.html"/>

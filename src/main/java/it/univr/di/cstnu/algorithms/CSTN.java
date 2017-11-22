@@ -405,16 +405,16 @@ public class CSTN {
 	LabeledIntGraph g = null;
 
 	/**
-	 * WD2.2 epsilon value.
-	 * It is 0 to assert that involved time points have to be just after relative observation time points.<br>
-	 * Even if 0 can be thought as 'at the same time', the dynamic consistency def. excludes that a t.p. X having p in its label
-	 * can be executed at the same time of t.p. P?. This is because, at time t, the history is the same and, therefore, X should be executed
-	 * at t in very scenario, even in the one where it cannot stay!
+	 * WD2.2 epsilon value called also reaction time in ICAPS 18.
+	 * It is > 0 in standard CSTN, >= 0 in IR, > epsilon in Epsilon CSTN.
+	 * Even when it is 0, the dynamic consistency def. excludes that a t.p. X having p in its label can be executed at the same time of t.p. P?.
+	 * This is because, at time t, the history is the same and, therefore, X should be executed at t in very scenario, even in the one where it cannot stay!
 	 * <b>Such value and WD2.2 property is not necessary as required in the past because Dynamic Execution definition already contains it.</b>
 	 * On the other hand, propagation rules needs such value to be complete.
 	 * Therefore, WD2.2 is not more required as CSTN property but it is imposed as propagation rule.
 	 */
-	int wd2epsilon = 0;
+	@Option(required = false, name = "-r", aliases = "--reactionTime", usage = "Reaction time. It must be >= 0.")
+	int reactionTime = 1;
 
 	/**
 	 * DCchecking can be done also assuming that all node labels are empty.
@@ -708,10 +708,10 @@ public class CSTN {
 						e = makeNewEdge(node.getName() + "_" + obs.getName(), LabeledIntEdge.ConstraintType.derived);
 						this.g.addEdge(e, node, obs);
 					}
-					e.mergeLabeledValue(nodeLabel, -this.wd2epsilon);// this is not necessary, but it can speed up the DC checking.
+					e.mergeLabeledValue(nodeLabel, -this.reactionTime);// this is not necessary, but it can speed up the DC checking.
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
-							LOG.log(Level.WARNING, "Fixed adding " + pairAsString(nodeLabel, -this.wd2epsilon) + " to " + e);
+							LOG.log(Level.WARNING, "Fixed adding " + pairAsString(nodeLabel, -this.reactionTime) + " to " + e);
 						}
 					}
 					continue;
@@ -910,6 +910,13 @@ public class CSTN {
 	 */
 	final public LabeledIntGraph getG() {
 		return this.g;
+	}
+
+	/**
+	 * @return the reactionTime
+	 */
+	public int getReactionTime() {
+		return this.reactionTime;
 	}
 
 	/**

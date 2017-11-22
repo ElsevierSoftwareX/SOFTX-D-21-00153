@@ -67,7 +67,7 @@ public class CSTNepsilonwoNodeLabelTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.cstn = new CSTNwoNodeLabelEpsilon(this.reactionTime, new LabeledIntGraph(LabeledIntTreeMap.class));
+		this.cstn = new CSTNEpsilonwoNodeLabels(this.reactionTime, new LabeledIntGraph(LabeledIntTreeMap.class));
 	}
 
 	/**

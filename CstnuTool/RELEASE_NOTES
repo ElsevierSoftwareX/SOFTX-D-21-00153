@@ -1,6 +1,20 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.22.1
+-------
+	date:	2017-11-22
+	
+	The following classes have been renamed re-ordering inside terms:
+	1. CSTNEpsilon.java
+	2. CSTNEpsilon3R.java
+	3. CSTNEpsilon3RwoNodeLabels.java
+	4. CSTNEpsilonwoNodeLabels.java
+	5. CSTNIR.java
+	6. CSTNIR3R.java
+	7. CSTNIR3RwoNodeLabels.java
+	8. CSTNIRwoNodeLabels.java
+
 v1.22.0
 -------
 	date:	2017-11-21

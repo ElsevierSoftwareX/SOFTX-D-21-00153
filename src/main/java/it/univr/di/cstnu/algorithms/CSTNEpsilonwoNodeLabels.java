@@ -11,28 +11,26 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
- * The dynamic consistency check (DC check) is done assuming instantaneous reaction DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, qR0, and qR3*
+ * The dynamic consistency check (DC check) is done assuming epsilon DC semantics (cf. ICAPS 2016 paper, table 2) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
  * In this class, an input CSTN graph is transformed into an equivalent CSTN instance where node labels are empty.<br>
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTN3RwoNodeLabelIR extends CSTN3RIR {
+public class CSTNEpsilonwoNodeLabels extends CSTNEpsilon {
 
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTN3RwoNodeLabelIR.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNEpsilonwoNodeLabels.class.getName());
 
 	/**
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
-	// static public final String VERSIONandDATE = "Version 1.0 - November, 07 2017";
-	// static final public String VERSIONandDATE = "Version 1.1 - November, 11 2017";// Replace Ω node with equivalent constraints.
-	static final public String VERSIONandDATE = "Version 1.2 - November, 21 2017";// Now it is derived from CSTN3RIR
+	static public final String VERSIONandDATE = "Version  1.0 - November, 15 2017";
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -43,34 +41,25 @@ public class CSTN3RwoNodeLabelIR extends CSTN3RIR {
 	 * @throws IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		defaultMain(args, new CSTN3RwoNodeLabelIR(), "Instantaneous Reaction DC based on 3 Rules and without node labels");
+		defaultMain(args, new CSTNEpsilonwoNodeLabels(), "Epsilon DC without node labels");
 	}
 
 	/**
 	 * Default constructor.
 	 */
-	private CSTN3RwoNodeLabelIR() {
+	CSTNEpsilonwoNodeLabels() {
 		super();
 		this.withNodeLabels = false;
 	}
 
 	/**
-	 * Constructor for
+	 * Constructor for CSTN with reaction time at least epsilon and without node labels.
 	 * 
+	 * @param reactionTime reaction time. It must be strictly positive.
 	 * @param g graph to check
 	 */
-	public CSTN3RwoNodeLabelIR(LabeledIntGraph g) {
-		super(g);
+	public CSTNEpsilonwoNodeLabels(int reactionTime, LabeledIntGraph g) {
+		super(reactionTime, g);
 		this.withNodeLabels = false;
 	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	final boolean R0qR0MainConditionForSkipping(final int w) {
-		// Table 1 ICAPS2016 paper for IR semantics
-		return w >= 0;
-	}
-
 }

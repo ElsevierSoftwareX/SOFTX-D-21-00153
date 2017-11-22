@@ -17,13 +17,13 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTN3RIR extends CSTN {
+public class CSTNIR3R extends CSTNIR {
 
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTN3RIR.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNIR3R.class.getName());
 
 	/**
 	 * Version of the class
@@ -33,7 +33,8 @@ public class CSTN3RIR extends CSTN {
 	// qR0 and qR3*
 	// static final public String VERSIONandDATE = "Version 6.1 - October, 25 2017";// SVN 203. Code optimization.
 	// static final public String VERSIONandDATE = "Version 6.2 - November, 11 2017";// Replace Ω node with equivalent constraints.
-	static final public String VERSIONandDATE = "Version  6.3 - November, 21 2017";// This is the principal #R class.
+	// static final public String VERSIONandDATE = "Version 6.3 - November, 21 2017";// This is the principal #R class.
+	static final public String VERSIONandDATE = "Version  6.4 - November, 22 2017";// Now super class is CSTNIR
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -44,35 +45,22 @@ public class CSTN3RIR extends CSTN {
 	 * @throws IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		defaultMain(args, new CSTN3RIR(), "Instantaneous Reaction DC based on 3 Rules");
+		defaultMain(args, new CSTNIR3R(), "Instantaneous Reaction DC based on 3 Rules");
 	}
 
 	/**
 	 * 
 	 */
-	public CSTN3RIR() {
+	public CSTNIR3R() {
 		super();
 		this.applyReducedSetOfRules = true;
-		this.wd2epsilon = 0;
 	}
 
 	/**
 	 * @param g
 	 */
-	public CSTN3RIR(LabeledIntGraph g) {
+	public CSTNIR3R(LabeledIntGraph g) {
 		super(g);
 		this.applyReducedSetOfRules = true;
-		this.wd2epsilon = 0;
 	}
-
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	boolean R0qR0MainConditionForSkipping(final int w) {
-		// Table 1 ICAPS2016 paper for IR semantics
-		return w >= 0;
-	}
-
 }
