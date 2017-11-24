@@ -438,116 +438,126 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * labeled values of the same size.
 	 *
 	 * @param inputMap contains all the elements that have to be inserted.
-	 * @param inputMapLabelSize length of labels contained into inputMap
+	 * @param inputMapLabelLength length of labels contained into inputMap
 	 * @return true if any element of inputMap has been inserted into the map.
 	 */
-	private boolean insertAndSimplify(final Object2IntMap<Label> inputMap, int inputMapLabelSize) {
+	private boolean insertAndSimplify(Object2IntMap<Label> inputMap, int inputMapLabelLength) {
 		if ((inputMap == null) || (inputMap.size() == 0))
 			return false;// recursion basement!
 
-		boolean add = false;
-		// All entries of inputMap should have label of same size.
-		// currentMapLimitedToLabelOfNSize contains all the labeled values with label size = inputMapSize;
-		final Object2IntMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(inputMapLabelSize);
-		final Object2IntMap<Label> toAdd = makeObject2IntMap();
-		toAdd.defaultReturnValue(Constants.INT_NULL);
 		ObjectArraySet<Label> toRemove = new ObjectArraySet<>();
+		boolean add = false;
 
-		if (currentMapLimitedToLabelOfNSize != null) {
-			for (final Entry<Label> inputEntry : inputMap.object2IntEntrySet()) {
-				final Label inputLabel = inputEntry.getKey();
-				final int inputValue = inputEntry.getIntValue();
+		while (inputMapLabelLength >= 0) {
+			// All entries of inputMap should have label of same size.
+			// currentMapLimitedToLabelOfNSize contains all the labeled values with label size = inputMapSize;
+			final Object2IntMap<Label> currentMapLimitedToLabelOfNSize = this.mainInt2SetMap.get(inputMapLabelLength);
+			final Object2IntMap<Label> toAdd = makeObject2IntMap();
+			toAdd.defaultReturnValue(Constants.INT_NULL);
+			toRemove.clear();
 
-				// check is there is any labeled value with same value and only one opposite literal
-				for (final Entry<Label> entry : currentMapLimitedToLabelOfNSize.object2IntEntrySet()) {
-					final Label l1 = new Label(entry.getKey());
-					final int v1 = entry.getIntValue();
+			if (currentMapLimitedToLabelOfNSize != null) {
+				for (final Entry<Label> inputEntry : inputMap.object2IntEntrySet()) {
+					final Label inputLabel = inputEntry.getKey();
+					final int inputValue = inputEntry.getIntValue();
 
-					Literal lit = null;
-					// Management of two labels that differ for only one literal (one contains the straight one while the other contains the negate).
-					// Such labels can be reduced in two different way.
-					// 1) If they have the same value, then they can be replaced with one only labeled value (same value) where label does not contain the
-					// different literal.
-					// If they haven't the same value, they are ignored and, in the following, they will constitute a base for the set.
-					// 2) The label with the maximum value is always replaced with a labeled value where value is the same but the label does not contain the
-					// different literal.
-					// If both have the same value, the management is equivalent to 1) first part.
-					// The disadvantage of this management is that is quite difficult to build base.
-					//
-					// An experimental test showed that is 2) management makes the algorithm ~30% faster.
-					// On 2016-03-30 I discovered that with Management 2) there is a potential problem in the representation of situations like:
-					// Current set={ (b,-1), (¬b,-2) }. Request to insert (¿b,-3).
-					// Even value (¿b,-3) should not be insert because the base is able to represent it, since ¿b is consistent with b/¬b (extended consistency)
-					// the value (¿b,-3) is insert in both the two management.
-					/**
-					 * Management 1)
-					 */
-					if (inputValue == v1 && (lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
-						// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
-						toRemove.add(inputLabel);
-						toRemove.add(entry.getKey());
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINEST)) {
-								LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
-										+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
+					// check is there is any labeled value with same value and only one opposite literal
+					for (final Entry<Label> entry : currentMapLimitedToLabelOfNSize.object2IntEntrySet()) {
+						final Label l1 = new Label(entry.getKey());
+						final int v1 = entry.getIntValue();
+
+						Literal lit = null;
+						// Management of two labels that differ for only one literal (one contains the straight one while the other contains the negate).
+						// Such labels can be reduced in two different way.
+						// 1) If they have the same value, then they can be replaced with one only labeled value (same value) where label does not contain the
+						// different literal.
+						// If they haven't the same value, they are ignored and, in the following, they will constitute a base for the set.
+						// 2) The label with the maximum value is always replaced with a labeled value where value is the same but the label does not contain
+						// the
+						// different literal.
+						// If both have the same value, the management is equivalent to 1) first part.
+						// The disadvantage of this management is that is quite difficult to build base.
+						//
+						// An experimental test showed that is 2) management makes the algorithm ~30% faster.
+						// On 2016-03-30 I discovered that with Management 2) there is a potential problem in the representation of situations like:
+						// Current set={ (b,-1), (¬b,-2) }. Request to insert (¿b,-3).
+						// Even value (¿b,-3) should not be insert because the base is able to represent it, since ¿b is consistent with b/¬b (extended
+						// consistency)
+						// the value (¿b,-3) is insert in both the two management.
+						/**
+						 * Management 1)
+						 */
+						if (inputValue == v1 && (lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
+							// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
+							toRemove.add(inputLabel);
+							toRemove.add(entry.getKey());
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINEST)) {
+									LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
+											+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
+								}
 							}
-						}
-						l1.remove(lit.getName());
-						if (l1.size() < 0)
-							throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINEST)) {
-								LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
+							l1.remove(lit.getName());
+							if (l1.size() < 0)
+								throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINEST)) {
+									LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
+								}
 							}
+							toAdd.put(l1, v1);
 						}
-						toAdd.put(l1, v1);
+						/**
+						 * Management 2)
+						 */
+						// if ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
+						// int max = (inputValue > v1) ? inputValue : v1;
+						// // we can simplify (newLabel, newValue) and (v1,l1)
+						// // we maintain the pair with lower value
+						// // while we insert the one with greater value removing from its label 'lit'
+						// Label labelWOlit = new Label(l1);
+						// labelWOlit.remove(lit.getName());
+						//
+						// if (max == inputValue && max == v1) {
+						// toRemove.add(inputLabel);
+						// toRemove.add(l1);
+						// } else {
+						// if (max == inputValue) {
+						// toRemove.add(inputLabel);
+						// } else {
+						// toRemove.add(l1);
+						// }
+						// }
+						// toAdd.put(labelWOlit, max);
+						// }
 					}
-					/**
-					 * Management 2)
-					 */
-					// if ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
-					// int max = (inputValue > v1) ? inputValue : v1;
-					// // we can simplify (newLabel, newValue) and (v1,l1)
-					// // we maintain the pair with lower value
-					// // while we insert the one with greater value removing from its label 'lit'
-					// Label labelWOlit = new Label(l1);
-					// labelWOlit.remove(lit.getName());
-					//
-					// if (max == inputValue && max == v1) {
-					// toRemove.add(inputLabel);
-					// toRemove.add(l1);
-					// } else {
-					// if (max == inputValue) {
-					// toRemove.add(inputLabel);
-					// } else {
-					// toRemove.add(l1);
-					// }
-					// }
-					// toAdd.put(labelWOlit, max);
-					// }
 				}
 			}
-		}
-		for (Label l : toRemove) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.log(Level.FINEST, "Label " + l + " is removed from inputMap.");
+			for (Label l : toRemove) {
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST, "Label " + l + " is removed from inputMap.");
+					}
 				}
+				inputMap.remove(l);
 			}
-			inputMap.remove(l);
+			// inputMap has been updated. Now it contains all the elements that have to be insert.
+			for (final Entry<Label> entry : inputMap.object2IntEntrySet()) {
+				this.removeAllValuesGreaterThan(entry);
+				if (this.isBaseAbleToRepresent(entry))
+					continue;
+				this.putForcibly(entry.getKey(), entry.getIntValue());
+				add = true;
+				if (this.makeABetterBase(entry))
+					this.removeAllValuesGreaterThanBase();
+			}
+			if (toAdd.size() > 0) {
+				inputMap = toAdd;
+				inputMapLabelLength--;
+			} else {
+				inputMapLabelLength = -1;
+			}
 		}
-		// inputMap has been updated. Now it contains all the elements that have to be insert.
-		for (final Entry<Label> entry : inputMap.object2IntEntrySet()) {
-			this.removeAllValuesGreaterThan(entry);
-			if (this.isBaseAbleToRepresent(entry))
-				continue;
-			this.putForcibly(entry.getKey(), entry.getIntValue());
-			add = true;
-			if (this.makeABetterBase(entry))
-				this.removeAllValuesGreaterThanBase();
-		}
-		if (toAdd.size() > 0)
-			add = this.insertAndSimplify(toAdd, inputMapLabelSize - 1) || add;
 		return add;
 	}
 
@@ -608,7 +618,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @return true if (label, value) determine a new (better) base. If true, the base is update. False otherwise.
 	 */
 	private boolean makeABetterBase(final Entry<Label> entry) {
-		if ((entry.getKey() == null) || (entry.getIntValue() == Constants.INT_NULL))
+		if (entry.getIntValue() == Constants.INT_NULL)
 			return false;
 
 		final int n = entry.getKey().size();
@@ -654,10 +664,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			// one a deleted element).
 			// Iterator are not supported!
 			// The last resource is to copy the label set! :-(
-			ObjectArrayList<Label> labels = new ObjectArrayList<>(internalMap.keySet());
-			for (final Label currentLabel : labels) {
-				final int currentValue = internalMap.getInt(currentLabel);
-				if (currentLabel != null && currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
+			for (Entry<Label> entry1 : internalMap.object2IntEntrySet()) {
+				final Label currentLabel = entry1.getKey();
+				final int currentValue = entry1.getIntValue();
+				if (currentLabel.subsumes(inputLabel) && (currentValue >= inputValue)) {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINEST)) {
 							LOG.log(Level.FINEST, "New label " + inputLabel + " induces a remove of (" + currentLabel + ", " + currentValue + ")");
@@ -668,7 +678,6 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 					removed = true;
 				}
 			}
-
 		}
 		return removed;
 	}

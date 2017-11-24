@@ -27,7 +27,10 @@ import org.kohsuke.args4j.Option;
 import org.kohsuke.args4j.spi.StringArrayOptionHandler;
 import org.xml.sax.SAXException;
 
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
 import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
@@ -135,8 +138,8 @@ public class CSTNRunningTime {
 	/**
 	 * Parameter for asking timeout in sec.
 	 */
-	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 1.")
-	private int nCPUs = 1;
+	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 0= no CPU reserved, there is only one thread for all the process.")
+	private int nCPUs = 0;
 
 	/**
 	 * Output file where to write the determined experimental execution times in CSV format.
@@ -273,8 +276,65 @@ public class CSTNRunningTime {
 		return true;
 	}
 
+	@SuppressWarnings("javadoc")
+	public static class Int2IntBasicEntry implements Int2IntMap.Entry, Comparable<Int2IntBasicEntry> {
+		protected int key;
+		protected int value;
+
+		public Int2IntBasicEntry(final Integer key, final Integer value) {
+			this.key = ((key).intValue());
+			this.value = ((value).intValue());
+		}
+
+		public Int2IntBasicEntry(final int key, final int value) {
+			this.key = key;
+			this.value = value;
+		}
+
+		@Override
+		public Integer setValue(Integer value) {
+			this.value = ((value).intValue());
+			return value;
+		}
+
+		@Override
+		public Integer getKey() {
+			return this.key;
+		}
+
+		@Override
+		public int getIntKey() {
+			return this.key;
+		}
+
+		@Override
+		public Integer getValue() {
+			return this.value;
+		}
+
+		@Override
+		public int setValue(int value) {
+			this.value = value;
+			return value;
+		}
+
+		@Override
+		public int getIntValue() {
+			return this.value;
+		}
+
+		@Override
+		public int compareTo(Int2IntBasicEntry o) {
+			int d = this.key - o.key;
+			if (d == 0)
+				return this.value - o.value;
+			return d;
+		}
+
+	}
+
 	@SuppressWarnings({ "javadoc" })
-	private static class RunState {
+	private static class RunMeter {
 
 		static final int maxMeterSize = 50;// [0--100]
 
@@ -287,39 +347,43 @@ public class CSTNRunningTime {
 		 * @param total number of time to show
 		 * @param current number of time to show
 		 */
-		public RunState(long startTime, long total, long current) {
+		public RunMeter(long startTime, long total, long current) {
 			this.current = current;
 			this.total = total;
 			this.startTime = startTime;
 		}
 
-		/**
-		 * Each call of method, advance this.current and print the meter.
-		 */
 		void printProgress() {
 			if (this.current < this.total)
 				this.current++;
+			printProgress(this.current);
+		}
+
+		/**
+		 * Each call of method, advance this.current and print the meter.
+		 */
+		void printProgress(long givenCurrent) {
 
 			long now = System.currentTimeMillis();
-			long eta = this.current == 0 ? 0 : (this.total - this.current) * (now - this.startTime) / this.current;
+			long eta = givenCurrent == 0 ? 0 : (this.total - givenCurrent) * (now - this.startTime) / givenCurrent;
 
-			String etaHms = this.current == 0 ? "N/A"
+			String etaHms = givenCurrent == 0 ? "N/A"
 					: String.format("%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(eta),
 							TimeUnit.MILLISECONDS.toMinutes(eta) % TimeUnit.HOURS.toMinutes(1),
 							TimeUnit.MILLISECONDS.toSeconds(eta) % TimeUnit.MINUTES.toSeconds(1));
 
-
 			StringBuilder string = new StringBuilder(140);
-			int percent = (int) (this.current * 100 / this.total);
-			int percentScaled = (int) (this.current * maxMeterSize / this.total);
+			int percent = (int) (givenCurrent * 100 / this.total);
+			int percentScaled = (int) (givenCurrent * maxMeterSize / this.total);
 			string.append('\r')
 					.append(String.format("%s %3d%% [", new Time(now).toString(), percent))
 					.append(String.join("", Collections.nCopies(percentScaled, "=")))
 					.append('>')
 					.append(String.join("", Collections.nCopies(maxMeterSize - percentScaled, " ")))
 					.append(']')
-					.append(String.join("", Collections.nCopies((int) (Math.log10(this.total)) - (int) (Math.log10(this.current)), " ")))
-					.append(String.format(" %d/%d, ETA: %s", this.current, this.total, etaHms));
+					.append(String.join("",
+							Collections.nCopies((int) (Math.log10(this.total)) - (int) (Math.log10((givenCurrent < 1) ? 1 : givenCurrent)), " ")))
+					.append(String.format(" %d/%d, ETA: %s", givenCurrent, this.total, etaHms));
 
 			System.out.print(string);
 		}
@@ -339,6 +403,7 @@ public class CSTNRunningTime {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
+	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
 		LOG.finest("CSTNRunningTime " + VERSIONandDATE + "\nStart...");
@@ -373,7 +438,7 @@ public class CSTNRunningTime {
 		 * 2) Running two processes in the two different sockets lowers the performance about the 20%! It is better to run the two process on the same socket.
 		 * 3) Therefore, I modified /boot/grub/grub.cfg setting "isolcpus=8,9,10,11"
 		 */
-		int nProcessor = tester.nCPUs;// Runtime.getRuntime().availableProcessors();
+		int nCPUs = tester.nCPUs;// Runtime.getRuntime().availableProcessors();
 
 		// Logging stuff for learning Affinity behaviour.
 		// System.out.println("Base CPU affinity mask: " + AffinityLock.BASE_AFFINITY);
@@ -402,48 +467,86 @@ public class CSTNRunningTime {
 		 * Final synchronization is obtained requesting .get from Callable.
 		 * AffinityThreadFactory allows to lock a thread in one core for all the time (less overhead)
 		 */
-		final ExecutorService cstnExecutor = Executors.newFixedThreadPool(nProcessor,
-				new AffinityThreadFactory("cstnWorker", AffinityStrategies.DIFFERENT_CORE));
+		final ExecutorService cstnExecutor = (nCPUs > 0) ? Executors.newFixedThreadPool(nCPUs,
+				new AffinityThreadFactory("cstnWorker", AffinityStrategies.DIFFERENT_CORE)) : null;
 
-		RunState runState = new RunState(System.currentTimeMillis(), tester.inputCSTNFile.size(), 0);
+		/**
+		 * To collect statistics w.r.t. the dimension of CSTNs
+		 */
+		Object2ObjectMap<Int2IntBasicEntry, SummaryStatistics> groupStatistics = new Object2ObjectAVLTreeMap<>();
+
+		System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Processors for computation: " + nCPUs);
+		RunMeter runMeter = new RunMeter(System.currentTimeMillis(), tester.inputCSTNFile.size(), 0);
+		runMeter.printProgress(0);
+
 		List<Future<Boolean>> future = new ArrayList<>();
-		for (File file : tester.inputCSTNFile) {
-			future.add(cstnExecutor.submit(() -> cstnWorker(tester, file, runState, edgeFactory)));
-		}
-		System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Tasks queued: " + future.size());
-		System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Processors for computation: " + nProcessor);
-		// wait all tasks have been finished and count!
+
 		int nTaskSuccessfullyFinished = 0;
-		for (Future<Boolean> f : future) {
-			try {
-				if (f.get()) {
+		for (File file : tester.inputCSTNFile) {
+			if (nCPUs > 0) {
+				future.add(cstnExecutor.submit(() -> cstnWorker(tester, file, runMeter, groupStatistics, edgeFactory)));
+			} else {
+				if (cstnWorker(tester, file, runMeter, groupStatistics, edgeFactory))
 					nTaskSuccessfullyFinished++;
-				}
-			} catch (Exception ex) {
-				System.out.println("\nA problem occured during a check: " + ex.getMessage() + ". File ignored.");
-			} finally {
-				if (!f.isDone()) {
-					LOG.warning("It is necessary to cancel the task before continuing.");
-					f.cancel(true);
+			}
+		}
+		if (nCPUs > 0) {
+			// System.out.println((new Time(System.currentTimeMillis())).toString() + ": #Tasks queued: " + future.size());
+			// wait all tasks have been finished and count!
+			for (Future<Boolean> f : future) {
+				try {
+					if (f.get()) {
+						nTaskSuccessfullyFinished++;
+					}
+				} catch (Exception ex) {
+					System.out.println("\nA problem occured during a check: " + ex.getMessage() + ". File ignored.");
+				} finally {
+					if (!f.isDone()) {
+						LOG.warning("It is necessary to cancel the task before continuing.");
+						f.cancel(true);
+					}
 				}
 			}
 		}
 		String msg = "Number of instances processed successfully over total: " + nTaskSuccessfullyFinished + "/" + tester.inputCSTNFile.size() + ".";
 		LOG.info(msg);
 		System.out.println("\n" + (new Time(System.currentTimeMillis())).toString() + ": " + msg);
-		// executor shutdown!
-		try {
-			System.out.println((new Time(System.currentTimeMillis())).toString() + ": Shutdown executors.");
-			cstnExecutor.shutdown();
-			cstnExecutor.awaitTermination(2, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			System.err.println((new Time(System.currentTimeMillis())).toString() + ": Tasks interrupted.");
-		} finally {
-			if (!cstnExecutor.isTerminated()) {
-				System.err.println((new Time(System.currentTimeMillis())).toString() + ": Cancel non-finished tasks.");
+
+		tester.output.printf("\n\nGlobal statistics\n"
+				+ "#CSTNs"
+				+ CSVSep + "#nodes"
+				+ CSVSep + "#propositions"
+				+ CSVSep + "average time " + (tester.timeInS ? "[s]" : "[ns]")
+				+ CSVSep + "std. dev. " + (tester.timeInS ? "[s]" : "[ns]")
+				+ "\n");
+		String rowToWrite = new String(
+				"%d"
+						+ CSVSep + "%d"
+						+ CSVSep + "%d"
+						+ CSVSep + "%E"
+						+ CSVSep + "%E\n");
+
+		for (Object2ObjectMap.Entry<Int2IntBasicEntry, SummaryStatistics> entry : groupStatistics.object2ObjectEntrySet()) {
+			Int2IntMap.Entry globalStatisticsKey = entry.getKey();
+			tester.output.printf(rowToWrite, entry.getValue().getN(), globalStatisticsKey.getIntKey(), globalStatisticsKey.getIntValue(),
+					entry.getValue().getMean(), entry.getValue().getStandardDeviation());
+		}
+
+		if (nCPUs > 0) {
+			// executor shutdown!
+			try {
+				System.out.println((new Time(System.currentTimeMillis())).toString() + ": Shutdown executors.");
+				cstnExecutor.shutdown();
+				cstnExecutor.awaitTermination(2, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				System.err.println((new Time(System.currentTimeMillis())).toString() + ": Tasks interrupted.");
+			} finally {
+				if (!cstnExecutor.isTerminated()) {
+					System.err.println((new Time(System.currentTimeMillis())).toString() + ": Cancel non-finished tasks.");
+				}
+				cstnExecutor.shutdownNow();
+				System.out.println((new Time(System.currentTimeMillis())).toString() + ": Shutdown finished.\nExecution finished.");
 			}
-			cstnExecutor.shutdownNow();
-			System.out.println((new Time(System.currentTimeMillis())).toString() + ": Shutdown finished.\nExecution finished.");
 		}
 		if (tester.fOutput != null) {
 			tester.output.close();
@@ -454,10 +557,13 @@ public class CSTNRunningTime {
 	 * @param tester
 	 * @param file
 	 * @param runState
+	 * @param globalExecutionTimeStatisticsMap
 	 * @param edgeFactory
 	 * @return true if required task ends successfully, false otherwise.
 	 */
-	static private boolean cstnWorker(CSTNRunningTime tester, File file, RunState runState, LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
+	static private boolean cstnWorker(CSTNRunningTime tester, File file, RunMeter runState,
+			Object2ObjectMap<Int2IntBasicEntry, SummaryStatistics> globalExecutionTimeStatisticsMap,
+			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
 		CSTNUGraphMLReader graphMLReader;
@@ -527,29 +633,34 @@ public class CSTNRunningTime {
 		// Use g because next instructions change the structure of graph.
 		LabeledIntGraph g = new LabeledIntGraph(graphToCheck, labeledIntValueMap);
 
+		// Statistics about min, max values and #edges have to be done before init!
+		int min = 0;
+		int max = 0;
+		for (LabeledIntEdge e : g.getEdgesArray()) {
+			for (Entry<Label> entry : e.getLabeledValueSet()) {
+				int v = entry.getIntValue();
+				if (v > max) {
+					max = v;
+					continue;
+				}
+				if (v < min)
+					min = v;
+			}
+		}
+		int nEdges = g.getEdgeCount();
+
 		final CSTN cstn = makeCSTNInstance(tester, g);
 
-		String msg;
 		try {
 			cstn.initAndCheck();
 		} catch (Exception e) {
-			msg = (new Time(System.currentTimeMillis())).toString() + ": " + file.getName()
+			String msg = (new Time(System.currentTimeMillis())).toString() + ": " + file.getName()
 					+ " is not a not well-defined instance. Details:" + e.getMessage()
 					+ "\nIgnored.";
 			System.out.println(msg);
 			LOG.severe(msg);
 			return false;
 		}
-		int min = -cstn.getMaxWeight();
-		int max = min;
-		for (LabeledIntEdge e : g.getEdgesArray()) {
-			for (Entry<Label> entry : e.getLabeledValueSet()) {
-				int v = entry.getIntValue();
-				if (v > max)
-					max = v;
-			}
-		}
-		int nEdges = g.getEdgeCount();
 
 		String rowToWrite = String.format("%s"
 				+ CSVSep + "%d"
@@ -572,7 +683,14 @@ public class CSTNRunningTime {
 			return true;
 		}
 
-		msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
+		Int2IntBasicEntry globalStatisticsKey = new Int2IntBasicEntry(graphToCheck.getVertexCount(), graphToCheck.getObserverCount());
+		SummaryStatistics globalExecutionTimeStatistics = globalExecutionTimeStatisticsMap.get(globalStatisticsKey);
+		if (globalExecutionTimeStatistics == null) {
+			globalExecutionTimeStatistics = new SummaryStatistics();
+			globalExecutionTimeStatisticsMap.put(globalStatisticsKey, globalExecutionTimeStatistics);
+		}
+
+		String msg = (new Time(System.currentTimeMillis())).toString() + ": Determining DC check execution time of " + file.getName()
 				+ " repeating DC check for " + tester.nDCRepetition + " times.";
 		// System.out.println(msg);
 		LOG.info(msg);
@@ -592,6 +710,7 @@ public class CSTNRunningTime {
 			synchronized (tester.output) {
 				tester.output.print(rowToWrite);
 			}
+			globalExecutionTimeStatistics.addValue(tester.timeOut);
 			runState.printProgress();
 			return false;
 		}
@@ -602,6 +721,9 @@ public class CSTNRunningTime {
 			localAvg = localAvg / 1E9;
 			localStdDev = localStdDev / 1E9;
 		}
+
+		globalExecutionTimeStatistics.addValue(localAvg);
+
 		LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
 		LOG.info(file.getName() + " is " + status.consistency);
 		LOG.info(file.getName() + " average required time " + (tester.timeInS ? "[s]: " : "[ns]: ") + localAvg);
@@ -635,7 +757,7 @@ public class CSTNRunningTime {
 	 * @param executor
 	 */
 	@SuppressWarnings({ "javadoc" })
-	static private CSTNCheckStatus cstnDCChecker(CSTNRunningTime tester, CSTN cstn, LabeledIntGraph graphToCheck, RunState runState) {
+	static private CSTNCheckStatus cstnDCChecker(CSTNRunningTime tester, CSTN cstn, LabeledIntGraph graphToCheck, RunMeter runState) {
 		String msg;
 		boolean cstnOK = true;
 		LabeledIntGraph g = null;

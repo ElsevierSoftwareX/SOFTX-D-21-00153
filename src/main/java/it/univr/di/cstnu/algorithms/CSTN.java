@@ -259,7 +259,8 @@ public class CSTN {
 	// static final public String VERSIONandDATE = "Version 5.2 - October, 16 2017";// better log management. This version uses LP,R0,R3*,qLP,qR0,qR3* and
 	// horizon!
 	// static final public String VERSIONandDATE = "Version 5.3 - November, 9 2017";// Replaced Omega node with equivalent constraints.
-	static final public String VERSIONandDATE = "Version  5.4 - November, 17 2017";// Adjusted LP
+	// static final public String VERSIONandDATE = "Version 5.4 - November, 17 2017";// Adjusted LP
+	static final public String VERSIONandDATE = "Version  5.5 - November, 23 2017";// Adjusted skipping condition in LP
 
 	/**
 	 * The name for the initial node.
@@ -802,7 +803,7 @@ public class CSTN {
 				}
 				if (this.checkStatus.consistency) {
 					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
+						if (LOG.isLoggable(Level.FINE)) {
 							StringBuilder log = new StringBuilder();
 							log.append("During the check # " + i + ", " + edgesToCheck.size()
 									+ " edges have been add/modified. Check has to continue.\nDetails of only modified edges having values:\n");
@@ -811,7 +812,7 @@ public class CSTN {
 									continue;
 								log.append("Edge " + e + "\n");
 							}
-							LOG.log(Level.FINER, log.toString());
+							LOG.log(Level.FINE, log.toString());
 						}
 					}
 				}
@@ -1181,7 +1182,7 @@ public class CSTN {
 
 				boolean qLabel = false;
 				Label newLabelAC = null;
-				if (this.applyReducedSetOfRules || u >= 0 && v < 0) {
+				if (this.applyReducedSetOfRules || LPMainConditionForSkipping(u, v)) {
 					newLabelAC = labelAB.conjunction(labelBC);
 					if (newLabelAC == null) {
 						continue;
@@ -1856,34 +1857,10 @@ public class CSTN {
 
 				/**
 				 * I need to clean values on AC
-				 * March, 8 2016 By an experimental results, it seems that the following clean code is not necessary. Without it, the final number of rule
-				 * applications does not change!
+				 * March, 8 2016 By an experimental results, it seems that it is not necessary to clean values using R0 and R3.
+				 * Without it, the final number of rule applications does not change!
 				 */
-				// if (A.isObserver()) {
-				// // R0 on the resulting new values
-				// this.labelModificationR0(currentGraph, A, C, AC, status);
-				// }
-				//
-				// // if (!this.excludeR1R2 && C.isObserver()) {
-				// // // R2 on the resulting new values.
-				// // this.labelModificationR2(currentGraph, C, A, AC, status);
-				// // }
-				//
-				// // R3 on the resulting new values
-				// this.labelModificationR3(currentGraph, A, C, AC, status);
-				// if (A.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
-				// // R0 on the resulting new values
-				// this.labelModificationR0(currentGraph, A, C, AC, status);
-				// }
-				//
-				// // if (!this.excludeR1R2) {
-				// // // R1 on the resulting new values.
-				// // this.labelModificationR1(currentGraph, A, C, AC, status);
-				// // if (C.isObserver()) {
-				// // this.labelModificationR2(currentGraph, C, A, AC, status);// It should be like R0! To verify
-				// // // experimentally.
-				// // }
-				// // }
+
 				if (edgeCopy == null && !AC.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(AC, A, C);
@@ -2041,12 +2018,6 @@ public class CSTN {
 							// R0 on the resulting new values
 							labelModificationR0qR0(A, C, AC);
 						}
-
-						// if (!this.excludeR1R2 && C.isObserver()) {
-						// // R2 on the resulting new values.
-						// this.labelModificationR2(currentGraph, C, A, AC, status);
-						// }
-
 						// R3 on the resulting new values
 						this.labelModificationR3qR3(A, C, AC);
 
@@ -2055,15 +2026,6 @@ public class CSTN {
 							labelModificationR0qR0(A, C, AC);
 						}
 					}
-
-					// if (!this.excludeR1R2) {
-					// // R1 on the resulting new values.
-					// this.labelModificationR1(currentGraph, A, C, AC, status);
-					// if (C.isObserver()) {
-					// this.labelModificationR2(currentGraph, C, A, AC, status);// It should be like R0! To verify
-					// // experimentally.
-					// }
-					// }
 				}
 			}
 		}
@@ -2082,6 +2044,21 @@ public class CSTN {
 	public void printVersion() {
 		System.out.println(this.getClass().getName() + " " + VERSIONandDATE + ".\nAcademic and non-commercial use only.\n"
 				+ "Copyright © 2017, Roberto Posenato");
+	}
+
+	/**
+	 * Utility method to simply override {@link #labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdge, LabeledIntEdge, LabeledIntEdge)}
+	 * in derived class without rewriting all method.
+	 * Many derived classes have only to change the main condition for testing if the rule has to be applied or not.
+	 * 
+	 * @param u
+	 * @param v
+	 * @return true if the rule has to not apply.
+	 */
+	@SuppressWarnings("static-method")
+	boolean LPMainConditionForSkipping(final int u, final int v) {
+		// Table 1 ICAPS paper for standard DC
+		return u > 0 && v < 0;
 	}
 
 	/**
@@ -2149,7 +2126,10 @@ public class CSTN {
 
 
 	/**
-	 * @param g the g to set
+	 * Considers the given graph as the graph to check (graph will be modified).
+	 * Clear all {@link #maxWeight}, {@link #horizon} and {@link #checkStatus}.
+	 * 
+	 * @param g set internal graph to g. It cannot be null.
 	 */
 	public void setG(LabeledIntGraph g) {
 		// CSTNU overrides this.
