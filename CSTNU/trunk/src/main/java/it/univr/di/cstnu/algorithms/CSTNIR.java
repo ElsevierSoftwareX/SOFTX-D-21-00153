@@ -69,6 +69,15 @@ public class CSTNIR extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
+	boolean LPMainConditionForSkipping(final int u, final int v) {
+		// Table 1 ICAPS paper for standard DC
+		return u >= 0 && v < 0;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	final boolean R0qR0MainConditionForSkipping(final int w) {
 		// Table 1 ICAPS2016 paper for IR semantics
 		return w >= 0;

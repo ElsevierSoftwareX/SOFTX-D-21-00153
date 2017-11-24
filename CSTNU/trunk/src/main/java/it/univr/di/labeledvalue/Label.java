@@ -293,7 +293,7 @@ public class Label implements Comparable<Label> {
 	 * @return return all the components of the base built using literals of baseElements. Null if baseElements is null or empty.
 	 */
 	public static final Label[] allComponentsOfBaseGenerator(final char[] baseElements) {
-		if ((baseElements == null) || (baseElements.length == 0))
+		if (baseElements.length == 0)
 			return null;
 		final int baseSize = baseElements.length;
 		final int n = (int) Math.pow(2, baseSize);
@@ -315,7 +315,7 @@ public class Label implements Comparable<Label> {
 	 */
 	private static final Label complementGenerator(final char[] proposition, final long index) {
 		int n;
-		if (proposition == null || (n = proposition.length) == 0 || index < 0 || index > Math.pow(2, n))
+		if ((n = proposition.length) == 0 || index < 0 || index > Math.pow(2, n))
 			return null;
 		long j = 1L;
 		final Label newLabel = new Label();

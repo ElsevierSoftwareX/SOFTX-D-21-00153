@@ -4,7 +4,7 @@
   <groupId>it.univr.di</groupId>
   <artifactId>CSTNU</artifactId>
   <name>CSTNU</name>
-  <version>1.22.1-SNAPSHOT</version>
+  <version>1.22.2-SNAPSHOT</version>
   <url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
   <developers>
     <developer>
@@ -153,6 +153,8 @@
                 <tar>
                   <tarfileset>
                     <include />
+                    <exclude />
+                    <exclude />
                     <exclude />
                   </tarfileset>
                 </tar>

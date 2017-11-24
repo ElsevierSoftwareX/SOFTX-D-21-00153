@@ -84,6 +84,15 @@ public class CSTNEpsilon extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
+	boolean LPMainConditionForSkipping(final int u, final int v) {
+		// Table 1 ICAPS paper for standard DC
+		return u >= this.epsilon && v < 0;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	final boolean R0qR0MainConditionForSkipping(final int w) {
 		// Table 2 ICAPS2016 paper for epsilon semantics
 		return w >= this.epsilon;
@@ -102,8 +111,8 @@ public class CSTNEpsilon extends CSTN {
 	@Override
 	final int R3qR3NewValue(final int v, final int w) {
 		// Table 2 ICAPS2016.
-		int w1 = w - this.epsilon;
-		return (v >= w1) ? v : w1;
+		final int w1 = w - this.epsilon;
+		return (v > w1) ? v : w1;
 	}
 
 }
