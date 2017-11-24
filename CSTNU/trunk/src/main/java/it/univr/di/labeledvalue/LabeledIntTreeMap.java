@@ -278,19 +278,16 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		 * in the map can be removed immediately by the consideration of the new value (in this case remove such values).
 		 * Then, the new value is add in step 2.
 		 */
-		Label l1;
-		int v1;
 
 		final int newLabelSize = newLabel.size();
-		int l1Size = 0;
 		ObjectSet<Label> labelToRemove = new ObjectArraySet<>();
 		// ObjectSet<Label> labelToAdjust = new ObjectArraySet<>();
 		// boolean hasNewLabelToBeInserted = true;
 		for (final Object2IntMap<Label> mapAllSameLengthLabels : this.mainInt2SetMap.values()) {
 			for (Entry<Label> entry : mapAllSameLengthLabels.object2IntEntrySet()) {
-				l1 = entry.getKey();
-				v1 = entry.getIntValue();
-				l1Size = l1.size();
+				final Label l1 = entry.getKey();
+				final int v1 = entry.getIntValue();
+				final int l1Size = l1.size();
 				if (newLabelSize >= l1Size && newLabel.subsumes(l1) && newValue >= v1) {
 					// if (v1 == Constants.INT_NEG_INFINITE) {
 					// // the input value is not simple because has a node set but the subsume an -infinity labeled value, we can continue to
@@ -324,7 +321,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 		// The label to remove and to adjust are now ready to be managed.
 		for (Label lr : labelToRemove) {
-			int old = this.mainInt2SetMap.get(lr.size()).remove(lr);
+			final int old = this.mainInt2SetMap.get(lr.size()).remove(lr);
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINEST))
 					LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the removal of (" + lr + ", " + old + ").");
@@ -336,13 +333,6 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		// if (LOG.isLoggable(Level.FINEST))
 		// LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the modification of (" + lr + ", " + old + ") to ("
 		// + lr + ", " + newValue + ")");
-		// }
-
-		// old stuff... maintain it until nodeSet option is not discarded!
-		// if (!hasNewLabelToBeInserted) {
-		// if (LOG.isLoggable(Level.FINEST))
-		// LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") has not to be inserted.");
-		// return false;
 		// }
 
 		/**
@@ -423,18 +413,15 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @return true if <code>l</code> is a component of the base, false otherwise.
 	 */
 	private boolean checkValidityOfTheBaseAfterRemoving(final Label l) {
-		int baseSize, labelSize;
-		if ((l == null) || ((labelSize = l.size()) == 0) || ((baseSize = this.base.length) == 0) || (labelSize != baseSize))
+		if ((this.base.length == 0) || (l.size() == 0) || (l.size() != this.base.length) || l.containsUnknown())
 			return false;
-
-		if (l.containsUnknown())
-			return false;// removing a label with unknown does not affect a possible base.
 
 		// l and base have same length.
 		for (char c : this.base) {
 			if (!l.contains(c))
 				return false;
 		}
+		// l is a component of the base and it was removed.
 		this.base = emptyBase;
 		return true;
 	}
@@ -653,9 +640,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	private boolean removeAllValuesGreaterThan(Entry<Label> entry) {
 		if ((entry.getKey() == null) || (entry.getIntValue() == Constants.INT_NULL))
 			return false;
-		Label inputLabel = entry.getKey();
-		int inputValue = entry.getIntValue();
-
+		final Label inputLabel = entry.getKey();
+		final int inputValue = entry.getIntValue();
 		final int n = inputLabel.size();
 		boolean removed = false;
 
