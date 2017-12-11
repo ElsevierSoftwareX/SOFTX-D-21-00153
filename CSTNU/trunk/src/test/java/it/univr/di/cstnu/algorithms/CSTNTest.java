@@ -392,7 +392,7 @@ public class CSTNTest {
 		LabeledIntEdgePluggable XYok = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		// xyOK.mergeLabeledValue(Label.parse("¬A¬B"), 17);
 		// EqLP+
-		XYok.mergeLabeledValue(Label.parse("¬b"), 8);
+		// XYok.mergeLabeledValue(Label.parse("¬b"), 8);if positive value are not admitted.
 		XYok.mergeLabeledValue(Label.parse("¬ab"), -2);
 		XYok.mergeLabeledValue(Label.parse("b"), -1);
 		XYok.mergeLabeledValue(Label.parse("¿b"), -11);
@@ -407,7 +407,7 @@ public class CSTNTest {
 		this.cstn.labeledPropagationqLP(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
 
 		XYok.clearLabels();
-		XYok.mergeLabeledValue(Label.parse("¬b"), 10);
+		// XYok.mergeLabeledValue(Label.parse("¬b"), 10);if positive value are not admitted.
 		XYok.mergeLabeledValue(Label.parse("b"), -11);
 		assertEquals("No case: XY labeled values.", XYok.getLabeledValueMap(), XY.getLabeledValueMap());
 

@@ -113,12 +113,13 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 					}
 				});
 		this.addGraphData(GRAPH_nEDGES_KEY, "Number of edges in the graph", "0",
-				new Function<Hypergraph<LabeledNode, LabeledIntEdge>, String>() {
-					@Override
-					public String apply(final Hypergraph<LabeledNode, LabeledIntEdge> g) {
-						return String.valueOf(((LabeledIntGraph) (g)).getEdgeCount());
-					}
-				});
+				(Hypergraph<LabeledNode, LabeledIntEdge> g) -> String.valueOf(((LabeledIntGraph) (g)).getEdgeCount()));
+		// new Function<Hypergraph<LabeledNode, LabeledIntEdge>, String>() {
+		// @Override
+		// public String apply(final Hypergraph<LabeledNode, LabeledIntEdge> g) {
+		// return String.valueOf(((LabeledIntGraph) (g)).getEdgeCount());
+		// }
+		// });
 		this.addGraphData(GRAPH_nOBS_KEY, "Number of observed propositions in the graph", "0",
 				new Function<Hypergraph<LabeledNode, LabeledIntEdge>, String>() {
 					@Override

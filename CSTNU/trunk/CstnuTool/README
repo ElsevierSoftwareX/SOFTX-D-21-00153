@@ -15,11 +15,9 @@ The output is the xml description of the corresponding TIGA.
 You have to install uppaal-tiga-0.18 software in order to run cstnuTranslator.sh
 Please, adjust the location of 'verifytga' program inside cstnuTranslator.sh according to the location where you installed 'uppaal-tiga-0.18'.
 
-
 cstnuEditor.sh
 --------------
 A prototype CSTNU editor.
-
 
 CSTNRunningTime.sh
 ------------------	

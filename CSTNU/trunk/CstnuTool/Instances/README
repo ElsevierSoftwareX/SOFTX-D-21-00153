@@ -1,28 +1,13 @@
-CSTNU INSTANCES README
-======================
+CSTN(U) INSTANCES README
+========================
 
-In this directory there are the following files representing CSTN/CSTNU
-instances:
-
-TIME2015Benchmark
------------------
-Directory containing some big CSTN instances for TIME 2015 paper.
+In this directory there are the following files representing CSTN/CSTNU instances:
 
 4Alt.cstnu
 ----------
 Instance representing a process with 5 tasks, 2 alternative ones (after observation time-point A?) followed by one and, then, by other two alternative tasks 
 (after observation time point B?)
 The network is dynamic controllable (DC). 
-In the DC check,   
-Rule R0 has been applied 10 times.
-Rule R1 has been applied 1 times.
-Rule R2 has been applied 9 times.
-Rule R3 has been applied 12 times.
-Rule R4 has been applied 15 times.
-Rule R5 has been applied 48 times.
-Rule R6 has been applied 0 times.
-Rule ObsCaseRule has been applied 0 times.
-Rule NoCaseLabel has been applied 807 times.
 
 4Alt.cstnu.tga.q and 4Alt.cstnu.tga.xml represent the translation of the network in TIGA format.
 
@@ -30,73 +15,38 @@ Rule NoCaseLabel has been applied 807 times.
 4AlternativeWFpaths.cstn
 ------------------------
 It similar to 4Alt.cstnu but where tasks are without uncertainty.
+THe network has 18 nodes, 44 edges, 2 propositions, edges weights are in [-22,34]. 	
 The network is dynamic consistent (DC).
-In the DC check,
-Rule R0 has been applied 3 times.
-Rule R1 has been applied 0 times.
-Rule R2 has been applied 0 times.
-Rule R3 has been applied 43 times.
-Rule Labeled Propagation has been applied 852 times.
-The global execution time has been 511 ms. approx.
 
 4AlternativeWFpaths.cstn.tga.q 4AlternativeWFpaths.cstn.tga.xml represent the translation of the network in TIGA format.
+
 
 ex1C.cstnu
 ----------
 Simple CSTNU representing a process with two nested alternatives and three tasks.
 The network is dynamic controllable (DC). 
-In the DC check, 
-Rule R0 has been applied 0 times.
-Rule R1 has been applied 0 times.
-Rule R2 has been applied 0 times.
-Rule R3 has been applied 0 times.
-Rule R4 has been applied 0 times.
-Rule R5 has been applied 0 times.
-Rule R6 has been applied 0 times.
-Rule ObsCaseRule has been applied 0 times.
-Rule NoCaseLabel has been applied 86 times.
 
 ex1C.cstnu.tga.q and ex1C.cstnu.tga.xml represent the translation of the network in TIGA format.
+
 
 ex2C.cstn
 ---------
 Simple CSTN in which there are only one observation time-point ('A?') and three other time-points: 'n1' is in scenario '¬a', 'n2' in scenario 'a' and 
 'n3' always present as 'A?'. 
 The network is dynamic consistent (DC). 
-In the DC check, 
-Rule R0 has been applied 0 times.
-Rule R1 has been applied 0 times.
-Rule R2 has been applied 0 times.
-Rule R3 has been applied 1 times.
-Rule Labeled Propagation has been applied 16 times.
-The global execution time has been 6 ms. approx.
 
 ex2C.cstn.tga.q and ex2C.cstn.tga.xml represent the translation of the network in TIGA format.
 
+
 ex2NC.cstn
 ----------
-It is like ex2C.cstn instance but made UNCONSISTENT setting the overall constraint between 'A?' and 'n3' more stringent.
+It is like ex2C.cstn instance but made INCONSISTENT setting the overall constraint between 'A?' and 'n3' more stringent.
 The network is NOT dynamic consistent (DC). 
-
-ex2NC.cstn.tga.q and ex2NC.cstn.tga.xml represent the translation of the network in TIGA format.
-***BE CAREFUL***
-TIGA finds ex2NC.cstn.tga.xml DC and propose a strategy. 
-There is an error. We are investigating on it.
 
 
 fig2Paper.cstnu
 ---------------
 Another simple CSTNU representing a process with two nested alternatives and 3 tasks.
 The network is dynamic controllable (DC). 
-In the DC check, 
-Rule R0 has been applied 0 times.
-Rule R1 has been applied 0 times.
-Rule R2 has been applied 0 times.
-Rule R3 has been applied 0 times.
-Rule R4 has been applied 0 times.
-Rule R5 has been applied 0 times.
-Rule R6 has been applied 0 times.
-Rule ObsCaseRule has been applied 0 times.
-Rule NoCaseLabel has been applied 17 times.
 
 fig2Paper.cstnu.tga.q and fig2Paper.cstnu.tga.xml represent the translation of the network in TIGA format.

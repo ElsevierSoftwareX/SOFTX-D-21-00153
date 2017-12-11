@@ -1,20 +1,20 @@
 #!/bin/bash
 #Simple script to invoke CSTNURunningTime class for testing CSTNU DC check algorithm running time.
 #
-# 2015 (C) Roberto Posenato
+# 2017 (C) Roberto Posenato
 #
 
 ############################
 # START parameter configuration
 DIR="$( dirname "${BASH_SOURCE[0]}" )"
-CSTNU="$DIR/$( cd $DIR  && echo `ls CSTNU-*.jar`)"
+CSTN="$DIR/$( cd $DIR  && echo `ls CSTNU-*.jar`)"
 # END parameter configuration
 
 #############################
 #Check Java version
 # Changed code to remove the 'head -1' as per the suggestion in comment.
 JAVA_VERSION=`java -version 2>&1 | head -n 1 | cut -d\" -f 2`
-JAVA_WANTED='1.7'
+JAVA_WANTED='1.8'
 if [[ "$JAVA_VERSION" < "$JAVA_WANTED" ]]
 then
 	echo "To run the current tool, it is necessary to consider Java $JAVA_WANTED at least".
@@ -26,8 +26,18 @@ IN=$@
 echo "Start checking CSTNUs contained in the following files $IN."
 
 if [ "x$IN" == "x" ]; then
-    echo "usage $0 [-excludeR1andR2rules] [-NOoptimized] <CSTNU file1> <CSTNU file2>... <CSTNU fileN> "
+    echo "usage $0 [options] <CSTNU file1> <CSTNU file2>... <CSTNU fileN> "
     exit 1
 fi
 
-java -Djava.util.logging.config.file=$DIR/logging.properties -Xmx1g -cp $CSTNU it.univr.di.cstnu.algorithms.CSTNURunningTime $IN 
+java -cp $CSTN \
+	-Djava.util.logging.config.file=$DIR/logging.properties \
+	-d64 \
+	-Xmx6g \
+    -Xms6g \
+    -XX:NewSize=3G \
+    -XX:MaxNewSize=3G \
+    -XX:+UseG1GC \
+    -Xnoclassgc \
+    -XX:+AggressiveOpts \
+    it.univr.di.cstnu.algorithms.CSTNURunningTime $IN

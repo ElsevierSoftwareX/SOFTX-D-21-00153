@@ -390,7 +390,7 @@ public class CSTNepsilonTest {
 
 		LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		// EqLP+
-		xyOK.mergeLabeledValue(Label.parse("¬b"), 8);
+		// xyOK.mergeLabeledValue(Label.parse("¬b"), 8); if positive value are not admitted.
 		xyOK.mergeLabeledValue(Label.parse("¬ab"), -2);
 		xyOK.mergeLabeledValue(Label.parse("b"), -1);
 		xyOK.mergeLabeledValue(Label.parse("¿b"), -11);
@@ -406,7 +406,7 @@ public class CSTNepsilonTest {
 
 		// EqLP+ rule no positive value
 		xyOK.clearLabels();
-		xyOK.mergeLabeledValue(Label.parse("¬b"), 10);
+		// xyOK.mergeLabeledValue(Label.parse("¬b"), 10);if positive value are not admitted.
 		xyOK.mergeLabeledValue(Label.parse("b"), -11);
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
