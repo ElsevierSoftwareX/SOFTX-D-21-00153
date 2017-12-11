@@ -357,7 +357,7 @@ public class CSTNUTest {
 		eAZ.setUpperCaseValueMap(map1);
 		g.addEdge(eAZ, A, this.Z);
 
-		System.out.println(eN8Z);
+		// System.out.println(eN8Z);
 		this.cstnu.labelModificationqR3(N8, eN8Z);
 		
 		LabeledIntEdgePluggable eN8ZOK = new LabeledIntEdgePluggable("n8_Z", this.labeledIntValueMapClass);

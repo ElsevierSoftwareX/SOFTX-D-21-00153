@@ -260,7 +260,8 @@ public class CSTN {
 	// horizon!
 	// static final public String VERSIONandDATE = "Version 5.3 - November, 9 2017";// Replaced Omega node with equivalent constraints.
 	// static final public String VERSIONandDATE = "Version 5.4 - November, 17 2017";// Adjusted LP
-	static final public String VERSIONandDATE = "Version  5.5 - November, 23 2017";// Adjusted skipping condition in LP
+	// static final public String VERSIONandDATE = "Version 5.5 - November, 23 2017";// Adjusted skipping condition in LP
+	static final public String VERSIONandDATE = "Version  5.6 - November, 23 2017";// Horizon tweaking
 
 	/**
 	 * The name for the initial node.
@@ -1030,7 +1031,7 @@ public class CSTN {
 		// manage maxWeight value
 		this.maxWeight = -this.maxWeight;
 		// Determine horizon value
-		long product = ((long) this.maxWeight) * this.g.getVertexCount();
+		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product >= Constants.INT_POS_INFINITE) {
 			throw new ArithmeticException("Horizon value is not representable by an integer.");
 		}
@@ -1137,7 +1138,7 @@ public class CSTN {
 	 * The rule implements 2016-10-31LUKE_LP, not yet published.
 	 * 
 	 * <pre>
-	 * if A &mdash;[α, u]&xrarr; B --[β, v]&xrarr; C, then A &mdash;[(α★β)†, u+v]&xrarr; C if u<0
+	 * if A &mdash;[α, u]&xrarr; B --[β, v]&xrarr; C, then A &mdash;[(α★β)†, u+v]&xrarr; C if u+v<=0
 	 * 
 	 * α,β in Q*
 	 * (α★β)† is the label without children of unknown.
@@ -1173,13 +1174,14 @@ public class CSTN {
 			final Label labelAB = ABEntry.getKey();
 			final int u = ABEntry.getIntValue();
 			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
-				final Label labelBC = BCEntry.getKey();
 				final int v = BCEntry.getIntValue();
-				/**
-				 * 2017-05-04 Roberto verifies that it is faster to propagate all values (positive and negative).
-				 */
 				int sum = Constants.sumWithOverflowCheck(u, v);
-
+				if (sum > 0) {
+					// It is not necessary to propagate positive values.
+					// Less propagations, less useless labeled values.
+					continue;
+				}
+				final Label labelBC = BCEntry.getKey();
 				boolean qLabel = false;
 				Label newLabelAC = null;
 				if (this.applyReducedSetOfRules || LPMainConditionForSkipping(u, v)) {
@@ -1191,8 +1193,6 @@ public class CSTN {
 					newLabelAC = labelAB.conjunctionExtended(labelBC);
 					qLabel = newLabelAC.containsUnknown();
 					if (qLabel) {
-						if (sum > 0)// FIXME no positive qLabel
-							continue;
 						if (this.withNodeLabels)
 							removeChildrenOfUnknown(newLabelAC);
 					}
@@ -1209,8 +1209,7 @@ public class CSTN {
 				int oldValue = eAC.getValue(newLabelAC);
 
 				if (nA == nC) {
-					if (sum >= 0) {
-						// it would be a redundant edge
+					if (sum == 0) {
 						continue;
 					}
 					// sum is negative!

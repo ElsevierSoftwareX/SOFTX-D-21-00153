@@ -63,7 +63,9 @@ public class CSTNRunningTime {
 	// static final String VERSIONandDATE = "1.4, November, 09 2017";// code cleaned
 	// static final String VERSIONandDATE = "2.0, November, 13 2017";// Multi-thread version.
 	// static final String VERSIONandDATE = "2.1, November, 14 2017";// Multi-thread version. Fixed a slip!
-	static final String VERSIONandDATE = "2.2, November, 15 2017";// Added the possibility to test CSTNEpsilonwoNodeLabels and CSTN2CSTN0
+	// static final String VERSIONandDATE = "2.2, November, 15 2017";// Added the possibility to test CSTNEpsilonwoNodeLabels and CSTN2CSTN0
+	// static final String VERSIONandDATE = "2.23, November, 30 2017";// Improved the print of statistics file: std dev is print only when # checks > 1
+	static final String VERSIONandDATE = "2.24, December, 04 2017";// Added CSTNEpsilon3R
 
 	/**
 	 * class logger
@@ -73,7 +75,7 @@ public class CSTNRunningTime {
 	/**
 	 * CSV separator
 	 */
-	static final String CSVSep = ";";
+	static final String CSVSep = ";	";
 
 	/**
 	 * The input file names. Each file has to contain a CSTN graph in GraphML format.
@@ -262,16 +264,11 @@ public class CSTNRunningTime {
 					+ CSVSep + "#min edge value"
 					+ CSVSep + "#max edge value"
 					+ CSVSep + "average time " + (this.timeInS ? "[s]" : "[ns]")
-					+ CSVSep + "std. dev. " + (this.timeInS ? "[s]" : "[ns]")
+					+ ((this.nDCRepetition > 1) ? CSVSep + "std. dev. " + (this.timeInS ? "[s]" : "[ns]") : "")
 					+ CSVSep + "Dynamyc Consistent"
 					+ CSVSep + "#label propagation rule"
 					+ CSVSep + "#R0"
-					// + CSVSep + "#R1"
-					// + CSVSep + "#R2"
-					+ CSVSep + "#R3"
-			// + CSVSep + "#NegQLoop"
-			// + CSVSep + "#SemiNegQLopp"
-			);
+					+ CSVSep + "#R3");
 		}
 		return true;
 	}
@@ -701,10 +698,10 @@ public class CSTNRunningTime {
 			// time out or generic error
 			rowToWrite = String.format(rowToWrite
 					+ CSVSep + "%E"
-					+ CSVSep + "%E"
+					+ ((tester.nDCRepetition > 1) ? CSVSep + "%E" : "%s")
 					+ CSVSep + "%s\n",
 					(double) tester.timeOut,
-					0.0,
+					((tester.nDCRepetition > 1) ? 0.0 : ""),
 					((status != null && status.executionTimeNS != Constants.INT_NULL) ? "Timeout of " + tester.timeOut + " seconds."
 							: "Generic error. See log."));
 			synchronized (tester.output) {
@@ -731,14 +728,14 @@ public class CSTNRunningTime {
 
 		rowToWrite = String.format(rowToWrite
 				+ CSVSep + "%E"
-				+ CSVSep + "%E"
+				+ ((tester.nDCRepetition > 1) ? CSVSep + "%E" : "%s")
 				+ CSVSep + "%s"
 				+ CSVSep + "%d"
 				+ CSVSep + "%d"
 				+ CSVSep + "%d"
 				+ "\n",
 				localAvg,
-				localStdDev,
+				((tester.nDCRepetition > 1) ? localStdDev : ""),
 				((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
 				status.labeledValuePropagationCalls,
 				status.r0calls,
@@ -819,7 +816,7 @@ public class CSTNRunningTime {
 		switch (tester.dcSemantics) {
 		case ε:
 			if (tester.onlyLPQR0QR3) {
-				cstn = (tester.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(tester.reactionTime, g) : null;
+				cstn = (tester.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(tester.reactionTime, g) : new CSTNEpsilon3R(tester.reactionTime, g);
 			} else {
 				cstn = (tester.woNodeLabels) ? new CSTNEpsilonwoNodeLabels(tester.reactionTime, g) : new CSTNEpsilon(tester.reactionTime, g);
 			}

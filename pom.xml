@@ -4,13 +4,15 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.22.2-SNAPSHOT</version>
+	<version>1.22.3-SNAPSHOT</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.tool.filename>CstnuTool-${project.version}</project.tool.filename>
 		<project.jar.filename>${project.artifactId}-${project.version}.jar</project.jar.filename>
+		<tex.dir>tex</tex.dir>
+		<tex.images.dir>${tex.dir}/images</tex.images.dir>
 	</properties>
 	<licenses>
 		<license>
@@ -91,6 +93,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
+			<!-- To export an instance in a PDF file -->
 			<artifactId>freehep-graphicsbase</artifactId>
 			<version>2.4</version>
 		</dependency>
@@ -293,7 +296,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.3</version>
+				<version>3.6</version>
 				<dependencies>
 					<dependency><!-- add support for ssh/scp -->
 						<groupId>org.apache.maven.wagon</groupId>
@@ -303,13 +306,18 @@
 					<dependency>
 						<groupId>org.apache.maven.doxia</groupId>
 						<artifactId>doxia-module-apt</artifactId>
-						<version>1.6</version>
+						<version>1.7</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.doxia</groupId>
+						<artifactId>doxia-module-xhtml</artifactId>
+						<version>1.7</version>
 					</dependency>
 				</dependencies>
 			</plugin>
 			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<id>package</id>
@@ -351,6 +359,18 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>pre-site</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete dir="${basedir}/target/site" verbose="true" />
+							</target>
+						</configuration>
+					</execution>
+					<execution>
 						<id>site</id>
 						<phase>site</phase>
 						<goals>
@@ -367,18 +387,17 @@
 										<include name="*.tgz" />
 									</fileset>
 								</copy>
-							</target>
-						</configuration>
-					</execution>
-					<execution>
-						<id>pre-site</id>
-						<phase>pre-site</phase>
-						<goals>
-							<goal>run</goal>
-						</goals>
-						<configuration>
-							<target>
-								<delete dir="${basedir}/target/site" verbose="true" />
+								<delete>
+									<fileset dir="${basedir}/target/site/${tex.dir}"
+										includes="*.dvi" />
+								</delete>
+								<mkdir dir="${basedir}/target/site/${tex.images.dir}" />
+								<move todir="${basedir}/target/site/${tex.images.dir}"
+									preservelastmodified="true">
+									<fileset dir="${basedir}/target/site/${tex.dir}">
+										<include name="*.svg" />
+									</fileset>
+								</move>
 							</target>
 						</configuration>
 					</execution>
@@ -466,7 +485,48 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<plugin>
+				<groupId>de.akquinet.jbosscc.latex</groupId>
+				<artifactId>maven-latex-plugin</artifactId>
+				<version>1.2</version>
+				<inherited>false</inherited>
+				<executions>
+					<execution>
+						<id>pdf</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>latex</goal>
+						</goals>
+						<configuration>
+							<settings>
+								<outputDirectory>${tex.dir}</outputDirectory>
+								<texCommandArgs>
+									<texCommandArg>-shell-escape</texCommandArg>
+								</texCommandArgs>
+							</settings>
+						</configuration>
+					</execution>
+					<execution>
+						<id>html</id>
+						<phase>pre-site</phase>
+						<goals>
+							<goal>tex4ht</goal>
+						</goals>
+						<configuration>
+							<settings>
+								<outputDirectory>${tex.dir}</outputDirectory>
+								<tex4htCommandArgs>
+									<tex4htCommandArg>lib/mytex4ht.cfg</tex4htCommandArg>
+									<tex4htCommandArg> -emyexternalize.4ht -cunihtf -utf8</tex4htCommandArg><!-- 
+										initial space is necessary! -->
+									<tex4htCommandArg>-cvalidate -p</tex4htCommandArg>
+									<tex4htCommandArg>-shell-escape</tex4htCommandArg>
+								</tex4htCommandArgs>
+							</settings>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<reporting>

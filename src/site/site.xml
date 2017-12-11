@@ -28,10 +28,9 @@ under the License.
       <!-- <item name="Goals" href="plugin-info.html"/>-->
       <item name="Usage" href="usage.html"/>
       <!-- <item name="FAQ" href="faq.html"/>-->
-<!--      <item name="Migrate" href="migrate.html"/>-->
+      <item name="Benchmarks" href="benchmarkWrapper.html"/>
       <item name="Download" href="download.html"/>
-      <item name="Benchmark Directory" href="http://profs.scienze.univr.it/~posenato/software/benchmarks/"/>
-    </menu>
+    </menu> 
 <!--    <menu name="Configuration">
       <item name="Internationalization" href="i18n.html"/>
       <item name="Site Descriptor" href="../../doxia/doxia-sitetools/doxia-decoration-model/decoration.html"/>
