@@ -367,6 +367,10 @@
 						<configuration>
 							<target>
 								<delete dir="${basedir}/target/site" verbose="true" />
+								<delete>
+									<fileset dir="${basedir}/src/site/${tex.images.dir}/"
+										includes="*.pdf" />
+								</delete>
 							</target>
 						</configuration>
 					</execution>
@@ -499,6 +503,7 @@
 						</goals>
 						<configuration>
 							<settings>
+								<!-- <texPath>/Library/TeX/texbin/</texPath>-->
 								<outputDirectory>${tex.dir}</outputDirectory>
 								<texCommandArgs>
 									<texCommandArg>-shell-escape</texCommandArg>
@@ -517,10 +522,9 @@
 								<outputDirectory>${tex.dir}</outputDirectory>
 								<tex4htCommandArgs>
 									<tex4htCommandArg>lib/mytex4ht.cfg</tex4htCommandArg>
-									<tex4htCommandArg> -emyexternalize.4ht -cunihtf -utf8</tex4htCommandArg><!-- 
-										initial space is necessary! -->
-									<tex4htCommandArg>-cvalidate -p</tex4htCommandArg>
-									<tex4htCommandArg>-shell-escape</tex4htCommandArg>
+									<tex4htCommandArg>	 -emyexternalize.4ht -cunihtf -utf8</tex4htCommandArg><!--initial space is necessary! -->
+									<tex4htCommandArg> -cvalidate -p</tex4htCommandArg>
+									<tex4htCommandArg> -shell-escape</tex4htCommandArg>
 								</tex4htCommandArgs>
 							</settings>
 						</configuration>

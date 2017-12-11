@@ -152,7 +152,7 @@ The parameters for the Oracle Java Virtual Machine~1.8.0\_144 were: \texttt{-d64
 The first diagram shows the average execution times with respect to the order of CSTN instances of eight versions of DC checking algorithm when instances are dynamic consistent. 
 Each drawn value is the sample average $\bar{X}_{50}$ of execution times obtained considering the fifty instances of the relative benchmark. 
 In details, $\bar{X}_{50}=\frac{\sum_{i=1}^{50} X_i}{50}$ where $X_i$ is the average execution time obtained executing 3 times the algorithm on instance having index $i$\footnote{The determination of all values required to execute the DC checking for 24 000 times, 83.18 hours.}.
-The error bar of each drawn value represents 1.96 times the standard error of the mean, $\frac{S_{50}}{\sqrt{50}}$, where $S_{50}$ is the corrected sample standard deviation, $S_{50}= \sqrt{\frac{\sum_{i=1}^{50} (X_i-\bar{X}_{50})^2}{49}}$.
+The error bar of each drawn value represents 2.009 times the standard error of the mean, $\frac{S_{50}}{\sqrt{50}}$, where $S_{50}$ is the corrected sample standard deviation, $S_{50}= \sqrt{\frac{\sum_{i=1}^{50} (X_i-\bar{X}_{50})^2}{49}}$.
 Therefore, the error bar represents a 95\% confidence interval for the average execution time of the algorithm on instances having the main characteristics of the considered benchmark.
 
 
@@ -453,7 +453,7 @@ n;	x;	p;	y;	yerr
 50;     155;    9;      1.913810E+01;   2.449817E+01
 }\bFortyIRRwoNL
 
-\newcommand{\yerrstd}{1.96*\thisrow{yerr}/(\thisrow{n}^.5)}
+\newcommand{\yerrstd}{2.009*\thisrow{yerr}/(\thisrow{n}^.5)}
 
 \begin{center}
 % \captionsetup{justification=justified}
