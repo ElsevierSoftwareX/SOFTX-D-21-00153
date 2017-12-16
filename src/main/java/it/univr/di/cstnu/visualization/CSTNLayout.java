@@ -139,10 +139,10 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	 * @param firstNodeX
 	 * @param firstNodeY
 	 * @param g
-	 * @param nObs
+	 * @param nSplits
 	 * @return the set of nodes that have been laid out.
 	 */
-	public ObjectSet<LabeledNode> draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, LabeledIntGraph g, int nObs) {
+	public ObjectSet<LabeledNode> draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, LabeledIntGraph g, int nSplits) {
 		if (firstNode == null)
 			return null;
 		if (Debug.ON) {
@@ -233,7 +233,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 								continue;
 							if (newX > this.maxX)
 								this.maxX = newX;
-							redraw(adjacent, newX, newY, g, marked, nObs);
+							redraw(adjacent, newX, newY, g, marked, nSplits);
 						}
 					}
 					continue;
@@ -243,7 +243,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				if (node.isObserver() || nodeName.endsWith("E AND SPLIT")) {
 					if (i == halfLength)
 						i++; // no child straight under the father.
-					y = yNode + this.yShiftA[i++] * nObs;
+					y = yNode + this.yShiftA[i++] * nSplits;
 				} else {
 					if (nodeName.endsWith("w1") || nodeName.endsWith("w0")
 							|| (node.getLabel().subsumes(adjacent.getLabel()) && !adjacent.getLabel().subsumes(node.getLabel()))) {
@@ -267,8 +267,8 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				marked.add(adjacent);
 				queue.enqueue(adjacent);
 			}
-			if (node.isObserver())
-				nObs--;
+			if (node.isObserver() || nodeName.endsWith("E AND SPLIT"))
+				nSplits--;
 		}
 		return marked;
 	}
@@ -374,7 +374,9 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	public void initialize() {
 		LabeledIntGraph g = (LabeledIntGraph) this.graph;
 		LabeledNode Z = g.getZ();
-		int nObs = g.getObserverCount();
+		// Approximate number of AND split = (n-6*obs -5)/6;
+		int nAnd = (g.getVertexCount() - 6 * g.getObserverCount() - 5) / 6;
+		int nSplit = g.getObserverCount() + nAnd;
 		this.yShiftA = new double[9];
 		halfLength = this.yShiftA.length / 2;
 		double y = -this.yShift / 2 * 4;
@@ -402,7 +404,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 		/*
 		 * Draw the graph
 		 */
-		ObjectSet<LabeledNode> marked = draw(Z, this.initialX, this.initialY, g, nObs);
+		ObjectSet<LabeledNode> marked = draw(Z, this.initialX, this.initialY, g, nSplit);
 		while (!marked.containsAll(allNodes)) {
 			LabeledNode otherZ = Z;
 			for (LabeledNode node : allNodes) {
@@ -417,7 +419,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 							+ "\nStart a new layout phase for such nodes and its successors.");
 				}
 			}
-			marked.addAll(draw(otherZ, otherZ.getX(), otherZ.getY(), g, nObs));
+			marked.addAll(draw(otherZ, otherZ.getX(), otherZ.getY(), g, nSplit));
 		}
 
 		// check if some node has a negative y
