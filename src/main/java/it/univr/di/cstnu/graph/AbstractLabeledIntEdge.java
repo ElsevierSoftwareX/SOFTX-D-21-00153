@@ -7,7 +7,6 @@ import java.awt.BasicStroke;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
-import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +17,7 @@ import edu.uci.ics.jung.visualization.picking.PickedInfo;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
@@ -432,6 +432,11 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public int getMinValue() {
+		throw new UnsupportedOperationException("Core class.");
+	}
+
+	@Override
+	public Object2IntMap.Entry<Label> getMinLabeledValue() {
 		throw new UnsupportedOperationException("Core class.");
 	}
 
