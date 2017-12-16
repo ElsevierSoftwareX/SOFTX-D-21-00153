@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 import org.apache.commons.lang.NotImplementedException;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
@@ -175,6 +176,14 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	@Override
 	public LabeledIntMap getLabeledValueMap() {
 		return this.labeledValue;
+	}
+
+	/**
+	 * @return the minimal value among all ordinary labeled values if there are some values, {@link Constants#INT_NULL} otherwise.
+	 */
+	@Override
+	public Entry<Label> getMinLabeledValue() {
+		return this.labeledValue.getMinLabeledValue();
 	}
 
 	/**
