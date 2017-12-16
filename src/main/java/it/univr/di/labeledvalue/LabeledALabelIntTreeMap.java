@@ -7,7 +7,10 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 
@@ -557,7 +560,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			LabeledIntTreeMap entry = this.get(entryE);
 			if (entry.size() == 0)
 				continue;
-			for (final Object2IntMap.Entry<Label> entry1 : entry.entrySet()) {
+			final ObjectList<Entry<Label>> sorted = new ObjectArrayList<>(entry.entrySet());
+			sorted.sort(LabeledIntMap.entryComparator);
+
+			for (final Object2IntMap.Entry<Label> entry1 : sorted) {
 				s.append(entryAsString(entry1.getKey(), entry1.getIntValue(), entryE));
 				s.append(' ');
 			}
