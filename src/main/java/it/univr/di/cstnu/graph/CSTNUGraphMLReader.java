@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 
+import edu.uci.ics.jung.io.GraphMLMetadata;
 import edu.uci.ics.jung.io.GraphMLReader;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.CSTN;
@@ -249,24 +250,27 @@ public class CSTNUGraphMLReader {
 		if (this.isCSTN)
 			return this.graph;
 
-		// FROM HERE the graph is asumed to be a CSTNU graph!
+		// FROM HERE the graph is assumed to be a CSTNU graph!
 
-		// Labeled UC Value
-		Function<LabeledIntEdge, String> edgeLabeledUCValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_UC_VALUE_KEY).transformer;
-		if (edgeLabeledUCValueF == null)
-			throw new IllegalArgumentException("The input file does not contain the meta declaration for upper case value. Please, fix it adding" +
-					"<key id=\"UpperCaseLabeledValues\" for=\"edge\"> \n" +
-					"<default></default> \n" +
-					"</key>\n" +
-					"before <graph> tag.");
-		// Labeled UC Value
-		Function<LabeledIntEdge, String> edgeLabeledLCValueF = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_LC_VALUE_KEY).transformer;
-		if (edgeLabeledLCValueF == null)
-			throw new IllegalArgumentException("The input file does not contain the meta declaration for lower case value. Please, fix it adding" +
-					"<key id=\"LowerCaseLabeledValues\" for=\"edge\"> \n" +
-					"<default></default> \n" +
-					"</key>\n" +
-					"before <graph> tag.");
+		GraphMLMetadata<LabeledIntEdge> edgeLabeledUCValueMD = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_UC_VALUE_KEY);
+		GraphMLMetadata<LabeledIntEdge> edgeLabeledLCValueMD = graphReader.getEdgeMetadata().get(CSTNUGraphMLWriter.EDGE_LABELED_LC_VALUE_KEY);
+		if (edgeLabeledUCValueMD == null || edgeLabeledLCValueMD == null) {
+			// Graph file is still in old format!
+			if (Debug.ON) {
+				LOG.warning("The input file does not contain the meta declaration for upper case value or lower case value. Please, fix it adding" +
+						"<key id=\"UpperCaseLabeledValues\" for=\"edge\"> \n" +
+						"<default></default> \n" +
+						"</key>\n" +
+						" or \n" +
+						"<key id=\"LowerCaseLabeledValues\" for=\"edge\"> \n" +
+						"<default></default> \n" +
+						"</key>\n" +
+						"before <graph> tag.");
+			}
+			return this.graph;
+		}
+		Function<LabeledIntEdge, String> edgeLabeledUCValueF = edgeLabeledUCValueMD.transformer;
+		Function<LabeledIntEdge, String> edgeLabeledLCValueF = edgeLabeledLCValueMD.transformer;
 
 		for (LabeledIntEdge e : this.graph.getEdges()) {
 			// Labeled UC Value
