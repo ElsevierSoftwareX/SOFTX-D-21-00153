@@ -8,6 +8,7 @@ import java.awt.Stroke;
 
 import edu.uci.ics.jung.visualization.RenderContext;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
@@ -174,6 +175,11 @@ public interface LabeledIntEdge extends Component {
 	 * @return the minimal value among all ordinary labeled values if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getMinValue();
+
+	/**
+	 * @return the minimal value among all ordinary labeled values if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
+	 */
+	public Entry<Label> getMinLabeledValue();
 
 	/**
 	 * @return the minimal value among all ordinary labeled values having label without unknown literals, if there are some;
