@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
+import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -108,7 +109,6 @@ public interface LabeledIntMap {
 		return max;
 	}
 
-
 	/**
 	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
 	 */
@@ -122,6 +122,25 @@ public interface LabeledIntMap {
 				min = value;
 		}
 		return min;
+	}
+
+
+	/**
+	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 */
+	default public Entry<Label> getMinLabeledValue() {
+		if (this.size() == 0)
+			return new AbstractObject2IntMap.BasicEntry<>(Label.emptyLabel, Constants.INT_NULL);
+		int min = Constants.INT_POS_INFINITE;
+		Label label = null;
+		for (Entry<Label> entry : this.entrySet()) {
+			int value = entry.getIntValue();
+			if (min > value) {
+				min = value;
+				label = entry.getKey();
+			}
+		}
+		return new AbstractObject2IntMap.BasicEntry<>(label, min);
 	}
 
 	/**
