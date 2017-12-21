@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URL;
+import java.time.Instant;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -65,11 +66,11 @@ import it.univr.di.cstnu.algorithms.CSTN;
 import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
 import it.univr.di.cstnu.algorithms.CSTN.EdgesToCheck;
-import it.univr.di.cstnu.algorithms.CSTNU;
-import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNEpsilon;
 import it.univr.di.cstnu.algorithms.CSTNIR;
 import it.univr.di.cstnu.algorithms.CSTNIR3R;
+import it.univr.di.cstnu.algorithms.CSTNU;
+import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
 import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
@@ -509,7 +510,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 			jl1.setBackground(Color.orange);
 			try {
-				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.oneStepDynamicControllability(CSTNEditor.this.edgesToCheck);
+				Instant timeOut = Instant.now().plusSeconds(2700);
+				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.oneStepDynamicControllability(CSTNEditor.this.edgesToCheck, timeOut);
 				CSTNEditor.this.cstnuStatus.finished = CSTNEditor.this.edgesToCheck.size() == 0;
 				final boolean reductionsApplied = !CSTNEditor.this.cstnuStatus.finished;
 				final boolean notControllable = !CSTNEditor.this.cstnuStatus.consistency;

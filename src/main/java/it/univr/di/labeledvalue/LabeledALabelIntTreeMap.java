@@ -11,6 +11,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 
@@ -363,10 +364,20 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return a set view of all labels present into this map.
+	 * @return a set view of all a-labels present into this map.
 	 */
 	public ObjectSet<ALabel> keySet() {
 		return this.map.keySet();
+	}
+
+	/**
+	 * @return a set of all labels present into this map.
+	 */
+	public ObjectSet<Label> labelSet() {
+		ObjectSet<Label> labelSet = new ObjectRBTreeSet<>();
+		for (LabeledIntTreeMap lset : this.map.values())
+			labelSet.addAll(lset.keySet());
+		return labelSet;
 	}
 
 	/**

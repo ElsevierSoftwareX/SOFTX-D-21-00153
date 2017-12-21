@@ -201,11 +201,11 @@ public class CSTNUTest {
 		//if only qR0 is applied!
 		pxOK.mergeLabeledValue(Label.emptyLabel, 0);// ok
 		pxOK.mergeLabeledValue(Label.parse("abq"), -10);// ok if it is streamlined
-		pxOK.mergeLabeledValue(Label.parse("ab"), -10);// ok if it is NOT streamlined
+		// pxOK.mergeLabeledValue(Label.parse("ab"), -10);// ok if it is NOT streamlined
 		pxOK.mergeLabeledValue(Label.parse("ab¬p"), 0); // quindi non è memorizzato
 		pxOK.mergeLabeledValue(Label.parse("c¬p"), 1);// viene cancellato dallo 0
 		pxOK.mergeLabeledValue(Label.parse("a¬c"), -1);// ok if it is streamlined
-		pxOK.mergeLabeledValue(Label.parse("a"), -1);// ok if it is NOT streamlined
+		// pxOK.mergeLabeledValue(Label.parse("a"), -1);// ok if it is NOT streamlined
 		pxOK.mergeUpperCaseValue(Label.parse("ab"), new ALabel("C", this.alpha), -11);
 
 		assertEquals("R0: p?X labeled values.", pxOK.getLabeledValueMap(), pz.getLabeledValueMap());
@@ -248,8 +248,8 @@ public class CSTNUTest {
 		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
 		pxOK.mergeLabeledValue(Label.emptyLabel, 0);
 		pxOK.mergeLabeledValue(Label.parse("ab"), -1);
-		// pxOK.mergeLabeledValue(Label.parse("ab¿q"), -10);if it were streamlined
-		pxOK.mergeLabeledValue(Label.parse("ab"), -10);// if it is not streamlined
+		pxOK.mergeLabeledValue(Label.parse("ab¿q"), -10);// if it were streamlined
+		// pxOK.mergeLabeledValue(Label.parse("ab"), -10);// if it is not streamlined
 
 		pxOK.mergeLabeledValue(Label.parse("¬a"), -2);
 		// pxOK.mergeLabeledValue(Label.parse("¿c¿p"), 1);// NO!
@@ -428,18 +428,18 @@ public class CSTNUTest {
 		// <YX, normal, Y, X, L:{(¬ABGp, -4) (ABG, -4) }, LL:{}, UL:{(¬ABG¬p,C:-4) (¬ABGp,C:-7) (ABG,C:-7) }>
 		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
-		yxOK.mergeUpperCaseValue(Label.parse("ab"), new ALabel("C", this.alpha), -7);
+		yxOK.mergeUpperCaseValue(Label.parse("abg"), new ALabel("C", this.alpha), -7);
 		yxOK.mergeUpperCaseValue(Label.parse("abc"), new ALabel("C", this.alpha), -10);// it could not be present because there is the labeled value (-10,abc)... it depends in which
 																// order it is inserted.
 		yxOK.mergeUpperCaseValue(Label.parse("bgp"), new ALabel("C", this.alpha), -7);//
 		yxOK.mergeUpperCaseValue(Label.parse("ab¿c"), new ALabel("C", this.alpha), -11);//
 
-		yxOK.mergeLabeledValue(Label.parse("ab"), -4);
-		yxOK.mergeLabeledValue(Label.parse("abc"), -10);
-		yxOK.mergeLabeledValue(Label.parse("bg¿p"), -4);
-		// yxOK.mergeLabeledValue(Label.parse("¬bc"), 0);// R5 rule
+		// yxOK.mergeLabeledValue(Label.parse("ab"), -4);//if not streamlined
+		yxOK.mergeLabeledValue(Label.parse("abg"), -4);// if streamlined
 		yxOK.mergeLabeledValue(Label.parse("cp"), -10);
 		yxOK.mergeLabeledValue(Label.parse("¿cp"), -11);
+		yxOK.mergeLabeledValue(Label.parse("abc"), -10);
+		yxOK.mergeLabeledValue(Label.parse("bg¿p"), -4);
 
 		assertEquals("R3: yx labeled values.", yxOK.getLabeledValueMap(), yz.getLabeledValueMap());
 		assertEquals("R3: yx upper case labedled values.", yxOK.getUpperCaseValueMap(), yz.getUpperCaseValueMap());

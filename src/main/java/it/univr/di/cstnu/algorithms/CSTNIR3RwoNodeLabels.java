@@ -50,7 +50,7 @@ public class CSTNIR3RwoNodeLabels extends CSTNIR3R {
 	/**
 	 * Default constructor.
 	 */
-	private CSTNIR3RwoNodeLabels() {
+	CSTNIR3RwoNodeLabels() {
 		super();
 		this.withNodeLabels = false;
 	}

@@ -179,6 +179,9 @@
             <configuration>
               <target>
                 <delete />
+                <delete>
+                  <fileset />
+                </delete>
               </target>
             </configuration>
           </execution>
@@ -253,7 +256,7 @@
         <version>1.0</version>
         <executions>
           <execution>
-            <id>Cleaning Vega</id>
+            <id>CleaningVega</id>
             <phase>install</phase>
             <goals>
               <goal>sshexec</goal>
@@ -263,13 +266,27 @@
               <url>scp://vega.di.univr.it</url>
               <displayCommandOutputs>true</displayCommandOutputs>
               <commands>
-                <command>ls -l RandomTemplateSampler/lib/CSTNU-*</command>
-                <command>rm -fv RandomTemplateSampler/lib/CSTNU-*</command>
+                <command>rm -fv RandomTemplateSampler/lib/CSTNU-*jar</command>
+                <command>rm -fv CSTNU-*jar</command>
               </commands>
             </configuration>
           </execution>
           <execution>
-            <id>Uploading in Vega</id>
+            <id>UploadingVega 2</id>
+            <phase>install</phase>
+            <goals>
+              <goal>upload</goal>
+            </goals>
+            <configuration>
+              <serverId>vega</serverId>
+              <fromDir>${project.basedir}/target/</fromDir>
+              <includes>${project.jar.filename}</includes>
+              <url>scp://vega.di.univr.it/home/posenato</url>
+              <toDir />
+            </configuration>
+          </execution>
+          <execution>
+            <id>UploadingVega</id>
             <phase>install</phase>
             <goals>
               <goal>upload</goal>
@@ -280,6 +297,36 @@
               <includes>${project.jar.filename}</includes>
               <url>scp://vega.di.univr.it/home/posenato</url>
               <toDir>RandomTemplateSampler/lib</toDir>
+            </configuration>
+          </execution>
+          <execution>
+            <id>CleaningCluster</id>
+            <phase>install</phase>
+            <goals>
+              <goal>sshexec</goal>
+            </goals>
+            <configuration>
+              <serverId>cluster</serverId>
+              <url>scp://157.27.254.70</url>
+              <displayCommandOutputs>true</displayCommandOutputs>
+              <commands>
+                <command>ls -l CSTNU-*jar</command>
+                <command>rm -fv CSTNU-*jar</command>
+              </commands>
+            </configuration>
+          </execution>
+          <execution>
+            <id>UploadingCluster</id>
+            <phase>install</phase>
+            <goals>
+              <goal>upload</goal>
+            </goals>
+            <configuration>
+              <serverId>cluster</serverId>
+              <fromDir>${project.basedir}/target/</fromDir>
+              <includes>${project.jar.filename}</includes>
+              <url>scp://157.27.254.70/home/roberto.posenato</url>
+              <toDir />
             </configuration>
           </execution>
         </executions>

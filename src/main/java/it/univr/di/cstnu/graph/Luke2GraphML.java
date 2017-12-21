@@ -21,7 +21,7 @@ import org.kohsuke.args4j.Option;
 import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.univr.di.cstnu.algorithms.CSTNRunningTime;
+import it.univr.di.cstnu.algorithms.Checker;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -96,7 +96,7 @@ public class Luke2GraphML {
 			System.err.println();
 
 			// print option sample. This is useful some time
-			// System.err.println("Example: java -jar CSTNRunningTime.jar" +
+			// System.err.println("Example: java -jar Checker.jar" +
 			// parser.printExample(OptionHandlerFilter.REQUIRED) +
 			// " <CSTN_file_name0> <CSTN_file_name1>...");
 			return false;
@@ -153,7 +153,7 @@ public class Luke2GraphML {
 
 		LOG.finest("Start...");
 		System.out.println("Start of execution...");
-		CSTNRunningTime tester = new CSTNRunningTime();
+		Checker tester = new Checker();
 
 		Luke2GraphML converter = new Luke2GraphML();
 
