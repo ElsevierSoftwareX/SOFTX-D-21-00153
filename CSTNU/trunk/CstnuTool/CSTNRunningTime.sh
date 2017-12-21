@@ -33,11 +33,11 @@ fi
 java -cp $CSTN \
 	-Djava.util.logging.config.file=$DIR/logging.properties \
 	-d64 \
-    -Xms6g \
-    -Xmx6g \
+    -Xms5g \
+    -Xmx5g \
     -XX:NewSize=3G \
     -XX:MaxNewSize=3G \
     -XX:+UseG1GC \
     -Xnoclassgc \
     -XX:+AggressiveOpts \
-    it.univr.di.cstnu.algorithms.CSTNRunningTime $IN 
+    it.univr.di.cstnu.algorithms.Checker -type cstn $IN 

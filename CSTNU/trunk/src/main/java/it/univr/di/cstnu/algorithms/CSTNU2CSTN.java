@@ -28,7 +28,7 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Simple class to represent and check Conditional Simple Temporal Network with Uncertainty (CSTNU) reducing it to a CSTN.
+ * Simple class to represent and check Conditional Simple Temporal Network with Uncertainty (CSTNU) reducing it to a CSTNIR3R
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -46,7 +46,8 @@ public class CSTNU2CSTN extends CSTNU {
 	@SuppressWarnings("hiding")
 	// static final String VERSIONandDATE = "Version 3.1 - Apr, 20 2016";
 	// static final String VERSIONandDATE = "Version 1.0 - September, 25 2016";
-	static final String VERSIONandDATE = "Version  1.1 - November, 14 2017";
+	// static final String VERSIONandDATE = "Version 1.1 - November, 14 2017";
+	static final String VERSIONandDATE = "Version  1.2 - December, 12 2017";
 
 	/**
 	 * Default labeledIntValueMap

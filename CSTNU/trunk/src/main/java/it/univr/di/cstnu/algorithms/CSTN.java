@@ -261,7 +261,8 @@ public class CSTN {
 	// static final public String VERSIONandDATE = "Version 5.3 - November, 9 2017";// Replaced Omega node with equivalent constraints.
 	// static final public String VERSIONandDATE = "Version 5.4 - November, 17 2017";// Adjusted LP
 	// static final public String VERSIONandDATE = "Version 5.5 - November, 23 2017";// Adjusted skipping condition in LP
-	static final public String VERSIONandDATE = "Version  5.6 - November, 23 2017";// Horizon tweaking
+	// static final public String VERSIONandDATE = "Version 5.6 - November, 23 2017";// Horizon tweaking
+	static final public String VERSIONandDATE = "Version  5.7 - December, 13 2017";// Code tweaking
 
 	/**
 	 * The name for the initial node.
@@ -499,7 +500,7 @@ public class CSTN {
 
 	/**
 	 * Checks whether the constraint represented by an edge 'e' satisfies the well definition 1 property (WD1):<br>
-	 * any labeled valued of the edge has a label that is consistent and subsumes both labels of two endpoints.
+	 * any labeled valued of the edge has a label that subsumes both labels of two endpoints.
 	 * As a sanity check, this method checks also that for each literal there exists an observation time point.
 	 * Since in 2017-04-07 it has been shown that WD3 is not more necessary,
 	 * this method was augmented by the check of WD3 (edge label honesty) but with the change that, now, if a edge
@@ -537,7 +538,7 @@ public class CSTN {
 		for (final Object2IntMap.Entry<Label> entry : eSN.getLabeledValueMap().entrySet()) {
 			Label currentLabel = entry.getKey();
 			if (!currentLabel.isConsistentWith(conjunctedLabel)) {
-				String msg = "Found a labeled value in " + eSN + " inconsistent with the conjunction of node labels, "
+				String msg = "Found a labeled value in " + eSN + " that does not subsume the conjunction of node labels, "
 						+ conjunctedLabel + ".";
 				if (hasToBeFixed) {
 					eSN.removeLabel(currentLabel);
@@ -568,9 +569,9 @@ public class CSTN {
 							LOG.log(Level.WARNING, "Fixed as required!");
 						}
 					}
-					continue;
+				} else {
+					throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 				}
-				throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelNotSubsumes);
 			}
 			// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 			// WD3 property.
@@ -789,7 +790,7 @@ public class CSTN {
 					LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
 				}
 			}
-			oneStepDynamicConsistencyByEdges(edgesToCheck, timeoutInstant);// Don't use this. because such method is override!
+			oneStepDynamicConsistencyByEdges(edgesToCheck, timeoutInstant);// Don't use 'this.' because such method is override!
 
 			if (!this.checkStatus.finished) {
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -805,8 +806,7 @@ public class CSTN {
 				if (this.checkStatus.consistency) {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINE)) {
-							StringBuilder log = new StringBuilder();
-							log.append("During the check # " + i + ", " + edgesToCheck.size()
+							StringBuilder log = new StringBuilder("During the check # " + i + ", " + edgesToCheck.size()
 									+ " edges have been add/modified. Check has to continue.\nDetails of only modified edges having values:\n");
 							for (LabeledIntEdge e : edgesToCheck) {
 								if (e.size() == 0)
@@ -1296,12 +1296,14 @@ public class CSTN {
 	 */
 	boolean labelModificationR0qR0(final LabeledNode nObs, final LabeledNode nX, final LabeledIntEdge eObsX) {
 		// Visibility is package because there is Junit Class test that checks this method.
-		boolean ruleApplied = false, mergeStatus;
 
 		if (this.applyReducedSetOfRules) {
 			if (nX != this.Z)
 				return false;
 		}
+
+		boolean ruleApplied = false, mergeStatus;
+
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
 			if (Debug.ON) {
@@ -1333,22 +1335,18 @@ public class CSTN {
 		}
 		final ObjectSet<Label> obsXLabelSet = eObsX.getLabeledValueMap().keySet();
 
-		for (final Label l : obsXLabelSet) {
-			if (l == null || !l.contains(p)) {// l can be nullified in a previous cycle.
+		for (final Label alpha : obsXLabelSet) {
+			if (alpha == null || !alpha.contains(p)) {// l can be nullified in a previous cycle.
 				continue;
 			}
 
-			final int w = eObsX.getValue(l);
-			if (w == Constants.INT_NULL) {
+			final int w = eObsX.getValue(alpha);
+			if (w == Constants.INT_NULL || R0qR0MainConditionForSkipping(w)) {
 				// the value has been removed in a previous merge! Verified that it is necessary on Nov, 26 2015
 				continue;
 			}
 
-			if (R0qR0MainConditionForSkipping(w)) {
-				continue;
-			}
-
-			final Label alphaPrime = makeAlphaPrime(nX, nObs, p, l);
+			final Label alphaPrime = makeAlphaPrime(nX, nObs, p, alpha);
 			if (alphaPrime == null) {
 				continue;
 			}
@@ -1357,7 +1355,7 @@ public class CSTN {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
 					logMessage = "R0 simplifies a label of edge " + eObsX.getName()
-							+ ":\nsource: " + nObs.getName() + " ---" + pairAsString(l, w) + "---> " + nX.getName()
+							+ ":\nsource: " + nObs.getName() + " ---" + pairAsString(alpha, w) + "---> " + nX.getName()
 							+ "\nresult: " + nObs.getName() + " ---" + pairAsString(alphaPrime, w) + "---> " + nX.getName();
 				}
 			}
@@ -1469,6 +1467,8 @@ public class CSTN {
 					continue;
 				}
 			}
+
+			// all labels from current Obs
 			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.getLabeledValueSet()) {
 				final int w = entryObsD.getIntValue();
 				if (R3qR3MainConditionForSkipping(w, nD)) {
@@ -1497,6 +1497,7 @@ public class CSTN {
 					final int max = R3qR3NewValue(v, w);
 
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
+
 					if (ruleApplied) {
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
@@ -2105,7 +2106,7 @@ public class CSTN {
 	 */
 	@SuppressWarnings("static-method")
 	int R3qR3NewValue(final int v, final int w) {
-		// Table 1 ICAPS2016 paper for standard DC
+		// Table 1 ICAPS2016 paper for standard and IR DC
 		return (v >= w) ? v : w;
 	}
 
@@ -2121,8 +2122,6 @@ public class CSTN {
 		}
 		return label;
 	}
-
-
 
 	/**
 	 * Considers the given graph as the graph to check (graph will be modified).

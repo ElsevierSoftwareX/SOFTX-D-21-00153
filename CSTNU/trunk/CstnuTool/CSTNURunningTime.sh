@@ -40,4 +40,4 @@ java -cp $CSTN \
     -XX:+UseG1GC \
     -Xnoclassgc \
     -XX:+AggressiveOpts \
-    it.univr.di.cstnu.algorithms.CSTNURunningTime $IN
+    it.univr.di.cstnu.algorithms.Checker -type cstnu $IN

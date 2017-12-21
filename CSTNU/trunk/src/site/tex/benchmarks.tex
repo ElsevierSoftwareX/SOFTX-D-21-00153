@@ -1,5 +1,11 @@
 \documentclass[a4paper,11pt]{article}
 \RequirePackage{ifpdf}%ifpdf permette di isolare parti che devono andare solo in PDF
+
+%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
+%% NON USARE MACRO CON MATH perché 4ht NON converte correttamente!
+%% $\mathup{qR}_3^*$ deve essere scritto direttamente!
+%%%%%%%%%%%%%%%%%
 \usepackage{lib/common_definitions}
 %###
 \begin{document}
@@ -92,30 +98,30 @@ The following table summurizes the characteristics of each sub-benchmark.
 \begin{tabular}{@{} l >{\RaggedLeft\arraybackslash}p{1.4cm} >{\RaggedLeft\arraybackslash}p{1.5cm} >{\RaggedLeft\arraybackslash}p{1.5cm} >{\RaggedLeft\arraybackslash}p{1.3cm} c >{\RaggedLeft\arraybackslash}p{1.2cm} @{}}
 	\hline
   \textbf{Group} &\textbf{Bench mark}  & \textbf{instance indexes} & \textbf{\# activities} & \textbf{\#XOR}	& \textbf{\#AND}	& \textbf{CSTN order}\\
-  \hline                
-	Size010-3-3		& B10-3-0	&	000-049					&       10				&      3				&      0 		&	43\\	
-				    & B10-3-1	&	050-099		 			&		10				&	  3				&	  1			&	47\\
-					& B10-3-2	&	100-149		 			&		10	  			&		3	   		&		2		& 	51\\
-					& B10-3-3	&	150-199		 			&		10	  			&		3	   		&		3		& 	55\\
-					& B10-3-4	&	200-249		 			&		10	  			&		3	   		&		4		& 	59\\
+  \hline		  
+	Size010-3		& B10-3-0	&	000-049					&	10				&      3				&      0 		&	43\\	
+				    & B10-3-1	&	050-099					&		10				&	  3				&	  1			&	47\\
+					& B10-3-2	&	100-149					&		10				&		3		&		2		& 	51\\
+					& B10-3-3	&	150-199					&		10				&		3		&		3		& 	55\\
+					& B10-3-4	&	200-249					&		10				&		3		&		4		& 	59\\
 	\hline					
-	Size020-5-5		& B20-5-0	&	000-029		 			&		20	  			&		5	   		&		0		& 	75\\
-					& B20-5-1	&	030-059		 			&		20	  			&		5	   		&		1		&	79 \\
-					& B20-5-2	&	060-099		 			&		20	  			&		5	   		&		2		& 	83\\
-					& B20-5-3	&	090-119		 			&		20	  			&		5	   		&		3		& 	87\\
-					& B20-5-4	&	120-149		 			&		20	  			&		5	   		&		4		& 	91\\
+	Size020-5		& B20-5-0	&	000-029					&		20				&		5		&		0		& 	75\\
+					& B20-5-1	&	030-059					&		20				&		5		&		1		&	79 \\
+					& B20-5-2	&	060-099					&		20				&		5		&		2		& 	83\\
+					& B20-5-3	&	090-119					&		20				&		5		&		3		& 	87\\
+					& B20-5-4	&	120-149					&		20				&		5		&		4		& 	91\\
 	\hline			    
-	Size030-7-7		& B30-7-0	&	000-029					&		30	  			&		7	   		&		0		& 	107\\
-					& B30-7-1	&	030-059		 			&		30	  			&		7	   		&		1		& 	111\\
-					& B30-7-2	&	060-089		 			&		30	  			&		7	  		&		2		& 	115\\
-					& B30-7-3	&	090-119		 			&		30	  			&		7	   		&		3		& 	119\\
-					& B30-7-4	&	120-149		 			&		30	  			&		7	   		&		4		& 	123\\
+	Size030-7		& B30-7-0	&	000-029					&		30				&		7		&		0		& 	107\\
+					& B30-7-1	&	030-059					&		30				&		7		&		1		& 	111\\
+					& B30-7-2	&	060-089					&		30				&		7			&		2		& 	115\\
+					& B30-7-3	&	090-119					&		30				&		7		&		3		& 	119\\
+					& B30-7-4	&	120-149					&		30				&		7		&		4		& 	123\\
 	\hline			    
-	Size040-9-9		& B40-9-0	&	000-029		 			&		40	  			&		9	   		&		0		& 	139\\
-					& B40-9-1	&	030-059		 			&		40	  			&		9	   		&		1		& 	143\\
-					& B40-9-2	&	060-089		 			&		40	 			&		9	   		&		2		& 	147\\
-					& B40-9-3	&	090-119		 			&		40	  			&		9	   		&		3		& 	151\\
-					& B40-9-4	&	120-149		 			&		40	  			&		9	   		&		4		& 	155\\
+	Size040-9		& B40-9-0	&	000-029					&		40				&		9		&		0		& 	139\\
+					& B40-9-1	&	030-059					&		40				&		9		&		1		& 	143\\
+					& B40-9-2	&	060-089					&		40				&		9		&		2		& 	147\\
+					& B40-9-3	&	090-119					&		40				&		9		&		3		& 	151\\
+					& B40-9-4	&	120-149					&		40				&		9		&		4		& 	155\\
 	\hline
 \end{tabular}
 \end{center}
@@ -129,14 +135,14 @@ Currently, there are 10 different DC checking algorithms for CSTN:
 \begin{enumerate}
   \item \textbf{Std}: it checks the DC property considering the standard semantics~\cite{HunsbergerP16Icaps}.
   \item \textbf{Std-woNL}: it checks the DC property considering the standard semantics on equivalent CSTN where there is no node labels~\cite{CairoEtalTime2017}.
-  \item \textbf{\textepsilon}: it checks the DC property considering the $\epsilon$ semantics~\cite{HunsbergerP16Icaps}.
-  \item \textbf{\textepsilon-woNL}: it checks the DC property considering the $\epsilon$ semantics on equivalent CSTN where there is no node labels~\cite{CairoEtalTime2017}.
-  \item \textbf{\textepsilon-3R}: it checks the DC property considering the $\epsilon$ semantics and using only rules \LP, \qRZero, and \qRThree.
-  \item \textbf{\textepsilon-3R-woNL}: it checks the DC property considering the $\epsilon$ semantics on equivalent CSTN where there is no node labels and using only rules \LP, \qRZero, and \qRThree.
+  \item \boldmath{$\epsilon$}: it checks the DC property considering the $\epsilon$ semantics~\cite{HunsbergerP16Icaps}. %4HT non converte epsilon in mathbf!
+  \item \textbf{$\epsilon$-woNL}: it checks the DC property considering the $\epsilon$ semantics on equivalent CSTN where there is no node labels~\cite{CairoEtalTime2017}.
+  \item \textbf{$\epsilon$-3R}: it checks the DC property considering the $\epsilon$ semantics and using only rules \LP, $\mathup{qR}_0$, and $\mathup{qR}_3^*$.
+  \item \textbf{$\epsilon$-3R-woNL}: it checks the DC property considering the $\epsilon$ semantics on equivalent CSTN where there is no node labels and using only rules \LP, $\mathup{qR}_0$, and $\mathup{qR}_3^*$.
   \item \textbf{IR}: it checks the DC property considering the instantaneous reaction semantics~\cite{HunsbergerP16Icaps}.
   \item \textbf{IR-woNL}: it checks the DC property considering the instantaneous reaction semantics on equivalent CSTN where there is no node labels~\cite{CairoEtalTime2017}.
-  \item \textbf{IR-3R}: it checks the DC property considering the instantaneous reaction semantics and using only rules \LP, \qRZero, and \qRThree.
-  \item \textbf{IR-3R-woNL}: it checks the DC property considering the instantaneous reaction semantics on equivalent CSTN where there is no node labels and using only rules \LP, \qRZero, and \qRThree.
+  \item \textbf{IR-3R}: it checks the DC property considering the instantaneous reaction semantics and using only rules \LP, $\mathup{qR}_0$, and $\mathup{qR}_3^*$.
+  \item \textbf{IR-3R-woNL}: it checks the DC property considering the instantaneous reaction semantics on equivalent CSTN where there is no node labels and using only rules $\LP$, $\mathup{qR}_0$, and $\mathup{qR}_3^*$.
 \end{enumerate} 
 
 In the following we propose two diagrams that show the comparation of such algorithm versions in the CSTNBenchmark2018 benchmark.
@@ -144,14 +150,14 @@ In the following we propose two diagrams that show the comparation of such algor
 All versions of DC checkin algorithm were developted in Java~8 and run on an Oracle JVM~8 in a Linux machine with an AMD Opteron 4334
 CPU (12 cores) and 64GB of RAM.
 
-The execution times were collected by a Java program (\texttt{CSTNRunningTime}, proposed in our package) that allows one to determine the average execution time---and its standard deviation---of one DC checking algorithm applied to a set of CSTN instances. Moreover,  \texttt{CSTNRunningTime} allows one to require to the operating system to allocate one or more
+The execution times were collected by a Java program (\texttt{Checker}, proposed in our package) that allows one to determine the average execution time---and its standard deviation---of one DC checking algorithm applied to a set of CSTN instances. Moreover,  \texttt{Checker} allows one to require to the operating system to allocate one or more
 CPU cores for executing the algorithm in sequential/parallel way on files without the reschedule of threads in different cores during the execution.
 We experienced that even if AMD Opteron 4334 has 12 cores, the best performances were obtained only when all checks are made by only \textbf{one} core.
 We believe that the memory-accesses by cores represent a bottleneck that limits the overall performance.
 Therefore, all the data presented in this section were obtained using only one core (parameter \texttt{-nCPUs 1}).
 
-The parameters for the Oracle Java Virtual Machine~1.8.0\_144 were: \texttt{-d64}, \texttt{-Xmx6g}, \texttt{-Xms6g}, \texttt{-XX:NewSize=3g}, \texttt{-XX:MaxNewSize=3g}, \texttt{-XX:+UseG1GC}, \texttt{-Xnoclassgc}, and \texttt{-XX:+AggressiveOpts}.
- 
+The parameters for the Oracle Java Virtual Machine~1.8.0\_144 were: \texttt{-d64}, \texttt{-Xmx6g}, \texttt{-Xms6g}, \texttt{-XX:NewSize=3g}, \texttt{-XX:MaxNewSize=3g}, \texttt{-XX:+UseG1GC}, \texttt{-Xnoclassgc}, and \texttt{-XX:+AggressiveOpts}. 
+
 The first diagram shows the average execution times with respect to the order of CSTN instances of eight versions of DC checking algorithm when instances are dynamic consistent. 
 Each drawn value is the sample average $\bar{X}_{50}$ of execution times obtained considering the fifty instances of the relative benchmark. 
 In details, $\bar{X}_{50}=\frac{\sum_{i=1}^{50} X_i}{50}$ where $X_i$ is the average execution time obtained executing 3 times the algorithm on instance having index $i$\footnote{The determination of all values required to execute the DC checking for 24 000 times, 83.18 hours.}.
@@ -501,7 +507,7 @@ n;	x;	p;	y;	yerr
 %
 %
 % 			SIZE 10
- 			\draw[<->] (axis cs:43,.07) -- (axis cs:59,.07) node[timeLabel,below,pos=.5] {Size010-3-3};
+ 			\draw[<->] (axis cs:43,.07) -- (axis cs:59,.07) node[timeLabel,below,pos=.5] {Size010-3};
  			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 				table [x=x, y=y,y error expr=\yerrstd] {\bTenStd}; 
@@ -536,7 +542,7 @@ n;	x;	p;	y;	yerr
 %				
 %
 % 			SIZE 20
-  			\draw[<->] (75,.3) -- (91,.3) node[timeLabel,below,pos=.5] {Size020-5-5};
+  			\draw[<->] (75,.3) -- (91,.3) node[timeLabel,below,pos=.5] {Size020-5};
 %  			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 				table [x=x, y=y,y error expr=\yerrstd] {\bTwentyStd};
@@ -565,7 +571,7 @@ n;	x;	p;	y;	yerr
 %
 %
 % 			SIZE 30
-  			\draw[<->] (107,1) -- (123,1) node[timeLabel,below,pos=.5] {Size030-7-7};
+  			\draw[<->] (107,1) -- (123,1) node[timeLabel,below,pos=.5] {Size030-7};
 %  			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 				table [x=x, y=y,y error expr=\yerrstd] {\bThirtyStd};
@@ -594,7 +600,7 @@ n;	x;	p;	y;	yerr
 %
 %
 %			SIZE 40
- 			\draw[<->] (axis cs:139,8) -- (axis cs:155,8) node[timeLabel,below,pos=.5] {Size040-9-9};
+ 			\draw[<->] (axis cs:139,8) -- (axis cs:155,8) node[timeLabel,below,pos=.5] {Size040-9};
 %  			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 				table [x=x, y=y,y error expr=\yerrstd] {\bFortyStd};
@@ -627,13 +633,13 @@ n;	x;	p;	y;	yerr
 \end{center}
 
 Even if the diagram is quite crowed, it is possible to see (and data confirm) that the DC checking algorithm has the worst performance when it has to 
-apply standard semantics without node labels. There is no a version that shows the best performance in all benchmarks. \textbf{IR-3R} version has the best performance in benchmarks of group Size010-3-3 and Size030-7-7.
-In group Size020-5-5, the version \textbf{\textepsilon-3R} showed the best performance in all benchmarks, while \textbf{IR-3R-woNL} showed the best performance in group Size040-9-9.
+apply standard semantics without node labels. There is no a version that shows the best performance in all benchmarks. \textbf{IR-3R} version has the best performance in benchmarks of group Size010-3 and Size030-7.
+In group Size020-5, the version \textbf{\textepsilon-3R} showed the best performance in all benchmarks, while \textbf{IR-3R-woNL} showed the best performance in group Size040-9.
 
 We noted that the experimental data contain outliers, instances for which the execution time is quite far from the average execution time.
 Outliers represent hard instances for the DC checking problem (the problem was shown to be PSPACE-complete).
 
-The following figures show the distribution of execution time of \textbf{IR-3R} in terms of quartiles in the groups Size030-7-7 and Size040-9-9. 
+The following figures show the distribution of execution time of \textbf{IR-3R} in terms of quartiles in the groups Size030-7 and Size040-9. 
 Each box has the lower edge equal to the first quartile ($Q_1$) while the upper edge equal to the third one ($Q_3$).
 The edge inside each box represents the median of the sample.
 Horizontal edges outside a box represent the \textit{whiskers}. The lower whisker value is the smallest data value which is larger than $Q_1-1.5\cdot \mathrm{IQR}$, where IQR is the \textit{inter–quartile–range}, i.e.,  $Q_3-Q_1$. The upper whisker is the largest data value which is smaller than $Q_3+1.5\cdot \mathrm{IQR}$. 
@@ -645,7 +651,7 @@ Diamonds above the upper whisker represent the data value outliers. 	The diamond
 \begin{tikzpicture} 
 	\begin{axis}[
 			title=\textbf{Execution time distribution of \textbf{IR-3R} in Size030 group},
-   			boxplot/draw direction=y,
+		boxplot/draw direction=y,
 			xlabel={$n$},
 			xlabel style={at={(ticklabel cs:1)}, anchor=south west},
 		    xtick={1,2,3,4,5},
@@ -654,9 +660,9 @@ Diamonds above the upper whisker represent the data value outliers. 	The diamond
 			ylabel={execution time},
  			y unit=seconds,
 		%    axis y line=left,
-    			enlarge y limits,
-    			ymajorgrids,
-    			 boxplot/average=auto,
+ 		enlarge y limits,
+ 		ymajorgrids,
+ 		 boxplot/average=auto,
 	]
 	
 	\addplot[IR3R,boxplot] %107 nodes
@@ -938,7 +944,7 @@ Diamonds above the upper whisker represent the data value outliers. 	The diamond
 \begin{tikzpicture} 
 	\begin{axis}[
 			title=\textbf{Execution time distribution of \textbf{IR-3R} in Size040 group},
-   			boxplot/draw direction=y,
+		boxplot/draw direction=y,
 			xlabel={$n$},
 			xlabel style={at={(ticklabel cs:1)}, anchor=south west},
 		    xtick={1,2,3,4,5},
@@ -947,9 +953,9 @@ Diamonds above the upper whisker represent the data value outliers. 	The diamond
 			ylabel={execution time},
  			y unit=seconds,
 		%    axis y line=left,
-    			enlarge y limits,
-    			ymajorgrids,
-    			 boxplot/average=auto,
+ 		enlarge y limits,
+ 		ymajorgrids,
+ 		 boxplot/average=auto,
 	]
 \addplot[IR3R,boxplot] %139nodes
 	table[y index=0,col sep=semicolon] {
@@ -1267,7 +1273,7 @@ The following diagram shows the average execution times with respect to the orde
 			legend columns=1,
 			]
 % 			SIZE 10
- 			\draw[<->] (axis cs:43,.008) -- (axis cs:59,.008) node[timeLabel,below,pos=.5] {Size010-3-3};
+ 			\draw[<->] (axis cs:43,.008) -- (axis cs:59,.008) node[timeLabel,below,pos=.5] {Size010-3};
  			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 				table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
@@ -1319,7 +1325,7 @@ n;	x;	p;	y;	yerr
 50;     59;     3;      2.510667E-02;   2.260731E-02
 						};
 % 			SIZE 20
-  			\draw[<->] (75,.03) -- (91,.03) node[timeLabel,below,pos=.5] {Size020-5-5};
+  			\draw[<->] (75,.03) -- (91,.03) node[timeLabel,below,pos=.5] {Size020-5};
 %  			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
@@ -1368,7 +1374,7 @@ n;	x;	p;	y;	yerr
 50;     91;     5;      1.028133E-01;   1.404975E-01
 						};
 % 			SIZE 30
-  			\draw[<->] (107,.03) -- (123,.03) node[timeLabel,below,pos=.5] {Size030-7-7};
+  			\draw[<->] (107,.03) -- (123,.03) node[timeLabel,below,pos=.5] {Size030-7};
 %   			\addlegendentry{Std};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
@@ -1417,7 +1423,7 @@ n;	x;	p;	y;	yerr
 50;     123;    7;      1.014133E-01;   2.096448E-01
 						};
 %			SIZE 40
- 			\draw[<->] (axis cs:139,0.03) -- (axis cs:155,0.03) node[timeLabel,below,pos=.5] {Size040-9-9};
+ 			\draw[<->] (axis cs:139,0.03) -- (axis cs:155,0.03) node[timeLabel,below,pos=.5] {Size040-9};
 % 			\draw[red] (167, 1.01E+03) circle (3pt);
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
@@ -1472,6 +1478,441 @@ n;	x;	p;	y;	yerr
 Again, even if the diagram is quite crowded, it is evident that \textrm{Std-woNL} version of the DC checking algorithm shows the worst performance while
 \textrm{IR-3R} version requires the minimun execution time. The most important fact about this results is that, in general, checking NON DC instances requires 
 less than an order of magnitude of execution time required for checking DC instances. 
+
+
+
+
+\section{CSTNUBenchmark2018}
+
+The structure of this benchmark is equal to the CSTNBenchmark2018 even if the size of benchhmarks is smaller.
+
+Due to the internal building function of ATAPIS Toolset, the relation between workflow component quantities and CSTN order is $5+2N+6k+6j$, where $N$ is the number of tasks, $k$ the number of XOR connectors, and $j$ the number of AND connectors. 
+The following table summurizes the characteristics of each sub-benchmark.
+ \begin{center}
+\begin{tabular}{@{} l >{\RaggedLeft\arraybackslash}p{1.4cm} >{\RaggedLeft\arraybackslash}p{1.5cm} >{\RaggedLeft\arraybackslash}p{1.5cm} >{\RaggedLeft\arraybackslash}p{1.3cm} c >{\RaggedLeft\arraybackslash}p{1.2cm} @{}}
+	\hline
+  \textbf{Group}	&\textbf{Bench mark}	& \textbf{instance indexes}	& \textbf{\# activities}	& \textbf{\#XOR}	& \textbf{\#AND}	& \textbf{CSTN order}\\
+  \hline		  
+	Size010-3	& B10-3-0			&	000-049					&		10				&		3		&		0 		&	43\\	
+				& B10-3-1			&	050-099					&		10				&		3		&		1		&	49\\
+				& B10-3-2			&	100-149					&		10				&		3		&		2		& 	55\\
+				& B10-3-3			&	150-199					&		10				&		3		&		3		& 	61\\
+				& B10-3-4			&	200-249					&		10				&		3		&		4		& 	67\\
+	\hline
+	Size010-4	& B10-4-0			&	000-049					&		10				&		4		&		0		&	49\\	
+				& B10-4-1			&	050-099					&		10				&		4		&		1		&	55\\
+				& B10-4-2			&	100-149					&		10				&		4		&		2		&	61\\
+				& B10-4-3			&	150-199					&		10				&		4		&		3		&	67\\
+				& B10-4-4			&	200-249					&		10				&		4		&		4		&	73\\
+	\hline
+	Size010-5	& B10-5-0			&	000-049					&		10				&		5		&		0 		&	55\\	
+				& B10-5-1			&	050-099					&		10				&		5		&		1		&	62\\
+				& B10-5-2			&	100-149					&		10				&		5		&		2		&	67\\
+				& B10-5-3			&	150-199					&		10				&		5		&		3		&	73\\
+				& B10-5-4			&	200-249					&		10				&		5		&		4		&	79\\
+	\hline
+	Size015-3	& B15-3-0			&	000-049					&		15				&		3		&		0		&	53\\	
+				& B15-3-1			&	050-099					&		15				&		3		&		1		&	59\\
+				& B15-3-2			&	100-149					&		15				&		3		&		2		&	65\\
+				& B15-3-3			&	150-199					&		15				&		3		&		3		&	71\\
+				& B15-3-4			&	200-249					&		15				&		3		&		4		&	77\\
+	\hline
+	Size015-4	& B15-4-0			&	000-049					&		15				&		4		&		0		&	59\\	
+				& B15-4-1			&	050-099					&		15				&		4		&		1		&	65\\
+				& B15-4-2			&	100-149					&		15				&		4		&		2		& 	71\\
+				& B15-4-3			&	150-199					&		15				&		4		&		3		& 	77\\
+				& B15-4-4			&	200-249					&		15				&		4		&		4		& 	83\\
+	\hline
+	Size015-5	& B15-5-0			&	000-049					&		15				&		5		&		0		&	65\\	
+				& B15-5-1			&	050-099					&		15				&		5		&		1		&	71\\
+				& B15-5-2			&	100-149					&		15				&		5		&		2		&	77\\
+				& B15-5-3			&	150-199					&		15				&		5		&		3		&	83\\
+				& B15-5-4			&	200-249					&		15				&		5		&		4		&	89\\
+	\hline
+	Size020-3	& B20-3-0			&	000-029					&		20				&		3		&		0		&	63\\
+				& B20-3-1			&	030-059					&		20				&		3		&		1		&	69\\
+				& B20-3-2			&	060-099					&		20				&		3		&		2		&	75\\
+				& B20-3-3			&	090-119					&		20				&		3		&		3		&	81\\
+				& B20-3-4			&	120-149					&		20				&		3		&		4		&	87\\
+	\hline
+	Size020-4	& B20-4-0			&	000-029					&		20				&		4		&		0		&	69\\
+				& B20-4-1			&	030-059					&		20				&		4		&		1		&	75\\
+				& B20-4-2			&	060-099					&		20				&		4		&		2		&	81\\
+				& B20-4-3			&	090-119					&		20				&		4		&		3		&	87\\
+				& B20-4-4			&	120-149					&		20				&		4		&		4		&	93\\
+	\hline
+	Size020-5	& B20-5-0			&	000-029					&		20				&		5		&		0		&	75\\
+				& B20-5-1			&	030-059					&		20				&		5		&		1		&	81\\
+				& B20-5-2			&	060-099					&		20				&		5		&		2		&	87\\
+				& B20-5-3			&	090-119					&		20				&		5		&		3		&	93\\
+				& B20-5-4			&	120-149					&		20				&		5		&		4		&	99\\
+	\hline
+\end{tabular}
+\end{center}
+
+The total number of CSTNU instances is $2000$, $1000$ DC and $1000$ not DC, divided in 4 main group, in turn divided in other 4 groups having 50 DC and NOT DC instances.
+
+  
+\subsection{Experimental Evaluation}
+
+The current implementation of CSTNU DC checking assumes instantaneous reaction in a streamlined CSTNU.
+We call such implementation \textbf{Std}.
+
+In the following we propose two diagrams that show the execution time of \textbf{Std} in the CSTNUBenchmark2018 benchmark.
+
+The program was developted in Java~8 and run on an Oracle JVM~8 in a Linux machine with an AMD Opteron 4334 CPU (12 cores) and 64GB of RAM.
+
+The execution times were collected by a Java program (\texttt{Checker}, proposed in our package) that allows one to determine the average execution time---and its standard deviation---of a DC checking algorithm
+applied to a set of instances.
+
+The parameters for the Oracle Java Virtual Machine~1.8.0\_144 were: \texttt{-d64}, \texttt{-Xmx6g}, \texttt{-Xms6g}, \texttt{-XX:NewSize=3g}, \texttt{-XX:MaxNewSize=3g}, \texttt{-XX:+UseG1GC}, \texttt{-Xnoclassgc}, and \texttt{-XX:+AggressiveOpts}. 
+
+The first diagram shows the average execution times with respect to the order of CSTNU dynamic instances.
+Each drawn value is the sample average $\bar{X}_{50}$ of execution times obtained considering the fifty instances of the relative benchmark. 
+In details, $\bar{X}_{50}=\frac{\sum_{i=1}^{50} X_i}{50}$ where $X_i$ is the average execution time obtained executing 3 times the algorithm on instance having index $i$\footnote{The determination of all values required to execute the DC checking for 24 000 times, 83.18 hours.}.
+The error bar of each drawn value represents $2.010$ times the standard error of the mean, $\frac{S_{50}}{\sqrt{50}}$, where $S_{50}$ is the corrected sample standard deviation, $S_{50}= \sqrt{\frac{\sum_{i=1}^{50} (X_i-\bar{X}_{50})^2}{49}}$. Value $2.010$ is the Student's $t$ distribution value with 49 degrees of freedom. 
+Therefore, the error bar represents a 95\% confidence interval for the average execution time of the algorithm on instances having the main characteristics of the considered benchmark.
+
+%SIZE 10
+\pgfplotstableread{
+n;      x;      c;      p;      y;              yerr
+50;     43;     10;     3;      9.199867E-01;   1.511724E+00
+50;     49;     10;     3;      1.041340E+00;   2.159160E+00
+50;     55;     10;     3;      8.172933E-01;   1.809840E+00
+50;     61;     10;     3;      2.155573E+00;   7.073207E+00
+50;     67;     10;     3;      7.988267E-01;   1.409221E+00
+}\CSTNUTenStd
+
+
+
+
+\begin{center}
+% \captionsetup{justification=justified}
+% 	\subfloat[Benchmark $N=10,|\calp|=3$.\label{SubFig:N10}]{
+% 	\begin{subfigure}[b]{.45\linewidth}\centering% \ 44 \leq n \leq 59, \ 
+\pgfplotsset{every axis y label/.append style={inner sep=1pt,outer sep=1pt}}
+\noindent
+\begin{tikzpicture}
+%%
+%%This diagram requires pgfplots version 1.15 to be compiled without errors.
+%%
+	\begin{axis}[
+			normalsize,
+			title=\textbf{Controllable Instances},
+% 			title style={at={(0.5,-.2)}},
+%  			height=8	cm,
+% 			width=.48\textwidth,
+			% X
+			xlabel={$n$},
+			xlabel style={at={(ticklabel cs:1)}, anchor=south west},
+ 			minor x tick num=1,
+			xmajorgrids=true,
+			% Y 
+			ylabel={execution time},
+ 			y unit=seconds,
+% 			minor y tick num=1,%not applied for ymode=log
+			yminorgrids=true,
+			ymajorgrids=true,
+  			ymode=log,
+ 			log basis y=10,
+			log ticks with fixed point,
+%  			ytick=\empty,
+%  			extra y ticks={2,5,10, 20, 30, 60, 120},
+% 			extra y tick labels={30s, 1, 5, 10, 20, 30},
+% % 			ylabel shift=-5pt,
+			% LEGEND 
+			cycle multi list={colorbrewer},
+			legend style={at={(1.05,1)},anchor=north west},%legend pos=north west,
+			legend columns=1,
+% 			legend entries={ {Std}, 	{Std-woNL}, 	{$\epsilon$}, {$\epsilon$-woNL}, {$\epsilon$-woNL-3R}, {IR}, 	{IR-woNL}, {IR-woNL-3R}, }
+			]
+%
+%
+% 			SIZE 10
+%  			\draw[<->] (axis cs:43,.07) -- (axis cs:67,.07) node[timeLabel,below,pos=.5] {Size010-3};
+ 			\addlegendentry{Size010-3};
+			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
+				table [x=x, y=y,y error expr=\yerrstd] {\CSTNUTenStd}; 
+
+% 			\addlegendentry{Size010-4};
+% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenStdwoNL};
+% 				
+% 			\addlegendentry{Size010-5}; %\textepsilon is necessary for SVG format!!! 
+% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenEpsilon};
+% 
+% 			\addlegendentry{\textepsilon-3R};%\textepsilon is necessary for SVG format!!! 
+% 			\addplot[Epsilon3R,error bars/.cd, y dir=both, y explicit]%epsilon 3R
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenEpsilonR};
+% 				
+% 			\addlegendentry{\textepsilon-3R-woNL};%\textepsilon is necessary for SVG format!!! 
+% 			\addplot[Epsilon3RwoNL,error bars/.cd, y dir=both, y explicit]%epsilon woNL 3R
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenEpsilonRwoNL};
+% 				
+% 			\addlegendentry{IR};
+% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenIR};
+% 
+% 			\addlegendentry{IR-3R};
+% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenIRR};
+% 
+% 			\addlegendentry{IR-3R-woNL};
+% 			\addplot[IR3RwoNL,error bars/.cd, y dir=both, y explicit]%IR
+% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenIRRwoNL};
+% %				
+			\end{axis}
+		\end{tikzpicture}			
+\end{center}
+
+
+
+
+
+
+
+The following diagram shows the average execution times with respect to the order of CSTNUs
+are not controllable.
+\begin{center}
+\noindent
+\begin{tikzpicture}
+%%
+%%This diagram requires pgfplots version 1.15 to be compiled without errors.
+%%
+	\begin{axis}[
+			normalsize,
+			title=\textbf{Not Controllable Instances},
+% 			title style={at={(0.5,-.2)}},
+%  			height=8	cm,
+% 			width=.48\textwidth,
+			% X
+			xlabel={$n$},
+			xlabel style={at={(ticklabel cs:.999)}, anchor=south west},
+ 			minor x tick num=1,
+			xmajorgrids=true,
+			% Y 
+			ylabel={execution time},
+ 			y unit=seconds,
+% 			minor y tick num=1,%not applied for ymode=log
+			yminorgrids=true,
+			ymajorgrids=true,
+  			ymode=log,
+ 			log basis y=10,
+			log ticks with fixed point,
+%  			ytick=\empty,
+%  			extra y ticks={2,5,10, 20, 30, 60, 120},
+% 			extra y tick labels={30s, 1, 5, 10, 20, 30},
+% % 			ylabel shift=-5pt,
+			% LEGEND 
+			legend style={at={(1.05,1)},anchor=north west},%legend pos=north west,
+			legend columns=1,
+			]
+% 			SIZE 10
+%  			\draw[<->] (axis cs:43,.008) -- (axis cs:59,.008) node[timeLabel,below,pos=.5] {Size010-3};
+ 			\addlegendentry{Size010-3};
+			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
+				table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+n;	x;	p;	y;	yerr
+50;     43;     3;      2.199333E-02;   3.185508E-02
+50;     47;     3;      1.817333E-02;   2.821285E-02
+50;     51;     3;      3.372000E-02;   4.707024E-02
+50;     55;     3;      3.584667E-02;   3.816424E-02
+50;     59;     3;      2.762000E-02;   2.634732E-02
+						};
+%  			\addlegendentry{Std-woNL};
+% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     43;     3;      2.445333E-02;   3.990492E-02
+% 50;     47;     3;      2.446000E-02;   4.475491E-02
+% 50;     51;     3;      4.493333E-02;   6.913561E-02
+% 50;     55;     3;      4.587333E-02;   5.101962E-02
+% 50;     59;     3;      3.426000E-02;   3.390331E-02
+% 						};
+% 			\addlegendentry{\textepsilon}; %\textepsilon is necessary for SVG format!!! 
+% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     43;     3;      2.186000E-02;   3.407482E-02
+% 50;     47;     3;      1.975333E-02;   3.218546E-02
+% 50;     51;     3;      3.446667E-02;   4.923736E-02
+% 50;     55;     3;      3.612000E-02;   3.947104E-02
+% 50;     59;     3;      2.760667E-02;   2.642799E-02
+% 						};
+% 			\addlegendentry{IR};			
+% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%ir
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     43;     3;      2.232000E-02;   3.345949E-02
+% 50;     47;     3;      1.980667E-02;   3.107194E-02
+% 50;     51;     3;      3.554667E-02;   5.048638E-02
+% 50;     55;     3;      3.606667E-02;   3.939888E-02
+% 50;     59;     3;      2.746000E-02;   2.666070E-02
+% 						};
+% 			\addlegendentry{IR-3R};			
+% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     43;     3;      1.914000E-02;   2.880335E-02
+% 50;     47;     3;      1.630667E-02;   2.480928E-02
+% 50;     51;     3;      4.217333E-02;   1.019952E-01
+% 50;     55;     3;      3.255333E-02;   3.371513E-02
+% 50;     59;     3;      2.510667E-02;   2.260731E-02
+% 						};
+% % 			SIZE 20
+%   			\draw[<->] (75,.03) -- (91,.03) node[timeLabel,below,pos=.5] {Size020-5};
+% %  			\addlegendentry{Std};
+% 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     75;     5;      1.626667E-01;   2.508645E-01
+% 50;     79;     5;      1.619933E-01;   2.802782E-01
+% 50;     83;     5;      1.551200E-01;   2.498845E-01
+% 50;     87;     5;      8.805333E-02;   1.303739E-01
+% 50;     91;     5;      1.359133E-01;   2.240360E-01
+% 						};
+% % 			\addlegendentry{Std-woNL};
+% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     75;     5;      1.992000E-01;   3.231331E-01
+% 50;     79;     5;      2.182333E-01;   3.890817E-01
+% 50;     83;     5;      2.083333E-01;   3.536913E-01
+% 50;     87;     5;      1.225067E-01;   2.000610E-01
+% 50;     91;     5;      2.290400E-01;   4.821580E-01
+% 						};
+% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     75;     5;      1.342933E-01;   1.997754E-01
+% 50;     79;     5;      1.312600E-01;   2.180705E-01
+% 50;     83;     5;      1.296467E-01;   1.994134E-01
+% 50;     87;     5;      7.693333E-02;   1.061648E-01
+% 50;     91;     5;      1.201200E-01;   1.910037E-01
+% 						};
+% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     75;     5;      1.609800E-01;   2.577505E-01
+% 50;     79;     5;      1.567200E-01;   2.722886E-01
+% 50;     83;     5;      1.500400E-01;   2.424916E-01
+% 50;     87;     5;      8.552667E-02;   1.252870E-01
+% 50;     91;     5;      1.363000E-01;   2.240533E-01
+% 						};
+% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     75;     5;      1.190133E-01;   1.756659E-01
+% 50;     79;     5;      1.117533E-01;   1.746759E-01
+% 50;     83;     5;      1.200467E-01;   1.769278E-01
+% 50;     87;     5;      7.459333E-02;   1.037230E-01
+% 50;     91;     5;      1.028133E-01;   1.404975E-01
+% 						};
+% % 			SIZE 30
+%   			\draw[<->] (107,.03) -- (123,.03) node[timeLabel,below,pos=.5] {Size030-7};
+% %   			\addlegendentry{Std};
+% 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     107;    7;      6.775800E-01;   1.538524E+00
+% 50;     111;    7;      3.182800E-01;   6.240050E-01
+% 50;     115;    7;      5.568267E-01;   1.302207E+00
+% 50;     119;    7;      3.521000E-01;   6.923321E-01
+% 50;     123;    7;      1.141467E-01;   2.562440E-01
+% 						};
+% % 			\addlegendentry{Std-woNL};
+% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL 
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     107;    7;      1.058000E+00;   2.442640E+00
+% 50;     111;    7;      4.601733E-01;   9.485014E-01
+% 50;     115;    7;      1.314133E+00;   3.714816E+00
+% 50;     119;    7;      7.090467E-01;   1.649638E+00
+% 50;     123;    7;      1.709133E-01;   4.427992E-01
+% 						};
+% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     107;    7;      5.844933E-01;   1.262175E+00
+% 50;     111;    7;      2.924733E-01;   5.598914E-01
+% 50;     115;    7;      5.133200E-01;   1.185395E+00
+% 50;     119;    7;      3.229267E-01;   6.018227E-01
+% 50;     123;    7;      1.139600E-01;   2.472006E-01
+% 						};
+% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     107;    7;      6.205333E-01;   1.382333E+00
+% 50;     111;    7;      2.987667E-01;   5.806298E-01
+% 50;     115;    7;      5.248667E-01;   1.221795E+00
+% 50;     119;    7;      3.325533E-01;   6.380090E-01
+% 50;     123;    7;      1.116800E-01;   2.356484E-01
+% 						};
+% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     107;    7;      5.090933E-01;   1.090549E+00
+% 50;     111;    7;      2.828200E-01;   5.462717E-01
+% 50;     115;    7;      3.900400E-01;   8.674814E-01
+% 50;     119;    7;      2.775067E-01;   4.926636E-01
+% 50;     123;    7;      1.014133E-01;   2.096448E-01
+% 						};
+% %			SIZE 40
+%  			\draw[<->] (axis cs:139,0.03) -- (axis cs:155,0.03) node[timeLabel,below,pos=.5] {Size040-9};
+% % 			\draw[red] (167, 1.01E+03) circle (3pt);
+% 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     139;    9;      1.908620E+00;   3.987439E+00
+% 50;     143;    9;      2.684753E+00;   7.660035E+00
+% 50;     147;    9;      1.692413E+00;   3.354450E+00
+% 50;     151;    9;      1.645480E+00;   6.233754E+00
+% 50;     155;    9;      1.647600E+00;   3.684100E+00
+% 					};
+% % 			\addlegendentry{Std-woNL};
+% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     139;    9;      4.245527E+00;   1.000110E+01
+% 50;     143;    9;      6.369140E+00;   1.846379E+01
+% 50;     147;    9;      3.578527E+00;   7.470487E+00
+% 50;     151;    9;      7.736733E+00;   3.650712E+01
+% 50;     155;    9;      4.794280E+00;   1.365770E+01
+% 						};
+% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     139;    9;      2.023193E+00;   4.228155E+00
+% 50;     143;    9;      2.955173E+00;   8.690866E+00
+% 50;     147;    9;      1.827193E+00;   3.669760E+00
+% 50;     151;    9;      1.962647E+00;   7.795193E+00
+% 50;     155;    9;      1.766853E+00;   4.054424E+00
+% 						};
+% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     139;    9;      2.102240E+00;   4.414102E+00
+% 50;     143;    9;      3.187507E+00;   9.285305E+00
+% 50;     147;    9;      1.896727E+00;   3.813155E+00
+% 50;     151;    9;      1.995840E+00;   7.938650E+00
+% 50;     155;    9;      1.929500E+00;   4.411231E+00
+% 						};
+% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
+% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+% n;	x;	p;	y;	yerr
+% 50;     139;    9;      1.570753E+00;   3.129554E+00
+% 50;     143;    9;      2.383960E+00;   7.271879E+00
+% 50;     147;    9;      1.547587E+00;   2.992325E+00
+% 50;     151;    9;      1.279873E+00;   4.574241E+00
+% 50;     155;    9;      1.347760E+00;   2.812735E+00
+% 						}; 
+			\end{axis}
+		\end{tikzpicture}			
+\end{center}
+
+
+
 
 \bibliographystyle{ieeetr_doi}
 \bibliography{bibliography}

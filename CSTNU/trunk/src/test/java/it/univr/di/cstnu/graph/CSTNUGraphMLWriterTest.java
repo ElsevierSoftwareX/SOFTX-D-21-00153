@@ -137,7 +137,7 @@ public class CSTNUGraphMLWriterTest {
 			"</node>\n" +
 			"<node id=\"X\">\n" +
 			"<data key=\"x\">0.0</data>\n" +
-			"<data key=\"Label\">¬p</data>\n" +
+			"<data key=\"Label\">⊡</data>\n" +
 			"<data key=\"y\">0.0</data>\n" +
 			"</node>\n" +
 			"<node id=\"Ω\">\n" +
@@ -158,7 +158,7 @@ public class CSTNUGraphMLWriterTest {
 			"</edge>\n" +
 			"<edge id=\"X_Z\" source=\"X\" target=\"Z\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(0, ¬p) }</data>\n" +
+			"<data key=\"LabeledValues\">{(0, ⊡) }</data>\n" +
 			"</edge>\n" +
 			"<edge id=\"YX\" source=\"Y\" target=\"X\">\n" +
 			"<data key=\"Type\">contingent</data>\n" +
@@ -171,7 +171,7 @@ public class CSTNUGraphMLWriterTest {
 			"</edge>\n" +
 			"<edge id=\"Z_X\" source=\"Z\" target=\"X\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(20, ¬p) }</data>\n" +
+			"<data key=\"LabeledValues\">{(20, ⊡) }</data>\n" +
 			"</edge>\n" +
 			"<edge id=\"Z_Y\" source=\"Z\" target=\"Y\">\n" +
 			"<data key=\"Type\">internal</data>\n" +

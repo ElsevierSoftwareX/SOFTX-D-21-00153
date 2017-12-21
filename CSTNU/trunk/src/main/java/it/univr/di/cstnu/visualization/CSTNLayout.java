@@ -199,8 +199,8 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 			ObjectIterator<LabeledIntEdge> eIte = inEdge.iterator();
 			while (eIte.hasNext()) {
 				LabeledIntEdge e = eIte.next();
-				if ((e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
-						|| e.getMinValue() > 0
+				if (e.getMinValue() > 0
+						|| (e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
 						|| (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
