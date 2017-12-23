@@ -66,6 +66,15 @@ public class CSTNIR extends CSTN {
 	}
 
 	/**
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTNIR(LabeledIntGraph g, int timeOut) {
+		super(g, timeOut);
+		this.reactionTime = 0;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override

@@ -304,8 +304,8 @@ public class Checker {
 			cstn.setG(g);
 
 			try {
-				status = (tester.cstnType == CstnType.cstnu) ? ((CSTNU) cstn).dynamicControllabilityCheck(tester.timeOut)
-						: (cstn.dynamicConsistencyCheck(tester.timeOut));
+				status = (tester.cstnType == CstnType.cstnu) ? ((CSTNU) cstn).dynamicControllabilityCheck()
+						: (cstn.dynamicConsistencyCheck());
 			} catch (CancellationException ex) {
 				msg = getNow() + ": Cancellation has occurred. " + graphToCheck.getFileName() + " CSTN(U) is ignored.";
 				System.out.println(msg);
@@ -681,29 +681,31 @@ public class Checker {
 	@SuppressWarnings({ "javadoc" })
 	private static CSTN makeCSTNInstance(Checker tester, LabeledIntGraph g) {
 		if (tester.cstnType == CstnType.cstnu) {
-			return new CSTNU(g);
+			return new CSTNU(g, tester.timeOut);
 		}
 		if (tester.cstn2cstn0) {
-			return new CSTN2CSTN0(tester.reactionTime, g);
+			return new CSTN2CSTN0(tester.reactionTime, g, tester.timeOut);
 		}
 		CSTN cstn;
 		switch (tester.dcSemantics) {
 		case ε:
 			if (tester.onlyLPQR0QR3) {
-				cstn = (tester.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(tester.reactionTime, g) : new CSTNEpsilon3R(tester.reactionTime, g);
+				cstn = (tester.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(tester.reactionTime, g, tester.timeOut)
+						: new CSTNEpsilon3R(tester.reactionTime, g, tester.timeOut);
 			} else {
-				cstn = (tester.woNodeLabels) ? new CSTNEpsilonwoNodeLabels(tester.reactionTime, g) : new CSTNEpsilon(tester.reactionTime, g);
+				cstn = (tester.woNodeLabels) ? new CSTNEpsilonwoNodeLabels(tester.reactionTime, g, tester.timeOut)
+						: new CSTNEpsilon(tester.reactionTime, g, tester.timeOut);
 			}
 			break;
 		case IR:
 			if (tester.onlyLPQR0QR3) {
-				cstn = (tester.woNodeLabels) ? new CSTNIR3RwoNodeLabels(g) : new CSTNIR3R(g);
+				cstn = (tester.woNodeLabels) ? new CSTNIR3RwoNodeLabels(g, tester.timeOut) : new CSTNIR3R(g, tester.timeOut);
 			} else {
-				cstn = (tester.woNodeLabels) ? new CSTNIRwoNodeLabels(g) : new CSTNIR(g);
+				cstn = (tester.woNodeLabels) ? new CSTNIRwoNodeLabels(g, tester.timeOut) : new CSTNIR(g, tester.timeOut);
 			}
 			break;
 		default:
-			cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabel(g) : new CSTN(g);
+			cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabel(g, tester.timeOut) : new CSTN(g, tester.timeOut);
 			break;
 		}
 		return cstn;

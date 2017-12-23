@@ -74,12 +74,21 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	}
 
 	/**
+	 * @param reactionTime
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTN2CSTN0(int reactionTime, LabeledIntGraph g, int timeOut) {
+		super(reactionTime, g, timeOut);
+	}
+
+	/**
 	 * Checks the controllability of a CSTNU instance.
 	 * This method transform the given CSTNU instance into a corresponding CSTN instance such that
 	 * the original instance is dynamic <em>controllable</em> iff the corresponding CSTN is dynamic <em>consistent</em>.
 	 */
 	@Override
-	public CSTNCheckStatus dynamicConsistencyCheck(int timeOut) throws WellDefinitionException {
+	public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
 				LOG.log(Level.INFO, "Starting checking CSTN2CSTN0 DC...\n");
@@ -100,7 +109,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 
 		LOG.info("CSTN DC-checking...");
 		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
-		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck(timeOut);
+		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 		LOG.info("CSTN DC-checking done.");
 
 		status.finished = cstnStatus.finished;

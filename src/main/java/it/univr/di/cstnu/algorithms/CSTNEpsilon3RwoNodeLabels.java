@@ -62,4 +62,14 @@ public class CSTNEpsilon3RwoNodeLabels extends CSTNEpsilon3R {
 		super(reactionTime, g);
 		this.withNodeLabels = false;
 	}
+
+	/**
+	 * @param reactionTime
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTNEpsilon3RwoNodeLabels(int reactionTime, LabeledIntGraph g, int timeOut) {
+		super(reactionTime, g, timeOut);
+		this.withNodeLabels = false;
+	}
 }

@@ -62,4 +62,16 @@ public class CSTNEpsilonwoNodeLabels extends CSTNEpsilon {
 		super(reactionTime, g);
 		this.withNodeLabels = false;
 	}
+
+	/**
+	 * Constructor for CSTN with reaction time at least epsilon and without node labels.
+	 * 
+	 * @param reactionTime reaction time. It must be strictly positive.
+	 * @param g graph to check
+	 * @param timeOut time out for the check
+	 */
+	public CSTNEpsilonwoNodeLabels(int reactionTime, LabeledIntGraph g, int timeOut) {
+		super(reactionTime, g, timeOut);
+		this.withNodeLabels = false;
+	}
 }

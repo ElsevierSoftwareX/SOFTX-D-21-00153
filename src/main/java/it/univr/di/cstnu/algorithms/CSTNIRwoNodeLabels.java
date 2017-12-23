@@ -64,4 +64,13 @@ public class CSTNIRwoNodeLabels extends CSTNIR {
 		super(g);
 		this.withNodeLabels = false;
 	}
+
+	/**
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTNIRwoNodeLabels(LabeledIntGraph g, int timeOut) {
+		super(g, timeOut);
+		this.withNodeLabels = false;
+	}
 }

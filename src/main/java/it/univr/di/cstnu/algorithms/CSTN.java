@@ -403,6 +403,12 @@ public class CSTN {
 	File fOutput = null;
 
 	/**
+	 * Output file where to write the XML representing the minimal CSTN graph.
+	 */
+	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
+	int timeOut = 2700;
+
+	/**
 	 * Graph on which to operate.
 	 */
 	LabeledIntGraph g = null;
@@ -461,13 +467,20 @@ public class CSTN {
 	}
 
 	/**
-	 * Constructor for
-	 * 
 	 * @param g graph to check
 	 */
 	public CSTN(LabeledIntGraph g) {
 		this();
 		this.setG(g);// sets also checkStatus!
+	}
+
+	/**
+	 * @param g graph to check
+	 * @param timeOut timeout for the check
+	 */
+	public CSTN(LabeledIntGraph g, int timeOut) {
+		this(g);
+		this.timeOut = timeOut;
 	}
 
 	/**
@@ -727,7 +740,7 @@ public class CSTN {
 	}
 
 	/**
-	 * Checks the dynamic consistency of a CSTN instance.
+	 * Checks the dynamic consistency of a CSTN instance within timeout seconds.
 	 * During the execution of this method, the given graph is modified. <br>
 	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
 	 * 
@@ -735,25 +748,12 @@ public class CSTN {
 	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties).
 	 */
 	public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
-		return dynamicConsistencyCheck(214748364);
-	}
-
-	/**
-	 * Checks the dynamic consistency of a CSTN instance within timeout seconds.
-	 * During the execution of this method, the given graph is modified. <br>
-	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
-	 * 
-	 * @param timeout maximum number of seconds allowed to the computation. Pass value 214748364 (=2485 days) to give the maximum time.
-	 * @return the final status of the checking with some statistics.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties).
-	 */
-	public CSTNCheckStatus dynamicConsistencyCheck(int timeout) throws WellDefinitionException {
 		try {
 			initAndCheck();
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("The CSTN graph has a problem and it cannot be initialize: " + e.getMessage());
 		}
-		return dynamicConsistencyCheckWOInit(timeout);
+		return dynamicConsistencyCheckWOInit();
 	}
 
 	/**
@@ -761,10 +761,9 @@ public class CSTN {
 	 * This method can be used ONLY when it is guaranteed that the network is already initialize by method {@link #initAndCheck()}.
 	 * In case of doubts, use {@link #dynamicConsistencyCheck()}.
 	 * 
-	 * @param timeout maximum number of seconds allowed to the computation. Pass value 214748364 (=2485 days) to give the maximum time.
 	 * @return the final status of the checking with some statistics.
 	 */
-	CSTNCheckStatus dynamicConsistencyCheckWOInit(int timeout) {
+	CSTNCheckStatus dynamicConsistencyCheckWOInit() {
 		if (!this.checkStatus.initialized) {
 			throw new IllegalStateException("Graph has not been initialized! Please, consider dynamicConsistencyCheck() method!");
 		}
@@ -783,7 +782,7 @@ public class CSTN {
 		// final boolean hierarchyMap = LabeledIntEdge.labeledValueMapFactory.createLabeledIntMap().getClass().equals(LabeledIntHierarchyMap.class);
 		int i;
 		Instant startInstant = Instant.now();
-		Instant timeoutInstant = startInstant.plusSeconds(timeout);
+		Instant timeoutInstant = startInstant.plusSeconds(this.timeOut);
 		for (i = 1; (i <= maxCycles) && this.checkStatus.consistency && !this.checkStatus.finished; i++) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINE)) {
@@ -795,7 +794,7 @@ public class CSTN {
 			if (!this.checkStatus.finished) {
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
 					if (Debug.ON) {
-						String msg = "During the check # " + i + ", " + timeout + " seconds timeout occured. ";
+						String msg = "During the check # " + i + ", " + this.timeOut + " seconds timeout occured. ";
 						if (LOG.isLoggable(Level.INFO)) {
 							LOG.log(Level.INFO, msg);
 						}
