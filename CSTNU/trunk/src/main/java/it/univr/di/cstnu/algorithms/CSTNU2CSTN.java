@@ -74,7 +74,7 @@ public class CSTNU2CSTN extends CSTNU {
 	 * the original instance is dynamic <em>controllable</em> iff the corresponding CSTN is dynamic <em>consistent</em>.
 	 */
 	@Override
-	public CSTNUCheckStatus dynamicControllabilityCheck(int timeOut) throws WellDefinitionException {
+	public CSTNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
 				LOG.log(Level.INFO, "Starting checking CSTNU2CSTN dynamic controllability...\n");
@@ -95,7 +95,7 @@ public class CSTNU2CSTN extends CSTNU {
 
 		LOG1.info("CSTN DC-checking...");
 		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
-		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck(timeOut);
+		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 		LOG1.info("CSTN DC-checking done.");
 
 		status.finished = cstnStatus.finished;

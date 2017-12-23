@@ -74,6 +74,18 @@ public class CSTNEpsilon extends CSTN {
 	}
 
 	/**
+	 * Constructor for CSTN.
+	 * 
+	 * @param reactionTime reaction time. It must be strictly positive.
+	 * @param g graph to check
+	 * @param timeOut timeout for the check
+	 */
+	public CSTNEpsilon(int reactionTime, LabeledIntGraph g, int timeOut) {
+		this(reactionTime, g);
+		this.timeOut = timeOut;
+	}
+
+	/**
 	 * @return the reactionTime
 	 */
 	public int getEspsilonReactionTime() {

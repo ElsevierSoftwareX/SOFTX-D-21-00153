@@ -62,4 +62,14 @@ public class CSTNEpsilon3R extends CSTNEpsilon {
 		super(reactionTime, g);
 		this.applyReducedSetOfRules = true;
 	}
+
+	/**
+	 * @param reactionTime
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTNEpsilon3R(int reactionTime, LabeledIntGraph g, int timeOut) {
+		super(reactionTime, g, timeOut);
+		this.applyReducedSetOfRules = true;
+	}
 }

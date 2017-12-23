@@ -63,4 +63,13 @@ public class CSTNIR3R extends CSTNIR {
 		super(g);
 		this.applyReducedSetOfRules = true;
 	}
+
+	/**
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTNIR3R(LabeledIntGraph g, int timeOut) {
+		super(g, timeOut);
+		this.applyReducedSetOfRules = true;
+	}
 }

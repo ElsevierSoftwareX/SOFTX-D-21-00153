@@ -65,4 +65,13 @@ public class CSTNwoNodeLabel extends CSTN {
 		super(g);
 		this.withNodeLabels = false;
 	}
+
+	/**
+	 * @param g
+	 * @param timeOut
+	 */
+	public CSTNwoNodeLabel(LabeledIntGraph g, int timeOut) {
+		super(g, timeOut);
+		this.withNodeLabels = false;
+	}
 }

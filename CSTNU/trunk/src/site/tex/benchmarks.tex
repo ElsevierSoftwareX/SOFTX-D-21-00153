@@ -1573,18 +1573,6 @@ In details, $\bar{X}_{50}=\frac{\sum_{i=1}^{50} X_i}{50}$ where $X_i$ is the ave
 The error bar of each drawn value represents $2.010$ times the standard error of the mean, $\frac{S_{50}}{\sqrt{50}}$, where $S_{50}$ is the corrected sample standard deviation, $S_{50}= \sqrt{\frac{\sum_{i=1}^{50} (X_i-\bar{X}_{50})^2}{49}}$. Value $2.010$ is the Student's $t$ distribution value with 49 degrees of freedom. 
 Therefore, the error bar represents a 95\% confidence interval for the average execution time of the algorithm on instances having the main characteristics of the considered benchmark.
 
-%SIZE 10
-\pgfplotstableread{
-n;      x;      c;      p;      y;              yerr
-50;     43;     10;     3;      9.199867E-01;   1.511724E+00
-50;     49;     10;     3;      1.041340E+00;   2.159160E+00
-50;     55;     10;     3;      8.172933E-01;   1.809840E+00
-50;     61;     10;     3;      2.155573E+00;   7.073207E+00
-50;     67;     10;     3;      7.988267E-01;   1.409221E+00
-}\CSTNUTenStd
-
-
-
 
 \begin{center}
 % \captionsetup{justification=justified}
@@ -1632,8 +1620,25 @@ n;      x;      c;      p;      y;              yerr
 %  			\draw[<->] (axis cs:43,.07) -- (axis cs:67,.07) node[timeLabel,below,pos=.5] {Size010-3};
  			\addlegendentry{Size010-3};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
-				table [x=x, y=y,y error expr=\yerrstd] {\CSTNUTenStd}; 
+				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     43;     10;     3;      9.199867E-01;   1.511724E+00
+50;     49;     10;     3;      1.041340E+00;   2.159160E+00
+50;     55;     10;     3;      8.172933E-01;   1.809840E+00
+50;     61;     10;     3;      2.155573E+00;   7.073207E+00
+50;     67;     10;     3;      7.988267E-01;   1.409221E+00
+}; 
 
+ 			\addlegendentry{Size010-4};
+			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD
+				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     49;     10;     4;      4.985993E+00;   1.042494E+01
+50;     55;     10;     4;      3.582080E+00;   1.319451E+01
+50;     61;     10;     4;      6.913107E+00;   2.926250E+01
+50;     67;     10;     4;      2.938867E+00;   4.328465E+00
+50;     73;     10;     4;      3.224373E+00;   9.253401E+00
+}; 
 % 			\addlegendentry{Size010-4};
 % 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
 % 				table [x=x, y=y,y error expr=\yerrstd] {\bTenStdwoNL};
@@ -1713,23 +1718,21 @@ are not controllable.
  			\addlegendentry{Size010-3};
 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
 				table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-n;	x;	p;	y;	yerr
-50;     43;     3;      2.199333E-02;   3.185508E-02
-50;     47;     3;      1.817333E-02;   2.821285E-02
-50;     51;     3;      3.372000E-02;   4.707024E-02
-50;     55;     3;      3.584667E-02;   3.816424E-02
-50;     59;     3;      2.762000E-02;   2.634732E-02
+n;		x;		c;		p;		y;				yerr
+50;     43;     10;     3;      2.688089E+01;   6.811978E+01
+50;     49;     10;     3;      3.343606E+01;   6.533807E+01
+50;     55;     10;     3;      4.836113E+01;   1.970154E+02
+50;     61;     10;     3;      6.759057E+01;   3.352913E+02
+50;     67;     10;     3;      5.599747E+00;   1.323571E+01
 						};
-%  			\addlegendentry{Std-woNL};
-% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     43;     3;      2.445333E-02;   3.990492E-02
-% 50;     47;     3;      2.446000E-02;   4.475491E-02
-% 50;     51;     3;      4.493333E-02;   6.913561E-02
-% 50;     55;     3;      4.587333E-02;   5.101962E-02
-% 50;     59;     3;      3.426000E-02;   3.390331E-02
-% 						};
+  			\addlegendentry{Size010-4};
+ 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
+ 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
+ n;		x;		c;		p;		y;				yerr
+50;     55;     10;     4;      1.415891E+02;   4.578275E+02
+50;     61;     10;     4;      1.803370E+02;   4.730637E+02
+50;     67;     10;     4;      1.036660E+02;   4.274908E+02
+ 						};
 % 			\addlegendentry{\textepsilon}; %\textepsilon is necessary for SVG format!!! 
 % 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
 % 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {

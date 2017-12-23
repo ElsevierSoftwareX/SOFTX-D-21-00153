@@ -262,6 +262,17 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	}
 
 	/**
+	 * Constructor for CSTNU
+	 * 
+	 * @param g graph to check
+	 * @param timeOut timeout for the check
+	 */
+	public CSTNU(LabeledIntGraph g, int timeOut) {
+		this(g);
+		this.timeOut = timeOut;
+	}
+
+	/**
 	 * Calls {@link CSTN#checkWellDefinitionProperty1and3(LabeledNode, LabeledNode, LabeledIntEdge, boolean)}
 	 * and, then, checks upper and lower case values.
 	 *
@@ -374,19 +385,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 *             if the nextGraph is not well defined (does not observe all well definition properties).
 	 */
 	public CSTNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {
-		return dynamicControllabilityCheck(214748364);
-	}
-
-	/**
-	 * Checks the controllability of a CSTNU instance and, if the instance is controllable, determines all the minimal ranges for the constraints. <br>
-	 * All propositions that are redundant at run time are removed: therefore, all labels contains only the necessary and sufficient propositions.
-	 *
-	 * @param timeout maximum number of seconds allowed to the computation. Pass value 214748364 (=2485 days) to give the maximum time.
-	 * @return status an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException
-	 *             if the nextGraph is not well defined (does not observe all well definition properties).
-	 */
-	public CSTNUCheckStatus dynamicControllabilityCheck(int timeout) throws WellDefinitionException {
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
@@ -424,7 +422,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		int i;
 		this.checkStatus.finished = false;
 		Instant startInstant = Instant.now();
-		Instant timeoutInstant = startInstant.plusSeconds(timeout);
+		Instant timeoutInstant = startInstant.plusSeconds(this.timeOut);
 		for (i = 1; i <= maxCycles && this.checkStatus.consistency && !this.checkStatus.finished; i++) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO)) {
@@ -458,7 +456,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			if (!this.checkStatus.finished) {
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
 					if (Debug.ON) {
-						String msg = "During the check # " + i + " time out of " + timeout + " seconds occured. ";
+						String msg = "During the check # " + i + " time out of " + this.timeOut + " seconds occured. ";
 						if (LOG.isLoggable(Level.INFO)) {
 							LOG.log(Level.INFO, msg);
 						}
@@ -556,7 +554,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 
 	/**
 	 * Call {@link CSTN#initAndCheck()} and, then, check all contingent links.
-	 * 
 	 * This method works only with streamlined instances!
 	 * 
 	 * @return true if the check is successful. The input g results to be modified by the method.
@@ -657,8 +654,9 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						lowerCaseValue = -initialValue;
 						eInverted.setLowerCaseValue(conjunctedLabel, sourceALabel, lowerCaseValue);
 						s.setAlabel(sourceALabel);// to speed up DC checking!
-						e.removeLabel(conjunctedLabel); // 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
-														// cares of it.
+						// e.removeLabel(conjunctedLabel); // 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
+						// cares of it.
+						// 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right lower bound w.r.t. Z!
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								LOG.log(Level.FINER, "Inserted the lower label value: " + lowerCaseValueAsString(sourceALabel, lowerCaseValue, conjunctedLabel)
@@ -668,8 +666,9 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							upperCaseValue = -eInvertedInitialValue;
 							e.mergeUpperCaseValue(conjunctedLabel, sourceALabel, upperCaseValue);
-							eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building
-																	// method cares of it.
+							// eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax
+							// building method cares of it.
+							// 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right upper bound w.r.t. Z!
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
@@ -704,13 +703,15 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 										+ " to edge " + eInverted);
 							}
 						}
-						e.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
-														// cares of it.
+						// e.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method
+						// cares of it.
+						// 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right upper bound w.r.t. Z!
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							lowerCaseValue = -eInvertedInitialValue;
 							e.setLowerCaseValue(conjunctedLabel, destALabel, lowerCaseValue);
-							eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building
-																	// method cares of it.
+							// eInverted.removeLabel(conjunctedLabel);// 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax
+							// building method cares of it.
+							// 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right upper bound w.r.t. Z!
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
