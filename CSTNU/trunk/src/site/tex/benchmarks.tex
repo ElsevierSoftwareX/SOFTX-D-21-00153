@@ -1630,7 +1630,7 @@ n;      x;      c;      p;      y;              yerr
 }; 
 
  			\addlegendentry{Size010-4};
-			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD
+			\addplot[Std1,error bars/.cd, y dir=both, y explicit]%STD
 				table [x=x, y=y,y error expr=\yerrstd] {
 n;      x;      c;      p;      y;              yerr
 50;     49;     10;     4;      4.985993E+00;   1.042494E+01
@@ -1639,34 +1639,39 @@ n;      x;      c;      p;      y;              yerr
 50;     67;     10;     4;      2.938867E+00;   4.328465E+00
 50;     73;     10;     4;      3.224373E+00;   9.253401E+00
 }; 
-% 			\addlegendentry{Size010-4};
-% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenStdwoNL};
-% 				
-% 			\addlegendentry{Size010-5}; %\textepsilon is necessary for SVG format!!! 
-% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenEpsilon};
-% 
-% 			\addlegendentry{\textepsilon-3R};%\textepsilon is necessary for SVG format!!! 
-% 			\addplot[Epsilon3R,error bars/.cd, y dir=both, y explicit]%epsilon 3R
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenEpsilonR};
-% 				
-% 			\addlegendentry{\textepsilon-3R-woNL};%\textepsilon is necessary for SVG format!!! 
-% 			\addplot[Epsilon3RwoNL,error bars/.cd, y dir=both, y explicit]%epsilon woNL 3R
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenEpsilonRwoNL};
-% 				
-% 			\addlegendentry{IR};
-% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenIR};
-% 
-% 			\addlegendentry{IR-3R};
-% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenIRR};
-% 
-% 			\addlegendentry{IR-3R-woNL};
-% 			\addplot[IR3RwoNL,error bars/.cd, y dir=both, y explicit]%IR
-% 				table [x=x, y=y,y error expr=\yerrstd] {\bTenIRRwoNL};
-% %				
+ 			\addlegendentry{Size010-5};
+ 			\addplot[Std2,error bars/.cd, y dir=both, y explicit]%STD
+ 				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     55;     10;     5;      3.078449E+01;   6.491440E+01
+50;     61;     10;     5;      4.177256E+01;   1.202725E+02
+50;     67;     10;     5;      7.306313E+00;   2.756971E+01
+50;     73;     10;     5;      5.554887E+00;   1.057084E+01
+50;     79;     10;     5;      4.160794E+01;   6.923582E+01
+};
+
+ 			\addlegendentry{Size015-3};
+ 			\addplot[Std3,error bars/.cd, y dir=both, y explicit]%STD
+ 				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     53;     15;     3;      9.541316E+01;   3.121200E+02
+50;     59;     15;     3;      1.445414E+02;   5.061762E+02
+50;     65;     15;     3;      7.332089E+01;   2.438410E+02
+50;     71;     15;     3;      3.562093E+01;   8.930203E+01
+50;     77;     15;     3;      6.931913E+01;   2.517395E+02
+};
+
+ 			\addlegendentry{Size015-4};
+ 			\addplot[Std4,error bars/.cd, y dir=both, y explicit]%STD
+ 				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     59;     15;     4;      1.691083E+02;   4.565417E+02
+50;     65;     15;     4;      1.203675E+02;   2.649183E+02
+50;     71;     15;     4;      1.608776E+02;   3.729274E+02
+50;     77;     15;     4;      2.164700E+02;   5.266331E+02
+50;     83;     15;     4;      1.436906E+02;   3.220673E+02
+};
+
 			\end{axis}
 		\end{tikzpicture}			
 \end{center}
@@ -1726,190 +1731,47 @@ n;		x;		c;		p;		y;				yerr
 50;     67;     10;     3;      5.599747E+00;   1.323571E+01
 						};
   			\addlegendentry{Size010-4};
- 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
+ 			\addplot[Std1,error bars/.cd, y dir=both, y explicit]%STD woNL
  					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
  n;		x;		c;		p;		y;				yerr
-50;     55;     10;     4;      1.415891E+02;   4.578275E+02
-50;     61;     10;     4;      1.803370E+02;   4.730637E+02
-50;     67;     10;     4;      1.036660E+02;   4.274908E+02
+50; 49; 10; 4;  1.827144E+02;   4.324550E+02
+50; 55; 10; 4;  1.415891E+02;   4.578275E+02
+50; 61; 10; 4;  1.803370E+02;   4.730637E+02
+50; 67; 10; 4;  1.036660E+02;   4.274908E+02
+50; 73; 10; 4;  4.387066E+01;   1.510802E+02
  						};
-% 			\addlegendentry{\textepsilon}; %\textepsilon is necessary for SVG format!!! 
-% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     43;     3;      2.186000E-02;   3.407482E-02
-% 50;     47;     3;      1.975333E-02;   3.218546E-02
-% 50;     51;     3;      3.446667E-02;   4.923736E-02
-% 50;     55;     3;      3.612000E-02;   3.947104E-02
-% 50;     59;     3;      2.760667E-02;   2.642799E-02
-% 						};
-% 			\addlegendentry{IR};			
-% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%ir
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     43;     3;      2.232000E-02;   3.345949E-02
-% 50;     47;     3;      1.980667E-02;   3.107194E-02
-% 50;     51;     3;      3.554667E-02;   5.048638E-02
-% 50;     55;     3;      3.606667E-02;   3.939888E-02
-% 50;     59;     3;      2.746000E-02;   2.666070E-02
-% 						};
-% 			\addlegendentry{IR-3R};			
-% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     43;     3;      1.914000E-02;   2.880335E-02
-% 50;     47;     3;      1.630667E-02;   2.480928E-02
-% 50;     51;     3;      4.217333E-02;   1.019952E-01
-% 50;     55;     3;      3.255333E-02;   3.371513E-02
-% 50;     59;     3;      2.510667E-02;   2.260731E-02
-% 						};
-% % 			SIZE 20
-%   			\draw[<->] (75,.03) -- (91,.03) node[timeLabel,below,pos=.5] {Size020-5};
-% %  			\addlegendentry{Std};
-% 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     75;     5;      1.626667E-01;   2.508645E-01
-% 50;     79;     5;      1.619933E-01;   2.802782E-01
-% 50;     83;     5;      1.551200E-01;   2.498845E-01
-% 50;     87;     5;      8.805333E-02;   1.303739E-01
-% 50;     91;     5;      1.359133E-01;   2.240360E-01
-% 						};
-% % 			\addlegendentry{Std-woNL};
-% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     75;     5;      1.992000E-01;   3.231331E-01
-% 50;     79;     5;      2.182333E-01;   3.890817E-01
-% 50;     83;     5;      2.083333E-01;   3.536913E-01
-% 50;     87;     5;      1.225067E-01;   2.000610E-01
-% 50;     91;     5;      2.290400E-01;   4.821580E-01
-% 						};
-% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     75;     5;      1.342933E-01;   1.997754E-01
-% 50;     79;     5;      1.312600E-01;   2.180705E-01
-% 50;     83;     5;      1.296467E-01;   1.994134E-01
-% 50;     87;     5;      7.693333E-02;   1.061648E-01
-% 50;     91;     5;      1.201200E-01;   1.910037E-01
-% 						};
-% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     75;     5;      1.609800E-01;   2.577505E-01
-% 50;     79;     5;      1.567200E-01;   2.722886E-01
-% 50;     83;     5;      1.500400E-01;   2.424916E-01
-% 50;     87;     5;      8.552667E-02;   1.252870E-01
-% 50;     91;     5;      1.363000E-01;   2.240533E-01
-% 						};
-% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     75;     5;      1.190133E-01;   1.756659E-01
-% 50;     79;     5;      1.117533E-01;   1.746759E-01
-% 50;     83;     5;      1.200467E-01;   1.769278E-01
-% 50;     87;     5;      7.459333E-02;   1.037230E-01
-% 50;     91;     5;      1.028133E-01;   1.404975E-01
-% 						};
-% % 			SIZE 30
-%   			\draw[<->] (107,.03) -- (123,.03) node[timeLabel,below,pos=.5] {Size030-7};
-% %   			\addlegendentry{Std};
-% 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     107;    7;      6.775800E-01;   1.538524E+00
-% 50;     111;    7;      3.182800E-01;   6.240050E-01
-% 50;     115;    7;      5.568267E-01;   1.302207E+00
-% 50;     119;    7;      3.521000E-01;   6.923321E-01
-% 50;     123;    7;      1.141467E-01;   2.562440E-01
-% 						};
-% % 			\addlegendentry{Std-woNL};
-% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL 
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     107;    7;      1.058000E+00;   2.442640E+00
-% 50;     111;    7;      4.601733E-01;   9.485014E-01
-% 50;     115;    7;      1.314133E+00;   3.714816E+00
-% 50;     119;    7;      7.090467E-01;   1.649638E+00
-% 50;     123;    7;      1.709133E-01;   4.427992E-01
-% 						};
-% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     107;    7;      5.844933E-01;   1.262175E+00
-% 50;     111;    7;      2.924733E-01;   5.598914E-01
-% 50;     115;    7;      5.133200E-01;   1.185395E+00
-% 50;     119;    7;      3.229267E-01;   6.018227E-01
-% 50;     123;    7;      1.139600E-01;   2.472006E-01
-% 						};
-% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     107;    7;      6.205333E-01;   1.382333E+00
-% 50;     111;    7;      2.987667E-01;   5.806298E-01
-% 50;     115;    7;      5.248667E-01;   1.221795E+00
-% 50;     119;    7;      3.325533E-01;   6.380090E-01
-% 50;     123;    7;      1.116800E-01;   2.356484E-01
-% 						};
-% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     107;    7;      5.090933E-01;   1.090549E+00
-% 50;     111;    7;      2.828200E-01;   5.462717E-01
-% 50;     115;    7;      3.900400E-01;   8.674814E-01
-% 50;     119;    7;      2.775067E-01;   4.926636E-01
-% 50;     123;    7;      1.014133E-01;   2.096448E-01
-% 						};
-% %			SIZE 40
-%  			\draw[<->] (axis cs:139,0.03) -- (axis cs:155,0.03) node[timeLabel,below,pos=.5] {Size040-9};
-% % 			\draw[red] (167, 1.01E+03) circle (3pt);
-% 			\addplot[Std,error bars/.cd, y dir=both, y explicit]%STD
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     139;    9;      1.908620E+00;   3.987439E+00
-% 50;     143;    9;      2.684753E+00;   7.660035E+00
-% 50;     147;    9;      1.692413E+00;   3.354450E+00
-% 50;     151;    9;      1.645480E+00;   6.233754E+00
-% 50;     155;    9;      1.647600E+00;   3.684100E+00
-% 					};
-% % 			\addlegendentry{Std-woNL};
-% 			\addplot[StdwoNL,error bars/.cd, y dir=both, y explicit]%STD woNL
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     139;    9;      4.245527E+00;   1.000110E+01
-% 50;     143;    9;      6.369140E+00;   1.846379E+01
-% 50;     147;    9;      3.578527E+00;   7.470487E+00
-% 50;     151;    9;      7.736733E+00;   3.650712E+01
-% 50;     155;    9;      4.794280E+00;   1.365770E+01
-% 						};
-% 			\addplot[Epsilon,error bars/.cd, y dir=both, y explicit]%epsilon
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     139;    9;      2.023193E+00;   4.228155E+00
-% 50;     143;    9;      2.955173E+00;   8.690866E+00
-% 50;     147;    9;      1.827193E+00;   3.669760E+00
-% 50;     151;    9;      1.962647E+00;   7.795193E+00
-% 50;     155;    9;      1.766853E+00;   4.054424E+00
-% 						};
-% 			\addplot[IR,error bars/.cd, y dir=both, y explicit]%IR
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     139;    9;      2.102240E+00;   4.414102E+00
-% 50;     143;    9;      3.187507E+00;   9.285305E+00
-% 50;     147;    9;      1.896727E+00;   3.813155E+00
-% 50;     151;    9;      1.995840E+00;   7.938650E+00
-% 50;     155;    9;      1.929500E+00;   4.411231E+00
-% 						};
-% 			\addplot[IR3R,error bars/.cd, y dir=both, y explicit]%IR 3R
-% 					table [col sep=semicolon,x=x, y=y, y error expr=\yerrstd] {
-% n;	x;	p;	y;	yerr
-% 50;     139;    9;      1.570753E+00;   3.129554E+00
-% 50;     143;    9;      2.383960E+00;   7.271879E+00
-% 50;     147;    9;      1.547587E+00;   2.992325E+00
-% 50;     151;    9;      1.279873E+00;   4.574241E+00
-% 50;     155;    9;      1.347760E+00;   2.812735E+00
-% 						}; 
+ 			\addlegendentry{Size010-5};
+ 			\addplot[Std2,error bars/.cd, y dir=both, y explicit]%STD
+ 				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;		c;      p;      y;              yerr
+50;		55;		10; 		5;		2.747972E+02;   5.810997E+02
+50;     61;		10;		5;      1.166630E+02;   3.450915E+02
+50;     67;		10;		5;      6.069025E+01;   2.116573E+02
+50;     73;		10;		5;      3.570134E+01;   1.236923E+02
+50;     79;		10;     5;      2.336005E+02;   5.662928E+02
+};
+ 			\addlegendentry{Size015-3};
+ 			\addplot[Std3,error bars/.cd, y dir=both, y explicit]%STD
+ 				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     53;     15;     3;      2.541546E+02;   5.793220E+02
+50;     59;     15;     3;      3.303530E+02;   6.155183E+02
+50;     65;     15;     3;      1.163996E+02;   2.998146E+02
+50;     71;     15;     3;      1.593655E+02;   3.833600E+02
+50;     77;     15;     3;      2.094012E+02;   5.084725E+02
+};
+
+			\addlegendentry{Size015-4};
+ 			\addplot[Std4,error bars/.cd, y dir=both, y explicit]%STD
+ 				table [x=x, y=y,y error expr=\yerrstd] {
+n;      x;      c;      p;      y;              yerr
+50;     59;     15;     4;      3.418624E+02;   6.694700E+02
+50;     65;     15;     4;      3.240789E+02;   6.449419E+02
+50;     71;     15;     4;      3.199653E+02;   5.615545E+02
+50;     77;     15;     4;      2.176583E+02;   5.162483E+02
+50;     83;     15;     4;      1.219303E+02;   3.738415E+02
+};
+
 			\end{axis}
 		\end{tikzpicture}			
 \end{center}
