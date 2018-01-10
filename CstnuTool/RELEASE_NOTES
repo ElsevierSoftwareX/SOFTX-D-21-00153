@@ -1,6 +1,13 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.23.0
+-------
+	date:	2018-01-10
+	
+	Class CSTNUPotential added. This class checks the DC property using node potentials instead of edge values.
+	Some class code has been cleaned and optimized.
+	
 v1.22.4
 -------
 	date:	2018-01-10
