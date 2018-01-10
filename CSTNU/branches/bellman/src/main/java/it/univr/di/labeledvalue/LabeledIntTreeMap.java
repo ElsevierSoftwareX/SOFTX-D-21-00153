@@ -14,6 +14,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 
@@ -278,47 +279,21 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		 * in the map can be removed immediately by the consideration of the new value (in this case remove such values).
 		 * Then, the new value is add in step 2.
 		 */
-
 		final int newLabelSize = newLabel.size();
-		ObjectSet<Label> labelToRemove = new ObjectArraySet<>();
-		// ObjectSet<Label> labelToAdjust = new ObjectArraySet<>();
-		// boolean hasNewLabelToBeInserted = true;
+		ObjectList<Label> labelToRemove = new ObjectArrayList<>();
 		for (final Object2IntMap<Label> mapAllSameLengthLabels : this.mainInt2SetMap.values()) {
 			for (Entry<Label> entry : mapAllSameLengthLabels.object2IntEntrySet()) {
 				final Label l1 = entry.getKey();
 				final int v1 = entry.getIntValue();
 				final int l1Size = l1.size();
 				if (newLabelSize >= l1Size && newLabel.subsumes(l1) && newValue >= v1) {
-					// if (v1 == Constants.INT_NEG_INFINITE) {
-					// // the input value is not simple because has a node set but the subsume an -infinity labeled value, we can continue to
-					// // check with others but making it simple. It will then not insert. (we continue in order to make a sanity check in the rest of the set)
-					// newNodeSet = null;
-					// hasNewLabelToBeInserted = false;
-					// }
 					return false;
 				}
 				if (newLabelSize <= l1Size && l1.subsumes(newLabel) && newValue <= v1) {
 					labelToRemove.add(l1);
-					// The following if is related to the previous version of this class where nodeSet are used. I maintain it because nodeset can come back!
-					// the following if condition is already checked in the previous if.
-					// if (newValue == v1 && newLabel.equals(l1) && newValue == Constants.INT_NEG_INFINITE) {
-					// // the value is already in the set
-					// hasNewLabelToBeInserted = false;
-					// continue;
-					// }
-					// if (newLabel.equals(l1) && newValue < v1) {
-					// labelToRemove.add(l1);
-					// } else {
-					// The already present labeled value (that it is not simple) has to be adjusted if it has a greater value.
-					// if (newValue < v1)
-					// labelToAdjust.add(l1);// such adjustment will set to the same newValue label l1. In a following phase such labeled values are
-					// // evaluated for deciding which has to be removed.
-					// }
-
 				}
 			}
 		}
-
 		// The label to remove and to adjust are now ready to be managed.
 		for (Label lr : labelToRemove) {
 			final int old = this.mainInt2SetMap.get(lr.size()).remove(lr);
@@ -328,12 +303,6 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			}
 			checkValidityOfTheBaseAfterRemoving(lr);
 		}
-		// for (Label lr : labelToAdjust) {
-		// int old = this.mainInt2SetMap.get(lr.size()).put(lr, newValue);
-		// if (LOG.isLoggable(Level.FINEST))
-		// LOG.log(Level.FINEST, "The new value (" + newLabel + ", " + newValue + ") forces the modification of (" + lr + ", " + old + ") to ("
-		// + lr + ", " + newValue + ")");
-		// }
 
 		/**
 		 * Step 2.
@@ -427,8 +396,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * Tries to add all given labeled values into the current map.<br>
-	 * Recursive procedure:
+	 * Tries to add all given labeled values into the current map:
 	 * <ol>
 	 * <li>Given a set of labeled values to insert (all labels have the same length)
 	 * <li>For each of them, compares all same-length labels already in the map with the current one looking for if there is one with same value and only one
@@ -443,7 +411,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 */
 	private boolean insertAndSimplify(Object2IntMap<Label> inputMap, int inputMapLabelLength) {
 		if ((inputMap == null) || (inputMap.size() == 0))
-			return false;// recursion basement!
+			return false;
 
 		ObjectArraySet<Label> toRemove = new ObjectArraySet<>();
 		boolean add = false;
@@ -463,7 +431,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 
 					// check is there is any labeled value with same value and only one opposite literal
 					for (final Entry<Label> entry : currentMapLimitedToLabelOfNSize.object2IntEntrySet()) {
-						final Label l1 = new Label(entry.getKey());
+						Label l1 = entry.getKey();
 						final int v1 = entry.getIntValue();
 
 						Literal lit = null;
@@ -473,8 +441,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						// different literal.
 						// If they haven't the same value, they are ignored and, in the following, they will constitute a base for the set.
 						// 2) The label with the maximum value is always replaced with a labeled value where value is the same but the label does not contain
-						// the
-						// different literal.
+						// the different literal.
 						// If both have the same value, the management is equivalent to 1) first part.
 						// The disadvantage of this management is that is quite difficult to build base.
 						//
@@ -497,6 +464,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 											+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
 								}
 							}
+							l1 = Label.clone(l1);
 							l1.remove(lit.getName());
 							if (l1.size() < 0)
 								throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
@@ -719,7 +687,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 					}
 				}
 				if (toInsert) {
-					newMap.putForcibly(new Label(l1), v1);
+					newMap.putForcibly(Label.clone(l1), v1);
 				}
 			}
 		}

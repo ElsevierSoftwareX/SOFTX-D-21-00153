@@ -296,7 +296,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		if ((o == null) || !(o instanceof LabeledALabelIntTreeMap))
 			return false;
 		final LabeledALabelIntTreeMap lvm = (LabeledALabelIntTreeMap) o;
-		return this.map.equals(lvm.map);
+		return this.map.equals(lvm.map);// this equals checks the size... so NO empty pair (key, {}) cannot be stored!
 	}
 
 	/**
@@ -327,7 +327,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 *         If no labels are subsumed by <code>l</code>, {@link Constants#INT_NULL} is returned.
 	 */
 	public int getMinValueConsistentWith(final Label l, final ALabel p) {
-		if ((l == null) || (p == null) || p.isEmpty())
+		if ((l == null) || (p == null))// || p.isEmpty())
 			return Constants.INT_NULL;
 		final LabeledIntTreeMap map1 = this.map.get(p);
 		if (map1 == null)
@@ -341,7 +341,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * @return the value associate to the key (label, p) if it exits, {@link Constants#INT_NULL} otherwise.
 	 */
 	public int getValue(final Label l, final ALabel p) {
-		if ((l == null) || (p == null) || p.isEmpty())
+		if ((l == null) || (p == null))// || p.isEmpty())
 			return Constants.INT_NULL;
 		final LabeledIntTreeMap map1 = this.map.get(p);
 		if (map1 == null)
@@ -405,48 +405,60 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * @return true if the triple is stored, false otherwise.
 	 */
 	public boolean mergeTriple(final Label label, final ALabel alabel, final int i, final boolean force) {
-		if ((label == null) || (alabel == null) || alabel.isEmpty() || (i == Constants.INT_NULL))
+		if ((label == null) || (alabel == null) || (i == Constants.INT_NULL) || this.getValue(label, alabel) == i)
 			return false;
-		ALabel alabelToStore = new ALabel(alabel);
-		LabeledIntTreeMap map1 = this.map.get(alabelToStore);
-		if (map1 == null) {
-			map1 = new LabeledIntTreeMap();
-			this.map.put(alabelToStore, map1);
-		}
 
-		// CHECK that there is no a more general label
 		/**
+		 * The given labeled value is not present!
 		 * 2017-10-31
 		 * I verified that such optimization reduces computation time.
 		 */
-		boolean isAreadyPresent = map1.get(label) == i;
-		boolean hasToBeAdded = true;
-		// even if it is already present, the following cycle can clean some redundant entry in the upper case set
-		// it also remove the same entry if present. So, it is necessary to add it if it was present.
 		for (ALabel otherALabel : this.keySet()) {
 			LabeledIntTreeMap labeledValues = this.get(otherALabel);
-			for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
-				Label otherLabel = entry1.getKey();
-				int otherValue = entry1.getIntValue();
-				// FIXME: I try to optimize stored label
-				// (ab,CP,-2) vs. (a,C,-3)/
-				//
-				if (otherLabel.subsumes(label) && otherALabel.contains(alabel) && otherValue >= i) {
-					this.remove(otherLabel, otherALabel);
-					continue;
+			for (Object2IntMap.Entry<Label> entry : labeledValues.entrySet()) {
+				Label otherLabel = entry.getKey();
+				int otherValue = entry.getIntValue();
+				// in case that label is (ab,CP,-3) and it is already present (a,C,-3), it is possible to avoid the check!
+				if (alabel.contains(otherALabel) && label.subsumes(otherLabel) && i >= otherValue) {
+					return false;
 				}
-				if (label.subsumes(otherLabel) && alabel.contains(otherALabel) && i >= otherValue) {
-					// it is not necessary to add this value!
-					hasToBeAdded = false;
-					break;
+				if (otherALabel.contains(alabel) && otherLabel.subsumes(label) && otherValue >= i) {
+					this.remove(otherLabel, otherALabel);
 				}
 			}
-			if (!hasToBeAdded)
-				break;
 		}
-		if (!hasToBeAdded && !isAreadyPresent)
-			return false;
-		return ((force) ? map1.putForcibly(label, i) != Constants.INT_NULL : map1.put(label, i));
+
+		int size;
+		LabeledIntTreeMap map1 = this.map.get(alabel);
+		if (map1 == null) {
+			map1 = new LabeledIntTreeMap();
+			this.map.put(ALabel.clone(alabel), map1);
+			size = 0;
+		} else {
+			size = map1.size();
+		}
+		boolean added = ((force) ? map1.putForcibly(label, i) != Constants.INT_NULL : map1.put(label, i));
+		if (added && size == map1.size()) {
+			// the insertion determined a simplification of the map, we re-check all values.
+			for (ALabel otherALabel : this.keySet()) {
+				LabeledIntTreeMap labeledValues = this.get(otherALabel);
+				if (labeledValues == map1)
+					continue;
+				for (Object2IntMap.Entry<Label> entry : labeledValues.entrySet()) {
+					Label otherLabel = entry.getKey();
+					int otherValue = entry.getIntValue();
+					// in case that label is (ab,CP,-3) and it is already present (a,C,-3), it is possible to avoid the check!
+					for (Object2IntMap.Entry<Label> entry1 : map1.entrySet()) {
+						Label label1 = entry1.getKey();
+						int value1 = entry1.getIntValue();
+						if (otherALabel.contains(alabel) && otherLabel.subsumes(label1) && otherValue >= value1) {
+							this.remove(otherLabel, otherALabel);
+						}
+					}
+				}
+			}
+		}
+		return added;
 	}
 
 	/**
@@ -497,7 +509,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * @return true if the triple is stored, false otherwise.
 	 */
 	public boolean mergeTriple(final String label, final ALabel p, final int i, final boolean force) {
-		if ((label == null) || (p == null) || p.isEmpty() || (i == Constants.INT_NULL))
+		if ((label == null) || (p == null) || (i == Constants.INT_NULL))// p.isEmpty() ||
 			return false;
 		final Label l = Label.parse(label);
 		return this.mergeTriple(l, p, i, force);
@@ -515,9 +527,9 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		if (map1 == null)
 			return Constants.INT_NULL;
 		int old = map1.remove(l);
-		// if (map1.size() == 0) { I decided to not remove because it requires more time to check if the map has been removed during merging operation!
-		// this.map.remove(p);
-		// }
+		if (map1.size() == 0) {
+			this.map.remove(p);// it is necessary for making equals working.
+		}
 		return old;
 	}
 

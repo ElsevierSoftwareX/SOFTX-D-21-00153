@@ -91,7 +91,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 		@Override
 		public ALabel setValue(ALabel value) {
-			ALabel old = new ALabel(this.aLabel);
+			ALabel old = ALabel.clone(this.aLabel);
 			this.aLabel = value;
 			return old;
 		}

@@ -147,7 +147,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		public ALabel conjunction(final ALabel label) {
 			if (label.isEmpty())
 				return this;
-			return new ALabel(label);
+			return ALabel.clone(label);
 		}
 
 		@Override
@@ -324,17 +324,28 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Constructs a label cloning the given label l.
 	 * 
-	 * @param label the label to clone. If null, this will be an empty label.
+	 * @param label the label to clone. It cannot be null or empty!
 	 */
-	public ALabel(final ALabel label) {
+	private ALabel(final ALabel label) {
 		this();
-		if (label == null || label.equals(emptyLabel)) {
-			return;
-		}
+		if (label == null || label.isEmpty())
+			throw new IllegalArgumentException("Label cannot be null or empty!");
 		this.alphabet = label.alphabet;// alphabet has to be shared!
 		this.bit0 = label.bit0;
 		this.maxIndex = label.maxIndex;
 		this.cacheOfSize = label.cacheOfSize;
+	}
+
+	/**
+	 * In order to have a correct copy of a alabel.
+	 * 
+	 * @param label
+	 * @return a distinct equal copy of label
+	 */
+	static final public ALabel clone(final ALabel label) {
+		if (label == null || label.isEmpty())
+			return ALabel.emptyLabel;
+		return new ALabel(label);
 	}
 
 	/**
@@ -390,35 +401,13 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	public int compareTo(final ALabel label) {
 		if (label == null)
 			return 1;
+		if (label.isEmpty()) {
+			if (this.isEmpty())
+				return 0;
+			return 1;
+		}
 		if (this.alphabet != label.alphabet)
 			throw new IllegalArgumentException("Comparison is not possible because the given label has a different alphabet from the current one!");
-		// byte i = 0, j = 0, cmp = 0;
-		// State thisState, labelState;
-		//
-		// while (i <= this.maxIndex && j <= label.maxIndex) {
-		// while ((thisState = getState(i)) == State.absent && i <= this.maxIndex) {
-		// i++;
-		// }
-		// while ((labelState = label.getState(j)) == State.absent && j <= label.maxIndex) {
-		// j++;
-		// }
-		// if (i != j)
-		// return i - j;
-		// cmp = (byte) thisState.compareTo(labelState);
-		// if (cmp != 0)
-		// return cmp;
-		// i++;
-		// j++;
-		// }
-		// if (i > this.maxIndex) {
-		// if (j <= label.maxIndex)
-		// return -1;
-		// return 0;
-		// }
-		// // i<=maxIndex
-		// if (j > label.maxIndex)
-		// return 1;
-		// return 0;// impossible
 		return Long.compareUnsigned(this.bit0, label.bit0);
 	}
 
@@ -536,6 +525,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	public boolean equals(final ALabel alabel) {
 		if (alabel == null)
 			return false;
+		if (this.bit0 == 0 && this.bit0 == alabel.bit0)
+			return true;
 		return this.alphabet == alabel.alphabet && this.bit0 == alabel.bit0;
 	}
 
@@ -647,6 +638,19 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 			return;
 		for (int i = inputSet.length; (--i) >= 0;) {
 			set(getIndex(inputSet[i]), State.absent);
+		}
+	}
+
+	/**
+	 * It removes all a-letters in <b>aLabel</b> from the current label.
+	 *
+	 * @param aLabel a-Label to remove.
+	 */
+	public void remove(final ALabel aLabel) {
+		if (aLabel == null)
+			return;
+		for (ALetter aletter : aLabel) {
+			set(getIndex(aletter), State.absent);
 		}
 	}
 

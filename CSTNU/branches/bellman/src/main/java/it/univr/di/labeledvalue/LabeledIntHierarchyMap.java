@@ -65,7 +65,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		 */
 		public HierarchyNode(Label l, int v) {
 			this();
-			this.label = new Label(l);
+			this.label = Label.clone(l);
 			this.value = v;
 		}
 
@@ -627,7 +627,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		// put(newNode.label, newNode.value);
 		// }
 		// }
-		Label labelWOp = new Label(newNode.label);
+		Label labelWOp = Label.clone(newNode.label);
 		labelWOp.remove(p.getName());
 		if (labelWOp.isEmpty())
 			labelWOp = Label.emptyLabel;

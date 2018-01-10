@@ -23,7 +23,7 @@ import it.univr.di.labeledvalue.Literal;
 @SuppressWarnings("javadoc")
 public class CSTNUGraphMLWriterTest {
 
-	String fileName = "/tmp/testGraphML.cstnu";
+	String fileName = "src/test/resources/testGraphML.cstnu";
 
 	@Test
 	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws WellDefinitionException, IOException {

@@ -151,7 +151,7 @@ public class CSTNUTest {
 		ca.mergeUpperCaseValue(Label.parse("ab"), new ALabel(C.getName(), this.alpha), -4);
 
 		this.cstnu.setG(g);
-		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da, null);
+		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da);
 
 		LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
 		daOk.mergeUpperCaseValue(Label.parse("ab¬c"), new ALabel("D", this.alpha), 0);

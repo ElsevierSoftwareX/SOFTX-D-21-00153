@@ -182,6 +182,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			} else {
 				System.out.println("The given CSTNU is NOT Dynamic controllable!");
 			}
+			System.out.println("Final graph: " + cstnu.g.toString());
+
 			System.out.println("Details: " + status);
 		} else {
 			System.out.println("Checking has not been finished!");
@@ -319,7 +321,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 
 				// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 				// WD3 property.
-				Label currentLabelModified = new Label(currentLabel);
+				Label currentLabelModified = Label.clone(currentLabel);
 				for (final char l : currentLabel.getPropositions()) {
 					LabeledNode obs = this.g.getObserver(l);
 					if (obs == null) {
@@ -815,11 +817,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * @param eAC CANNOT BE NULL
 	 * @param eCX CANNOT BE NULL
 	 * @param eAX CANNOT BE NULL
-	 * @param nZ Z node of the CSTNU
 	 * @return true if the rule has been applied.
 	 */
 	boolean labeledCrossLowerCaseRule(final LabeledNode nA, final LabeledNode nC, final LabeledNode nX, final LabeledIntEdge eAC, final LabeledIntEdge eCX,
-			final LabeledIntEdge eAX, LabeledNode nZ) {
+			final LabeledIntEdge eAX) {
 
 		boolean ruleApplied = false;
 		final LabeledLowerCaseValue lowerCaseValue = eAC.getLowerCaseValue();
@@ -852,7 +853,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					continue; // Rule condition!
 
 				// Rule condition: upper case label cannot be equal or contain c name
-				if (alephNOTEmpty && ((aleph.size() > 1 && nX != nZ) || aleph.contains(c))) {
+				if (alephNOTEmpty && aleph.contains(c)) {
 					continue;// rule condition
 				}
 
@@ -959,7 +960,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					final int oldZ = (Debug.ON) ? eXA.getUpperCaseValue(beta, aleph) : -1;
 					final String oldXA = (Debug.ON) ? eXA.toString() : "";
 
-					ALabel aleph1 = new ALabel(aleph);
+					ALabel aleph1 = ALabel.clone(aleph);
 					aleph1.remove(nodeLetter);
 
 					boolean mergeStatus = (aleph1.isEmpty()) ? eXA.mergeLabeledValue(beta, v) : eXA.mergeUpperCaseValue(beta, aleph1, v);
@@ -1537,7 +1538,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			}
 
 			if (!AB.equalsAllLabeledValues(edgeCopy)) {
-				newEdgesToCheck.add(AB, A, B, this.Z, this.g);
+				newEdgesToCheck.add(AB, A, B, this.Z, this.g, this.applyReducedSetOfRules);
 				// if (Debug.ON) {
 				// int ne = AB.getLabeledValueMap().size();
 				// if (LOG.isLoggable(Level.INFO)) {
@@ -1589,7 +1590,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				 * The following rule are called if there are condition (avoid to call for nothing)
 				 */
 				if (!AB.getLowerCaseValue().isEmpty()) {
-					labeledCrossLowerCaseRule(A, B, C, AB, BC, AC, this.Z);
+					labeledCrossLowerCaseRule(A, B, C, AB, BC, AC);
 				}
 
 				boolean add = false;
@@ -1602,7 +1603,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					add = true;
 				}
 				if (add) {
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g);
+					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.applyReducedSetOfRules);
 					// if (Debug.ON) {
 					// int ne = AC.getLabeledValueMap().size();
 					// if (LOG.isLoggable(Level.INFO)) {
@@ -1619,8 +1620,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					// }
 				}
 
-				if (!this.checkStatus.consistency)
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
 					return getCheckStatus();
+				}
 
 			}
 
@@ -1662,7 +1665,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				}
 
 				if (!CA.getLowerCaseValue().isEmpty()) {
-					labeledCrossLowerCaseRule(C, A, B, CA, AB, CB, this.Z);
+					labeledCrossLowerCaseRule(C, A, B, CA, AB, CB);
 				}
 
 				boolean add = false;
@@ -1675,7 +1678,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					add = true;
 				}
 				if (add) {
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g);
+					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.applyReducedSetOfRules);
 				}
 				// if (Debug.ON) {
 				// int ne = CB.getLabeledValueMap().size();
@@ -1692,9 +1695,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				// }
 				// }
 
-				if (!this.checkStatus.consistency)
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
 					return getCheckStatus();
-
+				}
 			}
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -1740,8 +1744,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		// }
 		// }
 		// }
-		if (!this.checkStatus.consistency)
-			this.checkStatus.finished = true;
 		return getCheckStatus();
 	}
 

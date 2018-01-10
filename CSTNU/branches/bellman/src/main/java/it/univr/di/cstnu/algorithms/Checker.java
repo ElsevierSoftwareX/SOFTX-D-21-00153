@@ -681,7 +681,7 @@ public class Checker {
 	@SuppressWarnings({ "javadoc" })
 	private static CSTN makeCSTNInstance(Checker tester, LabeledIntGraph g) {
 		if (tester.cstnType == CstnType.cstnu) {
-			return new CSTNU(g, tester.timeOut);
+			return (tester.potential) ? new CSTNUPotential(g, tester.timeOut) : new CSTNU(g, tester.timeOut);
 		}
 		if (tester.cstn2cstn0) {
 			return new CSTN2CSTN0(tester.reactionTime, g, tester.timeOut);
@@ -716,6 +716,12 @@ public class Checker {
 	 */
 	@Option(required = false, name = "-cstn2cstn0", usage = "Check the epsilon-DC of the input instance using IR-DC on a correspondig streamlined CSTN. It transforms the input CSTN and then check its IR-DC. Epsilon value can be specified using -reactionTime parameter.")
 	private boolean cstn2cstn0 = false;
+
+	/**
+	 * Parameter for asking to DC check using potential
+	 */
+	@Option(required = false, name = "-potential", usage = "Check the DC of the input instance using potential DC algorithm.")
+	private boolean potential = false;
 
 	/**
 	 * Which type of CSTN are input files

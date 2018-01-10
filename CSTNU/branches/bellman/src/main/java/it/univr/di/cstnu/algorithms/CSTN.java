@@ -185,15 +185,16 @@ public class CSTN {
 
 		/**
 		 * Check if the edge that has to be add has one end-point that is an observer. In positive case, it adds
-		 * all incident edges to the observation t.p.
+		 * all in edges to the destination node for guaranteeing that R3* can be applied again with new values.
 		 * 
 		 * @param enSnD
 		 * @param nS
 		 * @param nD
 		 * @param Z
 		 * @param g
+		 * @param applyReducedSetOfRules
 		 */
-		void add(LabeledIntEdge enSnD, LabeledNode nS, LabeledNode nD, LabeledNode Z, LabeledIntGraph g) {
+		final void add(LabeledIntEdge enSnD, LabeledNode nS, LabeledNode nD, LabeledNode Z, LabeledIntGraph g, boolean applyReducedSetOfRules) {
 			// in any case, the edge has to be added.
 			this.edgesToCheck.add(enSnD);
 			// then,
@@ -201,13 +202,35 @@ public class CSTN {
 				return;
 			// add all incident to nD
 			if (nD != Z) {
-				this.edgesToCheck.addAll(g.getIncidentEdges(nD));
-			} else {
-				if (this.alreadyAddAllIncidentsToZ)
-					return;
-				this.edgesToCheck.addAll(g.getInEdges(Z));
-				this.alreadyAddAllIncidentsToZ = true;
+				if (!applyReducedSetOfRules)
+					this.edgesToCheck.addAll(g.getInEdges(nD));
+				return;
 			}
+
+			if (this.alreadyAddAllIncidentsToZ)
+				return;
+			this.edgesToCheck.addAll(g.getInEdges(Z));
+			this.alreadyAddAllIncidentsToZ = true;
+		}
+
+		/**
+		 * Add an edge without any check.
+		 * 
+		 * @param enSnD
+		 * @return true if this set did not already contain the specified element
+		 */
+		final boolean add(LabeledIntEdge enSnD) {
+			return this.edgesToCheck.add(enSnD);
+		}
+
+		/**
+		 * Add a set of edges without any check.
+		 * 
+		 * @param eSet
+		 * @return true if this set changed after the add.
+		 */
+		final boolean addAll(Collection<LabeledIntEdge> eSet) {
+			return this.edgesToCheck.addAll(eSet);
 		}
 
 		/**
@@ -276,6 +299,11 @@ public class CSTN {
 	 */
 	static final boolean checkTimeOutAndAdjustStatus(Instant timeoutInstant, CSTNCheckStatus status) {
 		if (Instant.now().isAfter(timeoutInstant)) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Time out occurred!");
+				}
+			}
 			status.timeout = true;
 			status.consistency = false;
 			status.finished = false;
@@ -588,7 +616,7 @@ public class CSTN {
 			}
 			// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 			// WD3 property.
-			Label currentLabelModified = new Label(currentLabel);
+			Label currentLabelModified = Label.clone(currentLabel);
 			for (final char l : currentLabel.getPropositions()) {
 				LabeledNode obs = this.g.getObserver(l);
 				if (obs == null) {
@@ -1569,7 +1597,7 @@ public class CSTN {
 			}
 		}
 
-		Label labelToCleanWOp = new Label(labelToClean);
+		Label labelToCleanWOp = Label.clone(labelToClean);
 		labelToCleanWOp.remove(observed);
 
 		final Label alpha = labelFromObs.getSubLabelIn(labelToCleanWOp, false);
@@ -1640,7 +1668,7 @@ public class CSTN {
 			if (nX.getLabel().contains(observed))
 				return null;
 		}
-		Label alphaPrime = (new Label(labelFromObs)).remove(observed);
+		Label alphaPrime = (Label.clone(labelFromObs)).remove(observed);
 		if (this.withNodeLabels) {
 			alphaPrime.remove(this.g.getChildrenOf(nObs));
 			if (nX == this.Z && alphaPrime.containsUnknown()) {
@@ -1686,11 +1714,11 @@ public class CSTN {
 				return null;
 			}
 		}
-		final Label beta = (new Label(labelToClean)).remove(observed);
+		final Label beta = (Label.clone(labelToClean)).remove(observed);
 		if (this.withNodeLabels) {
 			Label childrenOfP = this.g.getChildrenOf(nObs);
 			if (childrenOfP != null && !childrenOfP.isEmpty()) {
-				Label test = (new Label(labelFromObs)).remove(childrenOfP);
+				Label test = (Label.clone(labelFromObs)).remove(childrenOfP);
 				if (!labelFromObs.equals(test)) {
 					return null;// labelFromObs must not contain p or its children.
 				}
@@ -1827,7 +1855,7 @@ public class CSTN {
 					labelModificationR0qR0(A, B, AB);
 				}
 				if (!AB.equalsAllLabeledValues(edgeCopy)) {
-					newEdgesToCheck.add(AB, A, B, this.Z, this.g);
+					newEdgesToCheck.add(AB, A, B, this.Z, this.g, this.applyReducedSetOfRules);
 				}
 			}
 
@@ -1863,14 +1891,16 @@ public class CSTN {
 				if (edgeCopy == null && !AC.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(AC, A, C);
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g);
+					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.applyReducedSetOfRules);
 				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(AC)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g);
+					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.applyReducedSetOfRules);
 				}
 
-				if (!this.checkStatus.consistency)
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
 					return this.checkStatus;
+				}
 			}
 
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1899,14 +1929,16 @@ public class CSTN {
 				if (edgeCopy == null && !CB.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(CB, C, B);
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g);
+					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.applyReducedSetOfRules);
 				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(CB)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g);
+					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.applyReducedSetOfRules);
 				}
 
-				if (!this.checkStatus.consistency)
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
 					return this.checkStatus;
+				}
 			}
 
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1924,8 +1956,6 @@ public class CSTN {
 		if (!this.checkStatus.finished) {
 			edgesToCheck.takeIn(newEdgesToCheck);
 		}
-		if (!this.checkStatus.consistency)
-			this.checkStatus.finished = true;
 		return this.checkStatus;
 	}
 
@@ -2009,8 +2039,10 @@ public class CSTN {
 						if (empty)
 							continue;
 					}
-					if (!this.checkStatus.consistency)
+					if (!this.checkStatus.consistency) {
+						this.checkStatus.finished = true;
 						return this.checkStatus;
+					}
 
 					if (C == this.Z || !this.applyReducedSetOfRules) {
 						if (A.isObserver()) {

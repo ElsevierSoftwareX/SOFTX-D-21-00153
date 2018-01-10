@@ -826,7 +826,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			LabeledIntEdge edge;
 			for (int i = 0; i < this.order; i++) {
 				for (int j = 0; j < this.order; j++) {
-					if ((edge = this.adjacency[i][j]) != null && edge.getLowerCaseValue() != null) {
+					if ((edge = this.adjacency[i][j]) != null && !edge.getLowerCaseValue().isEmpty()) {
 						this.lowerCaseEdges.add(edge);
 					}
 				}
@@ -1114,6 +1114,28 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.adjacency[ei.rowAdj][ei.colAdj] = null;
 		this.edge2index.remove(ei.edge.getName());
 		this.lowerCaseEdges = null;
+		return true;
+	}
+
+	/**
+	 * Reverse (transpose) the current graph.
+	 * 
+	 * @return true if the operation was successful.
+	 */
+	public boolean reverse() {
+		int n = this.getVertexCount();
+		LabeledIntEdge swap;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < i; j++) {
+				swap = this.adjacency[i][j];
+				this.adjacency[i][j] = this.adjacency[j][i];
+				this.adjacency[j][i] = swap;
+				if (swap != null)
+					this.edge2index.put(swap.getName(), new EdgeIndex(swap, j, i));
+				if ((swap = this.adjacency[i][j]) != null)
+					this.edge2index.put(swap.getName(), new EdgeIndex(swap, i, j));
+			}
+		}
 		return true;
 	}
 

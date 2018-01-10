@@ -44,7 +44,7 @@ public class LabelTest {
 	public final void testCompareTo() {
 		Label aNotB = Label.parse("a¬b");
 		Literal uC = Literal.create('c', Literal.UNKNONW);
-		Label aNotB1 = new Label(aNotB);
+		Label aNotB1 = Label.clone(aNotB);
 		assertTrue(aNotB.compareTo(aNotB1) == 0);
 
 		aNotB.conjunctExtended(uC.getNegated());
@@ -231,14 +231,14 @@ public class LabelTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#Label(it.univr.di.labeledvalue.Label)}.
+	 * Test method for {@link it.univr.di.labeledvalue.Label#clone(Label)}.
 	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testLabelLabel() {
 		Label ab = Label.parse("a¬b");
 
-		Label ab1 = new Label(ab);
+		Label ab1 = Label.clone(ab);
 
 		assertEquals(ab, ab1);
 		assertFalse(ab == ab1);
@@ -472,7 +472,7 @@ public class LabelTest {
 	@Test
 	public final void cloneEmptyLabel() {
 		Label a = Label.emptyLabel;
-		Label b = new Label(a);
+		Label b = Label.clone(a);
 
 		// for(char c='A'; c< 'ù'; c++)
 		// System.out.println("Char "+c+" to int:"+Character.hashCode(c));

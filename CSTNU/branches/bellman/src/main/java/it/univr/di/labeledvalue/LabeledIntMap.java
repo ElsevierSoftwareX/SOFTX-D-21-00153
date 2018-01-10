@@ -215,17 +215,16 @@ public interface LabeledIntMap {
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse);
 
 	/**
-	 * Put a label with value <code>i</code> only if label <code>l</code> is not null.
+	 * Put a label with value <code>i</code> if label <code>l</code> is not null and there is not a labeled value in the set with label <code>l</code> or it is
+	 * present but with a value higher than <code>l</code>.
 	 * <p>
-	 * The labeled value is inserted if there is not a labeled value in the set with label <code>l</code> or it is present but with a value higher than
-	 * <code>l</code>.<br>
 	 * Not mandatory: the method can remove or modify other labeled values of the set in order to minimize the labeled values present guaranteeing that no info
 	 * is lost.
 	 *
 	 * @param l a not null label.
 	 * @param i a not {@link Constants#INT_NULL} value.
-	 * @return true if <code>(l,i)</code> has been inserted. Since an insertion can be removed more than one redundant labeled ints, it is nonsensical to return
-	 *         "the old value" as expected from a standard put method.
+	 * @return true if <code>(l,i)</code> has been inserted. Since an insertion can remove more than one redundant labeled values, it is nonsensical to return
+	 *         "the old value" as expected from a classical put method.
 	 */
 	public boolean put(Label l, int i);
 

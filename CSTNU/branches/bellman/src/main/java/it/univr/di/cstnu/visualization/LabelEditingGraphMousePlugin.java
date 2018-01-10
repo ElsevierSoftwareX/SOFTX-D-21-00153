@@ -446,7 +446,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 						if (dest.getName().equals(nodeName)) {
 							e.clearLowerCaseValue();
-							ALabel destALabel = (dest.getAlabel() != null) ? new ALabel(dest.getAlabel()) : new ALabel(dest.getName(), null);
+							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel()) : new ALabel(dest.getName(), null);
 							dest.setAlabel(destALabel);
 							e.setLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 							// value of a contingent must have the label of its endpoints.
