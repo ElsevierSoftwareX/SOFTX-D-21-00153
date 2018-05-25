@@ -175,6 +175,12 @@ public class LabeledIntHierarchyMapTest {
 			// TODO Auto-generated method stub
 			return 0;
 		}
+
+		@Override
+		public boolean alreadyRepresents(Label newLabel, int newValue) {
+			// TODO Auto-generated method stub
+			return false;
+		}
 	}
 
 	@SuppressWarnings("javadoc")

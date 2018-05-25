@@ -244,7 +244,7 @@ public class LabeledIntGraphTest {
 		assertEquals(g.toString(), g1.toString());
 		assertTrue(g1.hasSameEdgesOf(g));
 
-		eUZ.removeLabel(l);
+		eUZ.removeLabeledValue(l);
 		eUZ.putLabeledValue(Label.emptyLabel, -22);
 
 		// System.out.println(g);
@@ -325,4 +325,67 @@ public class LabeledIntGraphTest {
 		assertEquals(g.getEdgeCount(), 6);
 	}
 
+	@SuppressWarnings({ "static-method", "javadoc" })
+	@Test
+	public void reverse() {
+		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+
+		LabeledNode X = new LabeledNode("X");
+		LabeledNode Z = new LabeledNode("Z");
+		g.addVertex(Z);
+		g.addVertex(X);
+		g.addVertex(new LabeledNode("A3"));
+		g.addVertex(new LabeledNode("A4"));
+		g.addVertex(new LabeledNode("A5"));
+		g.addVertex(new LabeledNode("A6"));
+		g.addVertex(new LabeledNode("A7"));
+		g.addVertex(new LabeledNode("A8"));
+		g.addVertex(new LabeledNode("A9"));
+		g.addVertex(new LabeledNode("A10"));
+		g.addVertex(new LabeledNode("A11"));
+		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
+		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
+		g.addEdge(new LabeledIntEdgePluggable("Z4", LabeledIntTreeMap.class), "Z", "A4");
+		g.addEdge(new LabeledIntEdgePluggable("A3_11", LabeledIntTreeMap.class), "A3", "A11");
+		g.addEdge(new LabeledIntEdgePluggable("A11_3", LabeledIntTreeMap.class), "A11", "A3");
+		g.addEdge(new LabeledIntEdgePluggable("A4_11", LabeledIntTreeMap.class), "A4", "A11");
+		g.addEdge(new LabeledIntEdgePluggable("A11_4", LabeledIntTreeMap.class), "A11", "A4");
+		g.addEdge(new LabeledIntEdgePluggable("A11_5", LabeledIntTreeMap.class), "A11", "A5");
+		// System.out.println("G: "+g);
+
+		LabeledIntEdgePluggable e1;
+		for (LabeledIntEdge edge : g.getEdges()) {
+			e1 = new LabeledIntEdgePluggable(edge.getName() + "new", LabeledIntTreeMap.class);
+			((LabeledIntEdgePluggable) edge).takeIn(e1);
+		}
+		g.reverse();
+		assertEquals(g.getVertexCount(), 11);
+		assertEquals(g.getEdgeCount(), 8);
+		String expected = "%LabeledIntGraph: prova\n" +
+				"%LabeledIntGraph Syntax\n" +
+				"%LabeledNode: <name, label, proposition observed>\n" +
+				"%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>\n" +
+				"Nodes:\n" +
+				"<Z,	⊡,	¿>\n" +
+				"<A3,	⊡,	¿>\n" +
+				"<A7,	⊡,	¿>\n" +
+				"<A5,	⊡,	¿>\n" +
+				"<A9,	⊡,	¿>\n" +
+				"<A10,	⊡,	¿>\n" +
+				"<A11,	⊡,	¿>\n" +
+				"<X,	⊡,	¿>\n" +
+				"<A4,	⊡,	¿>\n" +
+				"<A8,	⊡,	¿>\n" +
+				"<A6,	⊡,	¿>\n" +
+				"Edges:\n" +
+				"<A11_3,	normal,	A3,	A11,	L:{}, LL:{}, UL:{}>\n" +
+				"<A11_4,	normal,	A4,	A11,	L:{}, LL:{}, UL:{}>\n" +
+				"<A11_5,	normal,	A5,	A11,	L:{}, LL:{}, UL:{}>\n" +
+				"<A3_11,	normal,	A11,	A3,	L:{}, LL:{}, UL:{}>\n" +
+				"<A4_11,	normal,	A11,	A4,	L:{}, LL:{}, UL:{}>\n" +
+				"<Z3,	normal,	A3,	Z,	L:{}, LL:{}, UL:{}>\n" +
+				"<Z4,	normal,	A4,	Z,	L:{}, LL:{}, UL:{}>\n" +
+				"<ZX,	normal,	X,	Z,	L:{}, LL:{}, UL:{}>\n";
+		assertEquals("Reversed graph:", expected, g.toString());
+	}
 }

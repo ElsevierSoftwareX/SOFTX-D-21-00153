@@ -219,10 +219,15 @@ public class Checker {
 			+ CSVSep + "DC"
 			+ CSVSep + "#R0"
 			+ CSVSep + "#R3"
-			+ CSVSep + "#LNC"
-			+ CSVSep + "#LUC+FLUC+LCUC"
-			+ CSVSep + "#LCC"
-			+ CSVSep + "#LLR";
+			+ CSVSep + "#LNC";
+	/**
+	 * 
+	 */
+	static final String OUTPUT_HEADER_CSTNU = OUTPUT_HEADER
+			+ CSVSep + "#LUC+FLUC+LCUC"// upperCaseRuleCalls
+			+ CSVSep + "#LLC"// lowerCaseRuleCalls
+			+ CSVSep + "#LCC"// crossCaseRuleCalls
+			+ CSVSep + "#LLR";// letterRemovalRuleCalls
 
 	/**
 	 * 
@@ -239,20 +244,25 @@ public class Checker {
 	 * 
 	 */
 	static final String OUTPUT_ROW_TIME = CSVSep
-			+ "%E"
-			+ CSVSep + "%E"
-			+ CSVSep + "%s";
+			+ "%E"// average time
+			+ CSVSep + "%E"// std dev
+			+ CSVSep + "%s";// true of false for DC
 
 	/**
 	 * 
 	 */
 	static final String OUTPUT_ROW_TIME_STATS = OUTPUT_ROW_TIME
-			+ CSVSep + "%d"
-			+ CSVSep + "%d"
-			+ CSVSep + "%d"
-			+ CSVSep + "%d"
-			+ CSVSep + "%d"
-			+ CSVSep + "%d";
+			+ CSVSep + "%d"// r0
+			+ CSVSep + "%d"// r3
+			+ CSVSep + "%d";// lp;
+
+	/**
+	 * 
+	 */
+	static final String OUTPUT_ROW_TIME_STATS_CSTNU = CSVSep + "%d"// upperCaseRuleCalls
+			+ CSVSep + "%d"// lowerCaseRuleCalls
+			+ CSVSep + "%d"// crossCaseRuleCalls
+			+ CSVSep + "%d";// letterRemovalRuleCalls
 
 	/**
 	 * Class for representing edge labeled values.
@@ -281,7 +291,8 @@ public class Checker {
 	// static final String VERSIONandDATE = "2.1, November, 14 2017";// Multi-thread version. Fixed a slip!
 	// static final String VERSIONandDATE = "2.2, November, 15 2017";// Added the possibility to test CSTNEpsilonwoNodeLabels and CSTN2CSTN0
 	// static final String VERSIONandDATE = "2.23, November, 30 2017";// Improved the print of statistics file: std dev is print only when # checks > 1
-	static final String VERSIONandDATE = "2.24, December, 04 2017";// Added CSTNEpsilon3R
+	// static final String VERSIONandDATE = "2.24, December, 04 2017";// Added CSTNEpsilon3R
+	static final String VERSIONandDATE = "2.25, January, 17 2018";// Improved print of statistics.
 
 	/**
 	 * @param tester
@@ -314,9 +325,8 @@ public class Checker {
 				status.consistency = false;
 				continue;
 			} catch (Exception e) {
-				msg = getNow() + ": a different exception has occurred. " + graphToCheck.getName()
-						+ " CSTN(U) is ignored.\nError details:"
-						+ e.getMessage();
+				msg = getNow() + ": a different exception has occurred. " + graphToCheck.getFileName()
+						+ " CSTN(U) is ignored.\nError details: " + e.toString();
 				System.out.println(msg);
 				LOG.severe(msg);
 				checkInterrupted = true;
@@ -400,7 +410,7 @@ public class Checker {
 				for (LabeledIntEdge e : graphToCheck.getEdgesArray()) {
 					for (Entry<Label> entry : e.getLabeledValueSet()) {
 						if (entry.getIntValue() == value)
-							e.removeLabel(entry.getKey());
+							e.removeLabeledValue(entry.getKey());
 					}
 				}
 			}
@@ -506,15 +516,17 @@ public class Checker {
 		rowToWrite += String.format(OUTPUT_ROW_TIME_STATS,
 				localAvg,
 				((tester.nDCRepetition > 1) ? localStdDev : Double.NaN),
-				((!tester.noDCCheck) ? (status.finished ? status.consistency : "false") : "-"),
+				((!tester.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"),
 				status.r0calls,
 				status.r3calls,
-				status.labeledValuePropagationCalls,
-				(tester.cstnType == CstnType.cstnu) ? ((CSTNUCheckStatus) status).upperCaseRuleCalls : 0,
-				(tester.cstnType == CstnType.cstnu) ? ((CSTNUCheckStatus) status).upperCaseRuleCalls : 0,
-				(tester.cstnType == CstnType.cstnu) ? ((CSTNUCheckStatus) status).lowerCaseRuleCalls : 0,
-				(tester.cstnType == CstnType.cstnu) ? ((CSTNUCheckStatus) status).crossCaseRuleCalls : 0,
-				(tester.cstnType == CstnType.cstnu) ? ((CSTNUCheckStatus) status).letterRemovalRuleCalls : 0);
+				status.labeledValuePropagationCalls);
+		if (tester.cstnType == CstnType.cstnu) {
+			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
+					((CSTNUCheckStatus) status).upperCaseRuleCalls,
+					((CSTNUCheckStatus) status).lowerCaseRuleCalls,
+					((CSTNUCheckStatus) status).crossCaseRuleCalls,
+					((CSTNUCheckStatus) status).letterRemovalRuleCalls);
+		}
 
 		synchronized (tester.output) {
 			tester.output.println(rowToWrite);
@@ -553,7 +565,6 @@ public class Checker {
 		LOG.finest("Parameters ok!");
 		if (tester.versionReq)
 			return;
-
 
 		final LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
 		/**
@@ -681,7 +692,11 @@ public class Checker {
 	@SuppressWarnings({ "javadoc" })
 	private static CSTN makeCSTNInstance(Checker tester, LabeledIntGraph g) {
 		if (tester.cstnType == CstnType.cstnu) {
-			return new CSTNU(g, tester.timeOut);
+			if (tester.potential)
+				return new CSTNUPotential(g, tester.timeOut);
+			if (tester.cstnu2cstn)
+				return new CSTNU2CSTN(g, tester.timeOut);
+			return new CSTNU(g, tester.timeOut, tester.onlyLPQR0QR3OrToZ);
 		}
 		if (tester.cstn2cstn0) {
 			return new CSTN2CSTN0(tester.reactionTime, g, tester.timeOut);
@@ -689,7 +704,7 @@ public class Checker {
 		CSTN cstn;
 		switch (tester.dcSemantics) {
 		case ε:
-			if (tester.onlyLPQR0QR3) {
+			if (tester.onlyLPQR0QR3OrToZ) {
 				cstn = (tester.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(tester.reactionTime, g, tester.timeOut)
 						: new CSTNEpsilon3R(tester.reactionTime, g, tester.timeOut);
 			} else {
@@ -698,7 +713,7 @@ public class Checker {
 			}
 			break;
 		case IR:
-			if (tester.onlyLPQR0QR3) {
+			if (tester.onlyLPQR0QR3OrToZ) {
 				cstn = (tester.woNodeLabels) ? new CSTNIR3RwoNodeLabels(g, tester.timeOut) : new CSTNIR3R(g, tester.timeOut);
 			} else {
 				cstn = (tester.woNodeLabels) ? new CSTNIRwoNodeLabels(g, tester.timeOut) : new CSTNIR(g, tester.timeOut);
@@ -716,6 +731,18 @@ public class Checker {
 	 */
 	@Option(required = false, name = "-cstn2cstn0", usage = "Check the epsilon-DC of the input instance using IR-DC on a correspondig streamlined CSTN. It transforms the input CSTN and then check its IR-DC. Epsilon value can be specified using -reactionTime parameter.")
 	private boolean cstn2cstn0 = false;
+
+	/**
+	 * Parameter for asking to DC check epsilon DC reducing to IR DC
+	 */
+	@Option(required = false, name = "-cstnu2cstn", usage = "Check the CSTNU DC of the input instance reducing the check to the equivalent streamlined CSTN instance and checking this last one using IR-DC. It is incompatible with -potential option.")
+	private boolean cstnu2cstn = false;
+
+	/**
+	 * Parameter for asking to DC check using potential
+	 */
+	@Option(required = false, name = "-potential", usage = "Check the DC of the input instance using potential DC algorithm (ONLY FOR CSTNU).")
+	private boolean potential = false;
 
 	/**
 	 * Which type of CSTN are input files
@@ -752,9 +779,10 @@ public class Checker {
 	private List<File> instances;
 
 	/**
+	 * Roberto: I verified that with such kind of computation, using more than one thread to check more files in parallel reduces the single performance!!!
 	 * Parameter for asking timeout in sec.
 	 */
-	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 0= no CPU reserved, there is only one thread for all the process.")
+	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 0=no CPU reserved, there is only one thread for all the process. With more thread, the global performance increases, but each file can requires more time given to the fact that there is a competition among threads to access to he memory.")
 	private int nCPUs = 0;
 
 	/**
@@ -772,8 +800,8 @@ public class Checker {
 	/**
 	 * Parameter for asking whether to consider only Lp,qR0, qR3* rules.
 	 */
-	@Option(required = false, name = "-onlyLPQR0QR3", usage = "Check DC considering only rules LP, qR0 and QR3.")
-	private boolean onlyLPQR0QR3 = false;
+	@Option(required = false, name = "-onlyLPQR0QR3", aliases = { "-limitToZ" }, usage = "Check DC considering only rules LP, qR0 and QR3.")
+	private boolean onlyLPQR0QR3OrToZ = false;
 
 	/**
 	 * Output stream to outputFile
@@ -783,7 +811,7 @@ public class Checker {
 	/**
 	 * Parameter for asking reaction time.
 	 */
-	@Option(required = false, name = "-reactionTime", depends = "{-semantics ε}", usage = "Reaction time. It must be > 0.")
+	@Option(required = false, name = "-reactionTime", depends = { "-semantics ε" }, usage = "Reaction time. It must be > 0.")
 	private int reactionTime = 1;
 
 	/**
@@ -801,7 +829,7 @@ public class Checker {
 	/**
 	 * Software Version.
 	 */
-	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
+	@Option(required = false, name = "-v", aliases = { "--version" }, usage = "Version")
 	private boolean versionReq = false;
 
 	/**
@@ -879,7 +907,11 @@ public class Checker {
 		} else {
 			this.output = System.out;
 		}
-		this.output.println(OUTPUT_HEADER);
+		if (this.cstnType == CstnType.cstn) {
+			this.output.println(OUTPUT_HEADER);
+		} else {
+			this.output.println(OUTPUT_HEADER_CSTNU);
+		}
 		return true;
 	}
 }

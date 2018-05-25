@@ -173,6 +173,20 @@ public class Label implements Comparable<Label> {
 		}
 
 		@Override
+		public Label conjunction(Label l) {
+			if (l.isEmpty())
+				return this;
+			return Label.clone(l);
+		}
+
+		@Override
+		public Label conjunctionExtended(Label l) {
+			if (l.isEmpty())
+				return this;
+			return Label.clone(l);
+		}
+
+		@Override
 		public boolean contains(char proposition) {
 			return false;
 		}
@@ -305,23 +319,22 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * Returns a label containing the propositions specified by c. The propositions with index in correspondence to bit = 1 in the parameter 'index' are set to
-	 * negative state.
+	 * Returns a label containing the propositions specified by c. The i-th proposition of resulting label has negative state if
+	 * i-th bit of mask is 1.
 	 *
 	 * @param proposition an array of propositions.
-	 * @param index
+	 * @param mask It has to be > 0 and <= 2^proposition.length. No range check is made!
 	 * @return a label copy of label but with literals having indexes corresponding to bits 1 in the parameter 'index' set to negative state.
 	 *         If label is null or empty or contains UNKNOWN literals, returns null;
 	 */
-	private static final Label complementGenerator(final char[] proposition, final long index) {
-		int n;
-		if ((n = proposition.length) == 0 || index < 0 || index > Math.pow(2, n))
+	private static final Label complementGenerator(final char[] proposition, final long mask) {
+		int n = proposition.length;
+		if (n == 0)
 			return null;
 		long j = 1L;
 		final Label newLabel = new Label();
 		for (int i = 0; i < n; i++, j <<= 1) {
-			// if (lit.contains(labelStraight)) // return null;// l contains two times at least the same proposition letter. Ignore! lit is a set, it manage it!
-			char state = ((j & index) != 0) ? Literal.NEGATED : Literal.STRAIGHT;
+			char state = ((j & mask) != 0) ? Literal.NEGATED : Literal.STRAIGHT;
 			newLabel.set(Literal.index(proposition[i]), state);
 		}
 		return newLabel;
@@ -458,17 +471,28 @@ public class Label implements Comparable<Label> {
 	/**
 	 * Constructs a label cloning the given label l.
 	 * 
-	 * @param label the label to clone. If null, this will be an empty label.
+	 * @param label the label to clone. It cannot be null or empty!
 	 */
-	public Label(final Label label) {
+	private Label(final Label label) {
 		this();
-		if (label == null || label.equals(emptyLabel)) {
-			return;
-		}
+		if (label == null || label.isEmpty())
+			throw new IllegalArgumentException("Label cannot be null or empty!");
 		this.bit0 = label.bit0;
 		this.bit1 = label.bit1;
 		this.maxIndex = label.maxIndex;
 		this.cacheOfSize = label.cacheOfSize;
+	}
+
+	/**
+	 * In order to have a correct copy of a label.
+	 * 
+	 * @param label
+	 * @return a distinct equal copy of label
+	 */
+	static final public Label clone(final Label label) {
+		if (label == null || label.isEmpty())
+			return Label.emptyLabel;
+		return new Label(label);
 	}
 
 	/**
@@ -495,6 +519,7 @@ public class Label implements Comparable<Label> {
 		if (this.size() > label.size())
 			return 1;
 
+		// they have same length and they are different
 		int i = 0, j = 0, cmp = 0;
 		int thisState, labelState;
 		long maskI = 1L, maskJ = 1L;
@@ -517,15 +542,6 @@ public class Label implements Comparable<Label> {
 			j++;
 			maskJ <<= 1;
 		}
-		// the following part of code will never reached if the two labels have the same length!
-		// if (i > this.maxIndex) {
-		// if (j <= label.maxIndex)
-		// return -1;
-		// return 0;
-		// }
-		// i<=maxIndex
-		// if (j > label.maxIndex)
-		// return 1;
 		return 0;// impossible but necessary for avoiding the warning!
 	}
 
@@ -696,20 +712,13 @@ public class Label implements Comparable<Label> {
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean equals(final Object obj) {
-		if ((obj == null) || !(obj instanceof Label))
+	public boolean equals(final Object o) {
+		if (o == this)
+			return true;
+		if (!(o instanceof Label))
 			return false;
-		return this.equals((Label) obj);
-	}
-
-	/**
-	 * This method is for a faster check. Not null check is not done!
-	 * 
-	 * @param label a not null label!
-	 * @return true if the two labels are equal!
-	 */
-	public boolean equals(final Label label) {
-		return this.bit1 == label.bit1 && this.bit0 == label.bit0;
+		Label l = (Label) o;
+		return this.bit1 == l.bit1 && this.bit0 == l.bit0;
 	}
 
 	/**

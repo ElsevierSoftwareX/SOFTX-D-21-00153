@@ -167,6 +167,7 @@ public class LabeledALabelIntTreeMapTest {
 		Assert.assertEquals("Check of merge with two different node\n", this.result, this.map);
 	}
 
+
 	/**
 	 *
 	 */
@@ -189,7 +190,52 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("ab", new ALabel("N9", this.alpha), 11);
 		this.result.mergeTriple("¬a¬b", new ALabel("N8", this.alpha), 11);
 
-		Assert.assertEquals("Check of merge with two different node,\n", this.result, this.map);
+		Assert.assertEquals("Check of merge with two different nodes,\n", this.result, this.map);
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void mergeConSemplificazione6() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple("¬a", n9, 14);
+		this.map.mergeTriple("¬b", n8, 13);
+		this.map.mergeTriple(Label.emptyLabel, n89, 14);
+		this.map.mergeTriple("¬a", n9, 13);
+		this.map.mergeTriple("a", n9, 13);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, n9, 13);
+		this.result.mergeTriple("¬b", n8, 13);
+
+		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void mergeConSemplificazione7() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple("a", ALabel.emptyLabel, -16);
+		this.map.mergeTriple("¬a", ALabel.emptyLabel, -17);
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -9);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+
+		this.result.clear();
+		this.result.mergeTriple("a", ALabel.emptyLabel, -16);
+		this.result.mergeTriple("¬a", ALabel.emptyLabel, -17);
+
+		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
 	}
 
 	/**

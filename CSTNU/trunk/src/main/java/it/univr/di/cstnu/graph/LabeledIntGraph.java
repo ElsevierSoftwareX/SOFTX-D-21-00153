@@ -39,6 +39,7 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
@@ -826,7 +827,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			LabeledIntEdge edge;
 			for (int i = 0; i < this.order; i++) {
 				for (int j = 0; j < this.order; j++) {
-					if ((edge = this.adjacency[i][j]) != null && edge.getLowerCaseValue() != null) {
+					if ((edge = this.adjacency[i][j]) != null && !edge.getLowerCaseValue().isEmpty()) {
 						this.lowerCaseEdges.add(edge);
 					}
 				}
@@ -988,7 +989,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 	@Override
 	public Collection<LabeledNode> getSuccessors(LabeledNode vertex) {
-		throw new UnsupportedOperationException("The Javadoc is not clear!");
+		ObjectArrayList<LabeledNode> successors = new ObjectArrayList<>();
+		for (LabeledIntEdge e : this.getOutEdges(vertex)) {
+			successors.add(this.getDest(e));
+		}
+		return successors;
 	}
 
 	/**
@@ -1118,6 +1123,28 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
+	 * Reverse (transpose) the current graph.
+	 * 
+	 * @return true if the operation was successful.
+	 */
+	public boolean reverse() {
+		int n = this.getVertexCount();
+		LabeledIntEdge swap;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < i; j++) {
+				swap = this.adjacency[i][j];
+				this.adjacency[i][j] = this.adjacency[j][i];
+				this.adjacency[j][i] = swap;
+				if (swap != null)
+					this.edge2index.put(swap.getName(), new EdgeIndex(swap, j, i));
+				if ((swap = this.adjacency[i][j]) != null)
+					this.edge2index.put(swap.getName(), new EdgeIndex(swap, i, j));
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * @param e
 	 */
 	private void removeEdgeFromIndex(LabeledIntEdge e) {
@@ -1242,7 +1269,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		sb.append("Nodes:\n");
 
 		for (final LabeledNode n : this.getVertices()) {
-			sb.append("<" + n.name + ",\t" + n.getLabel() + ",\t" + n.getPropositionObserved() + ">\n");
+			sb.append("<" + n.name + ",\t" + n.getLabel() + ",\t" + n.getPropositionObserved());
+			LabeledALabelIntTreeMap potential = n.getPotential();
+			if (potential != null && !potential.isEmpty()) {
+				sb.append(",\tPotential: " + potential.toString());
+			}
+			sb.append(">\n");
 		}
 		sb.append("Edges:\n");
 		for (final LabeledIntEdge e : this.getEdges()) {

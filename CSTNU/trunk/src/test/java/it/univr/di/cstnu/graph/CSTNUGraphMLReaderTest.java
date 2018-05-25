@@ -26,24 +26,26 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
 public class CSTNUGraphMLReaderTest {
 
 	/**
+	 * 
 	 */
-	@SuppressWarnings({ "javadoc", "static-method" })
+	File file = new File("src/test/resources/testGraphML.cstnu");
+	/**
+	 */
+	@SuppressWarnings({ "javadoc" })
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
-		File file = new File("src/test/resources/007r.cstnu");
-		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(file, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
 		LabeledIntGraph g = reader.readGraph();
-		Assert.assertEquals(900, g.getEdge("1S_Z").getUpperCaseValueMap().size());
+		Assert.assertEquals(1, g.getEdge("YX").getUpperCaseValueMap().size());
+		Assert.assertEquals(2, g.getEdge("XY").getLowerCaseValue().getValue());
 	}
 
-	@SuppressWarnings({ "javadoc", "static-method" })
+	@SuppressWarnings({ "javadoc" })
 	@Test
 	public void testCSTN() throws IOException, ParserConfigurationException, SAXException {
-		File file = new File("src/test/resources/R1.cstn");
-		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(file, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
 		LabeledIntGraph g = reader.readGraph();
-		Assert.assertEquals(10, g.getEdgeCount());
-		Assert.assertEquals(3, g.getEdge("p?_X").getLabeledValueMap().size());
+		Assert.assertEquals(8, g.getEdgeCount());
 	}
 
 }

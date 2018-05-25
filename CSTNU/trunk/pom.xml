@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>1.23.0-SNAPSHOT</version>
+	<version>1.23.2-SNAPSHOT</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>

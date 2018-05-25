@@ -53,7 +53,7 @@ public class CSTNIR3R extends CSTNIR {
 	 */
 	public CSTNIR3R() {
 		super();
-		this.applyReducedSetOfRules = true;
+		this.propagationOnlyToZ = true;
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class CSTNIR3R extends CSTNIR {
 	 */
 	public CSTNIR3R(LabeledIntGraph g) {
 		super(g);
-		this.applyReducedSetOfRules = true;
+		this.propagationOnlyToZ = true;
 	}
 
 	/**
@@ -70,6 +70,6 @@ public class CSTNIR3R extends CSTNIR {
 	 */
 	public CSTNIR3R(LabeledIntGraph g, int timeOut) {
 		super(g, timeOut);
-		this.applyReducedSetOfRules = true;
+		this.propagationOnlyToZ = true;
 	}
 }

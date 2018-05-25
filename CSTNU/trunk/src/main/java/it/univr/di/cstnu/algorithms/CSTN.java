@@ -185,15 +185,16 @@ public class CSTN {
 
 		/**
 		 * Check if the edge that has to be add has one end-point that is an observer. In positive case, it adds
-		 * all incident edges to the observation t.p.
+		 * all in edges to the destination node for guaranteeing that R3* can be applied again with new values.
 		 * 
 		 * @param enSnD
 		 * @param nS
 		 * @param nD
 		 * @param Z
 		 * @param g
+		 * @param applyReducedSetOfRules
 		 */
-		void add(LabeledIntEdge enSnD, LabeledNode nS, LabeledNode nD, LabeledNode Z, LabeledIntGraph g) {
+		final void add(LabeledIntEdge enSnD, LabeledNode nS, LabeledNode nD, LabeledNode Z, LabeledIntGraph g, boolean applyReducedSetOfRules) {
 			// in any case, the edge has to be added.
 			this.edgesToCheck.add(enSnD);
 			// then,
@@ -201,13 +202,35 @@ public class CSTN {
 				return;
 			// add all incident to nD
 			if (nD != Z) {
-				this.edgesToCheck.addAll(g.getIncidentEdges(nD));
-			} else {
-				if (this.alreadyAddAllIncidentsToZ)
-					return;
-				this.edgesToCheck.addAll(g.getInEdges(Z));
-				this.alreadyAddAllIncidentsToZ = true;
+				if (!applyReducedSetOfRules)
+					this.edgesToCheck.addAll(g.getInEdges(nD));
+				return;
 			}
+
+			if (this.alreadyAddAllIncidentsToZ)
+				return;
+			this.edgesToCheck.addAll(g.getInEdges(Z));
+			this.alreadyAddAllIncidentsToZ = true;
+		}
+
+		/**
+		 * Add an edge without any check.
+		 * 
+		 * @param enSnD
+		 * @return true if this set did not already contain the specified element
+		 */
+		final boolean add(LabeledIntEdge enSnD) {
+			return this.edgesToCheck.add(enSnD);
+		}
+
+		/**
+		 * Add a set of edges without any check.
+		 * 
+		 * @param eSet
+		 * @return true if this set changed after the add.
+		 */
+		final boolean addAll(Collection<LabeledIntEdge> eSet) {
+			return this.edgesToCheck.addAll(eSet);
 		}
 
 		/**
@@ -276,6 +299,11 @@ public class CSTN {
 	 */
 	static final boolean checkTimeOutAndAdjustStatus(Instant timeoutInstant, CSTNCheckStatus status) {
 		if (Instant.now().isAfter(timeoutInstant)) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Time out occurred!");
+				}
+			}
 			status.timeout = true;
 			status.consistency = false;
 			status.finished = false;
@@ -381,9 +409,10 @@ public class CSTN {
 	}
 
 	/**
-	 * Check using full set of rules R0, qR0, R3, qR3, LP, qLP o the reduced set qR0, qR3, LP.
+	 * Check using full set of rules R0, qR0, R3, qR3, LP, qLP or the reduced set qR0, qR3, LP.
 	 */
-	boolean applyReducedSetOfRules = false;
+	@Option(required = false, name = "-limitToZ", usage = "Check DC propagating only values on edges to Z.")
+	boolean propagationOnlyToZ = false;
 
 	/**
 	 * Check status
@@ -490,7 +519,7 @@ public class CSTN {
 	 * @return true if the g is a CSTN well defined.
 	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public boolean checkWellDefinitionProperties() throws WellDefinitionException {
+	boolean checkWellDefinitionProperties() throws WellDefinitionException {
 		boolean flag = false;
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -554,7 +583,7 @@ public class CSTN {
 				String msg = "Found a labeled value in " + eSN + " that does not subsume the conjunction of node labels, "
 						+ conjunctedLabel + ".";
 				if (hasToBeFixed) {
-					eSN.removeLabel(currentLabel);
+					eSN.removeLabeledValue(currentLabel);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING, msg + " Labeled value '" + currentLabel + "' removed.");
@@ -574,7 +603,7 @@ public class CSTN {
 				}
 				if (hasToBeFixed) {
 					int v = entry.getIntValue();
-					eSN.removeLabel(currentLabel);
+					eSN.removeLabeledValue(currentLabel);
 					currentLabel = currentLabel.conjunction(conjunctedLabel);
 					eSN.putLabeledValue(currentLabel, v);
 					if (Debug.ON) {
@@ -588,7 +617,7 @@ public class CSTN {
 			}
 			// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 			// WD3 property.
-			Label currentLabelModified = new Label(currentLabel);
+			Label currentLabelModified = Label.clone(currentLabel);
 			for (final char l : currentLabel.getPropositions()) {
 				LabeledNode obs = this.g.getObserver(l);
 				if (obs == null) {
@@ -623,7 +652,7 @@ public class CSTN {
 			}
 			if (!currentLabelModified.equals(currentLabel)) {
 				int v = entry.getIntValue();
-				eSN.removeLabel(currentLabel);
+				eSN.removeLabeledValue(currentLabel);
 				eSN.putLabeledValue(currentLabelModified, v);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING)) {
@@ -772,14 +801,16 @@ public class CSTN {
 		final int propositionN = this.g.getObserverCount();
 		final int nodeN = this.g.getVertexCount();
 		// TODO: trovare il numero giusto di iterazioni
-		final int maxCycles = (int) (Math.pow(nodeN, 3)); // * Math.pow(2, propositionN));
+//		int m = (this.maxWeight != 0) ? this.maxWeight : 1;
+		int maxCycles = (int) (Math.pow(nodeN, 3));// * m); // * Math.pow(2, propositionN));
+		if (maxCycles < 0)
+			maxCycles = Integer.MAX_VALUE;
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
 			}
 		}
 
-		// final boolean hierarchyMap = LabeledIntEdge.labeledValueMapFactory.createLabeledIntMap().getClass().equals(LabeledIntHierarchyMap.class);
 		int i;
 		Instant startInstant = Instant.now();
 		Instant timeoutInstant = startInstant.plusSeconds(this.timeOut);
@@ -789,7 +820,12 @@ public class CSTN {
 					LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
 				}
 			}
-			oneStepDynamicConsistencyByEdges(edgesToCheck, timeoutInstant);// Don't use 'this.' because such method is override!
+			
+			if (this.propagationOnlyToZ) {
+				oneStepDynamicConsistencyByEdgesLimitedToZ(edgesToCheck, timeoutInstant);
+			} else {
+				oneStepDynamicConsistencyByEdges(edgesToCheck, timeoutInstant);// Don't use 'this.' because such method is override!
+			}
 
 			if (!this.checkStatus.finished) {
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -799,7 +835,7 @@ public class CSTN {
 							LOG.log(Level.INFO, msg);
 						}
 					}
-					this.checkStatus.executionTimeNS = ChronoUnit.NANOS.between(Instant.now(), startInstant);
+					this.checkStatus.executionTimeNS = ChronoUnit.NANOS.between(startInstant, Instant.now());
 					return this.checkStatus;
 				}
 				if (this.checkStatus.consistency) {
@@ -886,7 +922,7 @@ public class CSTN {
 	 * @param nX the given node.
 	 * @return the set of edges P?-->nX, an empty set if nX is empty or there is no observer or there is no such edges.
 	 */
-	final public ObjectList<LabeledIntEdge> getEdgeFromObserversToNode(final LabeledNode nX) {
+	final ObjectList<LabeledIntEdge> getEdgeFromObserversToNode(final LabeledNode nX) {
 
 		if (nX == this.Z) {
 			return this.g.getObserver2ZEdges();
@@ -976,6 +1012,8 @@ public class CSTN {
 
 		// Checks well definiteness of edges and determine maxWeight
 		this.maxWeight = 0;
+		int minNegWeight = 0;
+		int maxPosWeight = -1;
 		for (final LabeledIntEdge e : this.g.getEdges()) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINEST)) {
@@ -985,10 +1023,10 @@ public class CSTN {
 			// Determines the absolute max weight value
 			for (Object2IntMap.Entry<Label> entry : e.getLabeledValueSet()) {
 				int v = entry.getIntValue();
-				if (v < this.maxWeight)
-					this.maxWeight = v;
-				// else if (v > this.maxWeight)
-				// this.maxWeight = v;
+				if (v < minNegWeight)
+					minNegWeight = v;
+				else if (v > maxPosWeight)
+					maxPosWeight = v;
 			}
 
 			final LabeledNode s = this.g.getSource(e);
@@ -1028,7 +1066,8 @@ public class CSTN {
 		}
 
 		// manage maxWeight value
-		this.maxWeight = -this.maxWeight;
+		minNegWeight = -minNegWeight;
+		this.maxWeight = minNegWeight;// (minNegWeight < maxPosWeight) ? maxPosWeight : minNegWeight;
 		// Determine horizon value
 		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product >= Constants.INT_POS_INFINITE) {
@@ -1137,7 +1176,7 @@ public class CSTN {
 	 * The rule implements 2016-10-31LUKE_LP, not yet published.
 	 * 
 	 * <pre>
-	 * if A &mdash;[α, u]&xrarr; B --[β, v]&xrarr; C, then A &mdash;[(α★β)†, u+v]&xrarr; C if u+v<=0
+	 * if A &mdash;(u,α)&xrarr; B &mdash;(v,β)&xrarr; C, then A &mdash;[(α★β)†, u+v]&xrarr; C if u+v<=0
 	 * 
 	 * α,β in Q*
 	 * (α★β)† is the label without children of unknown.
@@ -1176,14 +1215,17 @@ public class CSTN {
 				final int v = BCEntry.getIntValue();
 				int sum = Constants.sumWithOverflowCheck(u, v);
 				if (sum > 0) {
-					// It is not necessary to propagate positive values.
-					// Less propagations, less useless labeled values.
+				// // It is not necessary to propagate positive values.
+				// // Less propagations, less useless labeled values.
+					// 2018-01-25: I verified that for some negative instances, avoiding the positive propagations can increase the execution time.
+					// For positive instances, surely avoiding the positive propagations shorten the execution time.
 					continue;
+
 				}
 				final Label labelBC = BCEntry.getKey();
 				boolean qLabel = false;
 				Label newLabelAC = null;
-				if (this.applyReducedSetOfRules || LPMainConditionForSkipping(u, v)) {
+				if (this.propagationOnlyToZ || LPMainConditionForSkipping(u, v)) {
 					newLabelAC = labelAB.conjunction(labelBC);
 					if (newLabelAC == null) {
 						continue;
@@ -1208,7 +1250,7 @@ public class CSTN {
 				int oldValue = eAC.getValue(newLabelAC);
 
 				if (nA == nC) {
-					if (sum == 0) {
+					if (sum >= 0) {
 						continue;
 					}
 					// sum is negative!
@@ -1296,7 +1338,7 @@ public class CSTN {
 	boolean labelModificationR0qR0(final LabeledNode nObs, final LabeledNode nX, final LabeledIntEdge eObsX) {
 		// Visibility is package because there is Junit Class test that checks this method.
 
-		if (this.applyReducedSetOfRules) {
+		if (this.propagationOnlyToZ) {
 			if (nX != this.Z)
 				return false;
 		}
@@ -1421,7 +1463,7 @@ public class CSTN {
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3qR3(final LabeledNode nS, final LabeledNode nD, final LabeledIntEdge eSD) {
 
-		if (this.applyReducedSetOfRules) {
+		if (this.propagationOnlyToZ) {
 			if (nD != this.Z)
 				return false;
 		}
@@ -1569,7 +1611,7 @@ public class CSTN {
 			}
 		}
 
-		Label labelToCleanWOp = new Label(labelToClean);
+		Label labelToCleanWOp = Label.clone(labelToClean);
 		labelToCleanWOp.remove(observed);
 
 		final Label alpha = labelFromObs.getSubLabelIn(labelToCleanWOp, false);
@@ -1636,11 +1678,11 @@ public class CSTN {
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
 	Label makeAlphaPrime(final LabeledNode nX, final LabeledNode nObs, final char observed, final Label labelFromObs) {
-		if (this.withNodeLabels && !this.applyReducedSetOfRules) {
+		if (this.withNodeLabels && !this.propagationOnlyToZ) {
 			if (nX.getLabel().contains(observed))
 				return null;
 		}
-		Label alphaPrime = (new Label(labelFromObs)).remove(observed);
+		Label alphaPrime = (Label.clone(labelFromObs)).remove(observed);
 		if (this.withNodeLabels) {
 			alphaPrime.remove(this.g.getChildrenOf(nObs));
 			if (nX == this.Z && alphaPrime.containsUnknown()) {
@@ -1686,11 +1728,11 @@ public class CSTN {
 				return null;
 			}
 		}
-		final Label beta = (new Label(labelToClean)).remove(observed);
+		final Label beta = (Label.clone(labelToClean)).remove(observed);
 		if (this.withNodeLabels) {
 			Label childrenOfP = this.g.getChildrenOf(nObs);
 			if (childrenOfP != null && !childrenOfP.isEmpty()) {
-				Label test = (new Label(labelFromObs)).remove(childrenOfP);
+				Label test = (Label.clone(labelFromObs)).remove(childrenOfP);
 				if (!labelFromObs.equals(test)) {
 					return null;// labelFromObs must not contain p or its children.
 				}
@@ -1815,7 +1857,7 @@ public class CSTN {
 			// initAndCheck does not resolve completely a qStar.
 			// It is necessary to check here the edge before to consider the second edge.
 			// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
-			if (B == this.Z || !this.applyReducedSetOfRules) {
+			if (B == this.Z || !this.propagationOnlyToZ) {
 				edgeCopy = this.g.getEdgeFactory().get(AB);
 				if (A.isObserver()) {
 					// R0 on the resulting new values
@@ -1827,7 +1869,7 @@ public class CSTN {
 					labelModificationR0qR0(A, B, AB);
 				}
 				if (!AB.equalsAllLabeledValues(edgeCopy)) {
-					newEdgesToCheck.add(AB, A, B, this.Z, this.g);
+					newEdgesToCheck.add(AB, A, B, this.Z, this.g, this.propagationOnlyToZ);
 				}
 			}
 
@@ -1863,14 +1905,16 @@ public class CSTN {
 				if (edgeCopy == null && !AC.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(AC, A, C);
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g);
+					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.propagationOnlyToZ);
 				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(AC)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g);
+					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.propagationOnlyToZ);
 				}
 
-				if (!this.checkStatus.consistency)
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
 					return this.checkStatus;
+				}
 			}
 
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1899,14 +1943,16 @@ public class CSTN {
 				if (edgeCopy == null && !CB.isEmpty()) {
 					// the new CB has to be added to the graph!
 					this.g.addEdge(CB, C, B);
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g);
+					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.propagationOnlyToZ);
 				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(CB)) {
 					// CB was already present and it has been changed!
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g);
+					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.propagationOnlyToZ);
 				}
 
-				if (!this.checkStatus.consistency)
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
 					return this.checkStatus;
+				}
 			}
 
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1924,8 +1970,116 @@ public class CSTN {
 		if (!this.checkStatus.finished) {
 			edgesToCheck.takeIn(newEdgesToCheck);
 		}
-		if (!this.checkStatus.consistency)
-			this.checkStatus.finished = true;
+		return this.checkStatus;
+	}
+
+	/**
+	 * Executes one step of the dynamic consistency check: for each edge B-->Z in edgesToCheck, rules R0--R3 are applied on it and, then, label propagation rule
+	 * is
+	 * applied to A-->B-->Z for all A-->B
+	 * All modified or new edges are returned in the set 'edgesToCheck'.
+	 * 
+	 * @param edgesToCheck set of edges that have to be checked.
+	 * @param timeoutInstant time instant limit allowed to the computation.
+	 * @return the update status (it is for convenience. It is not necessary because return the same parameter status).
+	 */
+	private CSTNCheckStatus oneStepDynamicConsistencyByEdgesLimitedToZ(final EdgesToCheck edgesToCheck, Instant timeoutInstant) {
+		// This version consider only pair of edges going to Z, i.e., in the form A-->B-->Z,
+		// 2018-01-25: with this method, performances worsen.
+		LabeledNode B, A;
+		LabeledIntEdge AZ, edgeCopy;
+
+		this.checkStatus.cycles++;
+
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "\nStart application labeled propagation rule+R0+R3.");
+			}
+		}
+		/**
+		 * March, 06 2016 I try to apply the rules on all edges that have been modified in the previous cycle.
+		 */
+		EdgesToCheck newEdgesToCheck = new EdgesToCheck();
+		int i = 1, n = edgesToCheck.size();
+		for (LabeledIntEdge BZ : edgesToCheck) {
+			if (this.g.getDest(BZ) != this.Z)
+				continue;
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "\n***Considering edge " + (i++) + "/" + n + ": " + BZ + "\n");
+				}
+			}
+			B = this.g.getSource(BZ);
+			// initAndCheck does not resolve completely a qStar.
+			// It is necessary to check here the edge before to consider the second edge.
+			// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
+			edgeCopy = this.g.getEdgeFactory().get(BZ);
+			if (B.isObserver()) {
+				// R0 on the resulting new values
+				labelModificationR0qR0(B, this.Z, BZ);
+			}
+			labelModificationR3qR3(B, this.Z, BZ);
+			if (B.isObserver()) {// R3 can add new values that have to be minimized. Experimentally VERIFIED on June, 28 2015
+				// R0 on the resulting new values
+				labelModificationR0qR0(B, this.Z, BZ);
+			}
+			if (!BZ.equalsAllLabeledValues(edgeCopy)) {
+				newEdgesToCheck.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+			}
+
+			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
+				return this.checkStatus;
+			}
+
+			/**
+			 * Make all propagation considering edge AB as first edge.<br>
+			 * A-->B-->Z
+			 */
+			for (LabeledIntEdge AB : this.g.getInEdges(B)) {
+				A = this.g.getSource(AB);
+				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
+
+				AZ = this.g.findEdge(A, this.Z);
+				// I need to preserve the old edge to compare below
+				if (AZ != null) {
+					edgeCopy = this.g.getEdgeFactory().get(AZ);
+				} else {
+					AZ = makeNewEdge(A.getName() + "_" + this.Z.getName(), LabeledIntEdge.ConstraintType.derived);
+					edgeCopy = null;
+				}
+
+				this.labeledPropagationqLP(A, B, this.Z, AB, BZ, AZ);
+
+				if (edgeCopy == null && !AZ.isEmpty()) {
+					// the new CB has to be added to the graph!
+					this.g.addEdge(AZ, A, this.Z);
+					newEdgesToCheck.add(AZ, A, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+				} else if (edgeCopy != null && !edgeCopy.equalsAllLabeledValues(AZ)) {
+					// CB was already present and it has been changed!
+					newEdgesToCheck.add(AZ, A, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+				}
+
+				if (!this.checkStatus.consistency) {
+					this.checkStatus.finished = true;
+					return this.checkStatus;
+				}
+			}
+
+			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
+				return this.checkStatus;
+			}
+
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3.");
+			}
+		}
+		edgesToCheck.clear();
+		this.checkStatus.finished = newEdgesToCheck.size() == 0;
+		if (!this.checkStatus.finished) {
+			edgesToCheck.takeIn(newEdgesToCheck);
+		}
 		return this.checkStatus;
 	}
 
@@ -1963,7 +2117,7 @@ public class CSTN {
 				B = this.g.getDest(AB);
 				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
-				if (B == this.Z || !this.applyReducedSetOfRules) {
+				if (B == this.Z || !this.propagationOnlyToZ) {
 					// Since in some graphs it is possible that there is not BC, we apply R0 and R3 to AB
 					if (A.isObserver()) {
 						// R0 on the resulting new values
@@ -1979,7 +2133,7 @@ public class CSTN {
 					C = this.g.getDest(BC);
 					// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
-					if (C == this.Z || !this.applyReducedSetOfRules) {
+					if (C == this.Z || !this.propagationOnlyToZ) {
 						if (B.isObserver()) {
 							// R0 on the resulting new values
 							labelModificationR0qR0(B, C, BC);
@@ -2009,10 +2163,12 @@ public class CSTN {
 						if (empty)
 							continue;
 					}
-					if (!this.checkStatus.consistency)
+					if (!this.checkStatus.consistency) {
+						this.checkStatus.finished = true;
 						return this.checkStatus;
+					}
 
-					if (C == this.Z || !this.applyReducedSetOfRules) {
+					if (C == this.Z || !this.propagationOnlyToZ) {
 						if (A.isObserver()) {
 							// R0 on the resulting new values
 							labelModificationR0qR0(A, C, AC);
@@ -2056,7 +2212,7 @@ public class CSTN {
 	 */
 	@SuppressWarnings("static-method")
 	boolean LPMainConditionForSkipping(final int u, final int v) {
-		// Table 1 ICAPS paper for standard DC
+		// Table 1 ICAPS paper for standard DC extended with rules on page 6 of file noteAboutLP.tex
 		return u > 0 && v < 0;
 	}
 

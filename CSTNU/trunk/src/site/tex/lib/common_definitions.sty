@@ -35,22 +35,41 @@
 \usepgfplotslibrary{units}
 \usepgfplotslibrary{statistics}
 
-\pgfplotsset{Std/.style={green!60!black,mark=o,mark/.append style={fill=green!80!black,solid}}}
+\pgfplotsset{Std0/.style={green!60!black,mark=x,every mark/.append style={fill=green!80!black,solid}}}
+\pgfplotsset{Std1/.style={Std0,mark=o}}
+\pgfplotsset{Std2/.style={Std0,mark=square}}
+\pgfplotsset{Std3/.style={Std0,mark=diamond}}
+\pgfplotsset{Std/.style={Std0}}
 \pgfplotsset{StdwoNL/.style={red,mark=o,mark/.append style={fill=red,solid}}}
-\pgfplotsset{Std1/.style={red,mark=o,mark/.append style={fill=red,solid}}}
-\pgfplotsset{Std2/.style={blue!60!black,mark=o,mark/.append style={fill=blue!80!black,solid}}}
-\pgfplotsset{Std3/.style={yellow!60!black,mark=o,mark/.append style={fill=yellow!80!black,solid}}}
-\pgfplotsset{Std4/.style={cyan!60!black,mark=o,mark/.append style={fill=cyan!80!black,solid}}}
-\pgfplotsset{Std5/.style={lightgray!60!black,mark=o,mark/.append style={fill=lightgray!80!black,solid}}}
-\pgfplotsset{Std6/.style={brown!60!black,mark=o,mark/.append style={fill=brown!80!black,solid}}}
-\pgfplotsset{Std7/.style={purple!60!black,mark=o,mark/.append style={fill=purple!80!black,solid}}}
-\pgfplotsset{Std8/.style={magenta!60!magenta,mark=o,mark/.append style={fill=magenta!80!black,solid}}}
+
+\pgfplotsset{StdZ0/.style={Std0,cyan}}
+\pgfplotsset{StdZ1/.style={Std1,cyan}}
+\pgfplotsset{StdZ2/.style={Std2,cyan}}
+\pgfplotsset{StdZ3/.style={Std3,cyan}}
+
+
 
 \pgfplotsset{Epsilon/.style={cyan,mark=asterisk,mark/.append style={fill=cyan,solid}}}
-\pgfplotsset{Epsilon3R/.style={purple!60!black,mark=asterisk,mark/.append style={fill=purple!60!black,solid}}}
-\pgfplotsset{Epsilon3RwoNL/.style={orange,mark=asterisk,mark/.append style={fill=orange,solid}}}
+\pgfplotsset{EpsilonwoNL/.style={Epsilon,yellow,mark/.append style={fill=yellow}}}
+\pgfplotsset{Epsilon3R/.style={Epsilon,purple!60!black,mark/.append style={fill=purple!60!black}}}
+\pgfplotsset{Epsilon3RwoNL/.style={Epsilon,orange,mark/.append style={fill=orange}}}
+\pgfplotsset{Epsilon2IR/.style={Epsilon,black,mark/.append style={fill=black}}}
+
+
+\pgfplotsset{potential0/.style={densely dotted,blue!60!black,mark=x,every mark/.append style={fill=cyan,solid}}}
+\pgfplotsset{potential1/.style={potential0,mark=o}}
+\pgfplotsset{potential2/.style={potential0,mark=square}}
+\pgfplotsset{potential3/.style={potential0,mark=diamond}}
+
+
+\pgfplotsset{2cstn0/.style={dashed,black,mark=x,every mark/.append style={fill=black,solid}}}
+\pgfplotsset{2cstn1/.style={2cstn0,mark=o}}
+\pgfplotsset{2cstn2/.style={2cstn0,mark=square}}
+\pgfplotsset{2cstn3/.style={2cstn0,mark=diamond}}
+
 
 \pgfplotsset{IR/.style={black,mark=diamond*,mark/.append style={fill=black,solid}}}
+\pgfplotsset{IRwoNL/.style={magenta,mark=diamond*,mark/.append style={fill=black,solid}}}
 \pgfplotsset{IR3R/.style={violet,mark=diamond*,mark/.append style={fill=violet,solid}}}
 \pgfplotsset{IR3RwoNL/.style={brown,mark=diamond*,mark/.append style={fill=brown,solid}}}
 

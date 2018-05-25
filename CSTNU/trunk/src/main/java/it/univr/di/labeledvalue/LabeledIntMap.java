@@ -110,6 +110,35 @@ public interface LabeledIntMap {
 	}
 
 	/**
+	 * Returns the value associated to the <code>l</code> if it exists, otherwise the maximal value among all labels consistent with <code>l</code>.
+	 *
+	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
+	 * @return the value associated to the <code>l</code> if it exists or the maximal value among values associated to labels consistent with <code>l</code>. If
+	 *         no labels are consistent by <code>l</code>, {@link Constants#INT_NULL} is returned.
+	 */
+	default public int getMaxValueSubsumedBy(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		int max = this.get(l);
+		if (max == Constants.INT_NULL) {
+			// the label does not exits, try all consistent labels
+			max = Constants.INT_NEG_INFINITE;
+			int v1;
+			Label l1 = null;
+			for (final Entry<Label> e : this.entrySet()) {
+				l1 = e.getKey();
+				if (l.subsumes(l1)) {
+					v1 = e.getIntValue();
+					if (max < v1) {
+						max = v1;
+					}
+				}
+			}
+		}
+		return (max == Constants.INT_NEG_INFINITE) ? Constants.INT_NULL : max;
+	}
+
+	/**
 	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
 	 */
 	default public int getMinValue() {
@@ -199,6 +228,15 @@ public interface LabeledIntMap {
 	 */
 	public int getMinValueSubsumedBy(final Label l);
 
+	
+	/**
+	 * @param newLabel
+	 * @param newValue
+	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
+	 *         If returns false, then the adding of the value to the map would modify the map.
+	 */
+	public boolean alreadyRepresents(Label newLabel, int newValue);
+		
 	/**
 	 * @return the set view of all labels in the map.
 	 */
@@ -215,17 +253,16 @@ public interface LabeledIntMap {
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse);
 
 	/**
-	 * Put a label with value <code>i</code> only if label <code>l</code> is not null.
+	 * Put a label with value <code>i</code> if label <code>l</code> is not null and there is not a labeled value in the set with label <code>l</code> or it is
+	 * present but with a value higher than <code>l</code>.
 	 * <p>
-	 * The labeled value is inserted if there is not a labeled value in the set with label <code>l</code> or it is present but with a value higher than
-	 * <code>l</code>.<br>
 	 * Not mandatory: the method can remove or modify other labeled values of the set in order to minimize the labeled values present guaranteeing that no info
 	 * is lost.
 	 *
 	 * @param l a not null label.
 	 * @param i a not {@link Constants#INT_NULL} value.
-	 * @return true if <code>(l,i)</code> has been inserted. Since an insertion can be removed more than one redundant labeled ints, it is nonsensical to return
-	 *         "the old value" as expected from a standard put method.
+	 * @return true if <code>(l,i)</code> has been inserted. Since an insertion can remove more than one redundant labeled values, it is nonsensical to return
+	 *         "the old value" as expected from a classical put method.
 	 */
 	public boolean put(Label l, int i);
 
