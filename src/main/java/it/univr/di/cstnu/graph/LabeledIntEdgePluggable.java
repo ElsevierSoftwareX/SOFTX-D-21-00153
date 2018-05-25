@@ -402,7 +402,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @return the old value if it exists, null otherwise.
 	 */
 	@Override
-	public int removeLabel(final Label l) {
+	public int removeLabeledValue(final Label l) {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LabeledIntEdgePluggable.LOG.finer("Removing label '" + l + "' from the edge " + this.toString());

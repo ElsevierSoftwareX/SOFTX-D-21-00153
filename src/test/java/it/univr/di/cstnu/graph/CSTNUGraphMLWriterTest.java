@@ -23,7 +23,7 @@ import it.univr.di.labeledvalue.Literal;
 @SuppressWarnings("javadoc")
 public class CSTNUGraphMLWriterTest {
 
-	String fileName = "/tmp/testGraphML.cstnu";
+	String fileName = "src/test/resources/testGraphML.cstnu";
 
 	@Test
 	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws WellDefinitionException, IOException {
@@ -171,15 +171,15 @@ public class CSTNUGraphMLWriterTest {
 			"</edge>\n" +
 			"<edge id=\"Z_X\" source=\"Z\" target=\"X\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(20, ⊡) }</data>\n" +
+			"<data key=\"LabeledValues\">{(15, ⊡) }</data>\n" +
 			"</edge>\n" +
 			"<edge id=\"Z_Y\" source=\"Z\" target=\"Y\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(20, ⊡) }</data>\n" +
+			"<data key=\"LabeledValues\">{(15, ⊡) }</data>\n" +
 			"</edge>\n" +
 			"<edge id=\"Z_Ω\" source=\"Z\" target=\"Ω\">\n" +
 			"<data key=\"Type\">internal</data>\n" +
-			"<data key=\"LabeledValues\">{(20, ⊡) }</data>\n" +
+			"<data key=\"LabeledValues\">{(15, ⊡) }</data>\n" +
 			"</edge>\n" +
 			"<edge id=\"Ω_Z\" source=\"Ω\" target=\"Z\">\n" +
 			"<data key=\"Type\">internal</data>\n" +

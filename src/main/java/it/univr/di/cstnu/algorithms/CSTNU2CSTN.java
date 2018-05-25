@@ -47,7 +47,8 @@ public class CSTNU2CSTN extends CSTNU {
 	// static final String VERSIONandDATE = "Version 3.1 - Apr, 20 2016";
 	// static final String VERSIONandDATE = "Version 1.0 - September, 25 2016";
 	// static final String VERSIONandDATE = "Version 1.1 - November, 14 2017";
-	static final String VERSIONandDATE = "Version  1.2 - December, 12 2017";
+	// static final String VERSIONandDATE = "Version 1.2 - December, 12 2017";
+	static final String VERSIONandDATE = "Version  1.3 - December, 23 2018";// tweaking the transformation
 
 	/**
 	 * Default labeledIntValueMap
@@ -57,7 +58,7 @@ public class CSTNU2CSTN extends CSTNU {
 	/**
 	 * Constructor for CSTNU2CSTN.
 	 */
-	private CSTNU2CSTN() {
+	CSTNU2CSTN() {
 		super();
 	}
 
@@ -66,6 +67,16 @@ public class CSTNU2CSTN extends CSTNU {
 	 */
 	public CSTNU2CSTN(LabeledIntGraph g) {
 		super(g);
+	}
+
+	/**
+	 * Constructor for CSTNU
+	 * 
+	 * @param g graph to check
+	 * @param timeOut timeout for the check
+	 */
+	public CSTNU2CSTN(LabeledIntGraph g, int timeOut) {
+		super(g, timeOut);
 	}
 
 	/**
@@ -99,7 +110,7 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG1.info("CSTN DC-checking done.");
 
 		status.finished = cstnStatus.finished;
-		status.consistency = cstnStatus.finished;
+		status.consistency = cstnStatus.consistency;
 		status.cycles = cstnStatus.cycles;
 		status.r0calls = cstnStatus.r0calls;
 		status.r3calls = cstnStatus.r3calls;
@@ -132,8 +143,8 @@ public class CSTNU2CSTN extends CSTNU {
 	 * link).
 	 * 
 	 * <pre>
-	 * A ===[x,y]===> C is transformed to A ---[x,x]---> K? ---[0, k]---> C
-	 *                                                      <--[x-y,¬k]--
+	 * A ---(c:x, alpha)---> C is transformed to A ---(x,alpha)---> K? ---(0, alpha k) (y-x,alpha) ---> C
+	 *   <---(C:-y, alpha)--                       <---(-x,alpha)--    <---(0,alpha) (x-y,alpha¬k)--
 	 * </pre>
 	 * 
 	 * @return g represented as a CSTN
@@ -206,11 +217,11 @@ public class CSTNU2CSTN extends CSTNU {
 			// e is contingent!
 			// Since for each contingent link, there is 2 contingent edges, we consider them only when we meet the
 			// contingent edge with positive value (lower case value);
-			// We assume that contingent edges contains only lower case value or upper case value.
+			// We assume that contingent edges contains only lower case value or upper case value, i.e., the network was already initialized!
 			lowerCaseValueTuple = e.getLowerCaseValue();
 			if (lowerCaseValueTuple.isEmpty()) {
 				if (e.getUpperCaseValueMap().size() != 1) {
-					throw new IllegalStateException("Edge " + e + " is contingent but it doesn't containt upper case value neither lower case one.");
+					throw new IllegalStateException("Edge " + e + " is contingent but it doesn't contain upper case value neither lower case one.");
 				}
 				continue;
 			}
@@ -218,19 +229,19 @@ public class CSTNU2CSTN extends CSTNU {
 
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG1.finer("Considering e: " + e + "and its companion eInverted: " + eInverted);
+					LOG1.finer("Considering e: " + e + "\nand its companion eInverted: " + eInverted);
 				}
 			}
 
 			int lowerCaseValue = lowerCaseValueTuple.getValue();
-			int upperCaseValue = eInverted.getMinUpperCaseValue();
+			int upperCaseValue = -eInverted.getMinUpperCaseValue();
 
 			if (lowerCaseValue == Constants.INT_NULL || upperCaseValue == Constants.INT_NULL) {
 				throw new IllegalStateException("Something is wrong with the two contingent edges " + e + " and " + eInverted);
 			}
 			// new observation time point K
 			LabeledNode newK = new LabeledNode(availableProposition[firstPropAvailable] + "?", availableProposition[firstPropAvailable++]);
-			// newK.setLabel(cstn.getNode(dInG.getName()).getLabel()); we consider only stramlined CSTN
+			// newK.setLabel(cstn.getNode(dInG.getName()).getLabel()); we consider only streamlined CSTN
 			newK.setX(sInG.getX() + 10);
 			newK.setY(sInG.getY());
 			cstnGraph.addVertex(newK);
@@ -243,8 +254,8 @@ public class CSTNU2CSTN extends CSTNU {
 			// two edges between X and K
 			newE = cstnGraph.getEdgeFactory().get(sInG.getName() + "-" + newK.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			// Label l = cstn.getNode(sInG.getName()).getLabel().conjunction(newK.getLabel());
-			newE.mergeLabeledValue(Label.emptyLabel, lowerCaseValue);
+			Label contingentOriginalLabel = lowerCaseValueTuple.getLabel();
+			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), lowerCaseValue);
 			cstnGraph.addEdge(newE, sInG.getName(), newK.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -254,7 +265,7 @@ public class CSTNU2CSTN extends CSTNU {
 
 			newE = cstnGraph.getEdgeFactory().get(newK.getName() + "-" + sInG.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			newE.mergeLabeledValue(Label.emptyLabel, -lowerCaseValue);
+			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), -lowerCaseValue);
 			cstnGraph.addEdge(newE, newK.getName(), sInG.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -264,21 +275,20 @@ public class CSTNU2CSTN extends CSTNU {
 			// two edges between K and C
 			newE = cstnGraph.getEdgeFactory().get(dInG.getName() + "-" + newK.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			// l = cstn.getNode(dInG.getName()).getLabel().conjunction(newK.getLabel());
-			// newE.mergeLabeledValue(l.conjunction(new Label(newK.getPropositionObserved(), State.negated)), lowerCaseValue + upperCaseValue);// it is x-y.
-			// upperCaseValue=-y
-			newE.mergeLabeledValue(new Label(newK.getPropositionObserved(), Literal.NEGATED), lowerCaseValue + upperCaseValue);// it is x-y.
-
+			newE.mergeLabeledValue(contingentOriginalLabel.conjunction(new Label(newK.getPropositionObserved(), Literal.NEGATED)),
+					lowerCaseValue - upperCaseValue);// it is x-y.
+			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), 0);
 			cstnGraph.addEdge(newE, dInG.getName(), newK.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG1.finer("New edge added: " + newE);
 				}
 			}
+
 			newE = cstnGraph.getEdgeFactory().get(newK.getName() + "-" + dInG.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			// newE.mergeLabeledValue(l.conjunction(new Label(newK.getPropositionObserved(), State.straight)), 0);
-			newE.mergeLabeledValue(new Label(newK.getPropositionObserved(), Literal.STRAIGHT), 0);
+			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel).conjunction(new Label(newK.getPropositionObserved(), Literal.STRAIGHT)), 0);
+			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), upperCaseValue - lowerCaseValue);// it is y-x
 			cstnGraph.addEdge(newE, newK.getName(), dInG.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {

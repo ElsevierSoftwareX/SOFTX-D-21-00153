@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
@@ -174,6 +175,12 @@ public class LabeledIntTreeMapTest {
 			// TODO Auto-generated method stub
 			return 0;
 		}
+
+		@Override
+		public boolean alreadyRepresents(Label newLabel, int newValue) {
+			// TODO Auto-generated method stub
+			return false;
+		}
 	}
 
 	/**
@@ -277,6 +284,47 @@ public class LabeledIntTreeMapTest {
 	 * Check if the management of the base is correct.
 	 */
 	@Test
+	public final void cicloConCancellazione() {
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), 20);
+		this.actual.put(Label.parse("¬b"), 21);
+		this.actual.put(Label.parse("ab"), 10);
+		this.actual.put(Label.parse("a¬b"), 15);
+		this.actual.put(Label.parse("¬ab"), 12);
+
+		LabeledIntTreeMap copy = new LabeledIntTreeMap(this.actual);
+
+		ObjectSet<Label> keys = copy.keySet();
+		assertEquals("[a, ¬b, ab, a¬b, ¬ab]", Arrays.toString(keys.toArray()));
+
+		for (Label l : copy.keySet()) {
+			if (l.toString().equals("¬b") || l.toString().equals("ab")) {
+				copy.remove(l);
+				continue;
+			}
+		}
+		assertEquals("[a, ¬b, ab, a¬b, ¬ab]", Arrays.toString(keys.toArray()));
+		assertEquals("{(20, a) (15, a¬b) (12, ¬ab) }", copy.toString());
+
+		copy = new LabeledIntTreeMap(this.actual);
+
+		StringBuffer sb = new StringBuffer();
+		for (Entry<Label> e : copy.entrySet()) {
+			if (e.getKey().toString().equals("¬b") || e.getKey().toString().equals("ab")) {
+				copy.put(e.getKey(), 15);
+			}
+			if (e.getKey().toString().equals("¬b") || e.getKey().toString().equals("ab")) {
+				sb.append(e.getIntValue() + ", ");
+			}
+		}
+		assertEquals("21, 10, ", sb.toString());
+		assertEquals("{(20, a) (15, ¬b) (10, ab) (12, ¬ab) }", copy.toString());
+	}
+
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
 	public final void semplificazioneBase2Test() {
 		this.actual.clear();
 		this.actual.put(Label.emptyLabel, 109);
@@ -335,6 +383,7 @@ public class LabeledIntTreeMapTest {
 		assertEquals("Test su creazione e gestione semplificazioni:\n", this.expected, this.actual);
 
 		this.actual.put(Label.parse("¬b"), 10);
+
 		this.expected.clear();
 		this.expected.put(Label.emptyLabel, 10);
 

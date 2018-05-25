@@ -4,12 +4,14 @@
 package it.univr.di.cstnu.algorithms;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
+import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
@@ -58,10 +60,10 @@ public class CSTNUTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
+		this.alpha = new ALabelAlphabet();
 		this.cstnu = new CSTNU(new LabeledIntGraph(LabeledIntTreeMap.class));
 		this.cstnu.Z = this.Z;
 		this.Z = new LabeledNode("Z");
-		this.alpha = new ALabelAlphabet();
 	}
 
 	/**
@@ -83,43 +85,120 @@ public class CSTNUTest {
 	 * <pre>
 	 * B &lt;--- 13,b,b--- A &lt;-----4,B,ab---- C
 	 * </pre>
+	 * 
+	 * @throws WellDefinitionException
 	 */
 	@SuppressWarnings("javadoc")
 	@Test
-	public final void testCaseLabelRemovalRule() {
-		// System.out.printf("LABEL REMOVAL CASE\n");
-		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		final LabeledIntEdgePluggable ab = new LabeledIntEdgePluggable("AB", this.labeledIntValueMapClass);
+	public final void testCaseLabelRemovalRule() throws WellDefinitionException {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass, this.alpha);
+		g.setZ(this.Z);
 		final LabeledNode A = new LabeledNode("A");
 		final LabeledNode B = new LabeledNode("B");
 		ALabel aLabel4B = new ALabel(B.getName(), this.alpha);
 		B.setAlabel(aLabel4B);
 		final LabeledNode C = new LabeledNode("C");
 
-		ab.setLowerCaseValue(Label.parse("b"), aLabel4B, 13);
+		final LabeledNode a = new LabeledNode("A?");
+		a.setObservable('a');
+		g.addVertex(a);
+		final LabeledNode b = new LabeledNode("B?");
+		b.setObservable('b');
+		g.addVertex(b);
 
-		final LabeledIntEdgePluggable ba = new LabeledIntEdgePluggable("BA", this.labeledIntValueMapClass);// now CaseLabelRemoval checks the lower bound, no the
-																										// guards.
-		final LabeledIntEdgePluggable ca = new LabeledIntEdgePluggable("CA", this.labeledIntValueMapClass);
-		ca.mergeUpperCaseValue(Label.parse("ab"), aLabel4B, -4);
-		ca.mergeUpperCaseValue(Label.parse("a"), aLabel4B, -3);
-		ca.mergeUpperCaseValue(Label.parse("¬b"), aLabel4B, -3);
-		ca.mergeUpperCaseValue(Label.parse("¬ab"), aLabel4B, -15);
+		final LabeledIntEdgePluggable AB = new LabeledIntEdgePluggable("AB", this.labeledIntValueMapClass);
+		AB.setLowerCaseValue(Label.parse("b"), aLabel4B, 13);
+		AB.setConstraintType(ConstraintType.contingent);
 
-		g.addEdge(ab, A, B);
-		g.addEdge(ba, B, A);
-		g.addEdge(ca, C, A);
+		final LabeledIntEdgePluggable BA = new LabeledIntEdgePluggable("BA", this.labeledIntValueMapClass);
+		BA.setConstraintType(ConstraintType.contingent);
+		BA.mergeUpperCaseValue(Label.parse("b"), aLabel4B, -20);
+
+		final LabeledIntEdgePluggable cz = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
+		cz.mergeUpperCaseValue(Label.parse("ab"), aLabel4B, -4);
+		cz.mergeUpperCaseValue(Label.parse("a"), aLabel4B, -3);
+		cz.mergeUpperCaseValue(Label.parse("¬b"), aLabel4B, -3);
+		cz.mergeUpperCaseValue(Label.parse("¬ab"), aLabel4B, -15);
+
+		final LabeledIntEdgePluggable az = new LabeledIntEdgePluggable("AZ", this.labeledIntValueMapClass);
+		az.mergeLabeledValue(Label.parse("ab"), -1);
+
+		g.addEdge(AB, A, B);
+		g.addEdge(BA, B, A);
+		g.addEdge(cz, C, this.Z);
+		g.addEdge(az, A, this.Z);
 		
 		this.cstnu.setG(g);
+		this.cstnu.initAndCheck();
 		
-		this.cstnu.labeledLetterRemovalRule(C, A, ca);
+		this.cstnu.zLabeledLetterRemovalRule(C, cz);
 
-		LabeledIntEdgePluggable abOk = new LabeledIntEdgePluggable("CA", this.labeledIntValueMapClass);
-//		abOk.mergeLabeledValue(Label.parse("a"), -3);
-		abOk.mergeLabeledValue(Label.parse("ab"), -4);
+		LabeledIntEdgePluggable CZOk = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
+		CZOk.mergeLabeledValue(Label.parse("ab"), -4);
+		CZOk.mergeLabeledValue(Label.parse("¿ab"), -14);
+		CZOk.mergeLabeledValue(Label.emptyLabel, 0);
 
-		assertEquals("Upper Case values:", abOk.getLabeledValueMap(), ca.getLabeledValueMap());
+		assertEquals("Upper Case values:", CZOk.getLabeledValueMap(), cz.getLabeledValueMap());
 	}
+
+	/**
+	 * Test method for
+	 * {@link it.univr.di.attic.CSTNU_NodeSet#caseLabelRemovalRule(it.univr.di.cstnu.graph.LabeledIntGraph, it.univr.di.cstnu.graph.LabeledIntGraph, CSTNUCheckStatus)}
+	 * 
+	 * <pre>
+	 * B &lt;--- 13,b,b--- A &lt;-----4,B,ab---- C
+	 * </pre>
+	 * 
+	 * @throws WellDefinitionException
+	 */
+	// @SuppressWarnings("javadoc")
+	// @Test
+	// public final void testCaseLabelRemovalRule1() throws WellDefinitionException {
+	// LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass, this.alpha);
+	// g.setZ(this.Z);
+	// final LabeledIntEdgePluggable AB = new LabeledIntEdgePluggable("AB", this.labeledIntValueMapClass);
+	// final LabeledNode A = new LabeledNode("A");
+	// final LabeledNode B = new LabeledNode("B");
+	// ALabel aLabel4B = new ALabel(B.getName(), this.alpha);
+	// B.setAlabel(aLabel4B);
+	// final LabeledNode C = new LabeledNode("C");
+	//
+	// final LabeledNode a = new LabeledNode("A?");
+	// a.setObservable('a');
+	// g.addVertex(a);
+	// final LabeledNode b = new LabeledNode("B?");
+	// b.setObservable('b');
+	// g.addVertex(b);
+	//
+	// AB.setLowerCaseValue(Label.parse("b"), aLabel4B, 13);
+	//
+	// final LabeledIntEdgePluggable ba = new LabeledIntEdgePluggable("BA", this.labeledIntValueMapClass);// now CaseLabelRemoval checks the lower bound, no the
+	// // guards.
+	// final LabeledIntEdgePluggable cz = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
+	// cz.mergeUpperCaseValue(Label.parse("ab"), aLabel4B, -4);
+	// cz.mergeUpperCaseValue(Label.parse("a"), aLabel4B, -3);
+	// cz.mergeUpperCaseValue(Label.parse("¬b"), aLabel4B, -3);
+	// cz.mergeUpperCaseValue(Label.parse("¬ab"), aLabel4B, -15);
+	//
+	// final LabeledIntEdgePluggable az = new LabeledIntEdgePluggable("AZ", this.labeledIntValueMapClass);
+	// az.mergeLabeledValue(Label.parse("a"), -1);
+	//
+	// g.addEdge(AB, A, B);
+	// g.addEdge(ba, B, A);
+	// g.addEdge(cz, C, this.Z);
+	// g.addEdge(az, A, this.Z);
+	//
+	// this.cstnu.setG(g);
+	// this.cstnu.initAndCheck();
+	//
+	// this.cstnu.labeledLetterRemovalRule(C, cz);
+	//
+	// LabeledIntEdgePluggable abOk = new LabeledIntEdgePluggable("CA", this.labeledIntValueMapClass);
+	//// abOk.mergeLabeledValue(Label.parse("a"), -3);
+	// abOk.mergeLabeledValue(Label.parse("ab"), -4);
+	//
+	// assertEquals("Upper Case values:", abOk.getLabeledValueMap(), cz.getLabeledValueMap());
+	// }
 
 	/**
 	 * Test method for
@@ -151,7 +230,7 @@ public class CSTNUTest {
 		ca.mergeUpperCaseValue(Label.parse("ab"), new ALabel(C.getName(), this.alpha), -4);
 
 		this.cstnu.setG(g);
-		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da, null);
+		this.cstnu.labeledCrossLowerCaseRule(D, C, A, dc, ca, da);
 
 		LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
 		daOk.mergeUpperCaseValue(Label.parse("ab¬c"), new ALabel("D", this.alpha), 0);
@@ -803,4 +882,51 @@ public class CSTNUTest {
 		assertEquals("No case: XZ labeled values.", xzOK.getLabeledValueMap(), XZ.getLabeledValueMap());
 		assertEquals("No case: XZ upper case labedled values.", xzOK.getUpperCaseValueMap(), XZ.getUpperCaseValueMap());
 	}
+
+	/**
+	 * @throws WellDefinitionException
+	 */
+	@Test
+	public final void test_llcRule() throws WellDefinitionException {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass, this.alpha);
+		LabeledNode A = new LabeledNode("A");
+		LabeledNode C = new LabeledNode("C");
+		LabeledNode D = new LabeledNode("D");
+		LabeledNode a = new LabeledNode("A?", 'a');
+		LabeledNode b = new LabeledNode("B?", 'b');
+
+		g.addVertex(A);
+		g.addVertex(a);
+		g.addVertex(b);
+		g.addVertex(C);
+		g.addVertex(D);
+		g.setZ(this.Z);
+
+		ALabel CaLabel = new ALabel(C.getName(), this.alpha);
+
+		LabeledIntEdgePluggable CA = new LabeledIntEdgePluggable("CA", this.labeledIntValueMapClass);
+		CA.mergeUpperCaseValue(Label.parse("a"), CaLabel, -6);
+		CA.setConstraintType(ConstraintType.contingent);
+		LabeledIntEdgePluggable AC = new LabeledIntEdgePluggable("AC", this.labeledIntValueMapClass);
+		AC.setLowerCaseValue(Label.parse("a"), CaLabel, 3);
+		AC.setConstraintType(ConstraintType.contingent);
+		LabeledIntEdgePluggable CD = new LabeledIntEdgePluggable("CD", this.labeledIntValueMapClass);
+		CD.mergeLabeledValue(Label.parse("b"), 0);
+
+		LabeledIntEdgePluggable DA = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
+		DA.mergeLabeledValue(Label.parse("b"), -4);
+
+		g.addEdge(AC, A, C);
+		g.addEdge(CA, C, A);
+		g.addEdge(CD, C, D);
+		g.addEdge(DA, D, A);
+
+		this.cstnu.setG(g);
+		this.cstnu.initAndCheck();
+
+		CSTNUCheckStatus status = this.cstnu.dynamicControllabilityCheck();
+
+		assertFalse(status.consistency);
+	}
+
 }

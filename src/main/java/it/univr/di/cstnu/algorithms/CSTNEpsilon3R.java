@@ -49,7 +49,7 @@ public class CSTNEpsilon3R extends CSTNEpsilon {
 	 */
 	CSTNEpsilon3R() {
 		super();
-		this.applyReducedSetOfRules = true;
+		this.propagationOnlyToZ = true;
 	}
 
 	/**
@@ -60,7 +60,7 @@ public class CSTNEpsilon3R extends CSTNEpsilon {
 	 */
 	public CSTNEpsilon3R(int reactionTime, LabeledIntGraph g) {
 		super(reactionTime, g);
-		this.applyReducedSetOfRules = true;
+		this.propagationOnlyToZ = true;
 	}
 
 	/**
@@ -70,6 +70,6 @@ public class CSTNEpsilon3R extends CSTNEpsilon {
 	 */
 	public CSTNEpsilon3R(int reactionTime, LabeledIntGraph g, int timeOut) {
 		super(reactionTime, g, timeOut);
-		this.applyReducedSetOfRules = true;
+		this.propagationOnlyToZ = true;
 	}
 }

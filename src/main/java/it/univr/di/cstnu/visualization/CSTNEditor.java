@@ -13,6 +13,8 @@ import java.awt.GridLayout;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
@@ -28,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -69,8 +72,10 @@ import it.univr.di.cstnu.algorithms.CSTN.EdgesToCheck;
 import it.univr.di.cstnu.algorithms.CSTNEpsilon;
 import it.univr.di.cstnu.algorithms.CSTNIR;
 import it.univr.di.cstnu.algorithms.CSTNIR3R;
+import it.univr.di.cstnu.algorithms.CSTNPSU;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
+import it.univr.di.cstnu.algorithms.CSTNUPotential;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
 import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
@@ -396,7 +401,56 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
+			jl1.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.dynamicControllabilityCheck();
+				if (CSTNEditor.this.cstnuStatus.consistency) {
+					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The CSTNU is dynamically controllable.</b>");
+					// jl.setIcon(CSTNUEditor.infoIcon);
+					jl1.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
+				} else {
+					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The CSTNU is not dynamically controllable.</b>");
+					// jl.setIcon(CSTNUEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNUEditor.warnIcon);
+			}
+			jl1.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vv2.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vv2.validate();
+			CSTNEditor.this.vv2.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings({ "javadoc", "unused" })
+	private class CSTNUPotentialCheckListener implements ActionListener {
+
+		public CSTNUPotentialCheckListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.cstnu = new CSTNUPotential(CSTNEditor.this.checkedGraph);
 			jl1.setBackground(Color.orange);
 			try {
 				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.dynamicControllabilityCheck();
@@ -435,6 +489,55 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * @author posenato
 	 */
 	@SuppressWarnings("javadoc")
+	private class CSTNPSUCheckListener implements ActionListener {
+
+		public CSTNPSUCheckListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.cstnu = new CSTNPSU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
+			jl1.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.dynamicControllabilityCheck();
+				if (CSTNEditor.this.cstnuStatus.consistency) {
+					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The CSTNPSU is dynamically controllable.</b>");
+					// jl.setIcon(CSTNUEditor.infoIcon);
+					jl1.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
+				} else {
+					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The CSTNPSU is not dynamically controllable.</b>");
+					// jl.setIcon(CSTNUEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNUEditor.warnIcon);
+			}
+			jl1.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vv2.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vv2.validate();
+			CSTNEditor.this.vv2.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
 	private class CSTNUInitListener implements ActionListener {
 
 		public CSTNUInitListener() {
@@ -445,7 +548,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
 			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
 
-			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
 			try {
 				CSTNEditor.this.cstnu.initAndCheck();
 			} catch (final IllegalArgumentException | WellDefinitionException ec) {
@@ -493,7 +596,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				return;
 			if (CSTNEditor.this.cycle == 0) {
 				CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-				CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph);
+				CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
 				CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.checkedGraph.getEdgeFactory().toString());
 				try {
 					CSTNEditor.this.cstnu.initAndCheck();
@@ -557,50 +660,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.repaint();
 		}
 	}
-
-	/**
-	 * @author posenato
-	 */
-	// @SuppressWarnings("javadoc")
-	// private class CSTNPSUCheckListener implements ActionListener {
-	//
-	// public CSTNPSUCheckListener() {
-	// }
-	//
-	// @Override
-	// public void actionPerformed(final ActionEvent e) {
-	// final JEditorPane jl1 = CSTNEditor.this.derivedGraphMessageArea;
-	// CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-	// CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-	// CSTNEditor.this.cstnpsu = new CSTNPSU(CSTNEditor.this.checkedGraph);
-	// jl1.setBackground(Color.orange);
-	// try {
-	// CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnpsu.dynamicControllabilityCheck();
-	// if (CSTNEditor.this.cstnuStatus.consistency) {
-	// jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTNPSU controllable.</b>");
-	// // jl.setIcon(CSTNUEditor.infoIcon);
-	// jl1.setBackground(Color.green);
-	// CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
-	// } else {
-	// jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTNPSU controllable.</b>");
-	// // jl.setIcon(CSTNUEditor.warnIcon);
-	// }
-	// } catch (final WellDefinitionException ex) {
-	// jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
-	// // jl.setIcon(CSTNUEditor.warnIcon);
-	// }
-	// jl1.setOpaque(true);
-	// updateNodePositions();
-	// CSTNEditor.this.vv2.setVisible(true);
-	//
-	// CSTNEditor.this.vv2.validate();
-	// CSTNEditor.this.vv2.repaint();
-	//
-	// CSTNEditor.this.validate();
-	// CSTNEditor.this.repaint();
-	// CSTNEditor.this.cycle = 0;
-	// }
-	// }
 
 	/**
 	 * @author posenato
@@ -755,6 +814,21 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			}
 		}
 
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class OnlyToZListener implements ItemListener {
+
+		public OnlyToZListener() {
+		}
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			CSTNEditor.this.onlyToZ = e.getStateChange() == ItemEvent.SELECTED;
+		}
 	}
 
 	/**
@@ -966,11 +1040,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	CSTNUCheckStatus cstnuStatus;
 
 	/**
-	 * CSTNPSU checker
-	 */
-	// CSTNPSU cstnpsu;
-
-	/**
 	 * Number of cycles of CSTN(U) check step-by-step
 	 */
 	int cycle;
@@ -1024,6 +1093,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * Button for re-layout input graph
 	 */
 	JToggleButton layoutToggleButton;
+
+	/**
+	 * OnlyToZ says if the DC checking has to be made propagating constraints only to time-point Z
+	 */
+	boolean onlyToZ = true;
 
 	/**
 	 * LabeledIntGraph structures necessary to represent an axuliary graph.
@@ -1234,6 +1308,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		rowForCSTNButtons.add(buttonCheck);
 
 		// ROW FOR CSTNU
+		JCheckBox onlyToZCB = new JCheckBox("Propagate only to Z");
+		onlyToZCB.setSelected(this.onlyToZ);
+		onlyToZCB.addItemListener(new OnlyToZListener());
+		rowForCSTNUButtons.add(onlyToZCB);
+
 		buttonCheck = new JButton("CSTNU Init Graph");
 		buttonCheck.addActionListener(new CSTNUInitListener());
 		rowForCSTNUButtons.add(buttonCheck);
@@ -1246,11 +1325,13 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new CSTNUOneStepListener());
 		rowForCSTNUButtons.add(buttonCheck);
 
-		// // CSTNPSU row
-		// buttonCheck = new JButton("CSTNPSU Check");
-		// buttonCheck.addActionListener(new CSTNPSUCheckListener());
-		// // rowForCSTNPSUButtons.add(buttonCheck);
+		// buttonCheck = new JButton("CSTNU Check by Potential");
+		// buttonCheck.addActionListener(new CSTNUPotentialCheckListener());
 		// rowForCSTNUButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTNPSU Check");
+		buttonCheck.addActionListener(new CSTNPSUCheckListener());
+		rowForCSTNUButtons.add(buttonCheck);
 
 		// MENU
 		final JMenu menu = new JMenu("File");

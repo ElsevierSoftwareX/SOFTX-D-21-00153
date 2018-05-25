@@ -59,7 +59,9 @@ public class ALabelAlphabet {
 
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof ALetter))
+			if (this == o)
+				return true;
+			if (!(o instanceof ALetter))
 				return false;
 			return this.name.equals(((ALetter) o).name);
 		}

@@ -162,7 +162,7 @@ public interface LabeledIntEdge extends Component {
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse);
 
 	/**
-	 * @return the labeled lower-Case value if present, null otherwise.
+	 * @return the labeled lower-Case value object. Use {@link LabeledLowerCaseValue#isEmpty()} to check if it contains or not a significant value.
 	 */
 	public LabeledLowerCaseValue getLowerCaseValue();
 
@@ -315,12 +315,12 @@ public interface LabeledIntEdge extends Component {
 	public boolean putLabeledValue(final Label l, final int i);
 
 	/**
-	 * Remove the label l from the map. If the label is not present, it does nothing.
+	 * Remove the value labeled by l from the map. If the 'l' is not present, it does nothing.
 	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the old value if it exists, null otherwise.
 	 */
-	public int removeLabel(final Label l);
+	public int removeLabeledValue(final Label l);
 
 	/**
 	 * @return the value of the removed labeled value

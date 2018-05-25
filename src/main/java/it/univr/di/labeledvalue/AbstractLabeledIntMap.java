@@ -149,7 +149,9 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 */
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof LabeledIntMap))
+		if (o == this)
+			return true;
+		if (!(o instanceof LabeledIntMap))
 			return false;
 		LabeledIntMap lvm = (LabeledIntMap) o;
 		if (this.size() != lvm.size())

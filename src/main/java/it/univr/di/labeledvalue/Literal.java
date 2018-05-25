@@ -173,6 +173,11 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
+	 * hashcode cache
+	 */
+	private int hashCode;
+
+	/**
 	 * Hash code for a literal given as char and state.
 	 * 
 	 * @param c
@@ -328,7 +333,9 @@ public class Literal implements Comparable<Literal> {
 	/** {@inheritDoc} */
 	@Override
 	public final boolean equals(final Object o) {
-		if ((o == null) || !(o instanceof Literal))
+		if (o == this)
+			return true;
+		if (!(o instanceof Literal))
 			return false;
 		final Literal l = (Literal) o;
 		return (this.name == l.name) && (this.state == l.state);
@@ -395,7 +402,10 @@ public class Literal implements Comparable<Literal> {
 	/** {@inheritDoc} */
 	@Override
 	public final int hashCode() {
-		return Literal.hashCode(this.name, this.state);
+		if (this.hashCode == 0) {
+			this.hashCode = Literal.hashCode(this.name, this.state);
+		}
+		return this.hashCode();
 	}
 
 	/**

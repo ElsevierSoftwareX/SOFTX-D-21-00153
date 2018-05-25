@@ -1,12 +1,16 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
-v1.23.0
+v1.23.2
 -------
-	date:	2018-01-10
+	date:	2018-02-21
 	
-	Class CSTNUPotential added. This class checks the DC property using node potentials instead of edge values.
-	Some class code has been cleaned and optimized.
+	Class CSTNU cleaned and optimized. From this release, its DC checking algorithm is sound-and-complete.
+	Contingent link can have label even if it is not required for sound-and-completeness.
+	
+	Class CSTNPSU.java added.
+		
+	Sub-package 'attic' removed. (last svn revision 243).
 	
 v1.22.4
 -------

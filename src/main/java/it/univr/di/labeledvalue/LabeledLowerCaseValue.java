@@ -48,9 +48,13 @@ public class LabeledLowerCaseValue {
 
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof EmptyLabeledLowerCaseValue))
+			if (o == this)
+				return true;
+			if (!(o instanceof LabeledLowerCaseValue))
 				return false;
-			return this == o;
+			LabeledLowerCaseValue v = (LabeledLowerCaseValue) o;
+			return Constants.INT_NULL == v.value && v.label == null && v.nodeName == null;
+
 		}
 
 		@Override
@@ -215,7 +219,7 @@ public class LabeledLowerCaseValue {
 	static public LabeledLowerCaseValue create(LabeledLowerCaseValue input) {
 		if (input == null || input.isEmpty())
 			return emptyLabeledLowerCaseValue;
-		return new LabeledLowerCaseValue(new ALabel(input.nodeName), input.value, new Label(input.label));
+		return new LabeledLowerCaseValue(ALabel.clone(input.nodeName), input.value, Label.clone(input.label));
 	}
 
 	/**
@@ -234,10 +238,14 @@ public class LabeledLowerCaseValue {
 	private int value;
 
 	/**
+	 * cached hash code
+	 */
+	private int hashCode;// automatically initilized to 0
+	/**
 	 * Create an empty lower-case value.<br>
 	 * Externally, they have to use {@link #emptyLabeledLowerCaseValue} for having an empty object.
 	 */
-	LabeledLowerCaseValue() {
+	private LabeledLowerCaseValue() {
 		this.label = null;
 		this.nodeName = null;
 		this.value = Constants.INT_NULL;
@@ -291,24 +299,31 @@ public class LabeledLowerCaseValue {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null || !(o instanceof LabeledLowerCaseValue))
+		if (o == this)
+			return true;
+		if (!(o instanceof LabeledLowerCaseValue))
 			return false;
 		LabeledLowerCaseValue v = (LabeledLowerCaseValue) o;
-		if (this.isEmpty() && v.isEmpty())
-			return true;
 		return this.value == v.value && this.label.equals(v.label) && this.nodeName.equals(v.nodeName);
 	}
 
 	@Override
 	public int hashCode() {
-		return this.value + this.label.hashCode() * 10000 + this.nodeName.hashCode() * 100000;
+		int result = this.hashCode;
+		if (result == 0) {
+			result = Integer.hashCode(this.value);
+			result = result * 31 + this.label.hashCode();
+			result = result * 31 + this.nodeName.hashCode();
+			this.hashCode = result;
+		}
+		return result;
 	}
 
 	/**
-	 * @return true if the object is empty (i.e., it represents nothing).
+	 * @return true if the object is empty (i.e., one of its fields is null).
 	 */
 	public boolean isEmpty() {
-		return (this.nodeName == null && this.value == Constants.INT_NULL && this.label == null);
+		return (this.nodeName == null || this.value == Constants.INT_NULL || this.label == null);
 	}
 
 	@Override
@@ -324,7 +339,7 @@ public class LabeledLowerCaseValue {
 	 * @return the string representation of this lower-case value.
 	 */
 	public static String entryAsString(ALabel nodeN, int v, Label l, boolean lower) {
-		final StringBuffer s = new StringBuffer("{");
+		final StringBuffer s = new StringBuffer("{");// this is necessary for saving the value in a file in the old format
 		s.append(Constants.OPEN_PAIR);
 		s.append((lower) ? nodeN.toLowerCase() : nodeN);
 		s.append(", ");

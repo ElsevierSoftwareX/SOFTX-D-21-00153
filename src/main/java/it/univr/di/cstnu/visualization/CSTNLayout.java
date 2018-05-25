@@ -190,7 +190,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 					if (e != null) {
 						inEdge.add(e);
 					} else {
-						throw new RuntimeException("Node name unplanned");
+						throw new RuntimeException("Node name unplanned: " + nodeName);
 					}
 				}
 			} else {

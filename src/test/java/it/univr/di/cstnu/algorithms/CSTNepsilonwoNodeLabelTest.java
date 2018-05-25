@@ -75,7 +75,7 @@ public class CSTNepsilonwoNodeLabelTest {
 	 */
 	private final void wellDefinition(LabeledIntGraph g) {
 		this.cstn.setG(g);
-		
+
 		try {
 			this.cstn.checkWellDefinitionProperties();
 		} catch (WellDefinitionException e) {

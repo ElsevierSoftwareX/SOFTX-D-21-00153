@@ -5,6 +5,7 @@
  */
 package it.univr.di.cstnu.visualization;
 
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.InputEvent;
@@ -21,6 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -40,6 +42,7 @@ import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntMapFactory;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -446,7 +449,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 						if (dest.getName().equals(nodeName)) {
 							e.clearLowerCaseValue();
-							ALabel destALabel = (dest.getAlabel() != null) ? new ALabel(dest.getAlabel()) : new ALabel(dest.getName(), null);
+							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel()) : new ALabel(dest.getName(), null);
 							dest.setAlabel(destALabel);
 							e.setLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 							// value of a contingent must have the label of its endpoints.
@@ -507,7 +510,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		/*
 		 * The layout is a grid of 3 columns.
 		 */
-		final JPanel jp = new JPanel(new GridLayout(0, 3));
+		final JPanel jp = new JPanel(new GridLayout(0, (editorPanel) ? 3 : 2));
 		panel.setInnerComponent(jp);
 		final ValidationGroup group = panel.getValidationGroup();
 
@@ -518,8 +521,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(name);
 		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
-		jp.add(new JLabel("Syntax: [" + ALabelAlphabet.ALETTER + "?]+"));
-		group.add(name, StringValidators.regexp("[" + ALabelAlphabet.ALETTER + "?]+", "Must be a well format name", false), new ObservableValidator(g, node));
+		if (editorPanel) {
+			jp.add(new JLabel("Syntax: [" + ALabelAlphabet.ALETTER + "?]+"));
+			group.add(name, StringValidators.regexp("[" + ALabelAlphabet.ALETTER + "?]+", "Must be a well format name", false),
+					new ObservableValidator(g, node));
+		}
 
 		// Observed proposition
 		JTextField observedProposition = new JTextField(1);
@@ -530,9 +536,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(observedProposition);
 		LabelEditingGraphMousePlugin.setConditionToEnable(observedProposition, viewerName, false);
-		jp.add(new JLabel("Syntax: " + Literal.PROPOSITION_RANGE + "| "));
-		group.add(observedProposition, StringValidators.regexp(Literal.PROPOSITION_RANGE + "|", "Must be a single char in the range!", false),
+		if (editorPanel) {
+			jp.add(new JLabel("Syntax: " + Literal.PROPOSITION_RANGE + "| "));
+			group.add(observedProposition, StringValidators.regexp(Literal.PROPOSITION_RANGE + "|", "Must be a single char in the range!", false),
 				new ObservableValidator(g, node));
+		}
 
 		// Label
 		final Label l = node.getLabel();
@@ -542,9 +550,27 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(jl);
 		jp.add(label);
 		LabelEditingGraphMousePlugin.setConditionToEnable(label, viewerName, false);
-		final JTextField jtf = new JTextField("Syntax: " + Label.LABEL_RE);
-		jp.add(jtf);
-		group.add(label, StringValidators.regexp(Label.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
+		if (editorPanel) {
+			final JTextField jtf = new JTextField("Syntax: " + Label.LABEL_RE);
+			jp.add(jtf);
+			group.add(label, StringValidators.regexp(Label.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
+		}
+
+		// Potential
+		// ObjectSet<ALabel> labelPotential = node.getALabelsOfPotential();
+		LabeledALabelIntTreeMap potentialMap = node.getPotential();
+		if (potentialMap != null) {
+			// for (ALabel alabel : labelPotential) {
+			jl = new JLabel("Potential: ");
+			jp.add(jl);
+			JLabel potentialValues = new JLabel(
+					"<html>" + potentialMap.toString().replace("{", "").replace("}", "").replaceAll("\\) \\(", ")<br />(") + "</html>", SwingConstants.LEFT);
+			potentialValues.setBackground(Color.white);
+			potentialValues.setOpaque(true);
+			jp.add(potentialValues);
+			// }
+		}
+
 
 		// Build the new object from the return values.
 		boolean modified = false;
