@@ -7,14 +7,12 @@ import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
 /**
- * <p>
  * Simple class to represent a <em>label</em> in the CSTN/CSTNU framework.<br>
  * A label is a (logic) conjunction of zero or more <em>literals</em> ({@link it.univr.di.labeledvalue.Literal}).<br>
  * A label without literals is called <em>empty label</em> and it is represented graphically as {@link it.univr.di.labeledvalue.Constants#EMPTY_LABEL}.<br>
  * A labels is <em>consistent</em> when it does not contains opposite literals.
  * A label <code>L'</code> subsumes a label <code>L</code> iff <code>L'</code> implies <code>L</code> (<code>⊨ L' ⇒ L</code>).<br>
  * In other words, if <code>L</code> is a sub-label of <code>L'</code>.
- * </p>
  * <p>
  * Design assumptions
  * Since in CSTN(U) project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
@@ -254,7 +252,7 @@ public class Label implements Comparable<Label> {
 	 * Possible status of a literal
 	 * 				bit1[i] bit0[i]
 	 * not present 		0 		0
-	 * straight 			0		1
+	 * straight 		0		1
 	 * negated 			1		0
 	 * unknown 			1		1
 	 * </pre>
@@ -514,10 +512,9 @@ public class Label implements Comparable<Label> {
 			return 1;
 		if (this.equals(label))
 			return 0;// fast comparison!
-		if (this.size() < label.size())
-			return -1;
-		if (this.size() > label.size())
-			return 1;
+		int sizeC = Integer.compare(this.size(), label.size());
+		if (sizeC != 0)
+			return sizeC;
 
 		// they have same length and they are different
 		int i = 0, j = 0, cmp = 0;
