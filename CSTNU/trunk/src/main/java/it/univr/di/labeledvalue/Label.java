@@ -7,7 +7,7 @@ import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
 /**
- * Simple class to represent a <em>label</em> in the CSTN/CSTNU framework.<br>
+ * Represents a mutable propositional <em>label</em> in the CSTN/CSTNU framework.<br>
  * A label is a (logic) conjunction of zero or more <em>literals</em> ({@link it.univr.di.labeledvalue.Literal}).<br>
  * A label without literals is called <em>empty label</em> and it is represented graphically as {@link it.univr.di.labeledvalue.Constants#EMPTY_LABEL}.<br>
  * A labels is <em>consistent</em> when it does not contains opposite literals.
