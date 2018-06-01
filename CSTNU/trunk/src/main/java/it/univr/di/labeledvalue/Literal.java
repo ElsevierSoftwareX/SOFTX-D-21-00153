@@ -1,7 +1,7 @@
 package it.univr.di.labeledvalue;
 
 /**
- * Simple class to represent a literal.
+ * Represents a immutable literal.
  * <p>
  * A literal is a char that can be preceded by the symbol {@link it.univr.di.labeledvalue.Constants#NOT}, negated literal, or by the symbol
  * {@link it.univr.di.labeledvalue.Constants#UNKNOWN}, 'unknown' literal.
@@ -9,8 +9,8 @@ package it.univr.di.labeledvalue;
  * While the semantics of a literal and its negation is the standard one, the semantics for unknown literal is particular of the CSTN/CSTNU application.<br>
  * An unknown literal, as '¿p' for example, is true if the value of proposition letter 'p' is not assigned yet. False otherwise.
  * <p>
- * Therefore, if a state is characterized by the proposition '¿p', it means that the state is valid till the value of proposition letter 'p' is unknown. In the
- * instant the value of 'p' is set, '¿p' became false and the associated event is not more valid.
+ * Therefore, if a state is characterized by the proposition '¿p', it means that the state is valid till the value of proposition letter 'p' is unknown.
+ * In the instant the value of 'p' is set, '¿p' became false and the associated state is not more valid.
  * <p>
  * A literal object is immutable and must have a propositional letter.
  * <p>
@@ -43,11 +43,6 @@ public class Literal implements Comparable<Literal> {
 	private static final Literal[] CREATED_LITERAL = new Literal[Label.NUMBER_OF_POSSIBLE_PROPOSITIONS * 3];
 
 	/**
-	 * R.E. representation of allowed propositions.
-	 */
-	public static final String PROPOSITIONS = "A-Za-z0-9α-μ";
-
-	/**
 	 * List of possible proposition managed by this class.<br>
 	 * Such list is made concatenating 3 blocks: a-z, A-Z, α-μ.<br>
 	 * If such blocks are changed, please revise {@link #check(char)} and {@link #index(char)} methods because it exploits the bounds of such blocks.
@@ -70,6 +65,11 @@ public class Literal implements Comparable<Literal> {
 	 */
 	public static final String PROPOSITION_RANGE = "[A-Za-z0-9α-μ]";
 
+	/**
+	 * R.E. representation of allowed propositions.
+	 */
+	public static final String PROPOSITIONS = "A-Za-z0-9α-μ";
+
 
 	/**
 	 * @param state1 a possible state of a literal. No integrity check is done.
@@ -78,7 +78,7 @@ public class Literal implements Comparable<Literal> {
 	 * @see #STRAIGHT
 	 * @see #NEGATED
 	 */
-	public static final boolean areComplement(char state1, char state2) {
+	static final boolean areComplement(char state1, char state2) {
 		return (state1 == STRAIGHT && state2 == NEGATED) || (state1 == NEGATED && state2 == STRAIGHT);
 	}
 
@@ -86,7 +86,7 @@ public class Literal implements Comparable<Literal> {
 	 * @param i
 	 * @return char at position i in {@link Literal#PROPOSITION_ARRAY}.
 	 */
-	static public final char charValue(final int i) {
+	static final char charValue(final int i) {
 		if (i < 0 || i > Label.NUMBER_OF_POSSIBLE_PROPOSITIONS)
 			throw new IllegalArgumentException("Index '" + i + "' is not valid.");
 		return PROPOSITION_ARRAY[i];
@@ -96,7 +96,7 @@ public class Literal implements Comparable<Literal> {
 	 * @param c
 	 * @return true if the char represents a valid literal identifier
 	 */
-	static public final boolean check(final char c) {
+	public static final boolean check(final char c) {
 		return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('α' <= c && c <= 'μ');
 	}
 
@@ -157,7 +157,7 @@ public class Literal implements Comparable<Literal> {
 	 * @param state
 	 * @return the ordinal associated to a proper state, -1 if the state is not recognized.
 	 */
-	public static final byte getStateOrdinal(char state) {
+	static final byte getStateOrdinal(char state) {
 		switch (state) {
 		case STRAIGHT:
 			return 1;
@@ -173,18 +173,13 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * hashcode cache
-	 */
-	private int hashCode;
-
-	/**
 	 * Hash code for a literal given as char and state.
 	 * 
 	 * @param c
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is done.
 	 * @return an integer that is surely unique when 'a'<=c<='z'.
 	 */
-	public static final int hashCode(char c, char state) {
+	static final int hashCode(char c, char state) {
 		return index(c) * 3 + getStateOrdinal(state) - 1;// -1 because ABSENT is not admissible.
 	}
 
@@ -192,7 +187,7 @@ public class Literal implements Comparable<Literal> {
 	 * @param c
 	 * @return the index of the given proposition in {@link #PROPOSITION_ARRAY} if it is a proposition, -1 otherwise.
 	 */
-	static public final byte index(final char c) {
+	static final byte index(final char c) {
 		if ('a' <= c && c <= 'z')
 			return (byte) (c - 'a');
 		if ('A' <= c && c <= 'Z')
@@ -230,7 +225,7 @@ public class Literal implements Comparable<Literal> {
 	 * @param state
 	 * @return the char representing the state.
 	 */
-	public static final String stateAsString(char state) {
+	static final String stateAsString(char state) {
 		if (state <= STRAIGHT)
 			return "";
 		return String.valueOf(state);
@@ -270,6 +265,11 @@ public class Literal implements Comparable<Literal> {
 	static final String toString(int propositionIndex, char state) {
 		return stateAsString(state) + Literal.charValue(propositionIndex);
 	}
+
+	/**
+	 * hashcode cache
+	 */
+	private int hashCode;
 
 	/**
 	 * Propositional letter. It cannot be changed!
@@ -338,7 +338,7 @@ public class Literal implements Comparable<Literal> {
 		if (!(o instanceof Literal))
 			return false;
 		final Literal l = (Literal) o;
-		return (this.name == l.name) && (this.state == l.state);
+		return this.name == l.name && this.state == l.state;
 	}
 
 	/**
