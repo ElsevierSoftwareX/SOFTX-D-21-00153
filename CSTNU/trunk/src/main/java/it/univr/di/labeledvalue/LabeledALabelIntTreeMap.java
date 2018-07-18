@@ -293,7 +293,9 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object o) {
-		if ((o == null) || !(o instanceof LabeledALabelIntTreeMap))
+		if (o == this)
+			return true;
+		if (!(o instanceof LabeledALabelIntTreeMap))
 			return false;
 		final LabeledALabelIntTreeMap lvm = (LabeledALabelIntTreeMap) o;
 		return this.map.equals(lvm.map);// this equals checks the size... so NO empty pair (key, {}) cannot be stored!

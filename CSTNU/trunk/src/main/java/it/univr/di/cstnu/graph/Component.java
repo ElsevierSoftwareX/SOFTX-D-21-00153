@@ -27,19 +27,16 @@ public interface Component extends Serializable, Comparable<Object> {
 	public boolean equals(final Object o);
 
 	/**
-	 * <p>
-	 * equalsByName.
-	 * </p>
+	 * Returns true if this component has the same name of c.
 	 *
 	 * @param c a {@link it.univr.di.cstnu.graph.Component} object.
 	 * @return true if they are the same name.
+	 * @see #equals(Object)
 	 */
 	public boolean equalsByName(final Component c);
 
 	/**
-	 * <p>
 	 * Getter for the field <code>name</code>.
-	 * </p>
 	 *
 	 * @return the name of the component
 	 */

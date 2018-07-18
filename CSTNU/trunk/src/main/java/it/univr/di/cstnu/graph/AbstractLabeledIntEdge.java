@@ -60,6 +60,8 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		public int compareTo(Object2ObjectMap.Entry<Label, ALabel> o) {
 			if (o == null)
 				return 1;
+			if (this == o)
+				return 0;
 			int i = this.label.compareTo(o.getKey());
 			if (i != 0)
 				return i;
@@ -68,7 +70,9 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof InternalEntry))
+			if (this == o)
+				return true;
+			if (!(o instanceof InternalEntry))
 				return false;
 			InternalEntry e = (InternalEntry) o;
 			return this.label.equals(e.label) && this.aLabel.equals(e.aLabel);
@@ -86,7 +90,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 		@Override
 		public int hashCode() {
-			return this.label.hashCode() + 1000 * this.aLabel.hashCode();
+			return this.label.hashCode() + 31 * this.aLabel.hashCode();
 		}
 
 		@Override
@@ -348,7 +352,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	@Override
 	public void clear() {
 		this.upperCaseValue.clear();
-		this.lowerCaseValue.clear();
+		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 		this.removedLabeledValue.clear();
 		this.removedUpperCaseValue.clear();
 	}
@@ -360,7 +364,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public final void clearLowerCaseValue() {
-		this.lowerCaseValue.clear();
+		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 	}
 
 	@Override
@@ -592,7 +596,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		this.setChanged();
 		notifyObservers("LowerLabel");
 		int i = this.lowerCaseValue.getValue();
-		this.lowerCaseValue.clear();
+		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 		return i;
 	}
 

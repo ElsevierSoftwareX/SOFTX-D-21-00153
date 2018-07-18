@@ -24,9 +24,9 @@ public class LiteralTest {
 	public final void testParse() {
 		Literal a = Literal.parse("a");
 		Literal notA = Literal.parse("¬a");
-		Literal aOk = Literal.create('a');
+		Literal unkA = Literal.parse("¿a");
 		
-		assertArrayEquals("Verifica del parser: ", new Literal[] {aOk, aOk.getComplement()}, new Literal[]{a, notA} );
+		assertArrayEquals("Verifica del parser: ", new String[] { "a", "¬a", "¿a" }, new String[] { a.toString(), notA.toString(), unkA.toString() });
 	}
 
 
@@ -38,7 +38,7 @@ public class LiteralTest {
 	public final void testCompareTo() {
 		Literal a = Literal.parse("a");
 		Literal notA = Literal.parse("¬a");
-		Literal unkA = Literal.create('a', Literal.UNKNONW);
+		Literal unkA = Literal.parse("¿a");
 		
 		assertTrue(a.compareTo(notA) < 0);
 		assertTrue(a.compareTo(a)==0);
@@ -72,7 +72,7 @@ public class LiteralTest {
 		Literal a = Literal.parse("a");
 		Literal notA = a.getComplement();
 
-		Literal unA = Literal.create('a', Literal.UNKNONW);
+		Literal unA = Literal.valueOf('a', Literal.UNKNONW);
 		
 		assertFalse(notA.equals(a));
 		assertTrue(unA.getComplement()==null);
@@ -86,7 +86,7 @@ public class LiteralTest {
 	public final void testToString() {
 		Literal a = Literal.parse("a");
 		Literal notA = Literal.parse("¬a");
-		Literal unkA = Literal.create('a', Literal.UNKNONW);
+		Literal unkA = Literal.valueOf('a', Literal.UNKNONW);
 
 		assertEquals("a", a.toString());
 		assertEquals("¬a", notA.toString());
@@ -114,10 +114,10 @@ public class LiteralTest {
 		for (char i = 'α'; i <= 'μ'; i++)
 			System.out.println((j++) + ": '" + (i) + "', ");
 
-		final Literal A = Literal.create('A'), Z = Literal.create('Z'), B = Literal.create('B', Literal.STRAIGHT), b = Literal.create('b'),
-				a = Literal.create('a'), z = Literal.create('z');
-		final Literal α = Literal.create('α');
-		final Literal μ = Literal.create('μ');
+		final Literal A = Literal.valueOf('A'), Z = Literal.valueOf('Z'), B = Literal.valueOf('B', Literal.STRAIGHT), b = Literal.valueOf('b'),
+				a = Literal.valueOf('a'), z = Literal.valueOf('z');
+		final Literal α = Literal.valueOf('α');
+		final Literal μ = Literal.valueOf('μ');
 
 		System.out.println("A: " + A);
 		System.out.println("Z: " + Z);

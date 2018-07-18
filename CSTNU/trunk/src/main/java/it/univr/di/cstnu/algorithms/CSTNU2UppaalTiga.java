@@ -102,7 +102,9 @@ public class CSTNU2UppaalTiga {
 
 		@Override
 		public boolean equals(Object o) {
-			if (o == null || !(o instanceof Contingent))
+			if (o == this)
+				return true;
+			if (!(o instanceof Contingent))
 				return false;
 			Contingent c = (Contingent) o;
 			return this.source.equalsByName(c.source)
@@ -149,10 +151,12 @@ public class CSTNU2UppaalTiga {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof Constraint))
+		public boolean equals(Object o) {
+			if (o == this)
+				return true;
+			if (!(o instanceof Constraint))
 				return false;
-			Constraint cons = (Constraint) obj;
+			Constraint cons = (Constraint) o;
 			return cons.source != null && cons.source.equalsByName(this.source)
 					&& cons.dest != null && cons.dest.equalsByName(this.dest)
 					&& cons.value != Constants.INT_NULL && cons.value == this.value;
@@ -167,7 +171,8 @@ public class CSTNU2UppaalTiga {
 
 		@Override
 		public int hashCode() {
-			return (this.dest != null ? this.dest.hashCode() : 0) + (this.source != null ? this.source.hashCode() : 0) + (this.value != Constants.INT_NULL ? this.value : 0);
+			return ((this.dest != null ? this.dest.hashCode() : 0) + 31 * (this.source != null ? this.source.hashCode() : 0)) * 31
+					+ (this.value != Constants.INT_NULL ? this.value : 0);
 		}
 	}
 

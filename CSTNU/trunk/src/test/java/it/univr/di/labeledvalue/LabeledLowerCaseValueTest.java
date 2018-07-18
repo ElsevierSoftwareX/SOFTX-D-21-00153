@@ -40,5 +40,19 @@ public class LabeledLowerCaseValueTest {
 
 	}
 
+	/**
+	 * 
+	 */
+	@Test
+	public final void empty() {
+		LabeledLowerCaseValue empty = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
+		LabeledLowerCaseValue empty1 = LabeledLowerCaseValue.parse("{}", this.alpha);
+		LabeledLowerCaseValue lowerValue = LabeledLowerCaseValue.parse("{(¬a, N9, -12) }", this.alpha);
+
+		Assert.assertEquals("Equals of two empties", empty, empty1);
+		Assert.assertNotEquals("Equals of one empty and one not empty", empty, lowerValue);
+		Assert.assertTrue("Hash code of empty is 0", empty.hashCode() == 0);
+		Assert.assertEquals("String of empty is {}", "{}", empty.toString());
+	}
 
 }

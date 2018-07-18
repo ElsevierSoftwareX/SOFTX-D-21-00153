@@ -110,6 +110,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 
 		@Override
 		public boolean equals(Object o) {
+			if (o == this)
+				return true;
 			if (!(o instanceof Object2IntMap.Entry<?>))
 				return false;
 			@SuppressWarnings("unchecked")
@@ -135,7 +137,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 
 		@Override
 		public int hashCode() {
-			return this.label.hashCode() + this.value;
+			return this.label.hashCode() + this.value * 31;
 		}
 
 		@Override

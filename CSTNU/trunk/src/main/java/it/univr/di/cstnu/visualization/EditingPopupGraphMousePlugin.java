@@ -43,6 +43,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 		super(vertexFactory,edgeFactory);
 	}
 
+	@Override
 	@SuppressWarnings({ "unchecked", "serial", "synthetic-access" })
 	protected void handlePopup(MouseEvent e) {
 		final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
@@ -67,6 +68,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 						popup.add(directedMenu);
 						for (final V other : picked) {
 							directedMenu.add(new AbstractAction("[" + other + "," + vertex + "]") {
+								@Override
 								public void actionPerformed(ActionEvent a) {
 									graph.addEdge(EditingPopupGraphMousePlugin.this.edgeFactory.get(), other, vertex, EdgeType.DIRECTED);
 									vv.repaint();
@@ -79,6 +81,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 						popup.add(undirectedMenu);
 						for (final V other : picked) {
 							undirectedMenu.add(new AbstractAction("[" + other + "," + vertex + "]") {
+								@Override
 								public void actionPerformed(ActionEvent a) {
 									graph.addEdge(EditingPopupGraphMousePlugin.this.edgeFactory.get(), other, vertex);
 									vv.repaint();
@@ -88,6 +91,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 					}
 				}
 				popup.add(new AbstractAction("Delete Vertex") {
+					@Override
 					public void actionPerformed(ActionEvent a) {
 						pickedVertexState.pick(vertex, false);
 						graph.removeVertex(vertex);
@@ -96,6 +100,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 				});
 			} else if (edge != null) {
 				popup.add(new AbstractAction("Delete Edge") {
+					@Override
 					public void actionPerformed(ActionEvent a) {
 						pickedEdgeState.pick(edge, false);
 						graph.removeEdge(edge);
@@ -104,6 +109,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 				});
 			} else {
 				popup.add(new AbstractAction("Create Vertex") {
+					@Override
 					public void actionPerformed(ActionEvent a) {
 						V newVertex = EditingPopupGraphMousePlugin.this.vertexFactory.get();
 						graph.addVertex(newVertex);
@@ -112,6 +118,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 					}
 				});
 				popup.add(new AbstractAction("Export graph to vector image...") {
+					@Override
 					public void actionPerformed(ActionEvent a) {
 						ExportDialog export = new ExportDialog("Roberto Posenato");
 						VisualizationImageServer<V, E> vis = new VisualizationImageServer<>(vv.getGraphLayout(), vv.getGraphLayout().getSize());

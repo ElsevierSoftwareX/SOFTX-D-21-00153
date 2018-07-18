@@ -1,6 +1,16 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.24.0
+-------
+	date:	2018-07-18 working
+	
+	CSTN class allows the DC checking without using unknown literals (that are necessary for the completeness): it just a tool for studying the necessity of unknown literals.
+	
+	Literal becomes an immutable class. 
+
+	Minor code optimization.
+	
 v1.23.2
 -------
 	date:	2018-02-21
@@ -11,6 +21,8 @@ v1.23.2
 	Class CSTNPSU.java added.
 		
 	Sub-package 'attic' removed. (last svn revision 243).
+	
+	SVN version: 245.
 	
 v1.22.4
 -------
