@@ -57,21 +57,15 @@ public abstract class AbstractComponent extends Observable implements Component 
 	}
 
 	/**
-	 * <p>compareTo.</p>
-	 *
-	 * @param c a {@link it.univr.di.cstnu.graph.AbstractComponent} object.
+	 * {@inheritDoc}
+	 * 
 	 * @return &lt;0 if this has a name coming prior to c.name, 0 if they are equal, &gt;0 otherwise.
 	 */
-	public int compareTo(final Component c) {
-		return this.name.compareToIgnoreCase(c.getName());
-	}
-
-	/** {@inheritDoc} */
 	@Override
 	public int compareTo(final Object o) {
 		if (o == null) return 1;
 		if (this == o) return 0;
-		return this.compareTo((Component) o);
+		return this.name.compareToIgnoreCase(((Component) o).getName());
 	}
 
 	/**

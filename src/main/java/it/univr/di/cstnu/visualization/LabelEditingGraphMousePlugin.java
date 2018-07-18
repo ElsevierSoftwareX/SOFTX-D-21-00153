@@ -17,7 +17,6 @@ import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -683,14 +682,6 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	public void mouseClicked(final MouseEvent e) {
 		if ((e.getModifiers() == this.modifiers) && (e.getClickCount() == 2)) {
 			final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
-			JPanel jp2;
-			final JEditorPane mesg2 = this.cstnEditor.derivedGraphMessageArea;
-
-			if (vv.getName().equals(CSTNEditor.editorName)) {
-				jp2 = this.cstnEditor.vv2;
-			} else {
-				jp2 = vv;
-			}
 			final GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
 			final String viewerName = vv.getName();
 			if (pickSupport != null) {
@@ -701,11 +692,10 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				this.vertex = pickSupport.getVertex(layout, p.getX(), p.getY());
 				if (this.vertex != null) {
 					if (nodeAttributesEditor(this.vertex, viewerName, g)) {
-						jp2.setVisible(false);
-						mesg2.setText("");
+						this.cstnEditor.resetDerivedGraphStatus();
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
 							}
 						}
 						g.clearCache();
@@ -719,11 +709,10 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				this.edge = pickSupport.getEdge(layout, p.getX(), p.getY());
 				if (this.edge != null) {
 					if (edgeAttributesEditor(this.edge, viewerName, g)) {
-						jp2.setVisible(false);
-						mesg2.setText("");
+						this.cstnEditor.resetDerivedGraphStatus();
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer: " + jp2);
+								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
 							}
 						}
 						g.clearCache();

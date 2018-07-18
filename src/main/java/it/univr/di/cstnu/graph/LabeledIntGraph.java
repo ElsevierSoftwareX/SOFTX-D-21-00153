@@ -597,10 +597,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * {@inheritDoc} Equals based on equals of edges and vertices.
 	 */
 	@Override
-	public boolean equals(final Object obj) {
-		if ((obj == null) || !(obj instanceof LabeledIntGraph))
+	public boolean equals(final Object o) {
+		if (this == o)
+			return true;
+		if (!(o instanceof LabeledIntGraph))
 			return false;
-		final LabeledIntGraph g1 = (LabeledIntGraph) obj;
+		final LabeledIntGraph g1 = (LabeledIntGraph) o;
 		return g1.getEdges().equals(this.getEdges()) && g1.getVertices().equals(this.getVertices());
 	}
 
@@ -1027,8 +1029,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the set of vertices as an array ordered w.r.t the name of node in ascending order.
 	 */
 	public LabeledNode[] getVerticesArray() {
-		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[this.getVertexCount() - 1]);// I put -1 because I discovered that sometimes
-		// toArray add a null element at the end.
+		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[0]); //At pag. 248 of Effective Java, author shows that it is better to not pre-allocate.
 		return nodes;
 	}
 
@@ -1044,7 +1045,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 */
 	@Override
 	public int hashCode() {
-		return this.getEdges().hashCode() + this.getVertices().hashCode();
+		return this.getEdges().hashCode() + 31 * this.getVertices().hashCode();
 	}
 
 	/**
@@ -1154,16 +1155,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public boolean removeVertex(LabeledNode vertex) {
+	public boolean removeVertex(LabeledNode removingNode) {
 		/**
 		 * I don't touch the adjacency size. I just move last col and row to the col and row that have to be removed.
 		 */
-		int nodeIndexToRem;
-		if (vertex == null || (nodeIndexToRem = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
+		int removingNodeIndex;
+		if (removingNode == null || (removingNodeIndex = this.nodeName2index.getInt(removingNode.name)) == Constants.INT_NULL) {
+			LOG.fine("I cannot remove vertex " + removingNode + " because it is null or its index is null.");
 			return false;
+		}
 
 		int last = this.order - 1;
-		if (nodeIndexToRem == last) {
+		// Start to move node to remove at the end of adjacency matrix and to remove all its edges.
+		if (removingNodeIndex == last) {
 			for (int i = 0; i < last; i++) {
 				// I just nullify last col and last row
 				removeEdgeFromIndex(this.adjacency[i][last]);
@@ -1174,7 +1178,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			this.adjacency[last][last] = null;
 		} else {
 			for (int i = 0; i < last; i++) {
-				if (i == nodeIndexToRem) {
+				if (i == removingNodeIndex) {
 					removeEdgeFromIndex(this.adjacency[i][i]);
 					this.adjacency[i][i] = this.adjacency[last][last];
 					updateEdgeInIndex(this.adjacency[i][i], i, i);
@@ -1183,24 +1187,26 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					this.adjacency[last][last] = this.adjacency[i][last] = this.adjacency[last][i] = null;
 					continue;
 				}
-				removeEdgeFromIndex(this.adjacency[i][nodeIndexToRem]);
-				this.adjacency[i][nodeIndexToRem] = this.adjacency[i][last];
-				updateEdgeInIndex(this.adjacency[i][nodeIndexToRem], i, nodeIndexToRem);
+				removeEdgeFromIndex(this.adjacency[i][removingNodeIndex]);
+				this.adjacency[i][removingNodeIndex] = this.adjacency[i][last];
+				updateEdgeInIndex(this.adjacency[i][removingNodeIndex], i, removingNodeIndex);
 				this.adjacency[i][last] = null;
 
-				removeEdgeFromIndex(this.adjacency[nodeIndexToRem][i]);
-				this.adjacency[nodeIndexToRem][i] = this.adjacency[last][i];
-				updateEdgeInIndex(this.adjacency[nodeIndexToRem][i], nodeIndexToRem, i);
+				removeEdgeFromIndex(this.adjacency[removingNodeIndex][i]);
+				this.adjacency[removingNodeIndex][i] = this.adjacency[last][i];
+				updateEdgeInIndex(this.adjacency[removingNodeIndex][i], removingNodeIndex, i);
 				this.adjacency[last][i] = null;
 			}
 		}
-
-		LabeledNode node2up = this.index2node.get(last);
-		this.nodeName2index.put(node2up.name, nodeIndexToRem);
-		this.nodeName2index.remove(vertex.name);
-		this.index2node.remove(last);
-		this.index2node.remove(nodeIndexToRem);
-		this.index2node.put(nodeIndexToRem, node2up);
+		// End to move node to remove at the end of adjacency matrix and to remove all its edges.
+		this.index2node.remove(removingNodeIndex);
+		this.nodeName2index.remove(removingNode.name);
+		if (removingNodeIndex != last) {
+			LabeledNode nodeMovedToRemovedNodePosition = this.index2node.get(last);
+			this.index2node.remove(last);
+			this.index2node.put(removingNodeIndex, nodeMovedToRemovedNodePosition);
+			this.nodeName2index.put(nodeMovedToRemovedNodePosition.name, removingNodeIndex);
+		}
 		this.order = last;
 		clearCache();
 
@@ -1321,6 +1327,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					}
 				}
 				node.setAlabel(null);
+				if (this.getZ() != null && oldValue.equals(this.getZ().name)) {
+					this.setZ(null);
+				}
 				return;
 			}
 			if (obj.equals("Proposition")) {

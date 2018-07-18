@@ -32,12 +32,14 @@ import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
 import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
 import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
+import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
@@ -461,6 +463,12 @@ public class CSTN {
 	 * Derived classes can put this values false for checking the network with the alternative approach.
 	 */
 	boolean withNodeLabels = true;
+
+	/**
+	 * DCChecking requires to use unknown literals to be complete.
+	 * This flag can disable unknown literals if one want to verify if they are necessary for a specific check.
+	 */
+	public boolean withUnknown = true;
 
 	/**
 	 * Absolute value of the max negative weight determined during initialization phase.
@@ -1231,13 +1239,16 @@ public class CSTN {
 						continue;
 					}
 				} else {
-					newLabelAC = labelAB.conjunctionExtended(labelBC);
+					newLabelAC = (this.withUnknown) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
+					if (newLabelAC == null)
+						continue;
 					qLabel = newLabelAC.containsUnknown();
 					if (qLabel) {
 						if (this.withNodeLabels)
 							removeChildrenOfUnknown(newLabelAC);
 					}
 				}
+				qLabel = newLabelAC.containsUnknown();
 				if (this.withNodeLabels) {
 					if (!newLabelAC.subsumes(nAnCLabel)) {
 						if (Debug.ON)
@@ -1481,11 +1492,18 @@ public class CSTN {
 
 		final ObjectSet<Label> SDLabelSet = eSD.getLabeledValueMap().keySet();
 
-		final Label allLiteralsSD = new Label();
+		Label allLiteralsSD = new Label();
 		for (Label l : SDLabelSet) {
-			allLiteralsSD.conjunctExtended(l);
+			if (this.withUnknown) {
+				allLiteralsSD.conjunctExtended(l);
+			} else {
+				allLiteralsSD = allLiteralsSD.conjunction(l);
+				if (allLiteralsSD == null) {
+					allLiteralsSD = Label.emptyLabel;
+					break;
+				}
+			}
 		}
-
 		for (final LabeledIntEdge eObsD : Obs2nDEdges) {
 			final LabeledNode nObs = this.g.getSource(eObsD);
 			if (nObs == nS)
@@ -1739,7 +1757,7 @@ public class CSTN {
 				beta.remove(childrenOfP);
 			}
 		}
-		Label betaGamma = labelFromObs.conjunctionExtended(beta);
+		Label betaGamma = (this.withUnknown) ? labelFromObs.conjunctionExtended(beta) : labelFromObs.conjunction(beta);
 		if (this.withNodeLabels) {
 			// remove all children of unknowns.
 			removeChildrenOfUnknown(betaGamma);
@@ -2296,4 +2314,74 @@ public class CSTN {
 		this.checkStatus.reset();
 	}
 
+	/**
+	 * Determines the minimal distance between all pair of vertexes modifying the given consistent graph.
+	 * If the graph contains a negative cycle, it returns false and the graph contains the edges that
+	 * have determined the negative cycle.
+	 *
+	 * @param g the graph
+	 * @return true if the graph is consistent, false otherwise.
+	 *         If the response is false, the edges do not represent the minimal distance between nodes.
+	 */
+	static public boolean getMinimalDistanceGraph(final LabeledIntGraph g) {
+		final int n = g.getVertexCount();
+		final LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = g.getEdgeFactory();
+		final LabeledNode[] node = g.getVerticesArray();
+		LabeledNode iV, jV, kV;
+		LabeledIntEdge ik, kj, ij;
+		int v;
+		Label ijL;
+		for (int k = 0; k < n; k++) {
+			kV = node[k];
+			for (int i = 0; i < n; i++) {
+				iV = node[i];
+				for (int j = 0; j < n; j++) {
+					if ((k == i) || (k == j)) {
+						continue;
+					}
+					jV = node[j];
+					Label nodeLabelConjunction = iV.getLabel().conjunction(jV.getLabel());
+					if (nodeLabelConjunction == null)
+						continue;
+
+					ik = g.findEdge(iV, kV);
+					kj = g.findEdge(kV, jV);
+					if ((ik == null) || (kj == null)) {
+						continue;
+					}
+					ij = g.findEdge(iV, jV);
+
+					final ObjectSet<Object2IntMap.Entry<Label>> ikMap = ik.getLabeledValueSet();
+					final ObjectSet<Object2IntMap.Entry<Label>> kjMap = kj.getLabeledValueSet();
+
+					for (final Object2IntMap.Entry<Label> ikL : ikMap) {
+						for (final Object2IntMap.Entry<Label> kjL : kjMap) {
+							ijL = ikL.getKey().conjunction(kjL.getKey());
+							if (ijL == null) {
+								continue;
+							}
+							ijL = ijL.conjunction(nodeLabelConjunction);// It is necessary to propagate with node labels!
+							if (ijL == null) {
+								continue;
+							}
+							if (ij == null) {
+								ij = edgeFactory.get("e" + node[i].getName() + node[j].getName());
+								ij.setConstraintType(LabeledIntEdge.ConstraintType.derived);
+								g.addEdge(ij, iV, jV);
+							}
+							v = ikL.getIntValue() + kjL.getIntValue();
+							ij.mergeLabeledValue(ijL, v);
+							if (i == j) // check negative cycles
+								if (v < 0 || ij.getMinValue() < 0) {
+									CSTNU.LOG.finer("Found a negative cycle on node " + iV.getName() + ": " + (ij)
+											+ "\nIn details, ik=" + ik + ", kj=" + kj + ",  v=" + v + ", ij.getValue(" + ijL + ")=" + ij.getValue(ijL));
+									return false;
+								}
+						}
+					}
+				}
+			}
+		}
+		return true;
+	}
 }

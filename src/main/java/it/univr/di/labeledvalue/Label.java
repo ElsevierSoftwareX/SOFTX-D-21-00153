@@ -174,6 +174,8 @@ public class Label implements Comparable<Label> {
 		public Label conjunction(Label l) {
 			if (l.isEmpty())
 				return this;
+			if (l.containsUnknown())
+				return null;
 			return Label.clone(l);
 		}
 
@@ -235,6 +237,20 @@ public class Label implements Comparable<Label> {
 		}
 
 	}
+
+	// FIXME
+	// Long2LongMap bit02bit1Cached;
+	// Long2ObjectMap<Label> bit12LabelCached;
+	//
+	// {
+	// bit02bit1Cached = new Long2LongOpenHashMap();
+	// bit12LabelCached = new Long2ObjectOpenHashMap<>();
+	//
+	// long v = 1l;
+	// long v1 = 3l;
+	// bit02bit1Cached.put(v, v1);
+	// bit12LabelCached.get(bit02bit1Cached.get(v));
+	// }
 
 	/**
 	 * A constant empty label to represent an empty label that cannot be modified.
@@ -440,7 +456,7 @@ public class Label implements Comparable<Label> {
 	 * Number of literals in the label
 	 * Value -1 means that the size has to be calculated!
 	 */
-	private byte cacheOfSize = -1;
+	private byte sizeCached = -1;
 
 	/**
 	 * Default constructor.
@@ -448,7 +464,7 @@ public class Label implements Comparable<Label> {
 	public Label() {
 		this.bit0 = this.bit1 = 0;
 		this.maxIndex = -1;
-		this.cacheOfSize = 0;
+		this.sizeCached = 0;
 	}
 
 	/**
@@ -478,7 +494,7 @@ public class Label implements Comparable<Label> {
 		this.bit0 = label.bit0;
 		this.bit1 = label.bit1;
 		this.maxIndex = label.maxIndex;
-		this.cacheOfSize = label.cacheOfSize;
+		this.sizeCached = label.sizeCached;
 	}
 
 	/**
@@ -499,7 +515,7 @@ public class Label implements Comparable<Label> {
 	public void clear() {
 		this.bit1 = this.bit0 = 0;
 		this.maxIndex = -1;
-		this.cacheOfSize = 0;
+		this.sizeCached = 0;
 	}
 
 	/**
@@ -627,7 +643,7 @@ public class Label implements Comparable<Label> {
 		this.bit0 = unionB0;
 		this.bit1 = unionB1;
 		this.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
-		this.cacheOfSize = -1;// it has to be calculated... delay the stuff.
+		this.sizeCached = -1;// it has to be calculated... delay the stuff.
 		return true;
 	}
 
@@ -653,7 +669,7 @@ public class Label implements Comparable<Label> {
 		newLabel.bit0 = unionB0;
 		newLabel.bit1 = unionB1;
 		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
-		newLabel.cacheOfSize = -1;// it has to be calculated... delay the stuff.
+		newLabel.sizeCached = -1;// it has to be calculated... delay the stuff.
 		return newLabel;
 	}
 
@@ -677,7 +693,7 @@ public class Label implements Comparable<Label> {
 		newLabel.bit0 = unionB0;
 		newLabel.bit1 = unionB1;
 		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
-		newLabel.cacheOfSize = -1;// it has to be calculated... delay the stuff.
+		newLabel.sizeCached = -1;// it has to be calculated... delay the stuff.
 		return newLabel;
 	}
 
@@ -754,7 +770,7 @@ public class Label implements Comparable<Label> {
 		char state;
 		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			if ((state = get(i)) != Literal.ABSENT) {
-				indexes[j++] = Literal.create(Literal.charValue(i), state);
+				indexes[j++] = Literal.valueOf(Literal.charValue(i), state);
 			}
 		}
 		return indexes;
@@ -896,7 +912,7 @@ public class Label implements Comparable<Label> {
 			}
 		}
 		if (theDistinguished != -1)
-			return Literal.create(Literal.charValue(theDistinguished), get(theDistinguished));
+			return Literal.valueOf(Literal.charValue(theDistinguished), get(theDistinguished));
 		return null;
 	}
 
@@ -1022,7 +1038,7 @@ public class Label implements Comparable<Label> {
 			char thisState = get(i);
 			if (thisState == Literal.ABSENT || thisState == Literal.UNKNONW)
 				continue;
-			literals[j++] = Literal.create(Literal.charValue(i), thisState == Literal.NEGATED ? Literal.STRAIGHT : Literal.NEGATED);
+			literals[j++] = Literal.valueOf(Literal.charValue(i), thisState == Literal.NEGATED ? Literal.STRAIGHT : Literal.NEGATED);
 		}
 		return literals;
 	}
@@ -1060,7 +1076,7 @@ public class Label implements Comparable<Label> {
 			this.maxIndex--;
 			mask = mask >>> 1;
 		}
-		this.cacheOfSize = -1;
+		this.sizeCached = -1;
 		return this;
 	}
 
@@ -1099,7 +1115,7 @@ public class Label implements Comparable<Label> {
 		switch (literalStatus) {
 		case Literal.STRAIGHT:
 			if (((this.bit1 | this.bit0) & mask) == 0)
-				this.cacheOfSize++;
+				this.sizeCached++;
 			this.bit0 |= mask;
 			mask = ~mask;
 			this.bit1 &= mask;
@@ -1108,7 +1124,7 @@ public class Label implements Comparable<Label> {
 			return;
 		case Literal.NEGATED:
 			if (((this.bit1 | this.bit0) & mask) == 0)
-				this.cacheOfSize++;
+				this.sizeCached++;
 			this.bit1 |= mask;
 			mask = ~mask;
 			this.bit0 &= mask;
@@ -1117,7 +1133,7 @@ public class Label implements Comparable<Label> {
 			return;
 		case Literal.UNKNONW:
 			if (((this.bit1 | this.bit0) & mask) == 0)
-				this.cacheOfSize++;
+				this.sizeCached++;
 			this.bit1 |= mask;
 			this.bit0 |= mask;
 			if (this.maxIndex < literalIndex)
@@ -1126,7 +1142,7 @@ public class Label implements Comparable<Label> {
 		case Literal.ABSENT:
 		default:
 			if (((this.bit1 | this.bit0) & mask) != 0)
-				this.cacheOfSize--;
+				this.sizeCached--;
 			mask = ~mask;
 			this.bit1 &= mask;
 			this.bit0 &= mask;
@@ -1146,8 +1162,8 @@ public class Label implements Comparable<Label> {
 	 * @return Return the number of literals of the label
 	 */
 	public int size() {
-		if (this.cacheOfSize >= 0) {
-			return this.cacheOfSize;
+		if (this.sizeCached >= 0) {
+			return this.sizeCached;
 		}
 		// byte _cacheOfSize = 0;
 		// long or = this.bit0 | this.bit1;
@@ -1157,8 +1173,8 @@ public class Label implements Comparable<Label> {
 		// }
 		// this.cacheOfSize = _cacheOfSize;
 		// return _cacheOfSize;
-		this.cacheOfSize = (byte) Long.bitCount(this.bit0 | this.bit1);
-		return this.cacheOfSize;
+		this.sizeCached = (byte) Long.bitCount(this.bit0 | this.bit1);
+		return this.sizeCached;
 	}
 
 	/**

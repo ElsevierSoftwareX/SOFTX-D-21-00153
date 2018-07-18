@@ -687,7 +687,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right lower bound w.r.t. Z!
 						 * 2018-02-21 initialValue = minLabeledValue.getIntValue() allows the reduction of # propagations.
 						 */
-						// e.removeLabel(conjunctedLabel);
+						e.removeLabeledValue(conjunctedLabel);
 
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
@@ -761,7 +761,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							/**
 							 * @see comment "History for lower bound." above.
 							 */
-							// eInverted.removeLabel(conjunctedLabel);
+							eInverted.removeLabeledValue(conjunctedLabel);
 
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
@@ -1087,7 +1087,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	}
 
 	/**
-	 * Labeled Letter Removal (zLr)<br>
+	 * Labeled Letter Removal (Lr)<br>
 	 * 
 	 * <pre>
 	 * X ---(v,ℵ,β)---&gt; A ---(x,c,α)---&gt; C 
@@ -1154,7 +1154,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								if (LOG.isLoggable(Level.FINER))
-									LOG.log(Level.FINER, "zLr applied to edge " + oldXA + ":\n" + "partic: "
+									LOG.log(Level.FINER, "Lr applied to edge " + oldXA + ":\n" + "partic: "
 											+ nC + " <---" + lowerCaseValueAsString(ACLowerCaseValueObj.getNodeName(), x, alpha) + "--- " + nA.getName()
 											+ " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
 											+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, v, beta) + "--- " + nX.getName()
@@ -1167,7 +1167,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
-				LOG.log(Level.FINER, "zLr: end.");
+				LOG.log(Level.FINER, "Lr: end.");
 		}
 		return ruleApplied;
 	}
@@ -1176,7 +1176,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * Apply 'labeled no case' and 'labeled upper case' and 'forward labeled upper case' and 'labeled conjuncted upper case' rules.<br>
 	 * 
 	 * <pre>
-	 * 1) CASE zLP/Nc/Uc/zUCore
+	 * 1) CASE zLP/Nc/Uc
 	 *        v,ℵ,β           u,◇,α        
 	 * W &lt;------------ Y &lt;------------ X 
 	 * adds 
@@ -1253,9 +1253,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					final int v = entryYW.getIntValue();
 					int sum = Constants.sumWithOverflowCheck(u, v);
 					/**
+					 * 2018-07-18. With the sound-and-complete algorithm, positive values are not necessary any more.
 					 * 2018-01-25. We discovered that it is necessary to propagate positive UPPER CASE values!
 					 * normal positive values may be not propagate for saving computation time!
-					 * leph.isEmpty() is necessary!
+					 * aleph.isEmpty() is necessary!
 					 */
 					if (sum > 0)// && aleph.isEmpty()) // New condition that works well for big instances!
 						continue;
@@ -1908,7 +1909,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
-	CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck edgesToCheck, Instant timeoutInstant) throws WellDefinitionException {
+	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck edgesToCheck, Instant timeoutInstant) throws WellDefinitionException {
 		//
 		// This version consider only pair of edges going to Z, i.e., in the form A-->B-->Z,
 		// 2018-01-25: with this method, performances worsen.

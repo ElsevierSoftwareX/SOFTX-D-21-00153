@@ -11,96 +11,38 @@ import java.util.regex.Pattern;
 import it.univr.di.Debug;
 
 /**
- * Simple class to represent a Labeled Lower Case value.<br>
- * For speeding up the DC checking algorithms, such class is very basic.
- * No integrity controls are done.
- * Such class admit an empty object (where all field are empty).
- * For checking if an object is empty, use isEmpty().
- * <br>
- * Be aware!<br>
- * nodeName is represented as ALetter!
+ * Represents an immutable Labeled Lower Case value.<br>
  * 
+ * @implSpec
+ * 			For speeding up the DC checking algorithms, such class is very basic.
+ *           No integrity controls are done.
+ *           Such class admit an empty object (where all field are empty).
+ *           For checking if an object is empty, use isEmpty().
+ *           <br>
+ *           Be aware: the internal node name is represented as {@link ALabel}!<br>
+ *           Since lower-case value are few in any CSTNU, this imolementation does not provide a cache of created object.
  * @author posenato
  */
 public class LabeledLowerCaseValue {
 	/**
-	 * 
+	 * Logger.
 	 */
 	private static final Logger LOG = Logger.getLogger(LabeledLowerCaseValue.class.getName());
 
 	/**
-	 * An unmodifiable empty label.
-	 * 
-	 * @author posenato
-	 */
-	private static final class EmptyLabeledLowerCaseValue extends LabeledLowerCaseValue {
-		/**
-		 * 
-		 */
-		public EmptyLabeledLowerCaseValue() {
-			super();
-		}
-
-		@Override
-		public void clear() {
-			return;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (o == this)
-				return true;
-			if (!(o instanceof LabeledLowerCaseValue))
-				return false;
-			LabeledLowerCaseValue v = (LabeledLowerCaseValue) o;
-			return Constants.INT_NULL == v.value && v.label == null && v.nodeName == null;
-
-		}
-
-		@Override
-		public int hashCode() {
-			return 0;
-		}
-
-		/**
-		 * @return true if the object is empty (i.e., it represents nothing).
-		 */
-		@Override
-		public boolean isEmpty() {
-			return true;
-		}
-
-		/**
-		 * @param lower true if the node name has to be written lower case
-		 * @return the string representation of this lower-case value.
-		 */
-		@Override
-		public String toString(boolean lower) {
-			return "{}";
-		}
-
-		/**
-		 * @return the string representation of this lower-case value.
-		 */
-		@Override
-		public String toString() {
-			return "{}";
-		}
-	}
-
-	/**
 	 * A constant empty label to represent an empty label that cannot be modified.
 	 */
-	public static final LabeledLowerCaseValue emptyLabeledLowerCaseValue = new EmptyLabeledLowerCaseValue();
+	public static final LabeledLowerCaseValue emptyLabeledLowerCaseValue = new LabeledLowerCaseValue();
 
 	/**
-	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
-	 * The format of the string is given by the method {@link #toString()}:<code>\{{(&lang;label&rang;, &lang;Alabel&rang;, &lang;value&rang;) }*\}</code>
+	 * Parses a string representing a labeled lower-case value and returns an object containing the labeled values represented by the string.<br>
+	 * The format of the string is given by the method {@link #toString()}:<code>\{{(&lang;label&rang;, &lang;Alabel&rang;, &lang;value&rang;) }*\}</code><br>
 	 * It also parse the old format: <code>\{{(&lang;Alabel&rang;, &lang;value&rang;, &lang;label&rang;) }*\}</code>
 	 * 
 	 * @param arg a {@link java.lang.String} object.
-	 * @param alphabet the alphabet to use for building alabel. If null, a new alphabet is generated and insert into the alabel
-	 * @return a LabeledPairMap object if arg represents a valid map, null otherwise.
+	 * @param alphabet the alphabet to use for building a new labeled lower-case value. If null, a new alphabet is generated and insert into the created labeled
+	 *            value.
+	 * @return a LabeledLowerCaseValue object if arg represents a valid labeled value, null otherwise.
 	 */
 	public static LabeledLowerCaseValue parse(String arg, ALabelAlphabet alphabet) {
 		// final Pattern splitterNode = Pattern.compile("〈|; ");
@@ -193,7 +135,7 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
-	 * Create a lower-case value.<br>
+	 * Creates a lower-case value.
 	 * 
 	 * @param nodeName not null node name
 	 * @param value not null value
@@ -240,10 +182,13 @@ public class LabeledLowerCaseValue {
 	/**
 	 * cached hash code
 	 */
-	private int hashCode;// automatically initilized to 0
+	private int hashCode;
+
 	/**
-	 * Create an empty lower-case value.<br>
-	 * Externally, they have to use {@link #emptyLabeledLowerCaseValue} for having an empty object.
+	 * Creates an empty lower-case value.
+	 * 
+	 * @implSpec
+	 * 			Externally, users have to use {@link #emptyLabeledLowerCaseValue} for having an empty object.
 	 */
 	private LabeledLowerCaseValue() {
 		this.label = null;
@@ -252,12 +197,11 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
-	 * @param nodeName
-	 * @param value
-	 * @param label
+	 * @param nodeName a not null node name
+	 * @param value a value different from {@link Constants#INT_NULL}
+	 * @param label a non null label
 	 */
 	private LabeledLowerCaseValue(ALabel nodeName, int value, Label label) {
-		this();
 		if (nodeName == null || value == Constants.INT_NULL || label == null)
 			return;
 		if (nodeName.size() > 1)
@@ -275,7 +219,7 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
-	 * @return the nodeName
+	 * @return the node name
 	 */
 	public ALabel getNodeName() {
 		return this.nodeName;
@@ -286,15 +230,6 @@ public class LabeledLowerCaseValue {
 	 */
 	public int getValue() {
 		return this.value;
-	}
-
-	/**
-	 * Clear the object.
-	 */
-	public void clear() {
-		this.label = null;
-		this.nodeName = null;
-		this.value = Constants.INT_NULL;
 	}
 
 	@Override
@@ -311,16 +246,15 @@ public class LabeledLowerCaseValue {
 	public int hashCode() {
 		int result = this.hashCode;
 		if (result == 0) {
-			result = Integer.hashCode(this.value);
-			result = result * 31 + this.label.hashCode();
-			result = result * 31 + this.nodeName.hashCode();
+			result = (isEmpty()) ? 0 : (this.value * 31 + this.label.hashCode()) * 31 + this.nodeName.hashCode();
 			this.hashCode = result;
 		}
 		return result;
 	}
 
 	/**
-	 * @return true if the object is empty (i.e., one of its fields is null).
+	 * @return true if the object is empty
+	 * @implSpec it is empty when at least one of its fields is null
 	 */
 	public boolean isEmpty() {
 		return (this.nodeName == null || this.value == Constants.INT_NULL || this.label == null);
@@ -354,7 +288,7 @@ public class LabeledLowerCaseValue {
 
 	/**
 	 * @param lower true if the node name has to be written lower case
-	 * @return the string representation of this lower-case value.
+	 * @return the string representation of this lower-case value
 	 */
 	public String toString(boolean lower) {
 		if (this.isEmpty())

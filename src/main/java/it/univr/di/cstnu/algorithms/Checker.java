@@ -87,6 +87,8 @@ public class Checker {
 
 		@Override
 		public boolean equals(Object o) {
+			if (o == this)
+				return true;
 			if (!(o instanceof GlobalStatisticKey))
 				return false;
 			return ((GlobalStatisticKey) o).compareTo(this) == 0;
@@ -106,7 +108,7 @@ public class Checker {
 
 		@Override
 		public int hashCode() {
-			return this.nodes + 1000 * this.propositions + 10000 * this.contingents;
+			return (this.contingents + this.propositions * 31) * 31 + this.nodes;
 		}
 
 	}
