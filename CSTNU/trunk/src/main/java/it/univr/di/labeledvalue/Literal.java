@@ -1,10 +1,10 @@
 package it.univr.di.labeledvalue;
 
 /**
- * Represents a immutable literal.
+ * An immutable literal.
  * <p>
- * A literal is a char that can be preceded by the symbol {@link it.univr.di.labeledvalue.Constants#NOT}, negated literal, or by the symbol
- * {@link it.univr.di.labeledvalue.Constants#UNKNOWN}, 'unknown' literal.
+ * A literal is a char that <b>can</b> be preceded by the symbol {@value it.univr.di.labeledvalue.Constants#NOT}, negated literal, or by the symbol
+ * {@value it.univr.di.labeledvalue.Constants#UNKNOWN}, 'unknown' literal.
  * <p>
  * While the semantics of a literal and its negation is the standard one, the semantics for unknown literal is particular of the CSTN/CSTNU application.<br>
  * An unknown literal, as '¿p' for example, is true if the value of proposition letter 'p' is not assigned yet. False otherwise.
@@ -15,7 +15,7 @@ package it.univr.di.labeledvalue;
  * A literal object is immutable and must have a propositional letter.
  * <p>
  * Lastly, for efficiency reasons, this class allows to represent literal using at most 64 propositions in the range {@link #PROPOSITION_ARRAY}.
- * 64 is given by the fact that {@link Label} represents labels using integer (64 bits), so label with at most 64 different propositions.
+ * 64 is given by the fact that {@link Label} represents propositional labels using long integer (64 bits), so labels with at most 64 different propositions.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -26,7 +26,7 @@ public class Literal implements Comparable<Literal> {
 	 * On 20171027 using VisualVM it has been shown that representing the state values of a literal using an enum consumes a lot of memory
 	 * in this kind of application.<br>
 	 * Therefore I decided to simplify the representation using 4 constants value: {@link #ABSENT}, {@link #STRAIGHT}, {@link #NEGATED}, and {@link #UNKNONW}.
-	 * The char corresponding to each such constant is exploit in the method (to make them more efficient).
+	 * The char corresponding to each such constant is exploit in the class (to make them more efficient).
 	 * So, don't change them without revising all the class.<br>
 	 * {@link #ABSENT} is useful only for internal methods. It is not admitted for defining a literal.
 	 */
@@ -35,7 +35,6 @@ public class Literal implements Comparable<Literal> {
 			STRAIGHT = '\u0001',
 			NEGATED = Constants.NOT,
 			UNKNONW = Constants.UNKNOWN;
-
 
 	/**
 	 * Literal object cache
@@ -70,11 +69,10 @@ public class Literal implements Comparable<Literal> {
 	 */
 	public static final String PROPOSITIONS = "A-Za-z0-9α-μ";
 
-
 	/**
-	 * @param state1 a possible state of a literal. No integrity check is done.
-	 * @param state2 a possible state of a literal. No integrity check is done.
-	 * @return true if state1 and state2 are complement. False otherwise.
+	 * @param state1 a possible state of a literal. No integrity check is done
+	 * @param state2 a possible state of a literal. No integrity check is done
+	 * @return true if state1 and state2 are complement. False otherwise
 	 * @see #STRAIGHT
 	 * @see #NEGATED
 	 */
@@ -83,17 +81,18 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * @param i
-	 * @return char at position i in {@link Literal#PROPOSITION_ARRAY}.
+	 * @param i a positive value smaller than {@value Label#NUMBER_OF_POSSIBLE_PROPOSITIONS}.
+	 * @return char at position i in {@link Literal#PROPOSITION_ARRAY}
+	 * @impleSpec No parameter integrity-check is done
 	 */
 	static final char charValue(final int i) {
-		if (i < 0 || i > Label.NUMBER_OF_POSSIBLE_PROPOSITIONS)
-			throw new IllegalArgumentException("Index '" + i + "' is not valid.");
+		// if (i < 0 || i > Label.NUMBER_OF_POSSIBLE_PROPOSITIONS)
+		// throw new IllegalArgumentException("Index '" + i + "' is not valid.");
 		return PROPOSITION_ARRAY[i];
 	}
 
 	/**
-	 * @param c
+	 * @param c the char to check
 	 * @return true if the char represents a valid literal identifier
 	 */
 	public static final boolean check(final char c) {
@@ -101,23 +100,23 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * Simple constructor of a positive literal.
+	 * Returns the positive literal of {@code v}.
 	 *
-	 * @param v a char.
+	 * @param v a char in the range {@link #PROPOSITION_RANGE}
 	 * @return the straight literal of proposition v
 	 */
-	public static Literal create(final char v) {
-		return create(v, STRAIGHT);
+	public static Literal valueOf(final char v) {
+		return valueOf(v, STRAIGHT);
 	}
 
 	/**
-	 * Simple constructor allowing to specify if the literal is negated or not.
+	 * Return the literal having the given {@code state} of {@code v}.
 	 *
-	 * @param v the proposition letter.
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}.
-	 * @return a literal with name v and state state.
+	 * @param v the proposition letter
+	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
+	 * @return a literal with name {@code v} and state {@code state}
 	 */
-	public static Literal create(final char v, char state) {
+	public static Literal valueOf(final char v, char state) {
 		if (!Literal.check(v))
 			throw new IllegalArgumentException("The char is not a letter!");
 		if (state == ABSENT)
@@ -132,30 +131,31 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * Simple constructor allowing to specify if the literal is negated or not.
+	 * Returns a new literal having same proposition of {@code v} but with state given by {@code state}.
 	 *
-	 * @param v the proposition letter.
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}.
-	 * @return a copy of literal v but with state state.
+	 * @param v a non null literal v
+	 * @param state one of possible state of a literal: {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
+	 * @return a new literal having same proposition of {@code v} but with state given by {@code state}.
 	 */
-	public static Literal create(final Literal v, char state) {
-		if (state == ABSENT)
-			throw new IllegalArgumentException("The state is not valid!");
+	public static Literal valueOf(final Literal v, char state) {
+		if (state == ABSENT || v == null)
+			throw new IllegalArgumentException("The state or the input literal is not valid!");
 		int hc = -1;
 		Literal l = CREATED_LITERAL[hc = hashCode(v.name, state)];
 		if (l == null) {
-			l = new Literal(v, state);
+			l = new Literal(v.name, state);
 			CREATED_LITERAL[hc] = l;
 		}
 		return l;
 	}
 
 	/**
-	 * Since it is necessary to order literals, it is necessary to fix an order among possible state of a literal.
-	 * The order implemented by this method allows to be independent by the alphabetic order implied by the corresponding char of the state.
+	 * Returns the ordinal associate to {@code state}.
 	 * 
-	 * @param state
-	 * @return the ordinal associated to a proper state, -1 if the state is not recognized.
+	 * @implNote Since it is necessary to order literals, it is necessary to fix an order among possible state of a literal.
+	 *           The order implemented by this method allows to be independent by the alphabetic order implied by the corresponding char of the state.}
+	 * @param state One of the following value: {@value #NEGATED}, {@value #STRAIGHT}, {@value #UNKNONW}
+	 * @return the ordinal associated to a proper state, a negative integer if the state is not recognized
 	 */
 	static final byte getStateOrdinal(char state) {
 		switch (state) {
@@ -173,7 +173,7 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * Hash code for a literal given as char and state.
+	 * Hash code for a literal given as char {@code c} and state {@code state}.
 	 * 
 	 * @param c
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is done.
@@ -185,7 +185,7 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * @param c
-	 * @return the index of the given proposition in {@link #PROPOSITION_ARRAY} if it is a proposition, -1 otherwise.
+	 * @return the index of the given proposition {@code c} in {@link #PROPOSITION_ARRAY} if it is a proposition, a negative integer otherwise.
 	 */
 	static final byte index(final char c) {
 		if ('a' <= c && c <= 'z')
@@ -198,32 +198,43 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * Parse a string returning the literal represented.
+	 * Parses the string {@code s} returning the literal represented.
 	 *
-	 * @param s It can be a single char ([a-z]) or the character ¬ [\u00ac] followed by a char. If the argument is null or not valid, it returns null.
-	 * @return the literal represented by 's' if 's' is a valid representation of a literal, null otherwise.
+	 * @param s It can be a single char ({@value #PROPOSITION_ARRAY}) or one of characters [{@value Constants#NOT} {@value Constants#UNKNOWN}]
+	 *            followed by a char of {@value #PROPOSITION_ARRAY}. No spaces are allowed
+	 * @return the literal represented by {@code s} if {@code s} is a valid representation of a literal, null otherwise
 	 */
 	public static final Literal parse(final String s) {
-		if (s == null || s.length() > 2)
+		int len;
+		char p, state;
+		if (s == null || (len = s.length()) > 2)
 			return null;
-		if (s.length() == 1) {
-			if (!Literal.check(s.charAt(0)))
+		if (len == 1) {
+			p = s.charAt(0);
+			if (!Literal.check(p))
 				return null;
-			final Literal l = Literal.create(s.charAt(0), STRAIGHT);
+			final Literal l = Literal.valueOf(p, STRAIGHT);
 			return l;
 		}
-		if (s.charAt(0) == Constants.NOT) {
-			if (!Literal.check(s.charAt(1)))
-				return null;
-			final Literal l = Literal.create(s.charAt(1), NEGATED);
+		state = s.charAt(0);
+		p = s.charAt(1);
+		if (!Literal.check(p))
+			return null;
+		if (state == Constants.NOT) {
+			final Literal l = Literal.valueOf(p, NEGATED);
 			return l;
 		}
+		if (state == Constants.UNKNOWN) {
+			final Literal l = Literal.valueOf(p, UNKNONW);
+			return l;
+		}
+
 		return null;
 	}
 
 	/**
 	 * @param state
-	 * @return the char representing the state.
+	 * @return the string representation of {@code state}
 	 */
 	static final String stateAsString(char state) {
 		if (state <= STRAIGHT)
@@ -233,12 +244,12 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * @param propositionIndex
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is
-	 *            done.
-	 * @return the string representation of a literal identified by its index and state parameter.
+	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
+	 * @return the char-array representation of a literal identified by its index and state parameter. If state is not correct, an empty array is returned
+	 * @implSpec No parameter integrity-check is done
 	 */
 	static final char[] toChars(int propositionIndex, char state) {
-		// optimized!
+		// Exploits the state fixed order.
 		if (state > STRAIGHT)
 			return new char[] { state, Literal.charValue(propositionIndex) };
 		if (state == STRAIGHT)
@@ -247,77 +258,46 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * @param proposition
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is
-	 *            done.
-	 * @return the string representation of a literal identified by proposition and state parameter.
+	 * Hash code cache.
 	 */
-	static final String toString(char proposition, char state) {
-		return stateAsString(state) + proposition;
-	}
+	private int hashCodeCached;
 
 	/**
-	 * @param propositionIndex
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is
-	 *            done.
-	 * @return the string representation of a literal identified by its index and state parameter.
-	 */
-	static final String toString(int propositionIndex, char state) {
-		return stateAsString(state) + Literal.charValue(propositionIndex);
-	}
-
-	/**
-	 * hashcode cache
-	 */
-	private int hashCode;
-
-	/**
-	 * Propositional letter. It cannot be changed!
+	 * Immutable propositional letter.
 	 */
 	private char name;
 
 	/**
-	 * It is true if the literal is the negation of the variable.
+	 * Immutable state.
 	 */
 	private char state;
 
 	/**
-	 * Simple constructor of a positive literal.
+	 * Makes the positive literal of {@code v}.
 	 *
-	 * @param v a char.
+	 * @param v a char
 	 */
 	private Literal(final char v) {
 		this(v, STRAIGHT);
 	}
 
 	/**
-	 * Simple constructor allowing to specify if the literal is negated or not.
+	 * Makes a literal using {@code v} and {@code state}.
 	 *
-	 * @param v the proposition letter.
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is
-	 *            done.
+	 * @param v the proposition letter
+	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
 	 */
 	private Literal(final char v, final char state) {
 		if (!Literal.check(v))
 			throw new IllegalArgumentException("The char is not an admissible proposition!");
+		if (getStateOrdinal(state) < 0)
+			throw new IllegalArgumentException("The state is not an admissible one!");
 		this.name = v;
 		this.state = state;
 	}
 
 	/**
-	 * Simple constructor allowing to specify if the literal is negated or not.
-	 *
-	 * @param v the proposition letter.
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is
-	 *            done.
-	 */
-	private Literal(final Literal v, final char state) {
-		this.name = v.name;
-		this.state = state;
-	}
-
-	/**
-	 * {@inheritDoc} Implements the lexical order.
+	 * @implSpec When the two literals have the same name, it returns a different value than 0 if this and {@code o} have different state.
 	 */
 	@Override
 	public int compareTo(final Literal o) {
@@ -330,7 +310,6 @@ public class Literal implements Comparable<Literal> {
 		return getStateOrdinal(this.state) - getStateOrdinal(o.state);
 	}
 
-	/** {@inheritDoc} */
 	@Override
 	public final boolean equals(final Object o) {
 		if (o == this)
@@ -342,34 +321,36 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
+	 * Returns the complement of this.
+	 * <p>
 	 * The complement of a straight literal is the negated one.<br>
 	 * The complement of a negated literal is the straight one.<br>
 	 * The complement of a unknown literal is null (an empty literal is not possible).<br>
 	 *
-	 * @return a new literal that it is the negate of this. null if it is request the complement of unknown literal.
+	 * @return a new literal that it is the negate of this. null if it is request the complement of unknown literal
 	 */
 	public final Literal getComplement() {
-		if (this.state == UNKNONW)
+		if (this.state == UNKNONW || this.state == ABSENT)
 			return null;
-		return create(this, (this.isNegated()) ? STRAIGHT : NEGATED);
+		return valueOf(this, (this.isNegated()) ? STRAIGHT : NEGATED);
 	}
 
 	/**
 	 * Getter for the field <code>name</code>.
 	 *
-	 * @return the propositional letter associated to this literal.
+	 * @return the propositional letter associated to this
 	 */
 	public final char getName() {
 		return this.name;
 	}
 
 	/**
-	 * getNegated.
+	 * Returns a literal that is the negated of this.
 	 *
-	 * @return a new literal with the same name and state negated.
+	 * @return a new literal with the same name and state negated
 	 */
 	public final Literal getNegated() {
-		return create(this, NEGATED);
+		return valueOf(this, NEGATED);
 	}
 
 	/**
@@ -382,30 +363,29 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * getStraight.
+	 * Returns a literal that is the straight literal of this.
 	 *
-	 * @return a new literal with the same name and state straight.
+	 * @return a new literal with the same name and state straight
 	 */
 	public final Literal getStraight() {
-		return create(this, STRAIGHT);
+		return valueOf(this, STRAIGHT);
 	}
 
 	/**
-	 * getUnknown.
+	 * Returns a literal that is the unknown literal of this.
 	 *
-	 * @return a new literal with the same name and state unknown.
+	 * @return a new literal with the same name and state unknown
 	 */
 	public final Literal getUnknown() {
-		return create(this, UNKNONW);
+		return valueOf(this, UNKNONW);
 	}
 
-	/** {@inheritDoc} */
 	@Override
 	public final int hashCode() {
-		if (this.hashCode == 0) {
-			this.hashCode = Literal.hashCode(this.name, this.state);
+		if (this.hashCodeCached == 0) {
+			this.hashCodeCached = Literal.hashCode(this.name, this.state);
 		}
-		return this.hashCode();
+		return this.hashCodeCached;
 	}
 
 	/**
@@ -419,33 +399,30 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * isNegated.
-	 *
-	 * @return true if it is a negated literal.
+	 * @return true if it is a negated literal
 	 */
 	public final boolean isNegated() {
 		return this.state == NEGATED;
 	}
 
 	/**
-	 * isStraight.
-	 *
-	 * @return true if it is a straight literal.
+	 * @return true if it is a straight literal
 	 */
 	public final boolean isStraight() {
 		return this.state == STRAIGHT;
 	}
 
 	/**
-	 * isUnknown.
-	 *
-	 * @return true if it is a literal in the unknown state.
+	 * @return true if it is a literal in the unknown state
 	 */
 	public final boolean isUnknown() {
 		return this.state == UNKNONW;
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * @return the string representation of this. If the literal is a negated one, the propositional letter is prefixed by {@link Constants#NOT}.
+	 *         If the literal is an unknown one, the propositional letter is prefixed by {@link Constants#UNKNOWN}
+	 */
 	@Override
 	public final String toString() {
 		return stateAsString(this.state) + this.name;
