@@ -729,7 +729,7 @@ public class CSTNwoNodeLabelTest {
 		assertEquals("¿p", this.cstn.removeChildrenOfUnknown(Label.parse("ab¿p")).toString());
 		assertEquals("¿ap", this.cstn.removeChildrenOfUnknown(Label.parse("bp¿a")).toString());
 		Label a = Label.parse("a");
-		a.remove(Label.parse("a"));
+		a = a.remove(Label.parse("a"));
 		assertEquals(Label.emptyLabel, this.cstn.removeChildrenOfUnknown(a));
 
 	}

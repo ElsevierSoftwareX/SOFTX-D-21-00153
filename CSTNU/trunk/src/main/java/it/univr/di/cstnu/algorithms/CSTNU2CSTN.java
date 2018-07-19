@@ -255,7 +255,7 @@ public class CSTNU2CSTN extends CSTNU {
 			newE = cstnGraph.getEdgeFactory().get(sInG.getName() + "-" + newK.getName());
 			newE.setConstraintType(ConstraintType.internal);
 			Label contingentOriginalLabel = lowerCaseValueTuple.getLabel();
-			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), lowerCaseValue);
+			newE.mergeLabeledValue(contingentOriginalLabel, lowerCaseValue);
 			cstnGraph.addEdge(newE, sInG.getName(), newK.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -265,7 +265,7 @@ public class CSTNU2CSTN extends CSTNU {
 
 			newE = cstnGraph.getEdgeFactory().get(newK.getName() + "-" + sInG.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), -lowerCaseValue);
+			newE.mergeLabeledValue(contingentOriginalLabel, -lowerCaseValue);
 			cstnGraph.addEdge(newE, newK.getName(), sInG.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -275,9 +275,9 @@ public class CSTNU2CSTN extends CSTNU {
 			// two edges between K and C
 			newE = cstnGraph.getEdgeFactory().get(dInG.getName() + "-" + newK.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			newE.mergeLabeledValue(contingentOriginalLabel.conjunction(new Label(newK.getPropositionObserved(), Literal.NEGATED)),
+			newE.mergeLabeledValue(contingentOriginalLabel.conjunction(Label.valueOf(newK.getPropositionObserved(), Literal.NEGATED)),
 					lowerCaseValue - upperCaseValue);// it is x-y.
-			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), 0);
+			newE.mergeLabeledValue(contingentOriginalLabel, 0);
 			cstnGraph.addEdge(newE, dInG.getName(), newK.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -287,8 +287,8 @@ public class CSTNU2CSTN extends CSTNU {
 
 			newE = cstnGraph.getEdgeFactory().get(newK.getName() + "-" + dInG.getName());
 			newE.setConstraintType(ConstraintType.internal);
-			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel).conjunction(new Label(newK.getPropositionObserved(), Literal.STRAIGHT)), 0);
-			newE.mergeLabeledValue(Label.clone(contingentOriginalLabel), upperCaseValue - lowerCaseValue);// it is y-x
+			newE.mergeLabeledValue(contingentOriginalLabel.conjunction(Label.valueOf(newK.getPropositionObserved(), Literal.STRAIGHT)), 0);
+			newE.mergeLabeledValue(contingentOriginalLabel, upperCaseValue - lowerCaseValue);// it is y-x
 			cstnGraph.addEdge(newE, newK.getName(), dInG.getName());
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {

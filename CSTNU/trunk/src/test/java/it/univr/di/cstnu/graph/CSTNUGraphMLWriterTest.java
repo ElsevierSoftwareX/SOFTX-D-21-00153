@@ -27,7 +27,7 @@ public class CSTNUGraphMLWriterTest {
 
 	@Test
 	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws WellDefinitionException, IOException {
-		Label p = new Label('p', Literal.NEGATED);
+		Label p = Label.valueOf('p', Literal.NEGATED);
 
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
 		LabeledNode Z = new LabeledNode("Z");
@@ -94,7 +94,7 @@ public class CSTNUGraphMLWriterTest {
 			"<default></default>\n" +
 			"</key>\n" +
 			"<key id=\"Obs\" for=\"node\">\n" +
-			"<desc>Proposition Observed. Value specification: [A-Za-z0-9α-μ]</desc>\n" +
+			"<desc>Proposition Observed. Value specification: [a-zA-F]</desc>\n" +
 			"<default></default>\n" +
 			"</key>\n" +
 			"<key id=\"x\" for=\"node\">\n" +
@@ -102,7 +102,7 @@ public class CSTNUGraphMLWriterTest {
 			"<default>0</default>\n" +
 			"</key>\n" +
 			"<key id=\"Label\" for=\"node\">\n" +
-			"<desc>Label. Format: [¬[A-Za-z0-9α-μ]|[A-Za-z0-9α-μ]]+|⊡</desc>\n" +
+			"<desc>Label. Format: [¬[a-zA-F]|[a-zA-F]]+|⊡</desc>\n" +
 			"<default>⊡</default>\n" +
 			"</key>\n" +
 			"<key id=\"y\" for=\"node\">\n" +

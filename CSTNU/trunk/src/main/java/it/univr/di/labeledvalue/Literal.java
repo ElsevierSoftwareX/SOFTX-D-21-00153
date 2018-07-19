@@ -14,8 +14,10 @@ package it.univr.di.labeledvalue;
  * <p>
  * A literal object is immutable and must have a propositional letter.
  * <p>
- * Lastly, for efficiency reasons, this class allows to represent literal using at most 64 propositions in the range {@link #PROPOSITION_ARRAY}.
- * 64 is given by the fact that {@link Label} represents propositional labels using long integer (64 bits), so labels with at most 64 different propositions.
+ * Lastly, for efficiency reasons, this class allows to represent literal using at most {@link Label#NUMBER_OF_POSSIBLE_PROPOSITIONS} propositions in the range
+ * {@link #PROPOSITION_ARRAY}.
+ * {@link Label#NUMBER_OF_POSSIBLE_PROPOSITIONS} is given by the fact that {@link Label} represents propositional labels using integer (32 bits), so labels with
+ * at most 32 different propositions.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -43,31 +45,32 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * List of possible proposition managed by this class.<br>
-	 * Such list is made concatenating 3 blocks: a-z, A-Z, α-μ.<br>
+	 * Such list is made concatenating 2 blocks: a-z, and A-F.
 	 * If such blocks are changed, please revise {@link #check(char)} and {@link #index(char)} methods because it exploits the bounds of such blocks.
 	 * The length of this array cannot be modified without revising all this class code and {@link Label} class.
 	 * 
 	 * @see #PROPOSITIONS
 	 */
+	// 3 blocks: a-z, A-Z, α-μ.<br>
 	public static final char[] PROPOSITION_ARRAY = {
-			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-			'α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ', 'μ' };
-
-	/**
-	 * Number of blocks of consecutive proposition in {@link #PROPOSITION_ARRAY}.
-	 */
-	public static final int PROPOSITION_BLOCKS = 3;
-
-	/**
-	 * R.E. representation of {@link #PROPOSITION_ARRAY}
-	 */
-	public static final String PROPOSITION_RANGE = "[A-Za-z0-9α-μ]";
+			// 0 1 2 3 4 5 6 7 8 9
+			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+			'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+			'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D',
+			'E', 'F'
+			// 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+			// 'α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ', 'μ'
+	};
 
 	/**
 	 * R.E. representation of allowed propositions.
 	 */
-	public static final String PROPOSITIONS = "A-Za-z0-9α-μ";
+	public static final String PROPOSITIONS = "a-zA-F";// "A-Za-z0-9α-μ";
+
+	/**
+	 * R.E. representation of {@link #PROPOSITION_ARRAY}
+	 */
+	public static final String PROPOSITION_RANGE = "[" + PROPOSITIONS + "]";
 
 	/**
 	 * @param state1 a possible state of a literal. No integrity check is done
@@ -86,8 +89,6 @@ public class Literal implements Comparable<Literal> {
 	 * @impleSpec No parameter integrity-check is done
 	 */
 	static final char charValue(final int i) {
-		// if (i < 0 || i > Label.NUMBER_OF_POSSIBLE_PROPOSITIONS)
-		// throw new IllegalArgumentException("Index '" + i + "' is not valid.");
 		return PROPOSITION_ARRAY[i];
 	}
 
@@ -96,7 +97,7 @@ public class Literal implements Comparable<Literal> {
 	 * @return true if the char represents a valid literal identifier
 	 */
 	public static final boolean check(final char c) {
-		return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || ('α' <= c && c <= 'μ');
+		return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'F');// 'Z') || ('α' <= c && c <= 'μ');
 	}
 
 	/**
@@ -190,10 +191,10 @@ public class Literal implements Comparable<Literal> {
 	static final byte index(final char c) {
 		if ('a' <= c && c <= 'z')
 			return (byte) (c - 'a');
-		if ('A' <= c && c <= 'Z')
+		if ('A' <= c && c <= 'F') // if ('A' <= c && c <= 'Z')
 			return (byte) ((c - 'A') + 26);// 26 is 'A' position in PROPOSITION_ARRAY
-		if ('α' <= c && c <= 'μ')
-			return (byte) ((c - 'α') + 52);// 26 is 'α' position in PROPOSITION_ARRAY
+		// if ('α' <= c && c <= 'μ')
+		// return (byte) ((c - 'α') + 52);// 26 is 'α' position in PROPOSITION_ARRAY
 		return -1;
 	}
 
@@ -274,7 +275,8 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * Makes the positive literal of {@code v}.
-	 *
+	 * This class is immutable. Use {@link #valueOf(char)}.
+	 * 
 	 * @param v a char
 	 */
 	private Literal(final char v) {
@@ -283,7 +285,8 @@ public class Literal implements Comparable<Literal> {
 
 	/**
 	 * Makes a literal using {@code v} and {@code state}.
-	 *
+	 * This class is immutable, use {@link #valueOf(char, char)}
+	 * 
 	 * @param v the proposition letter
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
 	 */

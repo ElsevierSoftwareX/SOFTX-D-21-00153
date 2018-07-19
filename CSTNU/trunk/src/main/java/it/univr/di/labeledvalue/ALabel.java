@@ -291,7 +291,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 		// build alphabet
 		if (alphabet == null) {
-			alphabet = new ALabelAlphabet(size);
+			alphabet = new ALabelAlphabet();
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG.finer("Created a new ALabelAlphabet: " + alphabet);

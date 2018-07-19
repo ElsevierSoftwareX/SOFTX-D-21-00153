@@ -65,7 +65,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		 */
 		public HierarchyNode(Label l, int v) {
 			this();
-			this.label = Label.clone(l);
+			this.label = l;
 			this.value = v;
 		}
 
@@ -87,7 +87,6 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 					this.value = Constants.INT_POS_INFINITE;
 					return;
 				}
-				this.label.clear();
 				this.label = null;// It is fundamental for checking if a HirearchyNode has been deleted.
 			}
 			this.value = Constants.INT_NULL;
@@ -629,10 +628,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		// put(newNode.label, newNode.value);
 		// }
 		// }
-		Label labelWOp = Label.clone(newNode.label);
-		labelWOp.remove(p.getName());
-		if (labelWOp.isEmpty())
-			labelWOp = Label.emptyLabel;
+		Label labelWOp = newNode.label.remove(p.getName());
 		// status.foundTwin = true;
 		HierarchyNode spin = new HierarchyNode(labelWOp, max);
 		sonOfSpin.add(spin);

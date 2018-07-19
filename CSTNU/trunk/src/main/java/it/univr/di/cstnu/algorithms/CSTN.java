@@ -625,7 +625,7 @@ public class CSTN {
 			}
 			// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 			// WD3 property.
-			Label currentLabelModified = Label.clone(currentLabel);
+			Label currentLabelModified = currentLabel;
 			for (final char l : currentLabel.getPropositions()) {
 				LabeledNode obs = this.g.getObserver(l);
 				if (obs == null) {
@@ -808,9 +808,9 @@ public class CSTN {
 		@SuppressWarnings("unused")
 		final int propositionN = this.g.getObserverCount();
 		final int nodeN = this.g.getVertexCount();
-		// TODO: trovare il numero giusto di iterazioni
-//		int m = (this.maxWeight != 0) ? this.maxWeight : 1;
-		int maxCycles = (int) (Math.pow(nodeN, 3));// * m); // * Math.pow(2, propositionN));
+		int m = (this.getMaxWeight() != 0) ? this.getMaxWeight() : 1;
+		// From CSTNU TIME 2018: m |T|^2 3^|P|
+		int maxCycles = m * nodeN * nodeN * (int) Math.pow(propositionN, 3);
 		if (maxCycles < 0)
 			maxCycles = Integer.MAX_VALUE;
 		if (Debug.ON) {
@@ -1095,7 +1095,7 @@ public class CSTN {
 
 			// 1. Checks that observation node doesn't have the observed proposition in its label!
 			final char obs = node.getPropositionObserved();
-			final Label label = node.getLabel();
+			Label label = node.getLabel();
 			if (obs != Constants.UNKNOWN && label.contains(obs)) {
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING)) {
@@ -1103,8 +1103,9 @@ public class CSTN {
 								+ "'. Removed!");
 					}
 				}
-				label.remove(obs);
+				label = label.remove(obs);
 			}
+			node.setLabel(label);
 
 			// WD2 is checked and adjusted here
 			try {
@@ -1492,10 +1493,10 @@ public class CSTN {
 
 		final ObjectSet<Label> SDLabelSet = eSD.getLabeledValueMap().keySet();
 
-		Label allLiteralsSD = new Label();
+		Label allLiteralsSD = Label.emptyLabel;
 		for (Label l : SDLabelSet) {
 			if (this.withUnknown) {
-				allLiteralsSD.conjunctExtended(l);
+				allLiteralsSD = allLiteralsSD.conjunctionExtended(l);
 			} else {
 				allLiteralsSD = allLiteralsSD.conjunction(l);
 				if (allLiteralsSD == null) {
@@ -1629,8 +1630,7 @@ public class CSTN {
 			}
 		}
 
-		Label labelToCleanWOp = Label.clone(labelToClean);
-		labelToCleanWOp.remove(observed);
+		Label labelToCleanWOp = labelToClean.remove(observed);
 
 		final Label alpha = labelFromObs.getSubLabelIn(labelToCleanWOp, false);
 		if (alpha.containsUnknown()) {
@@ -1650,10 +1650,10 @@ public class CSTN {
 			}
 			return null;
 		}
-		final Label gamma = labelToCleanWOp.getSubLabelIn(labelFromObs, false);
+		Label gamma = labelToCleanWOp.getSubLabelIn(labelFromObs, false);
 
 		if (this.withNodeLabels) {
-			gamma.remove(this.g.getChildrenOf(nObs));
+			gamma = gamma.remove(this.g.getChildrenOf(nObs));
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
@@ -1700,9 +1700,9 @@ public class CSTN {
 			if (nX.getLabel().contains(observed))
 				return null;
 		}
-		Label alphaPrime = (Label.clone(labelFromObs)).remove(observed);
+		Label alphaPrime = labelFromObs.remove(observed);
 		if (this.withNodeLabels) {
-			alphaPrime.remove(this.g.getChildrenOf(nObs));
+			alphaPrime = alphaPrime.remove(this.g.getChildrenOf(nObs));
 			if (nX == this.Z && alphaPrime.containsUnknown()) {
 				removeChildrenOfUnknown(alphaPrime);
 			}
@@ -1746,15 +1746,15 @@ public class CSTN {
 				return null;
 			}
 		}
-		final Label beta = (Label.clone(labelToClean)).remove(observed);
+		Label beta = labelToClean.remove(observed);
 		if (this.withNodeLabels) {
 			Label childrenOfP = this.g.getChildrenOf(nObs);
 			if (childrenOfP != null && !childrenOfP.isEmpty()) {
-				Label test = (Label.clone(labelFromObs)).remove(childrenOfP);
+				Label test = labelFromObs.remove(childrenOfP);
 				if (!labelFromObs.equals(test)) {
 					return null;// labelFromObs must not contain p or its children.
 				}
-				beta.remove(childrenOfP);
+				beta = beta.remove(childrenOfP);
 			}
 		}
 		Label betaGamma = (this.withUnknown) ? labelFromObs.conjunctionExtended(beta) : labelFromObs.conjunction(beta);
@@ -2290,10 +2290,11 @@ public class CSTN {
 	 * @return the label modified.
 	 */
 	final Label removeChildrenOfUnknown(Label label) {
+		Label l = label;
 		for (final char unknownLit : label.getAllUnknown()) {
-			label.remove(this.g.getChildrenOf(this.g.getObserver(unknownLit)));
+			l = l.remove(this.g.getChildrenOf(this.g.getObserver(unknownLit)));
 		}
-		return label;
+		return l;
 	}
 
 	/**

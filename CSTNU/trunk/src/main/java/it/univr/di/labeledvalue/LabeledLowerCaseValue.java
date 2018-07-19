@@ -161,7 +161,7 @@ public class LabeledLowerCaseValue {
 	static public LabeledLowerCaseValue create(LabeledLowerCaseValue input) {
 		if (input == null || input.isEmpty())
 			return emptyLabeledLowerCaseValue;
-		return new LabeledLowerCaseValue(ALabel.clone(input.nodeName), input.value, Label.clone(input.label));
+		return new LabeledLowerCaseValue(ALabel.clone(input.nodeName), input.value, input.label);
 	}
 
 	/**

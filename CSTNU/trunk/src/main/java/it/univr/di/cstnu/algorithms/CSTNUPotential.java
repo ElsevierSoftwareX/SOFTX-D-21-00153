@@ -761,9 +761,9 @@ public class CSTNUPotential extends CSTNU {
 		for (ALabel alabel : allNodePotential.keySet()) {
 			NodePotentialLabelSet.addAll(allNodePotential.get(alabel).keySet());
 		}
-		final Label allLiteralsInPotentials = new Label();
+		Label allLiteralsInPotentials = Label.emptyLabel;
 		for (Label l : NodePotentialLabelSet) {
-			allLiteralsInPotentials.conjunctExtended(l);
+			allLiteralsInPotentials = allLiteralsInPotentials.conjunctionExtended(l);
 		}
 
 		for (final LabeledNode nObs : this.g.getObservers()) {

@@ -27,12 +27,7 @@ public class LabelTest {
 	@Test
 	public final void testAllComponentsOfBaseGenerator() {
 		Label ab = Label.parse("a¬b");
-		Literal uC = Literal.valueOf('c', Literal.UNKNONW);
 		Label[] abV = Label.allComponentsOfBaseGenerator(ab.getPropositions());
-		assertArrayEquals(new Label[] { Label.parse("ab"), Label.parse("¬ab"), Label.parse("a¬b"), Label.parse("¬a¬b") }, abV);
-
-		ab.conjunct(uC);
-		abV = Label.allComponentsOfBaseGenerator(ab.getPropositions());
 		assertArrayEquals(new Label[] { Label.parse("ab"), Label.parse("¬ab"), Label.parse("a¬b"), Label.parse("¬a¬b") }, abV);
 	}
 
@@ -44,53 +39,50 @@ public class LabelTest {
 	public final void testCompareTo() {
 		Label aNotB = Label.parse("a¬b");
 		Literal uC = Literal.valueOf('c', Literal.UNKNONW);
-		Label aNotB1 = Label.clone(aNotB);
+		Label aNotB1 = aNotB;
 		assertTrue(aNotB.compareTo(aNotB1) == 0);
 
-		aNotB.conjunctExtended(uC.getNegated());
-		aNotB1.conjunctExtended(uC);
+		aNotB = aNotB.conjunctionExtended(uC.getNegated());
+		aNotB1 = aNotB1.conjunctionExtended(uC);
 		assertTrue(aNotB.compareTo(aNotB1) < 0);
 		assertTrue("ab1.size:" + aNotB1.size(), 3 == aNotB1.size());
 
-		aNotB1.remove(uC);
-		aNotB1.conjunctExtended(uC.getStraight());
+		aNotB1 = aNotB1.remove(uC).conjunctionExtended(uC.getStraight());
 		// aNotB=a¬b¬c aNotB1=a¬bc
 		assertTrue(aNotB.compareTo(aNotB1) > 0);
 
-		aNotB.remove(uC.getNegated());
-		aNotB.conjunctExtended(uC);
+		aNotB = aNotB.remove(uC.getNegated()).conjunctionExtended(uC);
 		// aNotB=a¬b¿c aNotB1=a¬bc
 		assertTrue(aNotB.compareTo(aNotB1) > 0);
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#conjunct(it.univr.di.labeledvalue.Literal)}.
+	 * Test method for {@link it.univr.di.labeledvalue.Label#conjunction(it.univr.di.labeledvalue.Literal)}.
 	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testConjunct() {
 		Label ab = Label.parse("a¬b");
 		assertTrue("ab.size=" + ab.size(), 2 == ab.size());
-		ab.conjunct(Literal.valueOf('c'));
+		ab = ab.conjunction(Literal.valueOf('c'));
 		assertEquals(Label.parse("a¬bc"), ab);
 		assertTrue("ab.size=" + ab.size(), 3 == ab.size());
-		ab.conjunct(Literal.valueOf('d', Literal.UNKNONW));
-		assertEquals(Label.parse("a¬bc"), ab);
-		assertTrue(3 == ab.size());
+		ab = ab.conjunction(Literal.valueOf('d', Literal.UNKNONW));
+		assertNull(ab);
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#conjunctExtended(it.univr.di.labeledvalue.Literal)}.
+	 * Test method for {@link it.univr.di.labeledvalue.Label#conjunctionExtended(it.univr.di.labeledvalue.Literal)}.
 	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testConjunctExtended() {
 		Label ab = Label.parse("a¬b");
-		ab.conjunctExtended(Literal.valueOf('b', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('b', Literal.UNKNONW));
 		// System.out.println(ab);
 		assertTrue(ab.getStateLiteralWithSameName('b') == Literal.UNKNONW);
 
-		ab.conjunctExtended(Literal.valueOf('d', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('d', Literal.UNKNONW));
 		assertTrue(ab.getStateLiteralWithSameName('d') == Literal.UNKNONW);
 	}
 
@@ -104,7 +96,7 @@ public class LabelTest {
 		Label aNb = Label.parse("a¬b");
 		assertNull(ab.conjunction(aNb));
 
-		Label uC = new Label('b', Literal.UNKNONW);
+		Label uC = Label.valueOf('b', Literal.UNKNONW);
 		assertNull(ab.conjunction(uC));
 
 		Label b = Label.parse("¬b");
@@ -160,7 +152,7 @@ public class LabelTest {
 	@Test
 	public final void testGetAllStraight() {
 		Label ab = Label.parse("a¬b");
-		ab.conjunctExtended(Literal.valueOf('c', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('c', Literal.UNKNONW));
 		char[] expected = Label.parse("abc").getPropositions();
 		char[] obtained = ab.getPropositions();
 		assertArrayEquals(expected, obtained);
@@ -173,7 +165,7 @@ public class LabelTest {
 	@Test
 	public final void testGetLiteralWithSameName() {
 		Label ab = Label.parse("a¬b");
-		ab.conjunctExtended(Literal.valueOf('c', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('c', Literal.UNKNONW));
 
 		assertEquals(Literal.STRAIGHT, ab.getStateLiteralWithSameName('a'));
 
@@ -209,10 +201,10 @@ public class LabelTest {
 
 		assertTrue(ab.isConsistentWith(Label.parse("a¬b")));
 		assertFalse(ab.isConsistentWith(Label.parse("ab")));
-		ab.conjunctExtended(Literal.valueOf('c', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('c', Literal.UNKNONW));
 		assertTrue(ab.isConsistentWith(Label.parse("a¬b")));
 		assertFalse(ab.isConsistentWith(Label.parse("¬a¬b")));
-		ab.conjunctExtended(Literal.valueOf('a', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('a', Literal.UNKNONW));
 		assertTrue(ab.isConsistentWith(Label.parse("a¬b")));
 		assertTrue(ab.isConsistentWith(Label.parse("¬a¬b")));
 	}
@@ -227,23 +219,9 @@ public class LabelTest {
 
 		assertFalse(ab.isConsistentWith(Literal.index('b'), Literal.UNKNONW));
 		assertFalse(ab.isConsistentWith(Literal.index('b'), Literal.STRAIGHT));
-		ab.conjunctExtended(Literal.valueOf('a', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('a', Literal.UNKNONW));
 		assertFalse(ab.isConsistentWith(Literal.index('a'), Literal.STRAIGHT));
 		assertTrue(ab.isConsistentWith(Literal.index('a'), Literal.UNKNONW));
-	}
-
-	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#clone(Label)}.
-	 */
-	@SuppressWarnings("static-method")
-	@Test
-	public final void testLabelLabel() {
-		Label ab = Label.parse("a¬b");
-
-		Label ab1 = Label.clone(ab);
-
-		assertEquals(ab, ab1);
-		assertFalse(ab == ab1);
 	}
 
 	/**
@@ -257,7 +235,7 @@ public class LabelTest {
 
 		assertArrayEquals(litA, new Literal[] { Literal.parse("¬a"), Literal.valueOf('b') });
 
-		ab.conjunctExtended(Literal.valueOf('c', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('c', Literal.UNKNONW));
 		litA = ab.negation();
 		assertArrayEquals(litA, new Literal[] { Literal.parse("¬a"), Literal.valueOf('b'), null });
 
@@ -283,7 +261,7 @@ public class LabelTest {
 		ab1 = Label.parse(" a¿ 		b");
 		assertEquals("a¿b", ab1.toString());
 
-		ab1 = Label.parse(String.valueOf(Constants.EMPTY_LABEL));
+		ab1 = Label.parse(Constants.EMPTY_LABELstring);
 		assertEquals(0, ab1.size());
 
 	}
@@ -296,19 +274,19 @@ public class LabelTest {
 	public final void testRemoveLiteralBoolean() {
 		Label abc = Label.parse("a¬bc");
 
-		abc.remove('b');
+		abc = abc.remove('b');
 		assertEquals(Label.parse("ac"), abc);
 		assertTrue(2 == abc.size());
 
-		abc.remove(Literal.parse("¬a"));
+		abc = abc.remove(Literal.parse("¬a"));
 		assertEquals(Label.parse("ac"), abc);
 		assertTrue(2 == abc.size());
 
-		abc.remove(Literal.parse("a"));
+		abc = abc.remove(Literal.parse("a"));
 		assertEquals(Label.parse("c"), abc);
 		assertTrue(1 == abc.size());
 
-		abc.remove(Literal.parse("c"));
+		abc = abc.remove(Literal.parse("c"));
 		assertEquals(Label.emptyLabel, abc);
 		assertTrue(0 == abc.size());
 	}
@@ -321,27 +299,23 @@ public class LabelTest {
 	public final void testRemoveLabel() {
 		Label abc = Label.parse("a¬bc");
 
-		abc.remove(Label.parse("b"));
+		abc = abc.remove(Label.parse("b"));
 		assertEquals(Label.parse("ac"), abc);
 		assertTrue(2 == abc.size());
 
-		abc.remove(Label.parse("¬a"));
+		abc = abc.remove(Label.parse("¬a"));
 		assertEquals(Label.parse("c"), abc);
 		assertTrue(1 == abc.size());
 
-		abc.remove(Label.emptyLabel);
+		abc = abc.remove(Label.emptyLabel);
 		assertEquals(Label.parse("c"), abc);
 		assertTrue(1 == abc.size());
 
-		Label.emptyLabel.remove(abc);
-		assertEquals(Label.emptyLabel, Label.emptyLabel);
-		assertTrue(0 == Label.emptyLabel.size());
-
-		abc.remove(Label.parse("c"));
+		abc = abc.remove(Label.parse("c"));
 		assertEquals(Label.emptyLabel, abc);
 		assertTrue(0 == abc.size());
 
-		abc.remove(Label.parse("c"));
+		abc = abc.remove(Label.parse("c"));
 		assertEquals(Label.emptyLabel, abc);
 		assertTrue(0 == abc.size());
 	}
@@ -432,7 +406,7 @@ public class LabelTest {
 		Label ab = Label.parse("¬b¬a¬d¬c");
 
 		assertEquals("¬a¬b¬c¬d", ab.toString());
-		ab.conjunctExtended(Literal.valueOf('c', Literal.UNKNONW));
+		ab = ab.conjunctionExtended(Literal.valueOf('c', Literal.UNKNONW));
 		assertEquals("¬a¬b" + Constants.UNKNOWN + "c¬d", ab.toString());
 
 	}
@@ -474,7 +448,7 @@ public class LabelTest {
 	@Test
 	public final void cloneEmptyLabel() {
 		Label a = Label.emptyLabel;
-		Label b = Label.clone(a);
+		Label b = a;
 
 		// for(char c='A'; c< 'ù'; c++)
 		// System.out.println("Char "+c+" to int:"+Character.hashCode(c));
@@ -484,36 +458,19 @@ public class LabelTest {
 	}
 
 	/**
-	 * Test unmodifiable Label
-	 */
-	@SuppressWarnings("static-method")
-	@Test
-	public final void testUnmodifiable() {
-		Label empty = Label.emptyLabel;
-
-		try {
-			empty.conjunct('a', Literal.NEGATED);
-		} catch (IllegalAccessError e) {
-			assertTrue(true);
-			return;
-		}
-		assertFalse("Exception not captured", true);
-	}
-
-	/**
 	 * 
 	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public final void compateTo() {
 		Label empty = Label.emptyLabel;
-		Label a = new Label('a', Literal.STRAIGHT);
+		Label a = Label.valueOf('a', Literal.STRAIGHT);
 		assertTrue(empty.compareTo(a) < 0);
 
-		Label notA = new Label('a', Literal.NEGATED);
+		Label notA = Label.valueOf('a', Literal.NEGATED);
 		assertTrue(notA.compareTo(a) > 0);
 
-		Label b = new Label('b', Literal.NEGATED);
+		Label b = Label.valueOf('b', Literal.NEGATED);
 		assertTrue(notA.compareTo(b) < 0);
 
 		a = Label.parse("¬a¬b");
@@ -562,11 +519,11 @@ public class LabelTest {
 		System.out.println("Empty: " + empty);
 		Label result;
 		// System.out.println("Empty: " + result);
-		result = new Label('a', Literal.STRAIGHT);
+		result = Label.valueOf('a', Literal.STRAIGHT);
 		System.out.println("a: " + result);
-		result = new Label('b', Literal.NEGATED);
+		result = Label.valueOf('b', Literal.NEGATED);
 		System.out.println("¬b: " + result);
-		result = new Label('a', Literal.ABSENT);
+		result = Label.valueOf('a', Literal.ABSENT);
 		System.out.println("Null: " + result);
 
 		Label l1 = Label.parse(Constants.NOT + "abcd");
@@ -664,15 +621,15 @@ public class LabelTest {
 	public final void comparatorOrder() {
 		ObjectSortedSet<Label> order = new ObjectRBTreeSet<>();
 
-		order.add(new Label('a', Literal.STRAIGHT));
-		order.add(new Label('a', Literal.NEGATED));
-		order.add(new Label('a', Literal.UNKNONW));
-		order.add(new Label('b', Literal.STRAIGHT));
-		order.add(new Label('b', Literal.NEGATED));
-		order.add(new Label('b', Literal.UNKNONW));
-		order.add(new Label('c', Literal.STRAIGHT));
-		order.add(new Label('c', Literal.NEGATED));
-		order.add(new Label('c', Literal.UNKNONW));
+		order.add(Label.valueOf('a', Literal.STRAIGHT));
+		order.add(Label.valueOf('a', Literal.NEGATED));
+		order.add(Label.valueOf('a', Literal.UNKNONW));
+		order.add(Label.valueOf('b', Literal.STRAIGHT));
+		order.add(Label.valueOf('b', Literal.NEGATED));
+		order.add(Label.valueOf('b', Literal.UNKNONW));
+		order.add(Label.valueOf('c', Literal.STRAIGHT));
+		order.add(Label.valueOf('c', Literal.NEGATED));
+		order.add(Label.valueOf('c', Literal.UNKNONW));
 		order.add(Label.parse("ab"));
 		order.add(Label.parse("a¬b"));
 		order.add(Label.parse("¬ab"));
