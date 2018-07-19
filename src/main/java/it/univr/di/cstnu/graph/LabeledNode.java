@@ -143,7 +143,7 @@ public class LabeledNode extends AbstractComponent {
 	 */
 	public LabeledNode(final LabeledNode n) {
 		super(n);
-		this.label = Label.clone(n.label);
+		this.label = n.label;
 		this.propositionObserved = n.getPropositionObserved();
 		this.x = n.x;
 		this.y = n.y;

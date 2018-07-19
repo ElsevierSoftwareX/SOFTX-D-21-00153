@@ -351,7 +351,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 
 				// Checks if label subsumes all observer-t.p. labels of observer t.p. whose proposition is present into the label.
 				// WD3 property.
-				Label currentLabelModified = Label.clone(currentLabel);
+				Label currentLabelModified = currentLabel;
 				for (final char l : currentLabel.getPropositions()) {
 					LabeledNode obs = this.g.getObserver(l);
 					if (obs == null) {
@@ -446,7 +446,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		if (p == 0) {
 			p = 1;
 		}
-		int maxCycles = n * n * this.horizon;// p * ((n * n) + (n * k) + k) * 2;// FIXME trovare il giusto numero!
+		// FROM TIME 2018: horizon * |T|^2 3^|P| 2^|L|
+		int maxCycles = this.horizon * n * n * p * p * p * k * k;
 		if (maxCycles < 0) {
 			maxCycles = Integer.MAX_VALUE;
 		}
@@ -1523,9 +1524,9 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		final ObjectSet<Label> SZLabelSet = eSZ.getLabeledValueMap().keySet();
 		SZLabelSet.addAll(eSZ.getUpperCaseValueMap().labelSet());
 
-		final Label allLiteralsSZ = new Label();
+		Label allLiteralsSZ = Label.emptyLabel;
 		for (Label l : SZLabelSet) {
-			allLiteralsSZ.conjunctExtended(l);
+			allLiteralsSZ = allLiteralsSZ.conjunctionExtended(l);
 		}
 
 		// check each edge from an observator to Z.

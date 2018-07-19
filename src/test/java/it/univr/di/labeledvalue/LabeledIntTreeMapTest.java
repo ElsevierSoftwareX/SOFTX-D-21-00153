@@ -882,6 +882,7 @@ public class LabeledIntTreeMapTest {
 	 */
 	static public void main(final String[] args) {
 		testEntrySet();
+		testConstructor();
 	}
 
 	/**
@@ -902,10 +903,10 @@ public class LabeledIntTreeMapTest {
 		for (int k = 0; k < value.length; k++) {
 			int nLabel = value[k];
 			for (int i = 0; i < nLabel; i++) {
-				Label label = new Label();
+				Label label = Label.emptyLabel;
 				int l = 1;
 				for (int j = 0; j < nChar; j++, l = l << 1) {
-					label.conjunct(chars[j], ((i & l) != 0 ? Literal.STRAIGHT : Literal.NEGATED));
+					label.conjunction(chars[j], ((i & l) != 0 ? Literal.STRAIGHT : Literal.NEGATED));
 				}
 				map.put(label, i);
 			}

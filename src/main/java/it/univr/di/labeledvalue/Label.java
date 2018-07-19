@@ -6,8 +6,11 @@ import java.util.logging.Logger;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+
 /**
- * Represents a mutable propositional <em>label</em> in the CSTN/CSTNU framework.<br>
+ * Represents a immutable propositional <em>label</em> in the CSTN/CSTNU framework.<br>
  * A label is a (logic) conjunction of zero or more <em>literals</em> ({@link it.univr.di.labeledvalue.Literal}).<br>
  * A label without literals is called <em>empty label</em> and it is represented graphically as {@link it.univr.di.labeledvalue.Constants#EMPTY_LABEL}.<br>
  * A labels is <em>consistent</em> when it does not contains opposite literals.
@@ -16,11 +19,13 @@ import org.netbeans.validation.api.Validator;
  * <p>
  * Design assumptions
  * Since in CSTN(U) project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
- * to represent a label is to limit the possible propositions to the range [A-Z,a-z,α-μ] and to use two <code>long</code> for representing the state of literals
+ * to represent a label is to limit the possible propositions to the range [a-z,A-F] and to use two <code>int</code> for representing the state of literals
  * composing a label:
- * the two long are used in pair; each position of them is associated to a possible literal (position 0 to 'A',...,position 63 to 'μ'); given a position,
+ * the two <code>int</code> are used in pair; each position of them is associated to a possible literal (position 0 to 'a',...,position 32 to 'F'); given a
+ * position,
  * the two corresponding bits in the two long can represent all possible four states ({@link Literal#ABSENT},
- * {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}) of the literal associated to the position.
+ * {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}) of the literal associated to the position.<br>
+ * Using only 32 possible propositions, it is possible to cache the two <code>int</code> of a label as a long and, therefore, to cache the label for reusing it.
  * </p>
  * <p>
  * The following table represent execution times of some Label operations determined using different implementation of this class.
@@ -35,6 +40,7 @@ import org.netbeans.validation.api.Validator;
  * <th>byte array</th>
  * <th>two int</th>
  * <th>two long</th>
+ * <th>two int Immutable</th>
  * </tr>
  * <tr>
  * <td>Simple conjunction of '¬abcd' with '¬adefjs'='¬abcdefjs' (ms)</td>
@@ -44,6 +50,7 @@ import org.netbeans.validation.api.Validator;
  * <td>0.001309</td>
  * <td>0.000299</td>
  * <td>0.000317</td>
+ * <td>0.000529</td>
  * </tr>
  * <tr>
  * <td>Execution time for an extended conjunction of '¬abcd' with
@@ -54,6 +61,7 @@ import org.netbeans.validation.api.Validator;
  * <td>0.000843</td>
  * <td>0.000203</td>
  * <td>0.000235</td>
+ * <td>0.000229</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if two (inconsistent) labels are consistent.
@@ -64,6 +72,7 @@ import org.netbeans.validation.api.Validator;
  * <td>0.00121</td>
  * <td>0.00075</td>
  * <td>0.00040</td>
+ * <td>0.000122</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if two (consistent) labels are consistent.
@@ -74,6 +83,7 @@ import org.netbeans.validation.api.Validator;
  * <td>0.000392</td>
  * <td>0.000558</td>
  * <td>0.000225</td>
+ * <td>0.000089</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if a literal is present in a label (the
@@ -84,6 +94,7 @@ import org.netbeans.validation.api.Validator;
  * <td>2.69E-4</td>
  * <td>5.03E-4</td>
  * <td>7.47E-4</td>
+ * <td>4.46E-4</td>
  * </tr>
  * <tr>
  * <td>Execution time for checking if a literal is present in a label (the
@@ -94,6 +105,7 @@ import org.netbeans.validation.api.Validator;
  * <td>1.84E-4</td>
  * <td>3.07E-4</td>
  * <td>2.33E-4</td>
+ * <td>2.14E-4</td>
  * </tr>
  * <tr>
  * <td>Execution time for get the literal in the label with the same proposition
@@ -104,6 +116,7 @@ import org.netbeans.validation.api.Validator;
  * <td>1.27E-4</td>
  * <td>1.60E-4</td>
  * <td>1.32E-4</td>
+ * <td>7.43E-5</td>
  * </tr>
  * <tr>
  * <td>Execution time for get the literal in the label with the same proposition
@@ -114,6 +127,7 @@ import org.netbeans.validation.api.Validator;
  * <td>1.04E-4</td>
  * <td>1.60E-4</td>
  * <td>1.30E-4</td>
+ * <td>5.25E-5</td>
  * </tr>
  * </table>
  * <b>All code for performance tests is in LabelTest class .</b>
@@ -124,156 +138,14 @@ import org.netbeans.validation.api.Validator;
 public class Label implements Comparable<Label> {
 
 	/**
-	 * An unmodifiable empty label.
-	 * 
-	 * @author posenato
+	 * Label object cache
 	 */
-	static final class EmptyLabel extends Label {
-		/**
-		 * 
-		 */
-		public EmptyLabel() {
-			super();
-		}
-
-		@Override
-		public void clear() {
-			return;
-		}
-
-		@Override
-		public int compareTo(Label label) {
-			if (label == null)
-				return 1;
-			if (label.isEmpty())
-				return 0;
-			return -1;
-		}
-
-		@Override
-		public final boolean conjunct(char c, char s) {
-			throw new IllegalAccessError("Read only object!");
-		}
-
-		@Override
-		public final boolean conjunct(Literal l) {
-			throw new IllegalAccessError("Read only object!");
-		}
-
-		@Override
-		public final boolean conjunctExtended(char c, char s) {
-			throw new IllegalAccessError("Read only object!");
-		}
-
-		@Override
-		public final boolean conjunctExtended(Literal l) {
-			throw new IllegalAccessError("Read only object!");
-		}
-
-		@Override
-		public Label conjunction(Label l) {
-			if (l.isEmpty())
-				return this;
-			if (l.containsUnknown())
-				return null;
-			return Label.clone(l);
-		}
-
-		@Override
-		public Label conjunctionExtended(Label l) {
-			if (l.isEmpty())
-				return this;
-			return Label.clone(l);
-		}
-
-		@Override
-		public boolean contains(char proposition) {
-			return false;
-		}
-
-		@Override
-		public boolean contains(Literal l) {
-			return false;
-		}
-
-		@Override
-		public boolean containsUnknown() {
-			return false;
-		}
-
-		@Override
-		public int hashCode() {
-			return 0;
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return true;
-		}
-
-		@Override
-		public final Label remove(char c) {
-			return this;
-		}
-
-		@Override
-		public final Label remove(Label l) {
-			return this;
-		}
-
-		@Override
-		public final boolean remove(Literal l) {
-			return false;
-		}
-
-		@Override
-		public int size() {
-			return 0;
-		}
-
-		@Override
-		public String toString() {
-			return Constants.EMPTY_LABELstring;
-		}
-
-	}
-
-	// FIXME
-	// Long2LongMap bit02bit1Cached;
-	// Long2ObjectMap<Label> bit12LabelCached;
-	//
-	// {
-	// bit02bit1Cached = new Long2LongOpenHashMap();
-	// bit12LabelCached = new Long2ObjectOpenHashMap<>();
-	//
-	// long v = 1l;
-	// long v1 = 3l;
-	// bit02bit1Cached.put(v, v1);
-	// bit12LabelCached.get(bit02bit1Cached.get(v));
-	// }
+	private static final Long2ObjectMap<Label> CREATED_LABEL = new Long2ObjectOpenHashMap<>();
 
 	/**
 	 * A constant empty label to represent an empty label that cannot be modified.
 	 */
-	public static final Label emptyLabel = new EmptyLabel();
-
-	/**
-	 * Maximal number of possible proposition in a network.<br>
-	 * This limit cannot be change without revising all this class code.
-	 */
-	public static final int NUMBER_OF_POSSIBLE_PROPOSITIONS = 64;
-
-	/**
-	 * <pre>
-	 * Possible status of a literal
-	 * 				bit1[i] bit0[i]
-	 * not present 		0 		0
-	 * straight 		0		1
-	 * negated 			1		0
-	 * unknown 			1		1
-	 * </pre>
-	 */
-	private static final char[] LITERAL_STATE = { Literal.ABSENT, Literal.STRAIGHT, Literal.NEGATED, Literal.UNKNONW };
+	public static final Label emptyLabel = Label.valueOf(0L);
 
 	/**
 	 * Regular expression representing a Label.
@@ -308,10 +180,28 @@ public class Label implements Comparable<Label> {
 	};
 
 	/**
+	 * <pre>
+	 * Possible status of a literal
+	 * 				bit1[i] bit0[i]
+	 * not present 		0 		0
+	 * straight 		0		1
+	 * negated 			1		0
+	 * unknown 			1		1
+	 * </pre>
+	 */
+	private static final char[] LITERAL_STATE = { Literal.ABSENT, Literal.STRAIGHT, Literal.NEGATED, Literal.UNKNONW };
+
+	/**
 	 * logger
 	 */
 	@SuppressWarnings("unused")
 	private static final Logger LOG = Logger.getLogger(Label.class.getName());
+
+	/**
+	 * Maximal number of possible proposition in a network.<br>
+	 * This limit cannot be change without revising all this class code.
+	 */
+	public static final int NUMBER_OF_POSSIBLE_PROPOSITIONS = 32;// 64;
 
 	/**
 	 * A base is a set of same-length labels that are can be used to build any other greater-length label of the universe.<br>
@@ -333,6 +223,15 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * @param b1 a positive integer
+	 * @param b0 a positive integer
+	 * @return the index associated to the two index b0 and b1.
+	 */
+	private static long cacheIndex(int b1, int b0) {
+		return (((long) b1) << 32) + b0;// << must be within ()
+	}
+
+	/**
 	 * Returns a label containing the propositions specified by c. The i-th proposition of resulting label has negative state if
 	 * i-th bit of mask is 1.
 	 *
@@ -341,17 +240,33 @@ public class Label implements Comparable<Label> {
 	 * @return a label copy of label but with literals having indexes corresponding to bits 1 in the parameter 'index' set to negative state.
 	 *         If label is null or empty or contains UNKNOWN literals, returns null;
 	 */
-	private static final Label complementGenerator(final char[] proposition, final long mask) {
+	private static final Label complementGenerator(final char[] proposition, final int mask) {
 		int n = proposition.length;
 		if (n == 0)
 			return null;
-		long j = 1L;
-		final Label newLabel = new Label();
+		int j = 1;
+		Label newLabel = emptyLabel;
 		for (int i = 0; i < n; i++, j <<= 1) {
 			char state = ((j & mask) != 0) ? Literal.NEGATED : Literal.STRAIGHT;
-			newLabel.set(Literal.index(proposition[i]), state);
+			newLabel = newLabel.conjunction(proposition[i], state);
 		}
 		return newLabel;
+	}
+
+	/**
+	 * @param index
+	 * @return the lower part of the given index as unsigned int
+	 */
+	private static int getB0(long index) {
+		return (int) (index & 0xFFFFFFFFL);
+	}
+
+	/**
+	 * @param index
+	 * @return the upper part of the given index as unsigned int
+	 */
+	private static int getB1(long index) {
+		return (int) (index >>> 32);
 	}
 
 	/**
@@ -395,8 +310,8 @@ public class Label implements Comparable<Label> {
 		if ((n == 1) && (s.charAt(0) == Constants.EMPTY_LABEL))
 			return Label.emptyLabel; // Check only one time the special case made with the empty symbol.
 
-		Label label = new Label();
-		byte literalIndex;
+		Label label = Label.emptyLabel;
+		// byte literalIndex;
 		char literalStatus;
 		i = 0;
 		while (i < n) {
@@ -410,28 +325,103 @@ public class Label implements Comparable<Label> {
 					return null;
 				// l = Literal.create(c, (sign == Constants.NOT) ? Literal.NEGATED
 				// : Literal.UNKNONW);
-				literalIndex = Literal.index(c);
+				// literalIndex = Literal.index(c);
 				literalStatus = (sign == Constants.NOT) ? Literal.NEGATED : Literal.UNKNONW;
 			} else {
 				if (!Literal.check(c))
 					return null;
-				literalIndex = Literal.index(c);
+				// literalIndex = Literal.index(c);
 				literalStatus = Literal.STRAIGHT;
 			}
 			// if (label.label[literalIndex] != 0)
 			if (label.contains(c))
 				return null;
-			label.set(literalIndex, literalStatus);
+			label = label.conjunctionExtended(c, literalStatus);
 			i++;
 		}
 		return label;
 	}
 
 	/**
-	 * One long has 64 bits.<br>
-	 * Using two longs, it is possible to represent 4 states for each position.<br>
+	 * Each label is represented by two ints.
+	 * In order to modify a label, it is possible to pass its two ints, the literal index to modify and the new state for such index.
+	 * The method returns the index of the label representing the given parameters.
+	 * 
+	 * @param b0 seed for the first state int.
+	 * @param b1 seed for the second state int.
+	 * @param literalIndex the index of the literal to update.
+	 * @param literalStatus the new state.
+	 * @return the index of the label (composition of b1 and b0)
+	 */
+	private static final long set(int b0, int b1, final byte literalIndex, final char literalStatus) {
+		/**
+		 * <pre>
+		 * Status of i-th literal
+		 *             bit1[i] bit0[i]
+		 * not present       0 0
+		 * straight          0 1
+		 * negated           1 0
+		 * unknown           1 1
+		 * </pre>
+		 */
+
+		long mask = 1L << literalIndex;
+		switch (literalStatus) {
+		case Literal.STRAIGHT:
+			b0 |= mask;
+			mask = ~mask;
+			b1 &= mask;
+			break;
+		case Literal.NEGATED:
+			b1 |= mask;
+			mask = ~mask;
+			b0 &= mask;
+			break;
+		case Literal.UNKNONW:
+			b1 |= mask;
+			b0 |= mask;
+			break;
+		case Literal.ABSENT:
+		default:
+			mask = ~mask;
+			b1 &= mask;
+			b0 &= mask;
+		}
+		return cacheIndex(b1, b0);
+	}
+
+	/**
+	 * @param proposition
+	 * @param state
+	 * @return the label initialized with literal represented by the proposition and its state.
+	 *         If proposition is a char not allowed, a IllegalArgumentException is raised.
+	 */
+	static public Label valueOf(final char proposition, final char state) {
+		if (state == Literal.ABSENT)
+			return emptyLabel;
+		byte literalIndex = Literal.index(proposition);
+		if (literalIndex < 0)
+			throw new IllegalArgumentException("Proposition is not allowed!");
+		long index = set(0, 0, literalIndex, state);
+		return valueOf(index);
+	}
+
+	/**
+	 * @param index
+	 * @return the label represented by the two state ints.
+	 */
+	static private Label valueOf(long index) {
+		Label cached = CREATED_LABEL.get(index);
+		if (cached == null) {
+			cached = new Label(getB1(index), getB0(index));
+			CREATED_LABEL.put(index, cached);
+		}
+		return cached;
+	}
+
+	/**
+	 * Using two ints, it is possible to represent 4 states for each position.<br>
 	 * Each position is associated to a proposition.<br>
-	 * Since {@link Constants#LabelRE} declares 64 propositions.
 	 * 
 	 * <pre>
 	 * Status of i-th literal
@@ -443,79 +433,41 @@ public class Label implements Comparable<Label> {
 	 * </pre>
 	 */
 	@SuppressWarnings("javadoc")
-	private long bit1, bit0;
+	private final int bit1, bit0;
 
 	/**
 	 * Index of the highest-order ("leftmost") literal of label w.r.t. lexicographical order.
 	 * On 2016-03-30 I showed by SizeofUtilTest.java that using byte it is possible to define also 'size' field without incrementing the memory footprint of the
 	 * object.
 	 */
-	private byte maxIndex;
+	private final byte maxIndex;
 
 	/**
 	 * Number of literals in the label
 	 * Value -1 means that the size has to be calculated!
 	 */
-	private byte sizeCached = -1;
+	private final byte sizeCached;
 
 	/**
-	 * Default constructor.
+	 * Create a label from state integers b1 and b0.
+	 * 
+	 * @param b1
+	 * @param b0
 	 */
-	public Label() {
-		this.bit0 = this.bit1 = 0;
-		this.maxIndex = -1;
-		this.sizeCached = 0;
-	}
-
-	/**
-	 * Constructs a label with a proposition having a state.
-	 *
-	 * @param proposition
-	 * @param state a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}
-	 */
-	public Label(final char proposition, final char state) {
-		this();
-		if (state != Literal.ABSENT) {
-			byte index = Literal.index(proposition);
-			this.set(index, state);
-			this.maxIndex = index;
+	private Label(final int b1, final int b0) {
+		this.bit0 = b0;
+		this.bit1 = b1;
+		this.sizeCached = (byte) Long.bitCount(b0 | b1);
+		int mask = 1 << 31;
+		byte mi = -1;
+		for (byte i = 32; ((--i) >= 0);) {
+			if (((b1 & mask) != 0) || ((b0 & mask) != 0)) {
+				mi = i;
+				break;
+			}
+			mask = mask >>> 1;
 		}
-	}
-
-	/**
-	 * Constructs a label cloning the given label l.
-	 * 
-	 * @param label the label to clone. It cannot be null or empty!
-	 */
-	private Label(final Label label) {
-		this();
-		if (label == null || label.isEmpty())
-			throw new IllegalArgumentException("Label cannot be null or empty!");
-		this.bit0 = label.bit0;
-		this.bit1 = label.bit1;
-		this.maxIndex = label.maxIndex;
-		this.sizeCached = label.sizeCached;
-	}
-
-	/**
-	 * In order to have a correct copy of a label.
-	 * 
-	 * @param label
-	 * @return a distinct equal copy of label
-	 */
-	static final public Label clone(final Label label) {
-		if (label == null || label.isEmpty())
-			return Label.emptyLabel;
-		return new Label(label);
-	}
-
-	/**
-	 * Makes the label empty.
-	 */
-	public void clear() {
-		this.bit1 = this.bit0 = 0;
-		this.maxIndex = -1;
-		this.sizeCached = 0;
+		this.maxIndex = mi;
 	}
 
 	/**
@@ -559,93 +511,27 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * It conjuncts <code>proposition</code> to this if <code>this</code> is consistent with <code>proposition</code> and its <code>propositionState</code>.
-	 *
-	 * @param proposition the proposition to conjunct. It cannot have an UNKNOWN state.
-	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}
-	 * @return true if proposition is added, false otherwise.
+	 * It returns the conjunction of <code>proposition</code> to this if <code>this</code> is consistent with <code>proposition</code> and its
+	 * <code>propositionState</code>.
+	 * If propositionState is {@link Literal#ABSENT}, the effect is reset the proposition in the label.
+	 * 
+	 * @param proposition the proposition to conjunct.
+	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED} or {@link Literal#ABSENT}.
+	 * @return the new label if proposition can be conjuncted, null otherwise.
 	 */
-	public boolean conjunct(final char proposition, final char propositionState) {
-		if (propositionState == Literal.ABSENT || propositionState == Literal.UNKNONW)
-			return false;
+	public Label conjunction(final char proposition, final char propositionState) {
+		if (propositionState == Literal.UNKNONW)
+			return null;
 		byte propIndex = Literal.index(proposition);
 		char st = get(propIndex);
-		if (Literal.areComplement(st, propositionState))
-			return false;
 		if (st == propositionState)
-			return true;
-		set(propIndex, propositionState);
-		if (propIndex > this.maxIndex)
-			this.maxIndex = propIndex;
-		return true;
+			return this;
+		if (Literal.areComplement(st, propositionState))
+			return null;
+		long index = Label.set(this.bit0, this.bit1, propIndex, propositionState);
+		return Label.valueOf(index);
 	}
 
-	/**
-	 * Helper method for {@link it.univr.di.labeledvalue.Label#conjunct(char, char)}
-	 * 
-	 * @param literal a literal
-	 * @return true if literal has been added.
-	 */
-	public boolean conjunct(final Literal literal) {
-		return conjunct(literal.getName(), literal.getState());
-	}
-
-	/**
-	 * It conjuncts <code>proposition</code> to <code>this</code>. If <code>proposition</code> state <code>literalState</code> is opposite to the
-	 * corresponding literal in <code>this</code>, the opposite literal in <code>this</code> is substituted with <code>proposition</code> but with unknown
-	 * state. If <code>proposition</code> has unknown state, it is add to <code>this</code> as unknown.
-	 *
-	 * @param proposition the literal to conjunct.
-	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}
-	 * @return true if proposition is added, false otherwise.
-	 */
-	public boolean conjunctExtended(final char proposition, char propositionState) {
-		if (propositionState == Literal.ABSENT)
-			return false;
-		byte index = Literal.index(proposition);
-		char st = get(index);
-		if (propositionState == Literal.UNKNONW || Literal.areComplement(st, propositionState)) {
-			propositionState = Literal.UNKNONW;
-		}
-		if (index > this.maxIndex)
-			this.maxIndex = index;
-		set(index, propositionState);
-		return true;
-	}
-
-	/**
-	 * Helper method {@link #conjunctExtended(char, char)}
-	 * 
-	 * @param literal a literal
-	 * @return true if literal has been added.
-	 */
-	public boolean conjunctExtended(final Literal literal) {
-		return conjunctExtended(literal.getName(), literal.getState());
-	}
-
-	/**
-	 * It conjuncts the given label to this using also {@link Literal#UNKNONW} literals.
-	 * A {@link Literal#UNKNONW} literal represent the fact that in the two input labels a proposition letter is present as straight state in
-	 * one label and in negated state in the other.<br>
-	 * For a detail about the conjunction of unknown literals, see {@link #conjunctExtended(char, char)}.
-	 * 
-	 * @param label the input label.
-	 * @return boolean true if the conjunction changed this.
-	 */
-	public boolean conjunctExtended(final Label label) {
-		if (label == null)
-			return false;
-		long unionB0 = this.bit0 | label.bit0;
-		long unionB1 = this.bit1 | label.bit1;
-		boolean changed = (this.bit0 != unionB0) || (this.bit1 != unionB1);
-		if (!changed)
-			return false;
-		this.bit0 = unionB0;
-		this.bit1 = unionB1;
-		this.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
-		this.sizeCached = -1;// it has to be calculated... delay the stuff.
-		return true;
-	}
 
 	/**
 	 * Conjuncts <code>label</code> to this if <code>this</code> is consistent with <code>label</code> and returns the result without modifying
@@ -658,26 +544,53 @@ public class Label implements Comparable<Label> {
 	public Label conjunction(final Label label) {
 		if (label == null)
 			return null;
-		long unionB0 = this.bit0 | label.bit0;
-		long unionB1 = this.bit1 | label.bit1;
+		int unionB0 = this.bit0 | label.bit0;
+		int unionB1 = this.bit1 | label.bit1;
 		if ((unionB0 & unionB1) != 0) {
 			// there is at least one unknown or a pair of opposite literals
 			return null;
 		}
+		return valueOf(cacheIndex(unionB1, unionB0));
+	}
 
-		final Label newLabel = new Label();
-		newLabel.bit0 = unionB0;
-		newLabel.bit1 = unionB1;
-		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
-		newLabel.sizeCached = -1;// it has to be calculated... delay the stuff.
-		return newLabel;
+	/**
+	 * Helper method for {@link it.univr.di.labeledvalue.Label#conjunction(char, char)}
+	 * 
+	 * @param literal a literal
+	 * @return the new Label if literal has been added, null otherwise.
+	 */
+	public Label conjunction(final Literal literal) {
+		if (literal == null)
+			return null;
+		return conjunction(literal.getName(), literal.getState());
+	}
+
+	/**
+	 * It returns the conjunction of <code>proposition</code> to <code>this</code>. If <code>proposition</code> state <code>literalState</code> is opposite to
+	 * the corresponding literal in <code>this</code>, the opposite literal in <code>this</code> is substituted with <code>proposition</code> but with unknown
+	 * state. If <code>proposition</code> has unknown state, it is add to <code>this</code> as unknown.
+	 * If propositionState is {@link Literal#ABSENT}, the effect is reset the proposition in the label.
+	 *
+	 * @param proposition the literal to conjunct.
+	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW} or
+	 *            {@link Literal#ABSENT}.
+	 * @return Label if proposition is added, false otherwise.
+	 */
+	public Label conjunctionExtended(final char proposition, char propositionState) {
+		byte propIndex = Literal.index(proposition);
+		char st = get(propIndex);
+		if (Literal.areComplement(st, propositionState)) {
+			propositionState = Literal.UNKNONW;
+		}
+		long index = Label.set(this.bit0, this.bit1, propIndex, propositionState);
+		return Label.valueOf(index);
 	}
 
 	/**
 	 * Create a new label that represents the conjunction of <code>this</code> and <code>label</code> using also {@link Literal#UNKNONW} literals.
 	 * A {@link Literal#UNKNONW} literal represent the fact that in the two input labels a proposition letter is present as straight state in
 	 * one label and in negated state in the other.<br>
-	 * For a detail about the conjunction of unknown literals, see {@link #conjunctExtended(char, char)}.
+	 * For a detail about the conjunction of unknown literals, see {@link #conjunctionExtended(char, char)}.
 	 * 
 	 * @param label the input label.
 	 * @return a new label with the conjunction of <code>this</code> and <code>label</code>.<br>
@@ -686,15 +599,21 @@ public class Label implements Comparable<Label> {
 	public Label conjunctionExtended(final Label label) {
 		if (label == null)
 			return null;
-		long unionB0 = this.bit0 | label.bit0;
-		long unionB1 = this.bit1 | label.bit1;
+		int unionB0 = this.bit0 | label.bit0;
+		int unionB1 = this.bit1 | label.bit1;
+		return valueOf(cacheIndex(unionB1, unionB0));
+	}
 
-		final Label newLabel = new Label();
-		newLabel.bit0 = unionB0;
-		newLabel.bit1 = unionB1;
-		newLabel.maxIndex = (label.maxIndex > this.maxIndex) ? label.maxIndex : this.maxIndex;
-		newLabel.sizeCached = -1;// it has to be calculated... delay the stuff.
-		return newLabel;
+	/**
+	 * Helper method {@link #conjunctionExtended(char, char)}
+	 * 
+	 * @param literal a literal
+	 * @return Label where literal has been added.
+	 */
+	public Label conjunctionExtended(final Literal literal) {
+		if (literal==null)
+			return null;
+		return conjunctionExtended(literal.getName(), literal.getState());
 	}
 
 	/**
@@ -739,7 +658,7 @@ public class Label implements Comparable<Label> {
 	 * @return the status of literal with index literalIndex. If the literal is not present, it returns {@link Literal#ABSENT}.
 	 */
 	private final char get(final byte literalIndex) {
-		long mask = 1L << literalIndex;
+		int mask = 1 << literalIndex;
 		int b1 = ((this.bit1 & mask) != 0) ? 2 : 0;
 		int b0 = ((this.bit0 & mask) != 0) ? 1 : 0;
 		return LITERAL_STATE[b1 + b0];
@@ -808,11 +727,11 @@ public class Label implements Comparable<Label> {
 	 *         object that shares only literals with this or with from. If there is no common part, an empty label is returned.
 	 */
 	public Label getSubLabelIn(final Label label, final boolean inCommon) {
-		final Label sub = new Label();
+		Label sub = emptyLabel;
 		if (this.isEmpty())
 			return sub;
 		if ((label == null) || label.isEmpty())
-			return (inCommon) ? sub : new Label(this);
+			return (inCommon) ? sub : this;
 		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			char thisState = get(i);
 			if (thisState == Literal.ABSENT)
@@ -822,12 +741,12 @@ public class Label implements Comparable<Label> {
 				if (labelState == Literal.ABSENT)
 					continue;
 				if (thisState == labelState) {
-					sub.set(i, labelState);
+					sub = sub.conjunctionExtended(Literal.charValue(i), labelState);
 					continue;
 				}
 			} else {
 				if (labelState != thisState) {
-					sub.set(i, thisState);
+					sub = sub.conjunctionExtended(Literal.charValue(i), thisState);
 					continue;
 				}
 			}
@@ -850,11 +769,11 @@ public class Label implements Comparable<Label> {
 	 *         object that shares only literals with this or with from. If there is no common part, an empty label is returned.
 	 */
 	public Label getSubLabelIn(final Label label, final boolean inCommon, boolean strict) {
-		final Label sub = new Label();
+		Label sub = emptyLabel;
 		if (this.isEmpty())
 			return sub;
 		if ((label == null) || label.isEmpty())
-			return (inCommon) ? sub : new Label(this);
+			return (inCommon) ? sub : this;
 		for (byte i = (byte) (this.maxIndex + 1); (--i) >= 0;) {
 			char thisState = get(i);
 			if (thisState == Literal.ABSENT)
@@ -864,16 +783,16 @@ public class Label implements Comparable<Label> {
 				if (labelState == Literal.ABSENT)
 					continue;
 				if (thisState == labelState) {
-					sub.set(i, labelState);
+					sub = sub.conjunctionExtended(Literal.charValue(i), labelState);
 					continue;
 				}
 				if (!strict) {
-					sub.set(i, Literal.UNKNONW);
+					sub = sub.conjunctionExtended(Literal.charValue(i), Literal.UNKNONW);
 					continue;
 				}
 			} else {
 				if (labelState == Literal.ABSENT) {
-					sub.set(i, thisState);
+					sub = sub.conjunctionExtended(Literal.charValue(i), thisState);
 					continue;
 				}
 			}
@@ -922,7 +841,7 @@ public class Label implements Comparable<Label> {
 	@Override
 	public int hashCode() {
 		// It is impossible to guarantee a unique hashCode for each possible label.
-		return (int) (this.bit1 << this.maxIndex | this.bit0);
+		return this.bit1 << this.maxIndex | this.bit0;
 	}
 
 	/**
@@ -1017,7 +936,7 @@ public class Label implements Comparable<Label> {
 	 * @return true if the label contains no literal.
 	 */
 	public boolean isEmpty() {
-		return (this.bit1 == 0 && this.bit0 == 0);
+		return this.size() == 0;
 	}
 
 	/**
@@ -1051,8 +970,7 @@ public class Label implements Comparable<Label> {
 	 * @return return reference a this for allowing concatenation
 	 */
 	public Label remove(final char proposition) {
-		set(Literal.index(proposition), Literal.ABSENT);
-		return this;
+		return this.conjunction(proposition, Literal.ABSENT);
 	}
 
 	/**
@@ -1065,19 +983,10 @@ public class Label implements Comparable<Label> {
 		if (inputLabel == null)
 			return this;
 
-		long inputPropositions = inputLabel.bit0 | inputLabel.bit1;
+		int inputPropositions = inputLabel.bit0 | inputLabel.bit1;
 		inputPropositions = ~inputPropositions;
-		this.bit0 = this.bit0 & inputPropositions;
-		this.bit1 = this.bit1 & inputPropositions;
 
-		long mask = 1L << this.maxIndex;
-		long u = this.bit1 | this.bit0;
-		while ((u & mask) == 0 && this.maxIndex >= 0) {
-			this.maxIndex--;
-			mask = mask >>> 1;
-		}
-		this.sizeCached = -1;
-		return this;
+		return valueOf(cacheIndex(this.bit1 & inputPropositions, this.bit0 & inputPropositions));
 	}
 
 	/**
@@ -1087,93 +996,18 @@ public class Label implements Comparable<Label> {
 	 * @param literal the literal to remove
 	 * @return true if the literal is removed.
 	 */
-	public boolean remove(final Literal literal) {
+	public Label remove(final Literal literal) {
 		byte index = Literal.index(literal.getName());
 		if (get(index) == literal.getState()) {
-			set(index, Literal.ABSENT);
-			return true;
+			return this.conjunction(literal.getName(), Literal.ABSENT);
 		}
-		return false;
+		return this;
 	}
 
 	/**
-	 * @param literalIndex the index of the literal to update.
-	 * @param literalStatus the new state.
-	 */
-	private final void set(final byte literalIndex, final char literalStatus) {
-		/**
-		 * <pre>
-		 * Status of i-th literal
-		 *             bit1[i] bit0[i]
-		 * not present       0 0
-		 * straight          0 1
-		 * negated           1 0
-		 * unknown           1 1
-		 * </pre>
-		 */
-		long mask = 1L << literalIndex;
-		switch (literalStatus) {
-		case Literal.STRAIGHT:
-			if (((this.bit1 | this.bit0) & mask) == 0)
-				this.sizeCached++;
-			this.bit0 |= mask;
-			mask = ~mask;
-			this.bit1 &= mask;
-			if (this.maxIndex < literalIndex)
-				this.maxIndex = literalIndex;
-			return;
-		case Literal.NEGATED:
-			if (((this.bit1 | this.bit0) & mask) == 0)
-				this.sizeCached++;
-			this.bit1 |= mask;
-			mask = ~mask;
-			this.bit0 &= mask;
-			if (this.maxIndex < literalIndex)
-				this.maxIndex = literalIndex;
-			return;
-		case Literal.UNKNONW:
-			if (((this.bit1 | this.bit0) & mask) == 0)
-				this.sizeCached++;
-			this.bit1 |= mask;
-			this.bit0 |= mask;
-			if (this.maxIndex < literalIndex)
-				this.maxIndex = literalIndex;
-			return;
-		case Literal.ABSENT:
-		default:
-			if (((this.bit1 | this.bit0) & mask) != 0)
-				this.sizeCached--;
-			mask = ~mask;
-			this.bit1 &= mask;
-			this.bit0 &= mask;
-			if (this.maxIndex == literalIndex) {
-				long u = this.bit1 | this.bit0;
-				mask = ~mask;
-				do {
-					this.maxIndex--;
-					mask = mask >>> 1;
-				} while ((u & mask) == 0 && this.maxIndex >= 0);
-			}
-			return;
-		}
-	}
-
-	/**
-	 * @return Return the number of literals of the label
+	 * @return the number of literals of the label.
 	 */
 	public int size() {
-		if (this.sizeCached >= 0) {
-			return this.sizeCached;
-		}
-		// byte _cacheOfSize = 0;
-		// long or = this.bit0 | this.bit1;
-		// for (int i = this.maxIndex + 1; (--i) >= 0;) {
-		// _cacheOfSize += (or & 1);
-		// or = or >>> 1;
-		// }
-		// this.cacheOfSize = _cacheOfSize;
-		// return _cacheOfSize;
-		this.sizeCached = (byte) Long.bitCount(this.bit0 | this.bit1);
 		return this.sizeCached;
 	}
 

@@ -365,8 +365,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 											+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
 								}
 							}
-							l1 = Label.clone(l1);
-							l1.remove(lit.getName());
+							l1 = l1.remove(lit.getName());
 							if (l1.size() < 0)
 								throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
 							if (Debug.ON) {
@@ -696,7 +695,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 					}
 				}
 				if (toInsert) {
-					newMap.putForcibly(Label.clone(l1), v1);
+					newMap.putForcibly(l1, v1);
 				}
 			}
 		}

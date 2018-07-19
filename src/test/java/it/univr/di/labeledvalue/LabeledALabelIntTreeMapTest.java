@@ -323,14 +323,14 @@ public class LabeledALabelIntTreeMapTest {
 		for (int j = 'a'; j <= 'z'; j++)
 			chars[j - 'a'] = (char) j;
 
-		ALabelAlphabet alphabet = new ALabelAlphabet(nChar);
+		ALabelAlphabet alphabet = new ALabelAlphabet();
 		for (int k = 0; k < value.length; k++) {
 			int nLabel = value[k];
 			for (int i = 0; i < nLabel; i++) {
-				Label label = new Label();
+				Label label = Label.emptyLabel;
 				int l = 1;
 				for (int j = 0; j < nChar; j++, l = l << 1) {
-					label.conjunct(chars[j], ((i & l) != 0 ? Literal.STRAIGHT : Literal.NEGATED));
+					label.conjunction(chars[j], ((i & l) != 0 ? Literal.STRAIGHT : Literal.NEGATED));
 				}
 				ALabel aleph = new ALabel(Character.toString(chars[i % nChar]), alphabet);
 				map.putTriple(label, aleph, i);
@@ -413,7 +413,7 @@ public class LabeledALabelIntTreeMapTest {
 		final Label l19 = Label.parse("¬b¬df¿e");
 		final Label l20 = Label.parse("¬e¬c");
 
-		ALabelAlphabet alpha = new ALabelAlphabet(3);
+		ALabelAlphabet alpha = new ALabelAlphabet();
 		ALabel a = new ALabel(new ALetter("A"), alpha);
 		ALabel b = new ALabel(new ALetter("B"), alpha);
 		ALabel c = new ALabel(new ALetter("C"), alpha);

@@ -89,7 +89,7 @@ public class ALabelAlphabet {
 	/**
 	 * Default value for not found name.
 	 */
-	public static byte DEFAULT_BYTE_RET_VALUE = -1;
+	public static final byte DEFAULT_BYTE_RET_VALUE = -1;
 
 	/**
 	 * The empty a-letter.

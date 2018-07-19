@@ -307,10 +307,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			this.childrenOfObserver = newChildrenObserverInstance();
 		Label children = this.childrenOfObserver.get(obs);
 		if (children == null) {
-			children = new Label();
-			this.childrenOfObserver.put(obs, children);
+			children = Label.emptyLabel;
 		}
-		children.conjunct(child, Literal.STRAIGHT);
+		children = children.conjunction(child, Literal.STRAIGHT);
+		this.childrenOfObserver.put(obs, children);
 	}
 
 	/**
@@ -666,10 +666,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					LabeledNode father = this.getObserver(propInObsLabel);// for the well property, father must exist!
 					Label children = this.childrenOfObserver.get(father);
 					if (children == null) {
-						children = new Label();
-						this.childrenOfObserver.put(father, children);
+						children = Label.emptyLabel;
 					}
-					children.conjunct(observedProposition, Literal.STRAIGHT);
+					children = children.conjunction(observedProposition, Literal.STRAIGHT);
+					this.childrenOfObserver.put(father, children);
 				}
 			}
 		}

@@ -6,8 +6,7 @@ v1.24.0
 	date:	2018-07-18 working
 	
 	CSTN class allows the DC checking without using unknown literals (that are necessary for the completeness): it just a tool for studying the necessity of unknown literals.
-	
-	Literal becomes an immutable class. 
+	Literal and Label class are now immutable.
 
 	Minor code optimization.
 	
