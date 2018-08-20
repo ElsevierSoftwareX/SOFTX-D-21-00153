@@ -6,8 +6,6 @@ package it.univr.di.cstnu.graph;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.lang.NotImplementedException;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
@@ -129,7 +127,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 
 	@Override
 	public LabeledIntEdge createLabeledIntEdge() {
-		throw new NotImplementedException("This class needs to know which labeled int map implementation to use.");
+		throw new UnsupportedOperationException("This class needs to know which labeled int map implementation to use.");
 	}
 
 	/**
