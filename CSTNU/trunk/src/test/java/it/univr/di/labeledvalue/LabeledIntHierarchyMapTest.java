@@ -680,10 +680,10 @@ public class LabeledIntHierarchyMapTest {
 
 		set.add(1);
 		set.add(2);
-		Integer quattro = new Integer(4);
+		Integer quattro = Integer.valueOf(4);
 		set.add(quattro);
 		set.add(3);
-		Integer cinque = new Integer(5);
+		Integer cinque = Integer.valueOf(5);
 		set.add(cinque);
 		set.add(6);
 		
@@ -778,10 +778,10 @@ public class LabeledIntHierarchyMapTest {
 
 		list.add(1);
 		list.add(2);
-		Integer quattro = new Integer(4);
+		Integer quattro = Integer.valueOf(4);
 		list.add(quattro);
 		list.add(3);
-		Integer cinque = new Integer(5);
+		Integer cinque = Integer.valueOf(5);
 		list.add(cinque);
 		list.add(6);
 		

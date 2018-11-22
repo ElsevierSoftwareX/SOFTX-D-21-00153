@@ -80,7 +80,7 @@ public class CSTNIR extends CSTN {
 	@Override
 	boolean LPMainConditionForSkipping(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
-		return u >= 0 && v < 0;
+		return u >= 0;
 	}
 
 	/**

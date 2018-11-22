@@ -954,7 +954,6 @@ public class LabeledIntTreeMapTest {
 	/**
 	 * Simple test to verify time cost of constructor.
 	 */
-	@SuppressWarnings("unused")
 	private static void testConstructor() {
 
 		final int nTest = (int) 1E3;

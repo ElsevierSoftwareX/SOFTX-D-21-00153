@@ -1,9 +1,16 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.25.0
+-------
+	date:	2018-11-22
+	
+	Minor code optimization and minor bug fixes.
+	From this release it is necessary to run the software using JRE 1.8.
+
 v1.24.0
 -------
-	date:	2018-07-18 working
+	date:	2018-07-18
 	
 	CSTN class allows the DC checking without using unknown literals (that are necessary for the completeness): it just a tool for studying the necessity of unknown literals.
 	Literal and Label class are now immutable.

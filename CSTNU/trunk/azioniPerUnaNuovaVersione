@@ -81,3 +81,8 @@ svn copy  https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk \
 5.2 Andare nella working dir del branch
 5.3 svn update
 5.4 svn merge --record-only -c 391 ^/CSTNU/trunk
+
+Azioni per latex4ht
+===================
+Il sito di riferimento è http://akquinet.github.io/maven-latex-plugin/
+

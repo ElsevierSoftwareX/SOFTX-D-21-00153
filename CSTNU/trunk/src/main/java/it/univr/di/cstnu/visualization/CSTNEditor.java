@@ -44,6 +44,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -231,7 +232,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 			jl.setBackground(Color.orange);
 			boolean consistent = false;
-			consistent = CSTN.getMinimalDistanceGraph(CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstn = new CSTN(CSTNEditor.this.checkedGraph);
+			consistent = CSTN.getMinimalDistanceGraph(CSTNEditor.this.cstn.getG());
 			if (consistent) {
 
 				jl.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is All-Pair Shortest Paths.");
@@ -1188,7 +1190,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	public CSTNEditor() {
 		super("Simple CSTNU Editor. CSTN " + CSTN.VERSIONandDATE + ". CSTNU " + CSTNU.VERSIONandDATE);
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
 		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = env.getMaximumWindowBounds();
