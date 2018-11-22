@@ -3,6 +3,7 @@
  */
 package it.univr.di.labeledvalue;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Logger;
 
 import com.google.common.base.Supplier;
@@ -35,8 +36,9 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 	public LabeledIntMapFactory(Class<C> implementationClass) {
 		super();
 		try {
-			this.internal = implementationClass.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			this.internal = implementationClass.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+				| SecurityException e) {
 			e.printStackTrace();
 		}
 	}
@@ -48,8 +50,9 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 	public LabeledIntMapFactory() {
 		super();
 		try {
-			this.internal = (C) DEFAULT_LABELEDINTMAP_CLASS.newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
+			this.internal = (C) DEFAULT_LABELEDINTMAP_CLASS.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+				| SecurityException e) {
 			e.printStackTrace();
 		}
 	}

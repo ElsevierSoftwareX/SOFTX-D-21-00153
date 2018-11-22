@@ -805,7 +805,6 @@ public class CSTN {
 			throw new IllegalStateException("Graph has not been initialized! Please, consider dynamicConsistencyCheck() method!");
 		}
 		EdgesToCheck edgesToCheck = new EdgesToCheck(this.g.getEdges());
-		@SuppressWarnings("unused")
 		final int propositionN = this.g.getObserverCount();
 		final int nodeN = this.g.getVertexCount();
 		int m = (this.getMaxWeight() != 0) ? this.getMaxWeight() : 1;
@@ -828,7 +827,7 @@ public class CSTN {
 					LOG.log(Level.FINE, "*** Start Main Cycle " + i + "/" + maxCycles + " ***");
 				}
 			}
-			
+
 			if (this.propagationOnlyToZ) {
 				oneStepDynamicConsistencyByEdgesLimitedToZ(edgesToCheck, timeoutInstant);
 			} else {
@@ -1182,10 +1181,10 @@ public class CSTN {
 	 * Applies the labeled propagation rule:<br>
 	 * <b>Standard DC semantics is assumed.</b><br>
 	 * <b>This method is also valid assuming Instantaneous Reaction semantics or epsilon-reaction time.</b><br>
-	 * The rule implements 2016-10-31LUKE_LP, not yet published.
+	 * The rule implements 2018-11 qLP+, submitted to ICAPS19.
 	 * 
 	 * <pre>
-	 * if A &mdash;(u,α)&xrarr; B &mdash;(v,β)&xrarr; C, then A &mdash;[(α★β)†, u+v]&xrarr; C if u+v<=0
+	 * if A ---(u,α)&xrarr; B ---(v,β)&xrarr; C, then A ---[(α★β)†, u+v]&xrarr; C if (u+v < 0 and u < 0) or (u+v < 0 and αβ in P*)
 	 * 
 	 * α,β in Q*
 	 * (α★β)† is the label without children of unknown.
@@ -1224,12 +1223,11 @@ public class CSTN {
 				final int v = BCEntry.getIntValue();
 				int sum = Constants.sumWithOverflowCheck(u, v);
 				if (sum > 0) {
-				// // It is not necessary to propagate positive values.
-				// // Less propagations, less useless labeled values.
+					// // It is not necessary to propagate positive values.
+					// // Less propagations, less useless labeled values.
 					// 2018-01-25: I verified that for some negative instances, avoiding the positive propagations can increase the execution time.
 					// For positive instances, surely avoiding the positive propagations shorten the execution time.
 					continue;
-
 				}
 				final Label labelBC = BCEntry.getKey();
 				boolean qLabel = false;
@@ -1245,11 +1243,12 @@ public class CSTN {
 						continue;
 					qLabel = newLabelAC.containsUnknown();
 					if (qLabel) {
-						if (this.withNodeLabels)
+						if (this.withNodeLabels) {
 							removeChildrenOfUnknown(newLabelAC);
+							qLabel = newLabelAC.containsUnknown();
+						}
 					}
 				}
-				qLabel = newLabelAC.containsUnknown();
 				if (this.withNodeLabels) {
 					if (!newLabelAC.subsumes(nAnCLabel)) {
 						if (Debug.ON)
@@ -2230,8 +2229,9 @@ public class CSTN {
 	 */
 	@SuppressWarnings("static-method")
 	boolean LPMainConditionForSkipping(final int u, final int v) {
-		// Table 1 ICAPS paper for standard DC extended with rules on page 6 of file noteAboutLP.tex
-		return u > 0 && v < 0;
+		// Table 1 2016 ICAPS paper for standard DC extended with rules on page 6 of file noteAboutLP.tex
+		// Moreover, Luke and I verified on 2018-11-22 that with u<=0, qLP+ can be applied.
+		return u > 0;
 	}
 
 	/**
@@ -2246,7 +2246,7 @@ public class CSTN {
 	@SuppressWarnings("static-method")
 	boolean R0qR0MainConditionForSkipping(final int w) {
 		// Table 1 ICAPS paper for standard DC
-		// When X==Z, w must be < 0 to apply rule. w==0 is not considered because it doesn't occur since each node is at least 0 distance from Z.
+		// w must be < 0 for applying the rule. If w==0, then it is necessary to apply the rule because standard DC.
 		return w > 0;
 	}
 
@@ -2332,6 +2332,8 @@ public class CSTN {
 		LabeledIntEdge ik, kj, ij;
 		int v;
 		Label ijL;
+
+		boolean consistent = true;
 		for (int k = 0; k < n; k++) {
 			kV = node[k];
 			for (int i = 0; i < n; i++) {
@@ -2376,13 +2378,13 @@ public class CSTN {
 								if (v < 0 || ij.getMinValue() < 0) {
 									CSTNU.LOG.finer("Found a negative cycle on node " + iV.getName() + ": " + (ij)
 											+ "\nIn details, ik=" + ik + ", kj=" + kj + ",  v=" + v + ", ij.getValue(" + ijL + ")=" + ij.getValue(ijL));
-									return false;
+									consistent = false;
 								}
 						}
 					}
 				}
 			}
 		}
-		return true;
+		return consistent;
 	}
 }
