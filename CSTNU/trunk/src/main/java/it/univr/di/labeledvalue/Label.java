@@ -625,6 +625,14 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * @param proposition the proposition to check.
+	 * @return the state of the proposition in this label: straight, negated, unknown or absent.
+	 */
+	public char getState(final char proposition) {
+		return get(Literal.index(proposition));
+	}
+
+	/**
 	 * @param l
 	 * @return true if the literal <code>l</code> is present into the label.
 	 */
@@ -681,7 +689,7 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @return An array containing a copy of literals in this label.
+	 * @return An array containing a copy of literals in this label. The array may be empty.
 	 */
 	public Literal[] getLiterals() {
 		Literal[] indexes = new Literal[size()];
