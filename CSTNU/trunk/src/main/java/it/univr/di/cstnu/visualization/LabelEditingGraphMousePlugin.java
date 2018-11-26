@@ -645,7 +645,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	 * @param cstnEditor
 	 */
 	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor) {
-		super(InputEvent.BUTTON1_DOWN_MASK);
+		super(InputEvent.BUTTON1_MASK);
 		this.cstnEditor = cstnEditor;
 	}
 
@@ -680,7 +680,9 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	@Override
 	@SuppressWarnings("unchecked")
 	public void mouseClicked(final MouseEvent e) {
-		if ((e.getModifiersEx() == this.modifiers) && (e.getClickCount() == 2)) {
+		// DON'T USE e.getModifiersex()
+		LOG.finest("e.getModifiers():" + e.getModifiers() + "\tthis.modifiers: " + this.modifiers + "\te.getClickCount(): " + e.getClickCount());
+		if ((e.getModifiers() == this.modifiers) && (e.getClickCount() == 2)) {
 			final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
 			final GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
 			final String viewerName = vv.getName();

@@ -171,7 +171,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	protected void loadPlugins() {
 		this.pickingPlugin = new PickingGraphMousePlugin<V, E>();
 		this.animatedPickingPlugin = new AnimatedPickingGraphMousePlugin<V, E>();
-		this.translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_DOWN_MASK);
+		this.translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_MASK);
 		this.scalingPlugin = new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, this.in, this.out);
 		this.rotatingPlugin = new RotatingGraphMousePlugin();
 		this.shearingPlugin = new ShearingGraphMousePlugin();
@@ -180,7 +180,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 		this.annotatingPlugin = new AnnotatingGraphMousePlugin<V, E>(this.rc);
 		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
 		this.add(this.scalingPlugin);
-		this.setMode(Mode.EDITING);
+		this.setMode(Mode.PICKING);
 	}
 
 }
