@@ -6,6 +6,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.logging.Logger;
 
 import javax.swing.JComboBox;
 
@@ -38,9 +39,13 @@ import it.univr.di.cstnu.graph.LabeledNode;
 public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntEdge> extends edu.uci.ics.jung.visualization.control.EditingModalGraphMouse<V, E> {
 
 	/**
+	 * logger della classe
+	 */
+	static Logger LOG = Logger.getLogger(EditingModalGraphMouse.class.getName());
+
+	/**
 	 * Internal utility class to set the mode by keyboard.
-	 * 
-	 * I removed the annotation plugin. 
+	 * I removed the annotation plugin.
 	 *
 	 * @author posenato
 	 */
@@ -80,7 +85,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 			} else if (keyChar == this.p) {
 				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 				this.graphMouse.setMode(Mode.PICKING);
-			} else if (keyChar == this.e) {
+			} else if (keyChar == this.e && ((EditingModalGraphMouse<?, ?>) this.graphMouse).editor) {
 				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
 				this.graphMouse.setMode(Mode.EDITING);
 			}
@@ -93,8 +98,12 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	CSTNEditor cstnEditor;
 	
 	/**
+	 * Internal flag for activating 'editing' functions.
+	 */
+	boolean editor;
+
+	/**
 	 * create an instance with default values
-	 *
 	 */
 	@SuppressWarnings("unused")
 	private EditingModalGraphMouse(RenderContext<V,E> rc, Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
@@ -117,11 +126,15 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	 * @param rc a render contest.
 	 * @param vertexFactory a vertex factory.
 	 * @param edgeFactory an edge factory.
+	 * @param editor true for having 'editing' function in modeComboBox.
 	 */
-	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Supplier<V> vertexFactory, final Supplier<E> edgeFactory, CSTNEditor cstnEditor) {
+	public EditingModalGraphMouse(final RenderContext<V, E> rc, final Supplier<V> vertexFactory, final Supplier<E> edgeFactory, CSTNEditor cstnEditor,
+			boolean editor) {
 		super(rc, vertexFactory,edgeFactory);//this constructor uses local loadPlugins but LabelEditingGraphMousePlugin cannot be initialized correctly.
 		this.cstnEditor = cstnEditor;
+		// LOG.severe("EditingModalGraphMouse.cstnEditor " + cstnEditor);
 		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<V, E>(this.cstnEditor);
+		this.editor = editor;
 	}
 
 	/** {@inheritDoc} 
@@ -130,7 +143,8 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 	@Override
 	public JComboBox<Mode> getModeComboBox() {
 		if (this.modeBox == null) {
-			this.modeBox = new JComboBox<Mode>(new Mode[] { Mode.TRANSFORMING, Mode.PICKING, Mode.EDITING });
+			this.modeBox = new JComboBox<Mode>(
+					(this.editor) ? (new Mode[] { Mode.TRANSFORMING, Mode.PICKING, Mode.EDITING }) : new Mode[] { Mode.TRANSFORMING, Mode.PICKING });
 			this.modeBox.addItemListener(this.getModeListener());
 		}
 		this.modeBox.setSelectedItem(this.mode);
@@ -151,7 +165,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 				this.setTransformingMode();
 			} else if (mode == Mode.PICKING) {
 				this.setPickingMode();
-			} else if (mode == Mode.EDITING) {
+			} else if (mode == Mode.EDITING && this.editor) {
 				this.setEditingMode();
 			}
 			// else if (mode == Mode.ANNOTATING) {
@@ -176,7 +190,8 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends LabeledIntE
 		this.rotatingPlugin = new RotatingGraphMousePlugin();
 		this.shearingPlugin = new ShearingGraphMousePlugin();
 		this.editingPlugin = new EditingGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
-		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<V, E>(this.cstnEditor);
+		// LOG.severe("EditingModalGraphMouse.cstnEditor " + cstnEditor); loadPlugins is called by super() that has not access to this.cstnEditor
+		// this.labelEditingPlugin = new LabelEditingGraphMousePlugin<V, E>(this.cstnEditor);
 		this.annotatingPlugin = new AnnotatingGraphMousePlugin<V, E>(this.rc);
 		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<V, E>(this.vertexFactory, this.edgeFactory);
 		this.add(this.scalingPlugin);
