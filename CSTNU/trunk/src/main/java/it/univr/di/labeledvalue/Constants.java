@@ -28,7 +28,7 @@ public final class Constants implements Serializable {
 	 * Char representing empty upper case label: ◇.
 	 */
 	public static final char EMPTY_UPPER_CASE_LABEL = '\u25C7';
-	
+
 	/**
 	 * @see Constants#EMPTY_UPPER_CASE_LABEL
 	 */
@@ -93,7 +93,7 @@ public final class Constants implements Serializable {
 	 * String representing labeled-value opening.
 	 */
 	public static final String OPEN_PAIR = "(";// '⟨';//It is not possible... to much saved file with (
-	
+
 	/**
 	 *
 	 */
@@ -150,19 +150,18 @@ public final class Constants implements Serializable {
 		}
 		if (min == Constants.INT_NEG_INFINITE) {
 			if (max == Constants.INT_POS_INFINITE)
-				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
 			return Constants.INT_NEG_INFINITE;
 		}
 		if (max == Constants.INT_POS_INFINITE) {
 			if (min == Constants.INT_NEG_INFINITE)
-				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
 			return Constants.INT_POS_INFINITE;
 		}
 
 		final long sum = (long) a + (long) b;
 		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
-			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + a + " + " + b);
+			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
 		return (int) sum;
 	}
-
 }
