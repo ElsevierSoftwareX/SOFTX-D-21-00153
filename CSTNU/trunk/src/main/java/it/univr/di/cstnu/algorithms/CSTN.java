@@ -302,8 +302,8 @@ public class CSTN {
 	static final boolean checkTimeOutAndAdjustStatus(Instant timeoutInstant, CSTNCheckStatus status) {
 		if (Instant.now().isAfter(timeoutInstant)) {
 			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "Time out occurred!");
+				if (LOG.isLoggable(Level.FINE)) {
+					LOG.log(Level.FINE, "Time out occurred!");
 				}
 			}
 			status.timeout = true;
@@ -434,7 +434,7 @@ public class CSTN {
 	File fOutput = null;
 
 	/**
-	 * Output file where to write the XML representing the minimal CSTN graph.
+	 * Timeout in seconds for the check.
 	 */
 	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
 	int timeOut = 2700;
@@ -530,8 +530,8 @@ public class CSTN {
 	boolean checkWellDefinitionProperties() throws WellDefinitionException {
 		boolean flag = false;
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Checking if graph is well defined...");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "Checking if graph is well defined...");
 			}
 		}
 		for (final LabeledIntEdge e : this.g.getEdges()) {
@@ -541,8 +541,8 @@ public class CSTN {
 			flag = flag && checkWellDefinitionProperty2(node, false);
 		}
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, ((flag) ? "done: all is well defined.\n" : "done: something is wrong. Not well-defined graph!\n"));
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, ((flag) ? "done: all is well defined.\n" : "done: something is wrong. Not well-defined graph!\n"));
 			}
 		}
 		return flag;
@@ -568,8 +568,8 @@ public class CSTN {
 
 		final Label conjunctedLabel = nS.getLabel().conjunction(nD.getLabel());
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.log(Level.FINEST, "Source label: " + nS.getLabel() + "; dest label: " + nD.getLabel() + " conjuncted label: " + conjunctedLabel);
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "Source label: " + nS.getLabel() + "; dest label: " + nD.getLabel() + " conjuncted label: " + conjunctedLabel);
 			}
 		}
 		if (conjunctedLabel == null) {
@@ -631,8 +631,8 @@ public class CSTN {
 				if (obs == null) {
 					final String msg = "Observation node of literal " + l + " of label " + currentLabel + " in edge " + eSN + " does not exist.";
 					if (Debug.ON) {
-						if (LOG.isLoggable(Level.WARNING)) {
-							LOG.log(Level.WARNING, msg);
+						if (LOG.isLoggable(Level.SEVERE)) {
+							LOG.log(Level.SEVERE, msg);
 						}
 					}
 					throw new WellDefinitionException(msg, WellDefinitionException.Type.ObservationNodeDoesNotExist);
@@ -649,8 +649,8 @@ public class CSTN {
 					currentLabelModified = currentLabelModified.conjunction(obsLabel);
 					if (currentLabelModified == null) {
 						if (Debug.ON) {
-							if (LOG.isLoggable(Level.WARNING)) {
-								LOG.log(Level.WARNING, "Label " + currentLabel + " of edge " + eSN + " does not subsume label of obs node " + obs
+							if (LOG.isLoggable(Level.SEVERE)) {
+								LOG.log(Level.SEVERE, "Label " + currentLabel + " of edge " + eSN + " does not subsume label of obs node " + obs
 										+ " and cannot be expanded because it becomes inconsistent.");
 							}
 						}
@@ -704,8 +704,8 @@ public class CSTN {
 			if (obs == null) {
 				msg = "Observation node of literal " + l + " of node " + node + " does not exist.";
 				if (Debug.ON) {
-					if (LOG.isLoggable(Level.WARNING)) {
-						LOG.log(Level.WARNING, msg);
+					if (LOG.isLoggable(Level.SEVERE)) {
+						LOG.log(Level.SEVERE, msg);
 					}
 				}
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.ObservationNodeDoesNotExist);
@@ -813,8 +813,8 @@ public class CSTN {
 		if (maxCycles < 0)
 			maxCycles = Integer.MAX_VALUE;
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "The maximum number of possible cycles is " + maxCycles);
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "The maximum number of possible cycles is " + maxCycles);
 			}
 		}
 
@@ -873,8 +873,8 @@ public class CSTN {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO)) {
 					LOG.log(Level.INFO, "After " + (i - 1) + " cycle, found an inconsistency.\nStatus: " + this.checkStatus);
-					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "Final inconsistent graph: " + this.g);
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST, "Final inconsistent graph: " + this.g);
 					}
 				}
 			}
@@ -885,8 +885,8 @@ public class CSTN {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.WARNING)) {
 					LOG.log(Level.WARNING, "The maximum number of cycle (+" + maxCycles + ") has been reached!\nStatus: " + this.checkStatus);
-					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "Last determined graph: " + this.g);
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST, "Last determined graph: " + this.g);
 					}
 				}
 			}
@@ -984,8 +984,8 @@ public class CSTN {
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Starting initial well definition check.");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "Starting initial well definition check.");
 			}
 		}
 		this.g.clearCache();
@@ -1018,13 +1018,11 @@ public class CSTN {
 		}
 
 		// Checks well definiteness of edges and determine maxWeight
-		this.maxWeight = 0;
 		int minNegWeight = 0;
-		int maxPosWeight = -1;
 		for (final LabeledIntEdge e : this.g.getEdges()) {
 			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.log(Level.FINEST, "Initial Checking edge e: " + e);
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "Initial Checking edge e: " + e);
 				}
 			}
 			// Determines the absolute max weight value
@@ -1032,8 +1030,6 @@ public class CSTN {
 				int v = entry.getIntValue();
 				if (v < minNegWeight)
 					minNegWeight = v;
-				else if (v > maxPosWeight)
-					maxPosWeight = v;
 			}
 
 			final LabeledNode s = this.g.getSource(e);
@@ -1073,14 +1069,17 @@ public class CSTN {
 		}
 
 		// manage maxWeight value
-		minNegWeight = -minNegWeight;
-		this.maxWeight = minNegWeight;// (minNegWeight < maxPosWeight) ? maxPosWeight : minNegWeight;
+		this.maxWeight = -minNegWeight;
 		// Determine horizon value
 		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product >= Constants.INT_POS_INFINITE) {
 			throw new ArithmeticException("Horizon value is not representable by an integer.");
 		}
 		this.horizon = (int) product;
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINE))
+				LOG.log(Level.FINE, "The horizon value is " + String.format("%6d", product));
+		}
 
 		// Init two useful structures
 		this.g.getPropositions();
@@ -1170,8 +1169,8 @@ public class CSTN {
 		this.checkStatus.initialized = true;
 
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "Initial well definition check done!");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "Initial well definition check done!");
 			}
 		}
 		return true;
@@ -1222,11 +1221,12 @@ public class CSTN {
 			for (final Object2IntMap.Entry<Label> BCEntry : eBC.getLabeledValueSet()) {
 				final int v = BCEntry.getIntValue();
 				int sum = Constants.sumWithOverflowCheck(u, v);
-				if (sum > 0) {
+				if (sum > 0) {// || u == Constants.INT_NEG_INFINITE) {
 					// // It is not necessary to propagate positive values.
 					// // Less propagations, less useless labeled values.
 					// 2018-01-25: I verified that for some negative instances, avoiding the positive propagations can increase the execution time.
 					// For positive instances, surely avoiding the positive propagations shorten the execution time.
+					// 2018-11-28: Luke and I verified that it is useless to propagate -infty forward! So, u must be different from Constants.INT_NEG_INFINITE
 					continue;
 				}
 				final Label labelBC = BCEntry.getKey();
@@ -1296,7 +1296,7 @@ public class CSTN {
 				// I have to prepare the log before the execution of the merge!
 				String log = null;
 				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
+					if (LOG.isLoggable(Level.FINE)) {
 						log = "Label Propagation Rule applied to edge " + eAC.getName()
 								+ ":\nsource: "
 								+ nA.getName() + " ---" + pairAsString(labelAB, u) + "---> " + nB.getName() + " ---" + pairAsString(labelBC, v)
@@ -1308,12 +1308,19 @@ public class CSTN {
 					}
 				}
 
+				// FIXME
+				if (nC == this.g.getZ() && sum == Constants.INT_NEG_INFINITE) {
+					LOG.log(Level.FINE, log);
+				}
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
 					ruleApplied = true;
 					this.checkStatus.labeledValuePropagationCalls++;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER, log);
+						}
+						if (nA.getName().equals("n20") && (nC.getName().equals("n103") || nC.getName().equals("n106"))) {
+							LOG.log(Level.FINE, log);
 						}
 					}
 				}
@@ -1359,8 +1366,8 @@ public class CSTN {
 		final char p = nObs.getPropositionObserved();
 		if (p == Constants.UNKNOWN) {
 			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "Method labelModificationR0 called passing a non observation node as first parameter!");
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST, "Method labelModificationR0 called passing a non observation node as first parameter!");
 				}
 			}
 			return false;
@@ -1854,8 +1861,8 @@ public class CSTN {
 		this.checkStatus.cycles++;
 
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "\nStart application labeled propagation rule+R0+R3.");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "\nStart application labeled propagation rule+R0+R3.");
 			}
 		}
 		/**
@@ -1978,8 +1985,8 @@ public class CSTN {
 
 		}
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3.");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "End application labeled propagation rule+R0+R3.");
 			}
 		}
 		edgesToCheck.clear();
@@ -2009,8 +2016,8 @@ public class CSTN {
 		this.checkStatus.cycles++;
 
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "\nStart application labeled propagation rule+R0+R3.");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "\nStart application labeled propagation rule+R0+R3.");
 			}
 		}
 		/**
@@ -2088,8 +2095,8 @@ public class CSTN {
 
 		}
 		if (Debug.ON) {
-			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "End application labeled propagation rule+R0+R3.");
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "End application labeled propagation rule+R0+R3.");
 			}
 		}
 		edgesToCheck.clear();
@@ -2214,8 +2221,9 @@ public class CSTN {
 	 * Print version of the this class in System.out.
 	 */
 	public void printVersion() {
+		// I use a non-static method for having a general method that prints the right name for each derived class.
 		System.out.println(this.getClass().getName() + " " + VERSIONandDATE + ".\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2017, Roberto Posenato");
+				+ "Copyright © 2017-2019, Roberto Posenato");
 	}
 
 	/**
@@ -2309,8 +2317,8 @@ public class CSTN {
 			throw new IllegalArgumentException("Input graph is null!");
 		this.g = g;
 		this.Z = g.getZ();// Don't remove this assignment!
-		this.maxWeight = Constants.INT_NEG_INFINITE;
-		this.horizon = Constants.INT_NEG_INFINITE;
+		this.maxWeight = 0;
+		this.horizon = 0;
 
 		this.checkStatus.reset();
 	}
