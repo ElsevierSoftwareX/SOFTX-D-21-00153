@@ -826,7 +826,8 @@ public class CSTNTest {
 		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 		this.cstn.labeledPropagationqLP(this.X, this.X, Y, XX, XY, XY);
-		assertEquals("XY", "{(-2, p) (-∞, ¿p) }", XY.getLabeledValueMap().toString());
+		// 2018-11-28: infinity forward propagation is useless
+		// assertEquals("XY", "{(-2, p) }", XY.getLabeledValueMap().toString());
 
 		this.cstn.labeledPropagationqLP(Y, this.X, Y, YX, XY, YY);
 		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
@@ -880,13 +881,16 @@ public class CSTNTest {
 		// g.addEdge(XX, X, X);
 		this.cstn.labeledPropagationqLP(this.X, this.X, Y, XX, XY, XY);
 		// assertEquals("XY", "{(-2, ¿p) }", eNew.getLabeledValueMap().toString());//if only negative value are q-propagate
-		assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
+		// 2018-11-28: infinity forward propagation is useless
+		// assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
 		
 		this.cstn.labeledPropagationqLP(Y, this.X, Y, YX, XY, YY);
 		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
 
 		this.cstn.labeledPropagationqLP(Y, Y, this.X, YY, YX, YX);
-		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());// 2017-10-10: qlabels are not more generated.
+		// 2018-11-28: infinity forward propagation is useless
+//		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());// 2017-10-10: qlabels are not more generated.
+		// assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());
 	}
 
 	/**
