@@ -6,9 +6,7 @@
 package it.univr.di.cstnu.visualization;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.GridLayout;
-import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.Set;
@@ -60,6 +58,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		extends edu.uci.ics.jung.visualization.control.LabelEditingGraphMousePlugin<V, E> {
 
 	/**
+	 * logger della classe
+	 */
+	static Logger LOG = Logger.getLogger(LabelEditingGraphMousePlugin.class.getName());
+
+	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
 	 *
 	 * @param e
@@ -90,7 +93,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jl.setLabelFor(name);
 		jp.add(jl);
 		jp.add(name);
-		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
+		setConditionToEnable(name, viewerName, false);
 		jp.add(new JLabel("Syntax: [" + Literal.PROPOSITIONS + "0-9_]"));
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
@@ -116,15 +119,15 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		final JRadioButton normalButton = new JRadioButton(LabeledIntEdge.ConstraintType.normal.toString());
 		normalButton.setActionCommand(LabeledIntEdge.ConstraintType.normal.toString());
 		normalButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.normal);
-		LabelEditingGraphMousePlugin.setConditionToEnable(normalButton, viewerName, false);
+		setConditionToEnable(normalButton, viewerName, false);
 		final JRadioButton contingentButton = new JRadioButton(LabeledIntEdge.ConstraintType.contingent.toString());
 		contingentButton.setActionCommand(LabeledIntEdge.ConstraintType.contingent.toString());
 		contingentButton.setSelected(e.isContingentEdge());
-		LabelEditingGraphMousePlugin.setConditionToEnable(contingentButton, viewerName, false);
+		setConditionToEnable(contingentButton, viewerName, false);
 		final JRadioButton constraintButton = new JRadioButton(LabeledIntEdge.ConstraintType.constraint.toString());
 		constraintButton.setActionCommand(LabeledIntEdge.ConstraintType.constraint.toString());
 		constraintButton.setSelected(e.getConstraintType() == LabeledIntEdge.ConstraintType.constraint);
-		LabelEditingGraphMousePlugin.setConditionToEnable(constraintButton, viewerName, false);
+		setConditionToEnable(constraintButton, viewerName, false);
 		final JRadioButton derivedButton = new JRadioButton(LabeledIntEdge.ConstraintType.derived.toString());
 		derivedButton.setActionCommand(LabeledIntEdge.ConstraintType.derived.toString());
 		derivedButton
@@ -143,17 +146,17 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jp.add(new JLabel(""));// in order to jumb a cell
 		jp.add(constraintButton);
 		jp.add(derivedButton);
-		// LabelEditingGraphMousePlugin.setConditionToEnable(jp, viewerName, false);
+		// setConditionToEnable(jp, viewerName, false);
 
 		// Show possible labeled values
 		final Set<it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label>> labeledValueSet = e.getLabeledValueSet();
 		JTextField jt;
 		jp.add(new JLabel("Labeled value syntax:"));
 		jt = new JTextField(Label.LABEL_RE);
-		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, false);
+		setConditionToEnable(jt, viewerName, false);
 		jp.add(jt);
 		jt = new JTextField(Constants.LabeledValueRE);
-		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, false);
+		setConditionToEnable(jt, viewerName, false);
 		jp.add(jt);
 
 		final int inputsN = labeledValueSet.size() + 1;
@@ -168,7 +171,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jl = new JLabel("Assigned Label " + i + ":");
 				jtLabel = new JTextField(entry.getKey().toString());
 				labelInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
+				setConditionToEnable(jtLabel, viewerName, false);
 				jl.setLabelFor(jtLabel);
 				jp.add(jl);
 				jp.add(jtLabel);
@@ -177,7 +180,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				oldIntInputs[i] = entry.getIntValue();
 				jtValue = new JTextField(Constants.formatInt(oldIntInputs[i]));
 				newIntInputs[i] = jtValue;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtValue, viewerName, false);
+				setConditionToEnable(jtValue, viewerName, false);
 				jp.add(jtValue);
 				group.add(jtValue, StringValidators.regexp(Constants.LabeledValueRE + "|", "Integer please or let it empty!", false));
 
@@ -189,7 +192,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			jl = new JLabel("Labeled value " + i + ":");
 			jtLabel = new JTextField();
 			labelInputs[i] = jtLabel;
-			LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
+			setConditionToEnable(jtLabel, viewerName, false);
 			jl.setLabelFor(jtLabel);
 			jp.add(jl);
 			jp.add(jtLabel);
@@ -198,7 +201,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			jtValue = new JTextField();
 			newIntInputs[i] = jtValue;
 			oldIntInputs[i] = null;
-			LabelEditingGraphMousePlugin.setConditionToEnable(jtValue, viewerName, false);
+			setConditionToEnable(jtValue, viewerName, false);
 			jp.add(jtValue);
 			group.add(jtValue, StringValidators.regexp(Constants.LabeledValueRE + "|", "Integer please or let it empty!", false));
 		}
@@ -218,10 +221,10 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 		jp.add(new JLabel("Syntax:"));
 		jt = new JTextField("Label (read-only)");
-		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, true);
+		setConditionToEnable(jt, viewerName, true);
 		jp.add(jt);
 		jt = new JTextField("<node Name>: <value>");
-		LabelEditingGraphMousePlugin.setConditionToEnable(jt, viewerName, true);
+		setConditionToEnable(jt, viewerName, true);
 		jp.add(jt);
 		i = 0;
 		if (nUpperLabels > 0) {
@@ -233,11 +236,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 					jp.add(new JLabel("Upper Label"));
 					jtLabel = new JTextField(entry1.getKey().toString());
 					labelUpperInputs[i] = jtLabel;
-					LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
+					setConditionToEnable(jtLabel, viewerName, true);
 					jp.add(jtLabel);
 					jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
 					newUpperValueInputs[i] = jtLabel;
-					LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, editorPanel);
+					setConditionToEnable(jtLabel, viewerName, editorPanel);
 					jp.add(jtLabel);
 				}
 			}
@@ -246,11 +249,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jp.add(new JLabel("Upper Label"));
 				jtLabel = new JTextField("");
 				labelUpperInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
+				setConditionToEnable(jtLabel, viewerName, true);
 				jp.add(jtLabel);
 				jtLabel = new JTextField("");
 				newUpperValueInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, editorPanel);
+				setConditionToEnable(jtLabel, viewerName, editorPanel);
 				jp.add(jtLabel);
 			}
 		}
@@ -263,11 +266,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			jp.add(new JLabel("Lower Label"));
 			jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
 			labelLowerInputs[i] = jtLabel;
-			LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
+			setConditionToEnable(jtLabel, viewerName, true);
 			jp.add(jtLabel);
 			jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
 			newLowerValueInputs[i] = jtLabel;
-			LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
+			setConditionToEnable(jtLabel, viewerName, false);
 			jp.add(jtLabel);
 			// }
 			// }
@@ -276,11 +279,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 				jp.add(new JLabel("Lower Label"));
 				jtLabel = new JTextField("");
 				labelLowerInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, true);
+				setConditionToEnable(jtLabel, viewerName, true);
 				jp.add(jtLabel);
 				jtLabel = new JTextField("");
 				newLowerValueInputs[i] = jtLabel;
-				LabelEditingGraphMousePlugin.setConditionToEnable(jtLabel, viewerName, false);
+				setConditionToEnable(jtLabel, viewerName, false);
 				jp.add(jtLabel);
 			}
 		}
@@ -487,6 +490,117 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 	}
 
 	/**
+	 * Simple method to disable the editing of the property jc if forceDisable is true or if the viewerName is not equals to CSTNEditor.editorName.
+	 *
+	 * @param jc
+	 * @param viewerName
+	 * @param forceDisable
+	 */
+	private static void setConditionToEnable(final JComponent jc, final String viewerName, final boolean forceDisable) {
+		if (forceDisable) {
+			jc.setEnabled(false);
+			return;
+		}
+		jc.setEnabled(viewerName.equals(CSTNEditor.editorName));
+	}
+
+	/**
+	 * The editor in which this plugin works.
+	 */
+	CSTNEditor cstnEditor;
+
+	/**
+	 * create an instance with default settings
+	 * 
+	 * @param cstnEditor
+	 */
+	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor) {
+		super();
+		this.cstnEditor = cstnEditor;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * For primary modifiers (default, MouseButton1):
+	 * <ol>
+	 * <li>Pick a single Vertex or LabeledIntEdge that is under the mouse pointer.<br>
+	 * <li>If no Vertex or LabeledIntEdge is under the pointer, unselect all picked Vertices and Edges, and set up to draw a rectangle for multiple selection of
+	 * contained Vertices.
+	 * </ol>
+	 * For additional selection (default Shift+MouseButton1):
+	 * <ol>
+	 * <li>Add to the selection, a single Vertex or LabeledIntEdge that is under the mouse pointer.
+	 * <li>If a previously picked Vertex or LabeledIntEdge is under the pointer, it is un-picked.
+	 * <li>If no vertex or LabeledIntEdge is under the pointer, set up to draw a multiple selection rectangle (as above) but do not unpick previously picked
+	 * elements.
+	 * </ol>
+	 */
+	@Override
+	@SuppressWarnings({ "unchecked", "unqualified-field-access" })
+	public void mouseClicked(final MouseEvent e) {
+		// DON'T USE e.getModifiersex()
+		// LOG.severe("e.getModifiers():" + e.getModifiers() + "\tthis.modifiers: " + this.modifiers + "\te.getClickCount(): " + e.getClickCount());
+		if ((e.getModifiers() == modifiers) && (e.getClickCount() == 2)) {
+			// LOG.severe("LabelEditingGraphMousePlugin.mouseClicked.cstnEditor " + this.cstnEditor);
+			final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
+			final GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
+			final String viewerName = vv.getName();
+			if (pickSupport != null) {
+				final Layout<V, E> layout = vv.getGraphLayout();
+				final LabeledIntGraph g = (LabeledIntGraph) layout.getGraph();
+				final Point2D p = e.getPoint(); // p is the screen point for the mouse event
+
+				this.vertex = pickSupport.getVertex(layout, p.getX(), p.getY());
+				if (this.vertex != null) {
+					if (nodeAttributesEditor(this.vertex, viewerName, g)) {
+						this.cstnEditor.resetDerivedGraphStatus();
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
+							}
+						}
+						g.clearCache();
+					}
+					e.consume();
+					vv.repaint();
+					return;
+				}
+
+				// p is the screen point for the mouse event take away the view transform
+				// Point2D ip = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
+				this.edge = pickSupport.getEdge(layout, p.getX(), p.getY());
+				if (this.edge != null) {
+					if (edgeAttributesEditor(this.edge, viewerName, g)) {
+						this.cstnEditor.resetDerivedGraphStatus();
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
+							}
+						}
+						g.clearCache();
+					}
+					e.consume();
+					vv.repaint();
+					return;
+				}
+			}
+			e.consume();
+		}
+	}
+
+	/**
+	 * Create an instance with overrides.
+	 *
+	 * @param selectionModifiers for primary selection
+	 * @param cstnEditor
+	 */
+	// public LabelEditingGraphMousePlugin(final int selectionModifiers, CSTNEditor cstnEditor) {
+	// super(selectionModifiers);
+	// this.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+	// this.cstnEditor = cstnEditor;
+	// }
+
+	/**
 	 * General method to setup a dialog to edit the attributes of a node.
 	 *
 	 * @param node
@@ -519,7 +633,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jl.setLabelFor(name);
 		jp.add(jl);
 		jp.add(name);
-		LabelEditingGraphMousePlugin.setConditionToEnable(name, viewerName, false);
+		setConditionToEnable(name, viewerName, false);
 		if (editorPanel) {
 			jp.add(new JLabel("Syntax: [" + ALabelAlphabet.ALETTER + "?]+"));
 			group.add(name, StringValidators.regexp("[" + ALabelAlphabet.ALETTER + "?]+", "Must be a well format name", false),
@@ -534,7 +648,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jl.setLabelFor(observedProposition);
 		jp.add(jl);
 		jp.add(observedProposition);
-		LabelEditingGraphMousePlugin.setConditionToEnable(observedProposition, viewerName, false);
+		setConditionToEnable(observedProposition, viewerName, false);
 		if (editorPanel) {
 			jp.add(new JLabel("Syntax: " + Literal.PROPOSITION_RANGE + "| "));
 			group.add(observedProposition, StringValidators.regexp(Literal.PROPOSITION_RANGE + "|", "Must be a single char in the range!", false),
@@ -548,7 +662,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		jl.setLabelFor(label);
 		jp.add(jl);
 		jp.add(label);
-		LabelEditingGraphMousePlugin.setConditionToEnable(label, viewerName, false);
+		setConditionToEnable(label, viewerName, false);
 		if (editorPanel) {
 			final JTextField jtf = new JTextField("Syntax: " + Label.LABEL_RE);
 			jp.add(jtf);
@@ -612,118 +726,5 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 			}
 		}
 		return modified;
-	}
-
-	/**
-	 * Simple method to disable the editing of the property jc if forceDisable is true or if the viewerName is not equals to CSTNEditor.editorName.
-	 *
-	 * @param jc
-	 * @param viewerName
-	 * @param forceDisable
-	 */
-	private static void setConditionToEnable(final JComponent jc, final String viewerName, final boolean forceDisable) {
-		if (forceDisable) {
-			jc.setEnabled(false);
-			return;
-		}
-		jc.setEnabled(viewerName.equals(CSTNEditor.editorName));
-	}
-
-	/**
-	 * logger della classe
-	 */
-	static Logger LOG = Logger.getLogger(LabelEditingGraphMousePlugin.class.getName());
-
-	/**
-	 * The editor in which this plugin works.
-	 */
-	CSTNEditor cstnEditor;
-
-	/**
-	 * create an instance with default settings
-	 * 
-	 * @param cstnEditor
-	 */
-	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor) {
-		super(InputEvent.BUTTON1_MASK);
-		this.cstnEditor = cstnEditor;
-	}
-
-	/**
-	 * Create an instance with overrides.
-	 *
-	 * @param selectionModifiers for primary selection
-	 * @param cstnEditor
-	 */
-	public LabelEditingGraphMousePlugin(final int selectionModifiers, CSTNEditor cstnEditor) {
-		super(selectionModifiers);
-		this.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-		this.cstnEditor = cstnEditor;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 * For primary modifiers (default, MouseButton1):
-	 * <ol>
-	 * <li>Pick a single Vertex or LabeledIntEdge that is under the mouse pointer.<br>
-	 * <li>If no Vertex or LabeledIntEdge is under the pointer, unselect all picked Vertices and Edges, and set up to draw a rectangle for multiple selection of
-	 * contained Vertices.
-	 * </ol>
-	 * For additional selection (default Shift+MouseButton1):
-	 * <ol>
-	 * <li>Add to the selection, a single Vertex or LabeledIntEdge that is under the mouse pointer.
-	 * <li>If a previously picked Vertex or LabeledIntEdge is under the pointer, it is un-picked.
-	 * <li>If no vertex or LabeledIntEdge is under the pointer, set up to draw a multiple selection rectangle (as above) but do not unpick previously picked
-	 * elements.
-	 * </ol>
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public void mouseClicked(final MouseEvent e) {
-		// DON'T USE e.getModifiersex()
-		LOG.finest("e.getModifiers():" + e.getModifiers() + "\tthis.modifiers: " + this.modifiers + "\te.getClickCount(): " + e.getClickCount());
-		if ((e.getModifiers() == this.modifiers) && (e.getClickCount() == 2)) {
-			final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
-			final GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
-			final String viewerName = vv.getName();
-			if (pickSupport != null) {
-				final Layout<V, E> layout = vv.getGraphLayout();
-				final LabeledIntGraph g = (LabeledIntGraph) layout.getGraph();
-				final Point2D p = e.getPoint(); // p is the screen point for the mouse event
-
-				this.vertex = pickSupport.getVertex(layout, p.getX(), p.getY());
-				if (this.vertex != null) {
-					if (nodeAttributesEditor(this.vertex, viewerName, g)) {
-						this.cstnEditor.resetDerivedGraphStatus();
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINER)) {
-								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
-							}
-						}
-						g.clearCache();
-					}
-					vv.repaint();
-					return;
-				}
-
-				// p is the screen point for the mouse event take away the view transform
-				// Point2D ip = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(Layer.VIEW, p);
-				this.edge = pickSupport.getEdge(layout, p.getX(), p.getY());
-				if (this.edge != null) {
-					if (edgeAttributesEditor(this.edge, viewerName, g)) {
-						this.cstnEditor.resetDerivedGraphStatus();
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINER)) {
-								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
-							}
-						}
-						g.clearCache();
-					}
-					vv.repaint();
-					return;
-				}
-			}
-			e.consume();
-		}
 	}
 }
