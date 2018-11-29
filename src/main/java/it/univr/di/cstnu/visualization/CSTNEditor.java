@@ -1249,7 +1249,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// RIGHT contentPane.add(new GraphZoomScrollPane(this.vv2), BorderLayout.EAST);
 		// USIC CENTER is better even if it require a new layout
 		JPanel centralPanel = new JPanel(new GridLayout(1, 2));
-		centralPanel.add(new GraphZoomScrollPane(this.vvEditor));// GraphZoomScroll is necessary to show border!
+		centralPanel.add(new GraphZoomScrollPane(this.vvEditor));// GraphZoomScrollPane is necessary to show border!
 		centralPanel.add(new GraphZoomScrollPane(this.vvViewer));
 		contentPane.add(centralPanel, BorderLayout.CENTER);
 
@@ -1269,6 +1269,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		JButton buttonCheck;
 
 		// FIRST ROW OF COMMANDS
+		// mode box for the editor
+		@SuppressWarnings("unchecked")
+		JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vvEditor.getGraphMouse()).getModeComboBox();
+		rowForAppButtons.add(modeBox);
+
 		this.layoutToggleButton = new JToggleButton("Layout input graph");
 		this.layoutToggleButton.addActionListener(new LayoutListener());
 		rowForAppButtons.add(this.layoutToggleButton);
@@ -1277,9 +1282,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new BigViewerListener(true));
 		rowForAppButtons.add(buttonCheck);
 
-		@SuppressWarnings("unchecked")
-		final JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vvEditor.getGraphMouse()).getModeComboBox();
-		rowForAppButtons.add(modeBox);
 		// AnnotationControls<LabeledNode,LabeledIntEdge> annotationControls =
 		// new AnnotationControls<LabeledNode,LabeledIntEdge>(gm.getAnnotatingPlugin());
 		// controls.add(annotationControls.getAnnotationsToolBar());
@@ -1306,6 +1308,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("Help");
 		buttonCheck.addActionListener(new HelpListener());
 		rowForAppButtons.add(buttonCheck);
+
+		// mode box for the distance viewer
+		@SuppressWarnings("unchecked")
+		JComboBox<Mode> modeBoxViewer = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vvViewer.getGraphMouse()).getModeComboBox();
+		rowForAppButtons.add(modeBoxViewer);
 
 		// SECOND ROW OF COMMANDS
 
@@ -1467,6 +1474,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * @param firstViewer
 	 */
 	void buildRenderContext(VisualizationViewer<LabeledNode, LabeledIntEdge> viewer, boolean firstViewer) {
+		LOG.severe("buildRenderContext: " + viewer + ", firstViewer:" + firstViewer);
 		RenderContext<LabeledNode, LabeledIntEdge> renderCon = viewer.getRenderContext();
 
 		// vertex and edge renders
@@ -1478,9 +1486,9 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// MOUSE setting
 		// Create a graph mouse and add it to the visualization component
 		Supplier<LabeledIntEdge> edgeFactory = new LabeledIntEdgeSupplier<>(CSTNEditor.labeledIntValueMap);
-		final EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(),
-				edgeFactory,
-				CSTNEditor.this);
+		EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(), edgeFactory,
+				CSTNEditor.this, firstViewer);
+		LOG.severe("buildRenderContext.graphMouse " + graphMouse);
 		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
 		viewer.setGraphMouse(graphMouse);
 		viewer.addKeyListener(graphMouse.getModeKeyListener());
