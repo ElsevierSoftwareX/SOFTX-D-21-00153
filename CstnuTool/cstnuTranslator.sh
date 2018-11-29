@@ -15,8 +15,8 @@ TIGAPATH="$DIR/uppaal-tiga-0.18/bin-Linux/verifytga"
 #Check Java version
 # Changed code to remove the 'head -1' as per the suggestion in comment.
 JAVA_VERSION=`java -version 2>&1 | head -n 1 | cut -d\" -f 2`
-JAVA_WANTED='1.7'
-if [[ "$JAVA_VERSION" < "$JAVA_WANTED" ]]
+JAVA_WANTED='1.8'
+if [[ $JAVA_VERSION != $JAVA_WANTED* ]]
 then
 	echo "To run the current tool, it is necessary to consider Java $JAVA_WANTED at least"
 	echo "Your current Java version is $JAVA_VERSION"

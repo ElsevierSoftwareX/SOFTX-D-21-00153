@@ -15,7 +15,7 @@ CSTN="$DIR/$( cd $DIR  && echo `ls CSTNU-*.jar`)"
 # Changed code to remove the 'head -1' as per the suggestion in comment.
 JAVA_VERSION=`java -version 2>&1 | head -n 1 | cut -d\" -f 2`
 JAVA_WANTED='1.8'
-if [[ "$JAVA_VERSION" != "$JAVA_WANTED" ]]
+if [[ $JAVA_VERSION != $JAVA_WANTED* ]]
 then
 	echo "To run the current tool, it is necessary to have Java $JAVA_WANTED".
 	echo "Your current Java version is $JAVA_VERSION".
