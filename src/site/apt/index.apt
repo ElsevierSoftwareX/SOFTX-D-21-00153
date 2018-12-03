@@ -80,12 +80,11 @@ Bibliography
   [[13]] L. Hunsberger and R. Posenato, ‘Simpler and Faster Algorithm for Checking the Dynamic Consistency of Conditional Simple Temporal Networks’, 
   	in Proceedings of the Twenty-Seventh International Joint Conference on Artificial Intelligence, 2018, pp. 1324–1330.
   		Available online: {{http://dx.doi.org/10.24963/ijcai.2018/184}}
-  		
-  [[14]] L. Hunsberger, R. Posenato, ‘Reducing ε-DC Checking for Conditional Simple Temporal Networks to DC Checking’, 
-    in 25th International Symposium on Temporal Representation and Reasoning (TIME 2018), 2018, vol. 120, no. 15, pp. 1–15.
-    Available online: {{http://dx.doi.org/10.4230/LIPIcs.TIME.2018.15}}
-    
-  [[15]] L. Hunsberger, R. Posenato, ‘Incorporating Decision Nodes into Conditional Simple Temporal Networks’, 
+  		    
+  [[14]] L. Hunsberger, R. Posenato, ‘Sound-and-Complete Algorithms for Checking the Dynamic Controllability of Conditional Simple Temporal Networks with Uncertainty’, 
     in 25th International Symposium on Temporal Representation and Reasoning (TIME 2018), 2018, vol. 120, no. 14, p. 1--17.   
         Available online: {{http://dx.doi.org/10.4230/LIPIcs.TIME.2018.14}}
-	
+
+  [[15]] L. Hunsberger, R. Posenato, ‘Reducing ε-DC Checking for Conditional Simple Temporal Networks to DC Checking’, 
+    in 25th International Symposium on Temporal Representation and Reasoning (TIME 2018), 2018, vol. 120, no. 15, pp. 1–15.
+    Available online: {{http://dx.doi.org/10.4230/LIPIcs.TIME.2018.15}}
