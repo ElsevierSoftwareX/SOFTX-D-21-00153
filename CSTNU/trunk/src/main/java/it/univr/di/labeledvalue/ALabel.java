@@ -495,7 +495,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		// return false;
 		// }
 		// return true;
-		// 1st xor shows different bits. Masking them with the complement of this, shows the bits 1 in label.bit0 that are not presente in this.bit0.
+		// 1st xor shows different bits. Masking them with the complement of this, shows the bits 1 in label.bit0 that are not present in this.bit0.
 		return (((this.bit0 ^ label.bit0) & (~this.bit0)) == 0);
 	}
 
