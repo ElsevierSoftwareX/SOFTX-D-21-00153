@@ -297,7 +297,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 			if (upperCaseValueValueMap.size() > 0) {
 				// FIXME IT IS VERY EXPENSIVE!
 				// int maxValueWOUpperCase = this.labeledValue.getMaxValue();
-				if (this.labeledValue.size() >= nBeforeAdd && (this.labeledValue.get(l) == i)) {
+				// if (this.labeledValue.size() >= nBeforeAdd && (this.labeledValue.get(l) == i)) {
 					// the added element did not simplify the set, we compare UC values only with it.
 					for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
 						LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
@@ -309,78 +309,33 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 							// this.removeUpperCaseValue(UCLabel, UCALabel);
 							// continue;
 							// }
-							// int valueWOUpperCase = this.labeledValue.getMinValueSubsumedBy(UCLabel);
-							// if (valueWOUpperCase != Constants.INT_NULL && UCaseValue >= valueWOUpperCase) {
-							// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
-							// this.removeUpperCaseValue(UCLabel, UCALabel);
-							// }
 							if (i <= UCaseValue && UCLabel.subsumes(l)) {
 								this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
 								this.removeUpperCaseValue(UCLabel, UCALabel);
 							}
 						}
 					}
-				} else {
-					// this.labeledvalue set has been simplified. We consider all values of this.labeledvalue
-					for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
-						LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
-						for (Label UCLabel : labeledUCValues.keySet()) {
-							int UCaseValue = labeledUCValues.get(UCLabel);
-							int min = this.labeledValue.getMinValueSubsumedBy(UCLabel);
-							if (min == Constants.INT_NULL)
-								continue;
-							if (min <= UCaseValue) {
-								this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
-								this.removeUpperCaseValue(UCLabel, UCALabel);
-							}
-						}
-					}
-				}
+				// } else {
+				// // this.labeledvalue set has been simplified. We consider all values of this.labeledvalue
+				// 2018-12-17 Too much expensive, we check only the new inserted value.
+				// for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
+				// LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
+				// for (Label UCLabel : labeledUCValues.keySet()) {
+				// int UCaseValue = labeledUCValues.get(UCLabel);
+				// int min = this.labeledValue.getMinValueSubsumedBy(UCLabel);
+				// if (min == Constants.INT_NULL)
+				// continue;
+				// if (min <= UCaseValue) {
+				// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+				// this.removeUpperCaseValue(UCLabel, UCALabel);
+				// }
+				// }
+				// }
+				// }
 			}
 		}
 		return added;
 	}
-
-	// /**
-	// * <b>This method is defined for making easier the management of nodeSet for some kinds of internal labeled value maps.</b>
-	// * Merges the labeled value i to the set of labeled values of this edge.
-	// * [2017-04-07] Posenato<br>
-	// * NodeSet are not more necessary thanks to EqLP+ rule!<br>
-	// *
-	// * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	// * @param i an integer.
-	// * @param s the node set to add.
-	// * @return true if the operation was successful, false otherwise.
-	// */
-	// @Override
-	// public boolean mergeLabeledValue(final Label l, final int i, ObjectSet<String> s) {
-	// if ((l == null) || (i == Constants.INT_NULL)) || this.labeledValueMapFactory.getReturnedObjectClass() != LabeledIntNodeSetTreeMap.class)
-	// return false;
-	// final int oldValue = this.removedLabeledValue.getInt(l);
-	// if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
-	// // The new value is greater or equal the old one, the new value can be ignored.
-	// // the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
-	// if (LOG.isLoggable(Level.FINEST))
-	// LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
-	// + oldValue + ") is in the removed list");
-	// return false;
-	// }
-	// boolean exit = ((LabeledIntNodeSetTreeMap) this.labeledValue).put(l, i, s);
-	// return exit;
-	// }
-
-	// /**
-	// * This method is defined for making easier the management of nodeSet for some kinds of internal labeled value maps.
-	// *
-	// * [2017-04-07] Posenato<br>
-	// * NodeSet are not more necessary thanks to EqLP+ rule!<br>
-	// *
-	// * param label label
-	// * return the node set associated to label it it exists, null otherwise.
-	// */
-	// // public SortedSet<String> getNodeSet(final Label label) {
-	// // return ((LabeledIntNodeSetTreeMap) this.labeledValue).getNodeSet(label);
-	// // }
 
 	@Override
 	public void mergeLabeledValue(LabeledIntMap map) {
@@ -450,7 +405,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	}
 
 	/**
-	 * {@inheritDoc} Return a string representation of labeled values.
+	 * {@inheritDoc} Return a string representation of labeled values.h
 	 */
 	@Override
 	public String toString() {
