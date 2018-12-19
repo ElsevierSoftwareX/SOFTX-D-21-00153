@@ -129,8 +129,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	/**
 	 * @param newLabel
 	 * @param newValue
-	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
-	 *         If returns false, then the adding of the value to the map would modify the map.
+	 * @return true if the current map can represent the value. In positive case, an addition of the element does not change the map.
+	 *         If returns false, then an addition of the value to the map would modify the map.
 	 */
 	@Override
 	public boolean alreadyRepresents(Label newLabel, int newValue) {
