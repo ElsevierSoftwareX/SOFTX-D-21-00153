@@ -277,7 +277,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		final int oldValue = this.removedLabeledValue.getInt(l);
 		if ((oldValue != Constants.INT_NULL) && (i >= oldValue)) {
 			// The new value is greater or equal the old one, the new value can be ignored.
-			// the labeled value (l,i) was already removed by label modification rule. So, it will be not stored.
+			// the labeled value (l,i) was already removed in the past, it will be not stored.
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINEST))
 					LOG.log(Level.FINEST, "The labeled value (" + l + ", " + i + ") will be not stored because the labeled value (" + l + ", "
@@ -295,7 +295,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 			// 2017-10-31 I verified that it is necessary to improve the performance!
 			LabeledALabelIntTreeMap upperCaseValueValueMap = this.getUpperCaseValueMap();
 			if (upperCaseValueValueMap.size() > 0) {
-				// FIXME IT IS VERY EXPENSIVE!
+				// TODO IT IS VERY EXPENSIVE!
 				// int maxValueWOUpperCase = this.labeledValue.getMaxValue();
 				// if (this.labeledValue.size() >= nBeforeAdd && (this.labeledValue.get(l) == i)) {
 					// the added element did not simplify the set, we compare UC values only with it.
