@@ -553,17 +553,18 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 			return false;
 		}
 		this.putUpperCaseValueToRemovedList(l, nodeName, i);// once it has been added, it is useless to add it again!
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
 		// Check if a standard labeled value is more restrictive of the one to put.
-		final int minNormalValueSubSumedByL = this.getLabeledValueMap().getMinValueSubsumedBy(l);
-		if ((minNormalValueSubSumedByL != Constants.INT_NULL) && (minNormalValueSubSumedByL <= i)) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i
-							+ ") has not been stored because the value is greater than the labeled minimal value subsume by " + l + ".");
-				}
-			}
-			return false;
-		}
+		// final int minNormalValueSubSumedByL = this.getLabeledValueMap().getMinValueSubsumedBy(l);
+		// if ((minNormalValueSubSumedByL != Constants.INT_NULL) && (minNormalValueSubSumedByL <= i)) {
+		// if (Debug.ON) {
+		// if (LOG.isLoggable(Level.FINEST)) {
+		// LOG.finest("The labeled value (" + l + ", " + nodeName + ", " + i
+		// + ") has not been stored because the value is greater than the labeled minimal value subsume by " + l + ".");
+		// }
+		// }
+		// return false;
+		// }
 		return this.upperCaseValue.mergeTriple(l, nodeName, i, false);
 	}
 
