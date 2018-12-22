@@ -18,7 +18,7 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  * A label without letters is called <em>empty label</em> and it is represented graphically as
  * {@link it.univr.di.labeledvalue.Constants#EMPTY_UPPER_CASE_LABEL}.<br>
  * <p>
- * Design assumptions
+ * <h2>Design assumptions</h2>
  * Since in CSTNU project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
  * to represent a A-label is to limit the possible A-letters to 64 distinct strings and to use one int for representing the state of A-letters composing a
  * A-label: present/absent.
@@ -256,7 +256,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	private static final Logger LOG = Logger.getLogger(ALabel.class.getName());
 
 	/**
-	 * In order to have a correct copy of a alabel.
+	 * In order to have a correct copy of a a-label.
 	 * 
 	 * @param label
 	 * @return a distinct equal copy of label
