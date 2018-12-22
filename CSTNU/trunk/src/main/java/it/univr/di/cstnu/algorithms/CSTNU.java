@@ -1663,11 +1663,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					labelModificationqR0(A, AB);
 				}
 				// zLLR is put here because it works like R0 and R3
-				// FIXME zLabeledLetterRemovalRule(A, AB);
+				zLabeledLetterRemovalRule(A, AB);
 			} else {
 				// labeledLetterRemovalRule clean possible redundant a-letters.
-			// FIXME
-			// labeledLetterRemovalRule(A, B, AB);
+				labeledLetterRemovalRule(A, B, AB);
 			}
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
 				return getCheckStatus();
@@ -1702,8 +1701,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					edgeCopy = null;
 				}
 
-				// FIXME
-				// this.labeledLetterRemovalRule(B, C, BC);
+				this.labeledLetterRemovalRule(B, C, BC);
 
 				this.labeledPropagationqLP(A, B, C, AB, BC, AC);
 
@@ -1769,8 +1767,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					edgeCopy = null;
 				}
 
-				// FIXME
-				// this.labeledLetterRemovalRule(C, A, CA);
+				this.labeledLetterRemovalRule(C, A, CA);
 
 				labeledPropagationqLP(C, A, B, CA, AB, CB);
 
@@ -1882,7 +1879,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			}
 
 			// LLR is put here because it works like R0 and R3
-			// FIXME zLabeledLetterRemovalRule(B, BZ);
+			zLabeledLetterRemovalRule(B, BZ);
 
 			if (!BZ.equalsAllLabeledValues(edgeCopy)) {
 				newEdgesToCheck.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
