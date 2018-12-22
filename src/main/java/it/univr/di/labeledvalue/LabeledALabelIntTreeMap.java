@@ -458,37 +458,38 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			}
 		}
 
-		int mapALabelSize;
-		LabeledIntTreeMap map1 = this.map.get(newAlabel);
-		if (map1 == null) {
-			map1 = new LabeledIntTreeMap();
-			this.map.put(ALabel.clone(newAlabel), map1);
-			mapALabelSize = 0;
-		} else {
-			mapALabelSize = map1.size();
+		// int mapALabelSize;
+		LabeledIntTreeMap newAlabelMap = this.map.get(newAlabel);
+		if (newAlabelMap == null) {
+			newAlabelMap = new LabeledIntTreeMap();
+			this.map.put(ALabel.clone(newAlabel), newAlabelMap);
+			// mapALabelSize = 0;
+			// } else {
+			// mapALabelSize = map1.size();
 		}
-		boolean added = ((force) ? map1.putForcibly(newLabel, newValue) != Constants.INT_NULL : map1.put(newLabel, newValue));
+		boolean added = ((force) ? newAlabelMap.putForcibly(newLabel, newValue) != Constants.INT_NULL : newAlabelMap.put(newLabel, newValue));
 
-		if (added && mapALabelSize == map1.size()) {
-			// the insertion determined a simplification of the map, we re-check all values.
-			for (ALabel otherALabel : this.keySet()) {
-				LabeledIntTreeMap labeledValues = this.get(otherALabel);
-				if (labeledValues == map1)
-					continue;
-				for (Object2IntMap.Entry<Label> entry : labeledValues.entrySet()) {
-					Label otherLabel = entry.getKey();
-					int otherValue = entry.getIntValue();
-					// in case that label is (ab,CP,-3) and it is already present (a,C,-3), it is possible to avoid the check!
-					for (Object2IntMap.Entry<Label> entry1 : map1.entrySet()) {
-						Label label1 = entry1.getKey();
-						int value1 = entry1.getIntValue();
-						if (otherALabel.contains(newAlabel) && otherLabel.subsumes(label1) && otherValue >= value1) {
-							this.remove(otherLabel, otherALabel);
-						}
-					}
-				}
-			}
-		}
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		// if (added && mapALabelSize == map1.size()) {
+		// // the insertion determined a simplification of the map, we re-check all values.
+		// for (ALabel otherALabel : this.keySet()) {
+		// LabeledIntTreeMap labeledValues = this.get(otherALabel);
+		// if (labeledValues == map1)
+		// continue;
+		// for (Object2IntMap.Entry<Label> entry : labeledValues.entrySet()) {
+		// Label otherLabel = entry.getKey();
+		// int otherValue = entry.getIntValue();
+		// // in case that label is (ab,CP,-3) and it is already present (a,C,-3), it is possible to avoid the check!
+		// for (Object2IntMap.Entry<Label> entry1 : map1.entrySet()) {
+		// Label label1 = entry1.getKey();
+		// int value1 = entry1.getIntValue();
+		// if (otherALabel.contains(newAlabel) && otherLabel.subsumes(label1) && otherValue >= value1) {
+		// this.remove(otherLabel, otherALabel);
+		// }
+		// }
+		// }
+		// }
+		// }
 		return added;
 	}
 
