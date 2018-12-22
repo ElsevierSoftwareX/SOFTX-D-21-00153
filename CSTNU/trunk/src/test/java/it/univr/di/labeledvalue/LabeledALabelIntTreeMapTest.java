@@ -200,18 +200,23 @@ public class LabeledALabelIntTreeMapTest {
 	public final void mergeConSemplificazione6() {
 		ALabel n8 = new ALabel("N8", this.alpha);
 		ALabel n9 = new ALabel("N9", this.alpha);
-		ALabel n89 = n8.conjunction(n9);
+		ALabel n8n9 = n8.conjunction(n9);
 
 		this.map.clear();
 		this.map.mergeTriple("¬a", n9, 14);
 		this.map.mergeTriple("¬b", n8, 13);
-		this.map.mergeTriple(Label.emptyLabel, n89, 14);
-		this.map.mergeTriple("¬a", n9, 13);
-		this.map.mergeTriple("a", n9, 13);
+		this.map.mergeTriple(Label.emptyLabel, n8n9, 12);
+		this.map.mergeTriple("¬a", n9, 12);
+		this.map.mergeTriple("a", n9, 12);
 
 		this.result.clear();
-		this.result.mergeTriple(Label.emptyLabel, n9, 13);
 		this.result.mergeTriple("¬b", n8, 13);
+		this.result.mergeTriple(Label.emptyLabel, n9, 12);
+		this.result.putTriple(Label.emptyLabel, n8n9, 12);
+		// 2018-12-17 I removed the simplification of a-labels when a new value simplifies p-labels.
+		// so, the following is still present
+		// this.result.mergeTriple("¬a", n9, 13);
+		// this.result.mergeTriple("a", n9, 13);
 
 		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
 	}
