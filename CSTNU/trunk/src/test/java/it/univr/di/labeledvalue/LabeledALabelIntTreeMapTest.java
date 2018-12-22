@@ -211,12 +211,13 @@ public class LabeledALabelIntTreeMapTest {
 
 		this.result.clear();
 		this.result.mergeTriple("¬b", n8, 13);
-		this.result.mergeTriple(Label.emptyLabel, n9, 12);
 		this.result.putTriple(Label.emptyLabel, n8n9, 12);
-		// 2018-12-17 I removed the simplification of a-labels when a new value simplifies p-labels.
+		// this.result.mergeTriple(Label.emptyLabel, n9, 12);
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		// I removed the simplification of a-labels when a new value simplifies p-labels.
 		// so, the following is still present
-		// this.result.mergeTriple("¬a", n9, 13);
-		// this.result.mergeTriple("a", n9, 13);
+		this.result.mergeTriple("¬a", n9, 12);
+		this.result.mergeTriple("a", n9, 12);
 
 		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
 	}

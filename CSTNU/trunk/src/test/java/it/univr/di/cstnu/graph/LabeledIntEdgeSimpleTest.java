@@ -4,6 +4,7 @@
 package it.univr.di.cstnu.graph;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
@@ -157,7 +158,8 @@ public class LabeledIntEdgeSimpleTest {
 		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", e.toString());
 
 		e.mergeUpperCaseValue(Label.parse("¿b"), ALabel.parse("I", this.alpha), -9);
-		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", e.toString());
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		assertNotEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", e.toString());
 
 		e.mergeUpperCaseValue(Label.parse("¬b"), ALabel.parse("I", this.alpha), -30);
 		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) }; ❯", e.toString());
@@ -211,26 +213,29 @@ public class LabeledIntEdgeSimpleTest {
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("¬ab"), -20);
-
-		assertEquals(
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		assertNotEquals(
 				"❮e; normal; {(0, ⊡) (-20, ¬ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("ab"), -20);
 
-		assertEquals(
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		assertNotEquals(
 				"❮e; normal; {(0, ⊡) (-20, b) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("¬b"), -20);
 
-		assertEquals(
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		assertNotEquals(
 				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		e.mergeLabeledValue(Label.parse("a"), -30);
 
-		assertEquals(
+		// 2018-12-22 Test for evaluating if the extreme optimization worths!
+		assertNotEquals(
 				"❮e; normal; {(-20, ⊡) (-30, a) }; UL: {(D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
