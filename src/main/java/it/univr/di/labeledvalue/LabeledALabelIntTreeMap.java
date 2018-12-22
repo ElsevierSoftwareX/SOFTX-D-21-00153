@@ -440,18 +440,17 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			return false;
 
 		/**
-		 * The input alabeled value must be insert!
+		 * The input a-labeled value must be insert!
 		 * 2017-10-31
-		 * Algorithm removes all alabeled values that will become redundant aftee the insertion of the input alabeled value.
+		 * Algorithm removes all a-labeled values that will become redundant after the insertion of the input a-labeled value.
 		 * I verified that following optimization reduces global computation time.
 		 */
 		final int newAlabelSize = newAlabel.size();
 		for (ALabel otherALabel : this.keySet()) {
-			if (otherALabel.size() > newAlabelSize) { // Check only alabels that contain newALabel strictly.
+			if (otherALabel.size() > newAlabelSize) { // Check only a-labels that contain newALabel strictly.
 				for (Object2IntMap.Entry<Label> entry : this.get(otherALabel).entrySet()) {
 					Label otherLabel = entry.getKey();
 					int otherValue = entry.getIntValue();
-					// For example, in case that otherValue is (ab,CP,-3) and input label is (a,C,-3), it is possible to avoid the check!
 					if (otherALabel.contains(newAlabel) && otherLabel.subsumes(newLabel) && otherValue >= newValue) {
 						this.remove(otherLabel, otherALabel);
 					}
@@ -459,40 +458,37 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			}
 		}
 
-		// int mapALabelSize;
+		int mapALabelSize;
 		LabeledIntTreeMap map1 = this.map.get(newAlabel);
 		if (map1 == null) {
 			map1 = new LabeledIntTreeMap();
 			this.map.put(ALabel.clone(newAlabel), map1);
-			// mapALabelSize = 0;
-			// } else {
-			// mapALabelSize = map1.size();
+			mapALabelSize = 0;
+		} else {
+			mapALabelSize = map1.size();
 		}
 		boolean added = ((force) ? map1.putForcibly(newLabel, newValue) != Constants.INT_NULL : map1.put(newLabel, newValue));
 
-		/*
-		 * FIXME 2018-12-17 I try to avoid to re-check all inserted values...
-		 */
-		// if (added && mapALabelSize == map1.size()) {
-		// // the insertion determined a simplification of the map, we re-check all values.
-		// for (ALabel otherALabel : this.keySet()) {
-		// LabeledIntTreeMap labeledValues = this.get(otherALabel);
-		// if (labeledValues == map1)
-		// continue;
-		// for (Object2IntMap.Entry<Label> entry : labeledValues.entrySet()) {
-		// Label otherLabel = entry.getKey();
-		// int otherValue = entry.getIntValue();
-		// // in case that label is (ab,CP,-3) and it is already present (a,C,-3), it is possible to avoid the check!
-		// for (Object2IntMap.Entry<Label> entry1 : map1.entrySet()) {
-		// Label label1 = entry1.getKey();
-		// int value1 = entry1.getIntValue();
-		// if (otherALabel.contains(newAlabel) && otherLabel.subsumes(label1) && otherValue >= value1) {
-		// this.remove(otherLabel, otherALabel);
-		// }
-		// }
-		// }
-		// }
-		// }
+		if (added && mapALabelSize == map1.size()) {
+			// the insertion determined a simplification of the map, we re-check all values.
+			for (ALabel otherALabel : this.keySet()) {
+				LabeledIntTreeMap labeledValues = this.get(otherALabel);
+				if (labeledValues == map1)
+					continue;
+				for (Object2IntMap.Entry<Label> entry : labeledValues.entrySet()) {
+					Label otherLabel = entry.getKey();
+					int otherValue = entry.getIntValue();
+					// in case that label is (ab,CP,-3) and it is already present (a,C,-3), it is possible to avoid the check!
+					for (Object2IntMap.Entry<Label> entry1 : map1.entrySet()) {
+						Label label1 = entry1.getKey();
+						int value1 = entry1.getIntValue();
+						if (otherALabel.contains(newAlabel) && otherLabel.subsumes(label1) && otherValue >= value1) {
+							this.remove(otherLabel, otherALabel);
+						}
+					}
+				}
+			}
+		}
 		return added;
 	}
 
