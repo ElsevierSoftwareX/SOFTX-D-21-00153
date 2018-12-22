@@ -183,7 +183,7 @@ public class Checker {
 	/**
 	 * CSV separator
 	 */
-	static final String CSVSep = ";	";
+	static final String CSVSep = ";\t";
 
 	/**
 	 * Global header
@@ -194,7 +194,10 @@ public class Checker {
 			+ CSVSep + "#contingent"
 			+ CSVSep + "#propositions"
 			+ CSVSep + "averageTime[s]"
-			+ CSVSep + "std.Dev.[s]\n";
+			+ CSVSep + "std.Dev.[s]"
+			+ CSVSep + "averageRuleExecuted"
+			+ CSVSep + "std.Dev."
+			+ CSVSep + "\n";
 
 	/**
 	 * 
@@ -204,7 +207,10 @@ public class Checker {
 			+ CSVSep + "%d"
 			+ CSVSep + "%d"
 			+ CSVSep + "%E"
-			+ CSVSep + "%E\n";
+			+ CSVSep + "%E"
+			+ CSVSep + "%E"
+			+ CSVSep + "%E"
+			+ CSVSep + "\n";
 
 	/**
 	 * Output file header
@@ -218,18 +224,21 @@ public class Checker {
 			+ CSVSep + "#maxEdgeValue"
 			+ CSVSep + "averageTime[s]"
 			+ CSVSep + "std.Dev.[s]"
+			+ CSVSep + "#ruleExecuted"
 			+ CSVSep + "DC"
 			+ CSVSep + "#R0"
 			+ CSVSep + "#R3"
-			+ CSVSep + "#LNC";
+			+ CSVSep + "#LNC"
+			+ CSVSep;
 	/**
 	 * 
 	 */
 	static final String OUTPUT_HEADER_CSTNU = OUTPUT_HEADER
-			+ CSVSep + "#LUC+FLUC+LCUC"// upperCaseRuleCalls
+			+ "#LUC+FLUC+LCUC"// upperCaseRuleCalls
 			+ CSVSep + "#LLC"// lowerCaseRuleCalls
 			+ CSVSep + "#LCC"// crossCaseRuleCalls
-			+ CSVSep + "#LLR";// letterRemovalRuleCalls
+			+ CSVSep + "#LLR"// letterRemovalRuleCalls
+			+ CSVSep;
 
 	/**
 	 * 
@@ -240,31 +249,35 @@ public class Checker {
 			+ CSVSep + "%d"
 			+ CSVSep + "%d"
 			+ CSVSep + "%d"
-			+ CSVSep + "%d";
+			+ CSVSep + "%d"
+			+ CSVSep;
 
 	/**
 	 * 
 	 */
-	static final String OUTPUT_ROW_TIME = CSVSep
-			+ "%E"// average time
+	static final String OUTPUT_ROW_TIME = "%E"// average time
 			+ CSVSep + "%E"// std dev
-			+ CSVSep + "%s";// true of false for DC
+			+ CSVSep + "%d"// #ruleExecuted
+			+ CSVSep + "%s"// true of false for DC
+			+ CSVSep;
 
 	/**
 	 * 
 	 */
 	static final String OUTPUT_ROW_TIME_STATS = OUTPUT_ROW_TIME
-			+ CSVSep + "%d"// r0
+			+ "%d"// r0
 			+ CSVSep + "%d"// r3
-			+ CSVSep + "%d";// lp;
+			+ CSVSep + "%d"// lp;
+			+ CSVSep;
 
 	/**
 	 * 
 	 */
-	static final String OUTPUT_ROW_TIME_STATS_CSTNU = CSVSep + "%d"// upperCaseRuleCalls
+	static final String OUTPUT_ROW_TIME_STATS_CSTNU = "%d"// upperCaseRuleCalls
 			+ CSVSep + "%d"// lowerCaseRuleCalls
 			+ CSVSep + "%d"// crossCaseRuleCalls
-			+ CSVSep + "%d";// letterRemovalRuleCalls
+			+ CSVSep + "%d"// letterRemovalRuleCalls
+			+ CSVSep;
 
 	/**
 	 * Class for representing edge labeled values.
@@ -294,7 +307,8 @@ public class Checker {
 	// static final String VERSIONandDATE = "2.2, November, 15 2017";// Added the possibility to test CSTNEpsilonwoNodeLabels and CSTN2CSTN0
 	// static final String VERSIONandDATE = "2.23, November, 30 2017";// Improved the print of statistics file: std dev is print only when # checks > 1
 	// static final String VERSIONandDATE = "2.24, December, 04 2017";// Added CSTNEpsilon3R
-	static final String VERSIONandDATE = "2.25, January, 17 2018";// Improved print of statistics.
+	// static final String VERSIONandDATE = "2.25, January, 17 2018";// Improved print of statistics.
+	static final String VERSIONandDATE = "2.26, December, 18 2018";// Improved print of statistics adding the total number of applied rules
 
 	/**
 	 * @param tester
@@ -361,11 +375,13 @@ public class Checker {
 	 * @param file
 	 * @param runState
 	 * @param globalExecutionTimeStatisticsMap
+	 * @param globalRuleExecutionStatisticsMap
 	 * @param edgeFactory
 	 * @return true if required task ends successfully, false otherwise.
 	 */
 	static private boolean worker(Checker tester, File file, RunMeter runState,
 			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalExecutionTimeStatisticsMap,
+			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalRuleExecutionStatisticsMap,
 			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
@@ -479,9 +495,14 @@ public class Checker {
 		GlobalStatisticKey globalStatisticsKey = new GlobalStatisticKey(graphToCheck.getVertexCount(), graphToCheck.getObserverCount(),
 				graphToCheck.getContingentCount());
 		SummaryStatistics globalExecutionTimeStatistics = globalExecutionTimeStatisticsMap.get(globalStatisticsKey);
+		SummaryStatistics globalRuleExecutionStatistics = globalRuleExecutionStatisticsMap.get(globalStatisticsKey);
 		if (globalExecutionTimeStatistics == null) {
 			globalExecutionTimeStatistics = new SummaryStatistics();
 			globalExecutionTimeStatisticsMap.put(globalStatisticsKey, globalExecutionTimeStatistics);
+		}
+		if (globalRuleExecutionStatistics == null) {
+			globalRuleExecutionStatistics = new SummaryStatistics();
+			globalRuleExecutionStatisticsMap.put(globalStatisticsKey, globalRuleExecutionStatistics);
 		}
 
 		String msg = getNow() + ": Determining DC check execution time of " + file.getName()
@@ -515,9 +536,19 @@ public class Checker {
 		LOG.info(file.getName() + " average required time [s]" + localAvg);
 		LOG.info(file.getName() + " std. deviation [s]" + localStdDev);
 
+		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
+		if (tester.cstnType == CstnType.cstnu)
+			nRules += ((CSTNUCheckStatus) status).upperCaseRuleCalls +
+					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
+					((CSTNUCheckStatus) status).crossCaseRuleCalls +
+					((CSTNUCheckStatus) status).letterRemovalRuleCalls;
+
+		globalRuleExecutionStatistics.addValue(nRules);
+
 		rowToWrite += String.format(OUTPUT_ROW_TIME_STATS,
 				localAvg,
 				((tester.nDCRepetition > 1) ? localStdDev : Double.NaN),
+				nRules,
 				((!tester.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"),
 				status.r0calls,
 				status.r3calls,
@@ -621,7 +652,8 @@ public class Checker {
 		/**
 		 * To collect statistics w.r.t. the dimension of CSTNs
 		 */
-		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupStatistics = new Object2ObjectAVLTreeMap<>();
+		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupExecutionTimeStatistics = new Object2ObjectAVLTreeMap<>();
+		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupRuleExecutionStatistics = new Object2ObjectAVLTreeMap<>();
 
 		System.out.println(getNow() + ": #Processors for computation: " + nCPUs);
 		System.out.println(getNow() + ": Instances to check are " + tester.cstnType + " instances.");
@@ -633,9 +665,9 @@ public class Checker {
 		int nTaskSuccessfullyFinished = 0;
 		for (File file : tester.instances) {
 			if (nCPUs > 0) {
-				future.add(cstnExecutor.submit(() -> worker(tester, file, runMeter, groupStatistics, edgeFactory)));
+				future.add(cstnExecutor.submit(() -> worker(tester, file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics, edgeFactory)));
 			} else {
-				if (worker(tester, file, runMeter, groupStatistics, edgeFactory))
+				if (worker(tester, file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics, edgeFactory))
 					nTaskSuccessfullyFinished++;
 			}
 		}
@@ -663,11 +695,14 @@ public class Checker {
 
 		tester.output.printf(GLOBAL_HEADER);
 
-		for (it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<GlobalStatisticKey, SummaryStatistics> entry : groupStatistics.object2ObjectEntrySet()) {
+		for (it.unimi.dsi.fastutil.objects.Object2ObjectMap.Entry<GlobalStatisticKey, SummaryStatistics> entry : groupExecutionTimeStatistics
+				.object2ObjectEntrySet()) {
 			GlobalStatisticKey globalStatisticsKey = entry.getKey();
 			tester.output.printf(GLOBAL_HEADER_ROW, entry.getValue().getN(), globalStatisticsKey.getNodes(), globalStatisticsKey.getContingent(),
 					globalStatisticsKey.getPropositions(),
-					entry.getValue().getMean(), entry.getValue().getStandardDeviation());
+					entry.getValue().getMean(), entry.getValue().getStandardDeviation(),
+					groupRuleExecutionStatistics.get(globalStatisticsKey).getMean(),
+					groupRuleExecutionStatistics.get(globalStatisticsKey).getStandardDeviation());
 		}
 
 		if (nCPUs > 0) {
@@ -910,7 +945,7 @@ public class Checker {
 			this.output = System.out;
 		}
 		if (this.cstnType == CstnType.cstn) {
-			this.output.println(OUTPUT_HEADER);
+			this.output.println(OUTPUT_HEADER + CSVSep);
 		} else {
 			this.output.println(OUTPUT_HEADER_CSTNU);
 		}
