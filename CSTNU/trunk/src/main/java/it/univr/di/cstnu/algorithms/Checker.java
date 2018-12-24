@@ -517,6 +517,7 @@ public class Checker {
 			rowToWrite += String.format(OUTPUT_ROW_TIME,
 					status.executionTimeNS / 1E9,
 					Double.NaN,
+					getNumberExecutedRules(tester, status),
 					((status.executionTimeNS != Constants.INT_NULL) ? "Timeout of " + tester.timeOut + " seconds." : "Generic error. See log."));
 			synchronized (tester.output) {
 				tester.output.println(rowToWrite);
@@ -536,13 +537,7 @@ public class Checker {
 		LOG.info(file.getName() + " average required time [s]" + localAvg);
 		LOG.info(file.getName() + " std. deviation [s]" + localStdDev);
 
-		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
-		if (tester.cstnType == CstnType.cstnu)
-			nRules += ((CSTNUCheckStatus) status).upperCaseRuleCalls +
-					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
-					((CSTNUCheckStatus) status).crossCaseRuleCalls +
-					((CSTNUCheckStatus) status).letterRemovalRuleCalls;
-
+		int nRules = getNumberExecutedRules(tester, status);
 		globalRuleExecutionStatistics.addValue(nRules);
 
 		rowToWrite += String.format(OUTPUT_ROW_TIME_STATS,
@@ -950,5 +945,20 @@ public class Checker {
 			this.output.println(OUTPUT_HEADER_CSTNU);
 		}
 		return true;
+	}
+
+	/**
+	 * @param tester
+	 * @param status
+	 * @return the number of executed rules.
+	 */
+	static private int getNumberExecutedRules(Checker tester, CSTNCheckStatus status) {
+		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
+		if (tester.cstnType == CstnType.cstnu)
+			nRules += ((CSTNUCheckStatus) status).upperCaseRuleCalls +
+					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
+					((CSTNUCheckStatus) status).crossCaseRuleCalls +
+					((CSTNUCheckStatus) status).letterRemovalRuleCalls;
+		return nRules;
 	}
 }
