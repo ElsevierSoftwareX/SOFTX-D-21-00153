@@ -13,6 +13,7 @@ import it.univr.di.Debug;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntMapFactory;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -287,53 +288,52 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		this.removedLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again in the future.
 		int nBeforeAdd = this.labeledValue.size();
 		boolean added = this.labeledValue.put(l, i);
-		// 2018-12-22 Test for evaluating if the extreme optimization worths!
-		// if (added) {// I try to clean UPPER values
-		// // Since this.labeledValue.put(l, i) can simplify labeled value set,
-		// // it is necessary to check every UPPER CASE with any labeled value, not only the last
-		// // one inserted!
-		// // 2017-10-31 I verified that it is necessary to improve the performance!
-		// LabeledALabelIntTreeMap upperCaseValueValueMap = this.getUpperCaseValueMap();
-		// if (upperCaseValueValueMap.size() > 0) {
-		// // TODO IT IS VERY EXPENSIVE!
-		// // int maxValueWOUpperCase = this.labeledValue.getMaxValue();
-		// // if (this.labeledValue.size() >= nBeforeAdd && (this.labeledValue.get(l) == i)) {
-		// // the added element did not simplify the set, we compare UC values only with it.
-		// for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
-		// LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
-		// for (Label UCLabel : labeledUCValues.keySet()) {
-		// int UCaseValue = labeledUCValues.get(UCLabel);
-		// // if (UCaseValue >= maxValueWOUpperCase) {
-		// // //this wait is useless because a normal constraint
-		// // this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
-		// // this.removeUpperCaseValue(UCLabel, UCALabel);
-		// // continue;
-		// // }
-		// if (i <= UCaseValue && UCLabel.subsumes(l)) {
-		// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
-		// this.removeUpperCaseValue(UCLabel, UCALabel);
-		// }
-		// }
-		// }
-		// // } else {
-		// // // this.labeledvalue set has been simplified. We consider all values of this.labeledvalue
-		// // 2018-12-17 Too much expensive, we check only the new inserted value.
-		// // for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
-		// // LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
-		// // for (Label UCLabel : labeledUCValues.keySet()) {
-		// // int UCaseValue = labeledUCValues.get(UCLabel);
-		// // int min = this.labeledValue.getMinValueSubsumedBy(UCLabel);
-		// // if (min == Constants.INT_NULL)
-		// // continue;
-		// // if (min <= UCaseValue) {
-		// // this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
-		// // this.removeUpperCaseValue(UCLabel, UCALabel);
-		// // }
-		// // }
-		// // }
-		// // }
-		// }
-		// }
+		if (added) {// I try to clean UPPER values
+			// Since this.labeledValue.put(l, i) can simplify labeled value set,
+			// it is necessary to check every UPPER CASE with any labeled value, not only the last
+			// one inserted!
+			// 2017-10-31 I verified that it is necessary to improve the performance!
+			// 2018-12-24 I re-verified that it is necessary to improve the performance!
+			LabeledALabelIntTreeMap upperCaseValueValueMap = this.getUpperCaseValueMap();
+			if (upperCaseValueValueMap.size() > 0) {
+				// int maxValueWOUpperCase = this.labeledValue.getMaxValue();
+				// if (this.labeledValue.size() >= nBeforeAdd && (this.labeledValue.get(l) == i)) {
+					// the added element did not simplify the set, we compare UC values only with it.
+					for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
+						LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
+						for (Label UCLabel : labeledUCValues.keySet()) {
+							int UCaseValue = labeledUCValues.get(UCLabel);
+							// if (UCaseValue >= maxValueWOUpperCase) {
+							// //this wait is useless because a normal constraint
+							// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+							// this.removeUpperCaseValue(UCLabel, UCALabel);
+							// continue;
+							// }
+							if (i <= UCaseValue && UCLabel.subsumes(l)) {
+								this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+								this.removeUpperCaseValue(UCLabel, UCALabel);
+							}
+						}
+					}
+				// } else {
+				// // this.labeledvalue set has been simplified. We consider all values of this.labeledvalue
+				// 2018-12-17 Too much expensive, we check only the new inserted value.
+				// for (ALabel UCALabel : upperCaseValueValueMap.keySet()) {
+				// LabeledIntTreeMap labeledUCValues = upperCaseValueValueMap.get(UCALabel);
+				// for (Label UCLabel : labeledUCValues.keySet()) {
+				// int UCaseValue = labeledUCValues.get(UCLabel);
+				// int min = this.labeledValue.getMinValueSubsumedBy(UCLabel);
+				// if (min == Constants.INT_NULL)
+				// continue;
+				// if (min <= UCaseValue) {
+				// this.putUpperCaseValueToRemovedList(UCLabel, UCALabel, UCaseValue);
+				// this.removeUpperCaseValue(UCLabel, UCALabel);
+				// }
+				// }
+				// }
+				// }
+			}
+		}
 		return added;
 	}
 
