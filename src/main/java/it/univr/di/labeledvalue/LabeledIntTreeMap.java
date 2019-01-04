@@ -156,7 +156,9 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 				}
 			}
 		}
-		return (isBaseAbleToRepresent(newLabel, newValue));
+		// FIXME
+		// return (isBaseAbleToRepresent(newLabel, newValue));
+		return false;
 	}
 
 	/**
@@ -311,8 +313,6 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @return true if any element of inputMap has been inserted into the map.
 	 */
 	private boolean insertAndSimplify(Object2IntMap<Label> inputMap, int inputMapLabelLength) {
-		if ((inputMap == null) || (inputMap.size() == 0))
-			return false;
 
 		ObjectArraySet<Label> toRemove = new ObjectArraySet<>();
 		boolean add = false;
@@ -412,12 +412,14 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			// inputMap has been updated. Now it contains all the elements that have to be insert.
 			for (final Entry<Label> entry : inputMap.object2IntEntrySet()) {
 				this.removeAllValuesGreaterThan(entry);
-				if (this.isBaseAbleToRepresent(entry))
-					continue;
+				// FIXME
+				// if (this.isBaseAbleToRepresent(entry))
+				// continue;
 				this.putForcibly(entry.getKey(), entry.getIntValue());
 				add = true;
-				if (this.makeABetterBase(entry))
-					this.removeAllValuesGreaterThanBase();
+				// FIXME
+				// if (this.makeABetterBase(entry))
+				// this.removeAllValuesGreaterThanBase();
 			}
 			if (toAdd.size() > 0) {
 				inputMap = toAdd;
@@ -434,6 +436,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @param entry
 	 * @return true if <code>inputValue</code> is greater or equal than a base component value that is subsumed by <code>inputLabel</code>. False otherwise.
 	 */
+	@SuppressWarnings("unused")
 	private final boolean isBaseAbleToRepresent(final Entry<Label> entry) {
 		return isBaseAbleToRepresent(entry.getKey(), entry.getIntValue());
 	}
@@ -514,6 +517,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * @param entry
 	 * @return true if (label, value) determine a new (better) base. If true, the base is update. False otherwise.
 	 */
+	@SuppressWarnings("unused")
 	private boolean makeABetterBase(final Entry<Label> entry) {
 		if (entry.getIntValue() == Constants.INT_NULL)
 			return false;
@@ -650,7 +654,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						}
 					}
 					internalMap.remove(currentLabel);
-					this.checkValidityOfTheBaseAfterRemoving(currentLabel);
+					// FIXME
+					// this.checkValidityOfTheBaseAfterRemoving(currentLabel);
 					removed = true;
 				}
 			}
@@ -664,6 +669,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * 
 	 * @return true if one element at least has been removed, false otherwise.
 	 */
+	@SuppressWarnings("unused")
 	private boolean removeAllValuesGreaterThanBase() {
 		if ((this.base == null) || (this.base.length == 0))
 			return false;
