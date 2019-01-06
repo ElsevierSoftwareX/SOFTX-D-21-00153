@@ -466,7 +466,7 @@ public class CSTNPSU extends CSTNU {
 	 * @param eXA
 	 * @return true if the reduction has been applied.
 	 */
-	@SuppressWarnings("javadoc")
+	@Override
 	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final LabeledIntEdge eXA) {
 
 		if (!this.isActivationNode(nA))
@@ -555,7 +555,7 @@ public class CSTNPSU extends CSTNU {
 	 * @param eYZ
 	 * @return true if the reduction has been applied.
 	 */
-	@SuppressWarnings("javadoc")
+	@Override
 	boolean zLabeledLetterRemovalRule(final LabeledNode nY, final LabeledIntEdge eYZ) {
 		boolean ruleApplied = false;
 
