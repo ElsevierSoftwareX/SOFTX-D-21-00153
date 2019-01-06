@@ -28,6 +28,7 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.ALabel;
+import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
@@ -981,11 +982,11 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * Labeled LetterRemoval* (zLr)<br>
 	 *
 	 * <pre>
-	 * Y ---(v,ℵ,β)---&gt; Z &lt;---(w,ℵ1,αl)--- A ---(x,c,l)---&gt; C 
+	 * Y ---(v,Cℵ,β)---&gt; Z &lt;---(w,ℵ1,α)--- A ---(x,c,⊡)---&gt; C 
 	 *
 	 * adds 
 	 *         
-	 * Y ---(v,ℵℵ1,β*(αl))---&gt; Z
+	 * Y ---(v,ℵℵ1,β*α)---&gt; Z
 	 *  
 	 * if v ≥ w-x
 	 * </pre>
@@ -994,183 +995,186 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * @param eYZ
 	 * @return true if the reduction has been applied.
 	 */
-	// boolean zLabeledLetterRemovalRule(final LabeledNode nY, final LabeledIntEdge eYZ) {
-	// boolean ruleApplied = false;
-	//
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "zLR: start.");
-	// }
-	//
-	// for (final ALabel aleph : eYZ.getUpperCaseValueMap().keySet()) {
-	// LabeledIntTreeMap YZvaluesMap = eYZ.getUpperCaseValueMap().get(aleph);
-	// if (YZvaluesMap == null)
-	// continue;
-	// for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfYA : YZvaluesMap.entrySet()) {
-	// final Label beta = upperCaseEntryOfYA.getKey();
-	// int v = upperCaseEntryOfYA.getIntValue();
-	//
-	// for (ALetter nodeLetter : aleph) {
-	// LabeledNode nC = this.g.getNode(nodeLetter.name);
-	// if (nY == nC) // Z is the activation time point!
-	// continue;
-	// LabeledNode nA = this.getActivationNode(nC);
-	// if (nA == this.Z)
-	// continue;
-	// LabeledIntEdge AC = this.getLowerContingentLink(nC);
-	//
-	// LabeledLowerCaseValue lowerCaseEntry = AC.getLowerCaseValue();
-	// if (lowerCaseEntry.isEmpty())
-	// continue;
-	// Label l = lowerCaseEntry.getLabel();
-	// int x = lowerCaseEntry.getValue();
-	//
-	// LabeledIntEdge AZ = this.g.findEdge(nA, this.Z);
-	//
-	// for (ALabel aleph1 : AZ.getAllUpperCaseAndLabeledValuesMaps().keySet()) {
-	// if (aleph1.contains(nodeLetter))
-	// continue;
-	// LabeledIntTreeMap AZAlephMap = AZ.getAllUpperCaseAndLabeledValuesMaps().get(aleph1);
-	// if (AZAlephMap == null)
-	// continue;
-	// for (Entry<Label> entryAZ : AZAlephMap.entrySet()) {
-	// final Label alpha = entryAZ.getKey();
-	// final int w = entryAZ.getIntValue();
-	//
-	// if (!alpha.subsumes(l))
-	// continue;// rule condition
-	//
-	// /**
-	// * The following check is alternative.
-	// * (v<w-x) would be more restrictive but the completeness proof is based on Math.max(v, w - x).
-	// * So, we maintain Math.max(v, w - x) for now.
-	// */
-	// // if (v < w - x) continue;
-	// v = Math.max(v, w - x);
-	//
-	// ALabel alephAleph1 = aleph.conjunction(aleph1);
-	// alephAleph1.remove(nodeLetter);
-	//
-	// Label alphaBeta = alpha.conjunctionExtended(beta);
-	//
-	// final int oldValue = (Debug.ON) ? eYZ.getUpperCaseValue(alphaBeta, alephAleph1) : -1;
-	// final String oldYZ = (Debug.ON) ? eYZ.toString() : "";
-	//
-	// boolean mergeStatus = (alephAleph1.isEmpty()) ? eYZ.mergeLabeledValue(alphaBeta, v)
-	// : eYZ.mergeUpperCaseValue(alphaBeta, alephAleph1, v);
-	//
-	// if (mergeStatus) {
-	// ruleApplied = true;
-	// getCheckStatus().letterRemovalRuleCalls++;
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER)) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
-	// + nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
-	// + upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
-	// + "---" + lowerCaseValueAsString(nC.getAlabel(), x, l) + "---> " + nodeLetter
-	// + "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, v, alphaBeta) + "---> Z"
-	// + "; oldValue: " + Constants.formatInt(oldValue));
-	// }
-	// }
-	// }
-	// }
-	// }
-	// }
-	// }
-	// }
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "zLR: end.");
-	// }
-	// return ruleApplied;
-	// }
-	//
-	// /**
-	// * Labeled Letter Removal (Lr)<br>
-	// *
-	// * <pre>
-	// * X ---(v,ℵ,β)---&gt; A ---(x,c,α)---&gt; C
-	// *
-	// * adds
-	// *
-	// * X ---(v,ℵ',β)---&gt; A
-	// *
-	// * if C ∈ ℵ, v ≥ −x, β entails α.
-	// * ℵ'=ℵ'/C
-	// * </pre>
-	// *
-	// * @param nX
-	// * @param nA
-	// * @param eXA
-	// * @return true if the reduction has been applied.
-	// */
-	// boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final LabeledIntEdge eXA) {
-	//
-	// if (!this.isActivationNode(nA))
-	// return false;
-	//
-	// boolean ruleApplied = false;
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "zLr: start.");
-	// }
-	//
-	// for (LabeledIntEdge eAC : this.g.getOutEdges(nA)) {
-	// if (eAC.getLowerCaseValue().isEmpty()) {
-	// continue;
-	// }
-	// // found a contingent link A===>C
-	// LabeledNode nC = this.g.getDest(eAC);
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "zLr: found contingent link " + eAC);
-	// }
-	// for (final ALabel aleph : eXA.getUpperCaseValueMap().keySet()) {
-	// if (!aleph.contains(nC.getAlabel()))
-	// continue;
-	// LabeledIntTreeMap valuesMap = eXA.getUpperCaseValueMap().get(aleph);
-	// if (valuesMap == null)
-	// continue;
-	// for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfXA : valuesMap.entrySet()) {
-	// final Label beta = upperCaseEntryOfXA.getKey();
-	// int v = upperCaseEntryOfXA.getIntValue();
-	//
-	// LabeledLowerCaseValue ACLowerCaseValueObj = eAC.getLowerCaseValue();
-	// final Label alpha = ACLowerCaseValueObj.getLabel();
-	// int x = ACLowerCaseValueObj.getValue();
-	// if (v < -x || !beta.subsumes(alpha))
-	// continue;
-	// final int oldZ = (Debug.ON) ? eXA.getUpperCaseValue(beta, aleph) : -1;
-	// final String oldXA = (Debug.ON) ? eXA.toString() : "";
-	//
-	// ALabel aleph1 = ALabel.clone(aleph);
-	// aleph1.remove(nC.getAlabel());
-	//
-	// boolean mergeStatus = (aleph1.isEmpty()) ? eXA.mergeLabeledValue(beta, v) : eXA.mergeUpperCaseValue(beta, aleph1, v);
-	// if (mergeStatus) {
-	// ruleApplied = true;
-	// getCheckStatus().letterRemovalRuleCalls++;
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER)) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "Lr applied to edge " + oldXA + ":\n" + "partic: "
-	// + nC + " <---" + lowerCaseValueAsString(ACLowerCaseValueObj.getNodeName(), x, alpha) + "--- " + nA.getName()
-	// + " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
-	// + "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, v, beta) + "--- " + nX.getName()
-	// + "; oldValue: " + Constants.formatInt(oldZ));
-	// }
-	// }
-	// }
-	// }
-	// }
-	// }
-	// if (Debug.ON) {
-	// if (LOG.isLoggable(Level.FINER))
-	// LOG.log(Level.FINER, "Lr: end.");
-	// }
-	// return ruleApplied;
-	// }
+	boolean zLabeledLetterRemovalRule(final LabeledNode nY, final LabeledIntEdge eYZ) {
+		boolean ruleApplied = false;
+
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.log(Level.FINER, "zLR: start.");
+		}
+
+		for (final ALabel aleph : eYZ.getUpperCaseValueMap().keySet()) {
+			if (aleph.isEmpty())
+				continue;
+			LabeledIntTreeMap YZvaluesMap = eYZ.getUpperCaseValueMap().get(aleph);
+			if (YZvaluesMap == null)
+				continue;
+			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfYA : YZvaluesMap.entrySet()) {
+				final Label beta = upperCaseEntryOfYA.getKey();
+				int v = upperCaseEntryOfYA.getIntValue();
+
+				for (ALetter nodeLetter : aleph) {
+					LabeledNode nC = this.g.getNode(nodeLetter.name);
+					if (nY == nC) // Z is the activation time point!
+						continue;
+					LabeledNode nA = this.getActivationNode(nC);
+					if (nA == this.Z)
+						continue;
+					LabeledIntEdge AC = this.getLowerContingentLink(nC);
+
+					LabeledLowerCaseValue lowerCaseEntry = AC.getLowerCaseValue();
+					if (lowerCaseEntry.isEmpty())
+						continue;
+					// Label l = lowerCaseEntry.getLabel();IT SHOULD BE empty!
+					int x = lowerCaseEntry.getValue();
+
+					LabeledIntEdge AZ = this.g.findEdge(nA, this.Z);
+
+					for (ALabel aleph1 : AZ.getAllUpperCaseAndLabeledValuesMaps().keySet()) {
+						if (aleph1.contains(nodeLetter))
+							continue;
+						LabeledIntTreeMap AZAlephMap = AZ.getAllUpperCaseAndLabeledValuesMaps().get(aleph1);
+						if (AZAlephMap == null)
+							continue;
+						for (Entry<Label> entryAZ : AZAlephMap.entrySet()) {
+							final Label alpha = entryAZ.getKey();
+							final int w = entryAZ.getIntValue();
+
+							// if (!alpha.subsumes(l))
+							// continue;// rule condition
+
+							/**
+							 * The following check is alternative.
+							 * (v<w-x) would be more restrictive but the completeness proof is based on Math.max(v, w - x).
+							 * So, we maintain Math.max(v, w - x) for now.
+							 */
+							// if (v < w - x) continue;
+							int oldV = v;
+							v = Math.max(v, w - x);
+
+							ALabel alephAleph1 = aleph.conjunction(aleph1);
+							alephAleph1.remove(nodeLetter);
+
+							Label alphaBeta = alpha.conjunctionExtended(beta);
+
+							final int oldValue = (Debug.ON) ? eYZ.getUpperCaseValue(alphaBeta, alephAleph1) : -1;
+							final String oldYZ = (Debug.ON) ? eYZ.toString() : "";
+
+							boolean mergeStatus = (alephAleph1.isEmpty()) ? eYZ.mergeLabeledValue(alphaBeta, v)
+									: eYZ.mergeUpperCaseValue(alphaBeta, alephAleph1, v);
+
+							if (mergeStatus) {
+								ruleApplied = true;
+								getCheckStatus().letterRemovalRuleCalls++;
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.FINER)) {
+										if (LOG.isLoggable(Level.FINER))
+											LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
+													+ nY.getName() + "---" + upperCaseValueAsString(aleph, oldV, beta) + "---> Z <---"
+													+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
+													+ "---" + lowerCaseValueAsString(nC.getAlabel(), x, Label.emptyLabel) + "---> " + nodeLetter
+													+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, v, alphaBeta) + "---> Z"
+													+ "; oldValue: " + Constants.formatInt(oldValue));
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.log(Level.FINER, "zLR: end.");
+		}
+		return ruleApplied;
+	}
+
+	/**
+	 * Labeled Letter Removal (Lr)<br>
+	 * 
+	 * <pre>
+	 * X ---(v,ℵ,β)---&gt; A ---(x,c,α)---&gt; C 
+	 *                    
+	 * adds 
+	 *         
+	 * X ---(v,ℵ',β)---&gt; A
+	 * 
+	 * if C ∈ ℵ, v ≥ −x, β entails α.
+	 * ℵ'=ℵ'/C
+	 * </pre>
+	 * 
+	 * @param nX
+	 * @param nA
+	 * @param eXA
+	 * @return true if the reduction has been applied.
+	 */
+	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final LabeledIntEdge eXA) {
+
+		if (!this.isActivationNode(nA))
+			return false;
+
+		boolean ruleApplied = false;
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.log(Level.FINER, "zLr: start.");
+		}
+
+		for (LabeledIntEdge eAC : this.g.getOutEdges(nA)) {
+			if (eAC.getLowerCaseValue().isEmpty()) {
+				continue;
+			}
+			// found a contingent link A===>C
+			LabeledNode nC = this.g.getDest(eAC);
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER))
+					LOG.log(Level.FINER, "zLr: found contingent link " + eAC);
+			}
+			for (final ALabel aleph : eXA.getUpperCaseValueMap().keySet()) {
+				if (!aleph.contains(nC.getAlabel()))
+					continue;
+				LabeledIntTreeMap valuesMap = eXA.getUpperCaseValueMap().get(aleph);
+				if (valuesMap == null)
+					continue;
+				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfXA : valuesMap.entrySet()) {
+					final Label beta = upperCaseEntryOfXA.getKey();
+					int v = upperCaseEntryOfXA.getIntValue();
+
+					LabeledLowerCaseValue ACLowerCaseValueObj = eAC.getLowerCaseValue();
+					final Label alpha = ACLowerCaseValueObj.getLabel();
+					int x = ACLowerCaseValueObj.getValue();
+					if (v < -x || !beta.subsumes(alpha))
+						continue;
+					final int oldZ = (Debug.ON) ? eXA.getUpperCaseValue(beta, aleph) : -1;
+					final String oldXA = (Debug.ON) ? eXA.toString() : "";
+
+					ALabel aleph1 = ALabel.clone(aleph);
+					aleph1.remove(nC.getAlabel());
+
+					boolean mergeStatus = (aleph1.isEmpty()) ? eXA.mergeLabeledValue(beta, v) : eXA.mergeUpperCaseValue(beta, aleph1, v);
+					if (mergeStatus) {
+						ruleApplied = true;
+						getCheckStatus().letterRemovalRuleCalls++;
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								if (LOG.isLoggable(Level.FINER))
+									LOG.log(Level.FINER, "Lr applied to edge " + oldXA + ":\n" + "partic: "
+											+ nC + " <---" + lowerCaseValueAsString(ACLowerCaseValueObj.getNodeName(), x, alpha) + "--- " + nA.getName()
+											+ " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
+											+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, v, beta) + "--- " + nX.getName()
+											+ "; oldValue: " + Constants.formatInt(oldZ));
+							}
+						}
+					}
+				}
+			}
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.log(Level.FINER, "Lr: end.");
+		}
+		return ruleApplied;
+	}
 
 	/**
 	 * Apply 'labeled no case' and 'labeled upper case' and 'forward labeled upper case' and 'labeled conjuncted upper case' rules.<br>
@@ -1649,7 +1653,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			A = this.g.getSource(AB);
 			B = this.g.getDest(AB);
 			// initAndCheck does not resolve completely a possible qStar. So, it is necessary to check here the edge before to consider the second edge.
-			// The check has to be done in case B==Z and it consists in applying R0 and R3!
+			// The check has to be done in case B==Z and it consists in applying R0, R3 and zLabeledLetterRemovalRule!
 			edgeCopy = this.g.getEdgeFactory().get(AB);
 			if (B == this.Z) {
 				if (A.isObserver()) {
@@ -1662,12 +1666,11 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					labelModificationqR0(A, AB);
 				}
 				// zLLR is put here because it works like R0 and R3
-				// zLabeledLetterRemovalRule(A, AB);
+				zLabeledLetterRemovalRule(A, AB);
+			} else {
+				// labeledLetterRemovalRule clean possible redundant a-letters.
+				labeledLetterRemovalRule(A, B, AB);
 			}
-			// else {
-			// // labeledLetterRemovalRule clean possible redundant a-letters.
-			// // labeledLetterRemovalRule(A, B, AB);
-			// }
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
 				return getCheckStatus();
 			}
@@ -1701,7 +1704,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					edgeCopy = null;
 				}
 
-				// this.labeledLetterRemovalRule(B, C, BC);
+				this.labeledLetterRemovalRule(B, C, BC);
 
 				this.labeledPropagationqLP(A, B, C, AB, BC, AC);
 
@@ -1767,7 +1770,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					edgeCopy = null;
 				}
 
-				// this.labeledLetterRemovalRule(C, A, CA);
+				this.labeledLetterRemovalRule(C, A, CA);
 
 				labeledPropagationqLP(C, A, B, CA, AB, CB);
 
@@ -1862,7 +1865,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			}
 			B = this.g.getSource(BZ);
 			// initAndCheck does not resolve completely a possible qStar. So, it is necessary to check here the edge before to consider the second edge.
-			// The check has to be done in case B==Z and it consists in applying R0 and R3.
+			// The check has to be done in case B==Z and it consists in applying R0, R3 and zLabeledLetterRemovalRule!
 			edgeCopy = this.g.getEdgeFactory().get(BZ);
 			if (B.isObserver()) {
 				// R0 on the resulting new values
@@ -1879,7 +1882,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			}
 
 			// LLR is put here because it works like R0 and R3
-			// zLabeledLetterRemovalRule(B, BZ);
+			zLabeledLetterRemovalRule(B, BZ);
 
 			if (!BZ.equalsAllLabeledValues(edgeCopy)) {
 				newEdgesToCheck.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
