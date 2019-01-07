@@ -73,7 +73,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					+ "Labeled Upper Case Rule (z!) has been applied " + this.upperCaseRuleCalls + " times.\n"
 					+ "Labeled Lower Case Rule (zLc) has been applied " + this.lowerCaseRuleCalls + " times.\n"
 					+ "Labeled Cross-Lower Case Rule (Cc) has been applied " + this.crossCaseRuleCalls + " times.\n"
-					+ "Labeled Letter Removal (zLr) Rule has been applied " + this.letterRemovalRuleCalls + " times.\n"
+					+ "Labeled Letter Removal (zLR) Rule has been applied " + this.letterRemovalRuleCalls + " times.\n"
 					// + "Negative qLoops: " + this.qAllNegLoop + "\n"
 					// + "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
 					+ "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)");
@@ -979,7 +979,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	}
 
 	/**
-	 * Labeled LetterRemoval* (zLr)<br>
+	 * Labeled LetterRemoval (zLr) and (zLr*)<br>
 	 *
 	 * <pre>
 	 * Y ---(v,Cℵ,β)---&gt; Z &lt;---(w,ℵ1,α)--- A ---(x,c,⊡)---&gt; C 
@@ -989,6 +989,18 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * Y ---(v,ℵℵ1,β*α)---&gt; Z
 	 *  
 	 * if v ≥ w-x
+	 * </pre>
+	 * 
+	 * zLr*
+	 *
+	 * <pre>
+	 * C &lt;---(x,c,⊡)--- Y ---(v,Cℵ,β)---&gt; Z  
+	 *
+	 * adds 
+	 *         
+	 * Y ---(v,ℵ,β)---&gt; Z
+	 *  
+	 * if v < 0
 	 * </pre>
 	 * 
 	 * @param nY
@@ -1020,6 +1032,36 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					LabeledNode nA = this.getActivationNode(nC);
 					if (nA == this.Z)
 						continue;
+
+					if (nA == nY) {
+						// zLr* special case
+						if (v >= 0)
+							continue;
+						ALabel alephAleph1 = ALabel.clone(aleph);
+						alephAleph1.remove(nodeLetter);
+
+						final int oldValue = (Debug.ON) ? eYZ.getUpperCaseValue(beta, alephAleph1) : -1;
+						final String oldYZ = (Debug.ON) ? eYZ.toString() : "";
+
+						boolean mergeStatus = (alephAleph1.isEmpty()) ? eYZ.mergeLabeledValue(beta, v)
+								: eYZ.mergeUpperCaseValue(beta, alephAleph1, v);
+
+						if (mergeStatus) {
+							ruleApplied = true;
+							getCheckStatus().letterRemovalRuleCalls++;
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									if (LOG.isLoggable(Level.FINER))
+										LOG.log(Level.FINER, "zLR* applied to edge " + oldYZ + ":\n" + "partic: "
+												+ "Z <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName()
+												+ "---(" + nC.getAlabel().toLowerCase() + ",...," + Label.emptyLabel + ")---> " + nodeLetter
+												+ "\nresult: " + "Z <---" + upperCaseValueAsString(alephAleph1, v, beta) + nY.getName()
+												+ "; oldValue: " + Constants.formatInt(oldValue));
+								}
+							}
+						}
+						continue;
+					}
 					LabeledIntEdge AC = this.getLowerContingentLink(nC);
 
 					LabeledLowerCaseValue lowerCaseEntry = AC.getLowerCaseValue();
@@ -1040,17 +1082,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							final Label alpha = entryAZ.getKey();
 							final int w = entryAZ.getIntValue();
 
-							// if (!alpha.subsumes(l))
+							// if (!alpha.subsumes(l));l SHOULD BE empty!
 							// continue;// rule condition
 
-							/**
-							 * The following check is alternative.
-							 * (v<w-x) would be more restrictive but the completeness proof is based on Math.max(v, w - x).
-							 * So, we maintain Math.max(v, w - x) for now.
-							 */
-							// if (v < w - x) continue;
-							int oldV = v;
-							v = Math.max(v, w - x);
+							int newV = Math.max(v, w - x);
 
 							ALabel alephAleph1 = aleph.conjunction(aleph1);
 							alephAleph1.remove(nodeLetter);
@@ -1060,8 +1095,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							final int oldValue = (Debug.ON) ? eYZ.getUpperCaseValue(alphaBeta, alephAleph1) : -1;
 							final String oldYZ = (Debug.ON) ? eYZ.toString() : "";
 
-							boolean mergeStatus = (alephAleph1.isEmpty()) ? eYZ.mergeLabeledValue(alphaBeta, v)
-									: eYZ.mergeUpperCaseValue(alphaBeta, alephAleph1, v);
+							boolean mergeStatus = (alephAleph1.isEmpty()) ? eYZ.mergeLabeledValue(alphaBeta, newV)
+									: eYZ.mergeUpperCaseValue(alphaBeta, alephAleph1, newV);
 
 							if (mergeStatus) {
 								ruleApplied = true;
@@ -1070,7 +1105,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 									if (LOG.isLoggable(Level.FINER)) {
 										if (LOG.isLoggable(Level.FINER))
 											LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
-													+ nY.getName() + "---" + upperCaseValueAsString(aleph, oldV, beta) + "---> Z <---"
+													+ nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
 													+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
 													+ "---" + lowerCaseValueAsString(nC.getAlabel(), x, Label.emptyLabel) + "---> " + nodeLetter
 													+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, v, alphaBeta) + "---> Z"
@@ -1862,6 +1897,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG.log(Level.FINER, "Considering edge " + (i++) + "/" + n + ": " + BZ + "\n");
 				}
+				if (BZ.getName().equals("e2"))
+					LOG.log(Level.FINER, "Found : " + BZ + "\n");
 			}
 			B = this.g.getSource(BZ);
 			// initAndCheck does not resolve completely a possible qStar. So, it is necessary to check here the edge before to consider the second edge.
