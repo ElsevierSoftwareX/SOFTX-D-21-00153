@@ -82,57 +82,61 @@ public class CSTNUTest {
 	/**
 	 * @throws WellDefinitionException
 	 */
-	// @Test
-	// public final void testCaseLabelRemovalRule() throws WellDefinitionException {
-	// LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass, this.alpha);
-	// g.setZ(this.Z);
-	// final LabeledNode A = new LabeledNode("A");
-	// final LabeledNode B = new LabeledNode("B");
-	// ALabel aLabel4B = new ALabel(B.getName(), this.alpha);
-	// B.setAlabel(aLabel4B);
-	// final LabeledNode C = new LabeledNode("C");
-	//
-	// final LabeledNode a = new LabeledNode("A?");
-	// a.setObservable('a');
-	// g.addVertex(a);
-	// final LabeledNode b = new LabeledNode("B?");
-	// b.setObservable('b');
-	// g.addVertex(b);
-	//
-	// final LabeledIntEdgePluggable AB = new LabeledIntEdgePluggable("AB", this.labeledIntValueMapClass);
-	// AB.setLowerCaseValue(Label.parse("b"), aLabel4B, 13);
-	// AB.setConstraintType(ConstraintType.contingent);
-	//
-	// final LabeledIntEdgePluggable BA = new LabeledIntEdgePluggable("BA", this.labeledIntValueMapClass);
-	// BA.setConstraintType(ConstraintType.contingent);
-	// BA.mergeUpperCaseValue(Label.parse("b"), aLabel4B, -20);
-	//
-	// final LabeledIntEdgePluggable cz = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
-	// cz.mergeUpperCaseValue(Label.parse("ab"), aLabel4B, -4);
-	// cz.mergeUpperCaseValue(Label.parse("a"), aLabel4B, -3);
-	// cz.mergeUpperCaseValue(Label.parse("¬b"), aLabel4B, -3);
-	// cz.mergeUpperCaseValue(Label.parse("¬ab"), aLabel4B, -15);
-	//
-	// final LabeledIntEdgePluggable az = new LabeledIntEdgePluggable("AZ", this.labeledIntValueMapClass);
-	// az.mergeLabeledValue(Label.parse("ab"), -1);
-	//
-	// g.addEdge(AB, A, B);
-	// g.addEdge(BA, B, A);
-	// g.addEdge(cz, C, this.Z);
-	// g.addEdge(az, A, this.Z);
-	//
-	// this.cstnu.setG(g);
-	// this.cstnu.initAndCheck();
-	//
-	// this.cstnu.zLabeledLetterRemovalRule(C, cz);
-	//
-	// LabeledIntEdgePluggable CZOk = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
-	// CZOk.mergeLabeledValue(Label.parse("ab"), -4);
-	// CZOk.mergeLabeledValue(Label.parse("¿ab"), -14);
-	// CZOk.mergeLabeledValue(Label.emptyLabel, 0);
-	//
-	// assertEquals("Upper Case values:", CZOk.getLabeledValueMap(), cz.getLabeledValueMap());
-	// }
+	@Test
+	public final void testCaseLabelRemovalRule() throws WellDefinitionException {
+		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass, this.alpha);
+		g.setZ(this.Z);
+		final LabeledNode A = new LabeledNode("A");
+		final LabeledNode B = new LabeledNode("B");
+		ALabel aLabel4B = new ALabel(B.getName(), this.alpha);
+		B.setAlabel(aLabel4B);
+		final LabeledNode C = new LabeledNode("C");
+
+		final LabeledNode a = new LabeledNode("A?");
+		a.setObservable('a');
+		g.addVertex(a);
+		final LabeledNode b = new LabeledNode("B?");
+		b.setObservable('b');
+		g.addVertex(b);
+
+		final LabeledIntEdgePluggable AB = new LabeledIntEdgePluggable("AB", this.labeledIntValueMapClass);
+		AB.setLowerCaseValue(Label.emptyLabel, aLabel4B, 13);
+		AB.setConstraintType(ConstraintType.contingent);
+
+		final LabeledIntEdgePluggable BA = new LabeledIntEdgePluggable("BA", this.labeledIntValueMapClass);
+		BA.setConstraintType(ConstraintType.contingent);
+		BA.mergeUpperCaseValue(Label.emptyLabel, aLabel4B, -20);
+
+		final LabeledIntEdgePluggable cz = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
+		cz.mergeUpperCaseValue(Label.parse("ab"), aLabel4B, -4);
+		cz.mergeUpperCaseValue(Label.parse("a"), aLabel4B, -3);
+		cz.mergeUpperCaseValue(Label.parse("¬b"), aLabel4B, -3);
+		cz.mergeUpperCaseValue(Label.parse("¬ab"), aLabel4B, -15);
+
+		final LabeledIntEdgePluggable az = new LabeledIntEdgePluggable("AZ", this.labeledIntValueMapClass);
+		az.mergeLabeledValue(Label.parse("ab"), -1);
+
+		g.addEdge(AB, A, B);
+		g.addEdge(BA, B, A);
+		g.addEdge(cz, C, this.Z);
+		g.addEdge(az, A, this.Z);
+
+		this.cstnu.setG(g);
+		this.cstnu.initAndCheck();
+
+		this.cstnu.zLabeledLetterRemovalRule(C, cz);
+
+		LabeledIntEdgePluggable CZOk = new LabeledIntEdgePluggable("CZ", this.labeledIntValueMapClass);
+		// remember that CZ contains also (0,emptyLabel)
+		CZOk.mergeLabeledValue(Label.emptyLabel, 0);
+		CZOk.mergeLabeledValue(Label.parse("a"), -3);
+		CZOk.mergeLabeledValue(Label.parse("¬b"), -3);
+		CZOk.mergeLabeledValue(Label.parse("ab"), -4);
+		CZOk.mergeLabeledValue(Label.parse("¬ab"), -13);
+		CZOk.mergeLabeledValue(Label.parse("¿ab"), -14);
+
+		assertEquals("Upper Case values:", CZOk.getLabeledValueMap(), cz.getLabeledValueMap());
+	}
 
 	/**
 	 * Test method for
@@ -268,7 +272,7 @@ public class CSTNUTest {
 		pxOK.mergeUpperCaseValue(Label.parse("¬a¬p"), new ALabel("C", this.alpha), -2);
 
 		assertEquals("R0: P?Z labeled values.", pxOK.getLabeledValueMap(), pz.getLabeledValueMap());
-		// FIXME 2018-12-18 Trying to make a-label simplification faster... loosing some optimization
+		// 2018-12-18 Trying to make a-label simplification faster... loosing some optimization
 		// asserEquals when full optimization is activated.
 		assertNotEquals("R0: PZ upper case labedled values.", pxOK.getUpperCaseValueMap(), pz.getUpperCaseValueMap());
 	}
@@ -465,45 +469,44 @@ public class CSTNUTest {
 	 * <pre>
 	 * A &lt;----[1,,b][0,,c][-11,,d]--- C &lt;---[3,c,ab]--- D
 	 * </pre>
-	@SuppressWarnings("javadoc")
-	@Test
-	public final void testLowerCaseRule() {
-		// System.out.printf("LOWER CASE\n");
-		LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
-		LabeledIntEdgePluggable dc = new LabeledIntEdgePluggable("DC", this.labeledIntValueMapClass);
-		LabeledIntEdgePluggable ca = new LabeledIntEdgePluggable("CA", this.labeledIntValueMapClass);
-		LabeledIntEdgePluggable da = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
-		dc.setLowerCaseValue(Label.parse("ab"), new ALabel("c", this.alpha), 3);
-		ca.mergeLabeledValue(Label.parse("b"), 1);
-		ca.mergeLabeledValue(Label.parse("c"), 0);
-		ca.mergeLabeledValue(Label.parse("d"), -11);
-		LabeledNode A = new LabeledNode("A");
-		LabeledNode C = new LabeledNode("C");
-		LabeledNode D = new LabeledNode("D");
-		LabeledNode OA = new LabeledNode("A?", 'a');
-		LabeledNode OB = new LabeledNode("B?", 'b');
-		LabeledNode OC = new LabeledNode("C?", 'c');
-		LabeledNode OD = new LabeledNode("D?", 'd');
-		g.addVertex(OA);
-		g.addVertex(OB);
-		g.addVertex(OC);
-		g.addVertex(OD);
-		g.addEdge(dc, D, C);
-		g.addEdge(ca, C, A);
-		g.addEdge(da, D, A);
-		g.setZ(this.Z);
-		
-		wellDefinition(g);
-		this.cstnu.labeledLowerCaseRule(D, C, A, this.Z, dc, ca, da);
-
-		LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
-		daOk.mergeLabeledValue(Label.parse("abc"), 3);
-		daOk.mergeLabeledValue(Label.parse("abd"), -8);
-
-		assertEquals("Lower Case values:", daOk.getLabeledValueMap(), da.getLabeledValueMap());
-		// System.out.printf("G.hasSameEdge(G1): %s\n", g.hasAllEdgesOf(g1));
-		// System.out.printf("G: %s\n", g1);
-	}
+	 * 
+	 * @SuppressWarnings("javadoc")
+	 * 
+	 * @Test
+	 * 		public final void testLowerCaseRule() {
+	 *       // System.out.printf("LOWER CASE\n");
+	 *       LabeledIntGraph g = new LabeledIntGraph(this.labeledIntValueMapClass);
+	 *       LabeledIntEdgePlugga ble dc = new LabeledIntEdgePluggable("DC", this.labeledIntValueMapClass);
+	 *       LabeledIntEdgePluggable ca = new LabeledIntEdgePluggable("CA", this.labeledIntValueMapClass);
+	 *       LabeledIntEdgePluggable da = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
+	 *       dc.setLowerCaseValue(Label.parse("ab"), new ALabel("c", this.alpha), 3);
+	 *       ca.mergeLabeledValue(Label.parse("b"), 1);
+	 *       ca.mergeLabeledValue(Label.parse("c"), 0);
+	 *       ca.mergeLabeledValue(Label.parse("d"), -11);
+	 *       LabeledNode A = new LabeledNode("A");
+	 *       LabeledNode C = new LabeledNode("C");
+	 *       LabeledNode D = new LabeledNode("D");
+	 *       LabeledNode OA = new LabeledNode("A?", 'a');
+	 *       LabeledNode OB = new LabeledNode("B?", 'b');
+	 *       LabeledNode OC = new LabeledNode("C?", 'c');
+	 *       LabeledNode OD = new LabeledNode("D?", 'd');
+	 *       g.addVertex(OA);
+	 *       g.addVertex(OB);
+	 *       g.addVertex(OC);
+	 *       g.addVertex(OD);
+	 *       g.addEdge(dc, D, C);
+	 *       g.addEdge(ca, C, A);
+	 *       g.addEdge(da, D, A);
+	 *       g.setZ(this.Z);
+	 *       wellDefinition(g);
+	 *       this.cstnu.labeledLowerCaseRule(D, C, A, this.Z, dc, ca, da);
+	 *       LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
+	 *       daOk.mergeLabeledValue(Label.parse("abc"), 3);
+	 *       daOk.mergeLabeledValue(Label.parse("abd"), -8);
+	 *       assertEquals("Lower Case values:", daOk.getLabeledValueMap(), da.getLabeledValueMap());
+	 *       // System.out.printf("G.hasSameEdge(G1): %s\n", g.hasAllEdgesOf(g1));
+	 *       // System.out.printf("G: %s\n", g1);
+	 *       }
 	 */
 
 	/**
@@ -702,7 +705,7 @@ public class CSTNUTest {
 //		assertEquals("No case: XW ", xwOK.toString(), XW.toString());
 	
 		assertEquals("No case: XW labeled values.", xwOK.getLabeledValueMap(), XW.getLabeledValueMap());
-		// FIXME 2018-12-18 Trying to make a-label simplification faster... loosing some optimization
+		// 2018-12-18 Trying to make a-label simplification faster... loosing some optimization
 		// asserEquals when full optimization is activated.
 		assertNotEquals("No case: XW upper case labedled values.", xwOK.getUpperCaseValueMap(), XW.getUpperCaseValueMap());
 	}
