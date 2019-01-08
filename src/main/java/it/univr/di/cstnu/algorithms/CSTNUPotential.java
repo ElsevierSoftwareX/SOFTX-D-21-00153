@@ -644,7 +644,7 @@ public class CSTNUPotential extends CSTNU {
 						if (alephIsEmpty) {
 							this.checkStatus.labeledValuePropagationCalls++;
 						} else {
-							getCheckStatus().upperCaseRuleCalls++;
+							getCheckStatus().zEsclamationRuleCalls++;
 						}
 						// }
 						if (Debug.ON) {
@@ -706,7 +706,7 @@ public class CSTNUPotential extends CSTNU {
 
 						if (mergeStatus) {
 							ruleApplied = true;
-							getCheckStatus().upperCaseRuleCalls++;
+							getCheckStatus().zEsclamationRuleCalls++;
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,

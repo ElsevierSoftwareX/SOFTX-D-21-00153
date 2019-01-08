@@ -60,7 +60,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		 * Counters about the # of application of different rules.
 		 */
 		@SuppressWarnings("javadoc")
-		public int upperCaseRuleCalls = 0, lowerCaseRuleCalls = 0, crossCaseRuleCalls = 0, letterRemovalRuleCalls = 0;
+		public int zEsclamationRuleCalls = 0, lowerCaseRuleCalls = 0, crossCaseRuleCalls = 0, letterRemovalRuleCalls = 0;
 
 		@Override
 		public String toString() {
@@ -69,11 +69,11 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							+ "dynamic controllable.\n" : "")
 					+ "Some statistics:\nRule R0 has been applied " + this.r0calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
-					+ "Labeled Propagation Rule (zLp/Nc/Uc/zCore) has been applied " + this.labeledValuePropagationCalls + " times.\n"
-					+ "Labeled Upper Case Rule (z!) has been applied " + this.upperCaseRuleCalls + " times.\n"
+					+ "Labeled Propagation Rule (zLp/Nc/Uc) has been applied " + this.labeledValuePropagationCalls + " times.\n"
+					+ "Labeled z! has been applied " + this.zEsclamationRuleCalls + " times.\n"
 					+ "Labeled Lower Case Rule (zLc) has been applied " + this.lowerCaseRuleCalls + " times.\n"
 					+ "Labeled Cross-Lower Case Rule (Cc) has been applied " + this.crossCaseRuleCalls + " times.\n"
-					+ "Labeled Letter Removal (zLR) Rule has been applied " + this.letterRemovalRuleCalls + " times.\n"
+					+ "Labeled Letter Removal (zLR/zLR*) Rule has been applied " + this.letterRemovalRuleCalls + " times.\n"
 					// + "Negative qLoops: " + this.qAllNegLoop + "\n"
 					// + "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
 					+ "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)");
@@ -82,7 +82,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		@Override
 		public void reset() {
 			super.reset();
-			this.upperCaseRuleCalls = 0;
+			this.zEsclamationRuleCalls = 0;
 			this.lowerCaseRuleCalls = 0;
 			this.crossCaseRuleCalls = 0;
 			this.letterRemovalRuleCalls = 0;
@@ -986,9 +986,9 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 *
 	 * adds 
 	 *         
-	 * Y ---(v,ℵℵ1,β*α)---&gt; Z
+	 * Y ---(m,ℵℵ1,β*α)---&gt; Z
 	 *  
-	 * if v ≥ w-x
+	 * m=max(v, w-x)
 	 * </pre>
 	 * 
 	 * zLr*
@@ -1055,7 +1055,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 										LOG.log(Level.FINER, "zLR* applied to edge " + oldYZ + ":\n" + "partic: "
 												+ "Z <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName()
 												+ "---(" + nC.getAlabel().toLowerCase() + ",...," + Label.emptyLabel + ")---> " + nodeLetter
-												+ "\nresult: " + "Z <---" + upperCaseValueAsString(alephAleph1, v, beta) + nY.getName()
+												+ "\nresult: " + "Z <---" + upperCaseValueAsString(alephAleph1, v, beta) + "--- " + nY.getName()
 												+ "; oldValue: " + Constants.formatInt(oldValue));
 								}
 							}
@@ -1082,7 +1082,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							final Label alpha = entryAZ.getKey();
 							final int w = entryAZ.getIntValue();
 
-							// if (!alpha.subsumes(l));l SHOULD BE empty!
+							// if (!alpha.subsumes(l));l must be empty!
 							// continue;// rule condition
 
 							int newV = Math.max(v, w - x);
@@ -1108,7 +1108,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 													+ nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
 													+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
 													+ "---" + lowerCaseValueAsString(nC.getAlabel(), x, Label.emptyLabel) + "---> " + nodeLetter
-													+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, v, alphaBeta) + "---> Z"
+													+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, newV, alphaBeta) + "---> Z"
 													+ "; oldValue: " + Constants.formatInt(oldValue));
 									}
 								}
@@ -1133,9 +1133,9 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 *                    
 	 * adds 
 	 *         
-	 * X ---(v,ℵ',β)---&gt; A
+	 * X ---(m,ℵ',β)---&gt; A
 	 * 
-	 * if C ∈ ℵ, v ≥ −x, β entails α.
+	 * if C ∈ ℵ, m = max(v, −x), β entails α.
 	 * ℵ'=ℵ'/C
 	 * </pre>
 	 * 
@@ -1146,14 +1146,15 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 */
 	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final LabeledIntEdge eXA) {
 
-		if (!this.isActivationNode(nA))
+		if (!this.isActivationNode(nA) || eXA.getUpperCaseValueMap().isEmpty())
 			return false;
 
 		boolean ruleApplied = false;
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
-				LOG.log(Level.FINER, "zLr: start.");
+				LOG.log(Level.FINER, "Lr: start.");
 		}
+
 
 		for (LabeledIntEdge eAC : this.g.getOutEdges(nA)) {
 			if (eAC.getLowerCaseValue().isEmpty()) {
@@ -1178,15 +1179,16 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					LabeledLowerCaseValue ACLowerCaseValueObj = eAC.getLowerCaseValue();
 					final Label alpha = ACLowerCaseValueObj.getLabel();
 					int x = ACLowerCaseValueObj.getValue();
-					if (v < -x || !beta.subsumes(alpha))
+					if (!beta.subsumes(alpha))
 						continue;
+					int newV = Math.max(v, -x);
 					final int oldZ = (Debug.ON) ? eXA.getUpperCaseValue(beta, aleph) : -1;
 					final String oldXA = (Debug.ON) ? eXA.toString() : "";
 
 					ALabel aleph1 = ALabel.clone(aleph);
 					aleph1.remove(nC.getAlabel());
 
-					boolean mergeStatus = (aleph1.isEmpty()) ? eXA.mergeLabeledValue(beta, v) : eXA.mergeUpperCaseValue(beta, aleph1, v);
+					boolean mergeStatus = (aleph1.isEmpty()) ? eXA.mergeLabeledValue(beta, newV) : eXA.mergeUpperCaseValue(beta, aleph1, newV);
 					if (mergeStatus) {
 						ruleApplied = true;
 						getCheckStatus().letterRemovalRuleCalls++;
@@ -1196,7 +1198,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 									LOG.log(Level.FINER, "Lr applied to edge " + oldXA + ":\n" + "partic: "
 											+ nC + " <---" + lowerCaseValueAsString(ACLowerCaseValueObj.getNodeName(), x, alpha) + "--- " + nA.getName()
 											+ " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
-											+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, v, beta) + "--- " + nX.getName()
+											+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, newV, beta) + "--- " + nX.getName()
 											+ "; oldValue: " + Constants.formatInt(oldZ));
 							}
 						}
@@ -1235,15 +1237,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	 * ℵ can be empty.
 	 * </pre>
 	 * 
-	 * This method implements also zUCore rule:
-	 * 
-	 * <pre>
-	 * Z &lt;---(v, ℵ, β)---X &lt;---(u, ◇, α)----C
-	 * adds
-	 * Z &lt;---------(u+v,ℵ/C,αβ)---------------- C
-	 * only when C is in ℵ and u<0
-	 * </pre>
-	 * 
 	 * @param nX
 	 * @param nY
 	 * @param nW
@@ -1257,10 +1250,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	boolean labeledPropagationqLP(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final LabeledIntEdge eXY, final LabeledIntEdge eYW,
 			final LabeledIntEdge eXW) {
 
-		// Label nXnWLabel = nX.getLabel().conjunction(nW.getLabel());
-		// if (nXnWLabel == null)
-		// return false;
-
 		boolean ruleApplied = false;
 		boolean nWisNotZ = nW != this.Z;
 		final LabeledALabelIntTreeMap YWAllLabeledValueMap = eYW.getAllUpperCaseAndLabeledValuesMaps();
@@ -1270,7 +1259,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		final Set<Object2IntMap.Entry<Label>> XYLabeledValueMap = eXY.getLabeledValueSet();
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
-				LOG.log(Level.FINER, "zLP/Nc/Uc/zUCore + z!: start.");
+				LOG.log(Level.FINER, "zLP/Nc/Uc + z!: start.");
 		}
 
 		// 1) CASE LNC + LUC*
@@ -1300,21 +1289,12 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					if (sum > 0)// && aleph.isEmpty()) // New condition that works well for big instances!
 						continue;
 
-					if (nX == nW && sum >= 0) {
+					if (nX == nW && sum == 0) {// >0 already checked!
 						// it would be a redundant edge
 						continue;
 					}
 
-					// zUCore rule:
-					// aleph cannot be changed because we cannot assume yet that u is always < 0 in the set YWAllLabeledValueMap.get(aleph).entrySet()
-					ALabel alephCore = ALabel.clone(aleph);
-					boolean alephCoreEmpty = alephCore.isEmpty();
-					if (!alephCoreEmpty && u < 0 && aleph.contains(nX.getAlabel())) {
-						alephCore.remove(nX.getAlabel());
-						alephCoreEmpty = alephCore.isEmpty();
-					}
-
-					final int oldValue = (alephCoreEmpty) ? eXW.getValue(alphaBeta) : eXW.getUpperCaseValue(alphaBeta, alephCore);
+					final int oldValue = (aleph.isEmpty()) ? eXW.getValue(alphaBeta) : eXW.getUpperCaseValue(alphaBeta, aleph);
 
 					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
 						// value is stored only if it is more negative than the current one.
@@ -1325,23 +1305,23 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
 							final String oldXW = eXW.toString();
-							logMsg = "zLP/Nc/Uc/zUCore applied to edge " + oldXW + ":\n" + "partic: "
+							logMsg = "zLP/Nc/Uc applied to edge " + oldXW + ":\n" + "partic: "
 									+ nW.getName() + " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName() + " <---"
 									+ upperCaseValueAsString(ALabel.emptyLabel, u, alpha) + "--- " + nX.getName()
 									+ "\nresult: "
-									+ nW.getName() + " <---" + upperCaseValueAsString(alephCore, sum, alphaBeta) + "--- " + nX.getName()
+									+ nW.getName() + " <---" + upperCaseValueAsString(aleph, sum, alphaBeta) + "--- " + nX.getName()
 									+ "; old value: " + Constants.formatInt(oldValue);
 						}
 					}
 
-					boolean mergeStatus = (alephCoreEmpty) ? eXW.mergeLabeledValue(alphaBeta, sum) : eXW.mergeUpperCaseValue(alphaBeta, alephCore, sum);
+					boolean mergeStatus = (aleph.isEmpty()) ? eXW.mergeLabeledValue(alphaBeta, sum) : eXW.mergeUpperCaseValue(alphaBeta, aleph, sum);
 
 					if (mergeStatus) {
 						ruleApplied = true;
-						if (alephCoreEmpty) {
+						if (aleph.isEmpty()) {
 							this.checkStatus.labeledValuePropagationCalls++;
 						} else {
-							getCheckStatus().upperCaseRuleCalls++;
+							getCheckStatus().zEsclamationRuleCalls++;
 						}
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
@@ -1361,7 +1341,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			// it is possible to stop here, because the second part is applicable only when nW==Z.
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER))
-					LOG.log(Level.FINER, "zLP/Nc/Uc/zUCore + z!: end.");
+					LOG.log(Level.FINER, "zLP/Nc/Uc + z!: end.");
 			}
 			return ruleApplied;
 		}
@@ -1385,14 +1365,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						Label alphaBeta = alpha.conjunction(beta);
 						if (alphaBeta == null)
 							continue;
-						// if (!alphaBeta.subsumes(nXnWLabel)) {
-						// if (Debug.ON) {
-						// if (LOG.isLoggable(Level.FINER))
-						// LOG.log(Level.FINER,
-						// "New alphaBeta label " + alphaBeta + " does not subsume node labels " + nXnWLabel + ". New value cannot be added!");
-						// }
-						// continue;
-						// }
 
 						final ALabel upperCaseLetterAleph = upperCaseLabel.conjunction(aleph);
 						final int v = entryYW.getIntValue();
@@ -1401,7 +1373,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						if (sum > 0)// && upperCaseLetterAleph.isEmpty()) // upperCaseLetterAleph is never empty!
 							continue;
 
-						if (nX == nW && sum >= 0) {
+						if (nX == nW && sum == 0) {// >0 already checked
 							// it would be a redundant edge
 							continue;
 						}
@@ -1430,7 +1402,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 
 						if (mergeStatus) {
 							ruleApplied = true;
-							getCheckStatus().upperCaseRuleCalls++;
+							getCheckStatus().zEsclamationRuleCalls++;
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER, logMsg);
@@ -1447,7 +1419,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "zLP/Nc/Uc/zUCore + z!: end.");
+				LOG.log(Level.FINER, "zLP/Nc/Uc + z!: end.");
 			}
 		}
 		return ruleApplied;
@@ -1644,7 +1616,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		return ruleApplied;
 	}
 
-
 	@Override
 	public CSTNCheckStatus oneStepDynamicConsistencyByNode() throws WellDefinitionException {
 		throw new UnsupportedOperationException("Not implemented.");
@@ -1703,7 +1674,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				// zLLR is put here because it works like R0 and R3
 				zLabeledLetterRemovalRule(A, AB);
 			} else {
-				// labeledLetterRemovalRule clean possible redundant a-letters.
+				// labeledLetterRemovalRule cleans possible redundant a-letters.
 				labeledLetterRemovalRule(A, B, AB);
 			}
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1897,8 +1868,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG.log(Level.FINER, "Considering edge " + (i++) + "/" + n + ": " + BZ + "\n");
 				}
-				if (BZ.getName().equals("e2"))
-					LOG.log(Level.FINER, "Found : " + BZ + "\n");
 			}
 			B = this.g.getSource(BZ);
 			// initAndCheck does not resolve completely a possible qStar. So, it is necessary to check here the edge before to consider the second edge.
@@ -1935,11 +1904,16 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			 */
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "Apply rules to " + BZ.getName() + " as second component.");
+					LOG.log(Level.FINER, "Apply rules to " + BZ.getName() + " as second edge.");
 				}
 			}
 
 			for (LabeledIntEdge AB : this.g.getInEdges(B)) {
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LOG.log(Level.FINER, "Considering first edge " + AB.getName());
+					}
+				}
 				A = this.g.getSource(AB);
 
 				AZ = this.g.findEdge(A, this.Z);
