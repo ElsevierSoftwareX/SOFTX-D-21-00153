@@ -76,6 +76,7 @@ import it.univr.di.cstnu.algorithms.CSTNIR3R;
 import it.univr.di.cstnu.algorithms.CSTNPSU;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
+import it.univr.di.cstnu.algorithms.CSTNU2CSTN;
 import it.univr.di.cstnu.algorithms.CSTNUPotential;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.AbstractLabeledIntEdge;
@@ -459,6 +460,56 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			jl1.setBackground(Color.orange);
 			try {
 				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.dynamicControllabilityCheck();
+				if (CSTNEditor.this.cstnuStatus.consistency) {
+					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The CSTNU is dynamically controllable.</b>");
+					// jl.setIcon(CSTNUEditor.infoIcon);
+					jl1.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
+				} else {
+					jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The CSTNU is not dynamically controllable.</b>");
+					// jl.setIcon(CSTNUEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl1.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNUEditor.warnIcon);
+			}
+			jl1.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class CSTNU2CSTNCheckListener implements ActionListener {
+
+		public CSTNU2CSTNCheckListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.cstnu2cstn = new CSTNU2CSTN(CSTNEditor.this.checkedGraph, 30 * 60);
+
+			jl1.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu2cstn.dynamicControllabilityCheck();
 				if (CSTNEditor.this.cstnuStatus.consistency) {
 					jl1.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The CSTNU is dynamically controllable.</b>");
 					// jl.setIcon(CSTNUEditor.infoIcon);
@@ -1091,6 +1142,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	CSTNU cstnu;
 
 	/**
+	 * CSTNU2CSTN checker
+	 */
+	CSTNU2CSTN cstnu2cstn;
+
+	/**
 	 * CSTNU check status
 	 */
 	CSTNUCheckStatus cstnuStatus;
@@ -1412,6 +1468,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// buttonCheck = new JButton("CSTNU Check by Potential");
 		// buttonCheck.addActionListener(new CSTNUPotentialCheckListener());
 		// rowForCSTNUButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTNU2CSTN Check");
+		buttonCheck.addActionListener(new CSTNU2CSTNCheckListener());
+		rowForCSTNUButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("CSTNPSU Check");
 		buttonCheck.addActionListener(new CSTNPSUCheckListener());
