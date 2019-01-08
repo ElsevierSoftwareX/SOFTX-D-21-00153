@@ -550,7 +550,7 @@ public class Checker {
 				status.labeledValuePropagationCalls);
 		if (tester.cstnType == CstnType.cstnu) {
 			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
-					((CSTNUCheckStatus) status).upperCaseRuleCalls,
+					((CSTNUCheckStatus) status).zEsclamationRuleCalls,
 					((CSTNUCheckStatus) status).lowerCaseRuleCalls,
 					((CSTNUCheckStatus) status).crossCaseRuleCalls,
 					((CSTNUCheckStatus) status).letterRemovalRuleCalls);
@@ -955,7 +955,7 @@ public class Checker {
 	static private int getNumberExecutedRules(Checker tester, CSTNCheckStatus status) {
 		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
 		if (tester.cstnType == CstnType.cstnu)
-			nRules += ((CSTNUCheckStatus) status).upperCaseRuleCalls +
+			nRules += ((CSTNUCheckStatus) status).zEsclamationRuleCalls +
 					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
 					((CSTNUCheckStatus) status).crossCaseRuleCalls +
 					((CSTNUCheckStatus) status).letterRemovalRuleCalls;
