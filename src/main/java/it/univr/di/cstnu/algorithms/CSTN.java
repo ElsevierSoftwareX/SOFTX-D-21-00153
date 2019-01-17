@@ -287,7 +287,8 @@ public class CSTN {
 	// static final public String VERSIONandDATE = "Version 5.4 - November, 17 2017";// Adjusted LP
 	// static final public String VERSIONandDATE = "Version 5.5 - November, 23 2017";// Adjusted skipping condition in LP
 	// static final public String VERSIONandDATE = "Version 5.6 - November, 23 2017";// Horizon tweaking
-	static final public String VERSIONandDATE = "Version  5.7 - December, 13 2017";// Code tweaking
+	// static final public String VERSIONandDATE = "Version 5.7 - December, 13 2017";// Code tweaking
+	static final public String VERSIONandDATE = "Version  5.8 - January, 17 2019";// Code tweaking
 
 	/**
 	 * The name for the initial node.
@@ -1159,7 +1160,7 @@ public class CSTN {
 			}
 		}
 
-		// if withNodeLabel has been set false in a derived class, such assignment has to be preseverd.
+		// if withNodeLabel has been set false in a derived class, such assignment has to be preserved.
 		if (this.withNodeLabels) {
 			// it can be reset...in that case, algorithm is faster.
 			this.withNodeLabels &= thereIsASignificantNodeLabel;
@@ -1308,19 +1309,12 @@ public class CSTN {
 					}
 				}
 
-				// FIXME
-				if (nC == this.g.getZ() && sum == Constants.INT_NEG_INFINITE) {
-					LOG.log(Level.FINE, log);
-				}
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
 					ruleApplied = true;
 					this.checkStatus.labeledValuePropagationCalls++;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER, log);
-						}
-						if (nA.getName().equals("n20") && (nC.getName().equals("n103") || nC.getName().equals("n106"))) {
-							LOG.log(Level.FINE, log);
 						}
 					}
 				}
