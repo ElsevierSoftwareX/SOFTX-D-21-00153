@@ -831,7 +831,7 @@ public class CSTN {
 			if (this.propagationOnlyToZ) {
 				oneStepDynamicConsistencyByEdgesLimitedToZ(edgesToCheck, timeoutInstant);
 			} else {
-				oneStepDynamicConsistencyByEdges(edgesToCheck, timeoutInstant);// Don't use 'this.' because such method is override!
+				oneStepDynamicConsistencyByEdges(edgesToCheck, timeoutInstant);// Don't use 'this.' because such method is overrided!
 			}
 
 			if (!this.checkStatus.finished) {
@@ -1977,12 +1977,11 @@ public class CSTN {
 					this.checkStatus.finished = true;
 					return this.checkStatus;
 				}
-			}
 
-			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
-				return this.checkStatus;
+				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
+					return this.checkStatus;
+				}
 			}
-
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
@@ -2087,12 +2086,11 @@ public class CSTN {
 					this.checkStatus.finished = true;
 					return this.checkStatus;
 				}
-			}
 
-			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
-				return this.checkStatus;
+				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
+					return this.checkStatus;
+				}
 			}
-
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
