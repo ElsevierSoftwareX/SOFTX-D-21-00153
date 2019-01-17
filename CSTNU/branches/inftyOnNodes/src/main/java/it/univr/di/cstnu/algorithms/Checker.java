@@ -812,9 +812,8 @@ public class Checker {
 
 	/**
 	 * Roberto: I verified that with such kind of computation, using more than one thread to check more files in parallel reduces the single performance!!!
-	 * Parameter for asking timeout in sec.
 	 */
-	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 0=no CPU reserved, there is only one thread for all the process. With more thread, the global performance increases, but each file can requires more time given to the fact that there is a competition among threads to access to he memory.")
+	@Option(required = false, name = "-nCPUs", usage = "Number of virtual CPUs that are reserved for this execution. Default is 0=no CPU reserved, there is only one thread for all the DC checking executions: such thread can allocated to a core, then desallocated and reallocated to another core. With nCPUs=1, there is only thread but such thread is allocated to a core till its end. With more thread, the global performance increases, but each file can requires more time because there is a competition among threads to access to the memory.")
 	private int nCPUs = 0;
 
 	/**
