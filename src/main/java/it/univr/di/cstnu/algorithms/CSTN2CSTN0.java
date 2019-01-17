@@ -108,7 +108,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 		LOG.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG.info("CSTN DC-checking...");
-		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
+		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph, this.timeOut);
 		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 		LOG.info("CSTN DC-checking done.");
 

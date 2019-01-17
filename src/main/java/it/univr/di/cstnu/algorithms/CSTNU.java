@@ -2167,4 +2167,42 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	// }
 	// return true;
 	// }
+	
+	// /**
+	// * @param e e contingent edge. It is assumed that it is the edge between that firstContingentNode to Z.
+	// * @param firstContingentNode the source node of e.
+	// * @return
+	// */
+	// private boolean checkMutualWait(LabeledIntEdge e, LabeledNode firstContingentNode) {
+	//
+	// ALabel firstContingentNodeName = firstContingentNode.getAlabel();
+	// int firstValueInE = e.getUpperCaseValue(Label.emptyLabel, firstContingentNodeName), //it will be a cycle
+	// secondValueInE= 0;
+	// for (ALabel secondContingentName : e.getUpperCaseValueMap().keySet()) {
+	// if (secondContingentName.size() > 1)
+	// continue;
+	//
+	// secondValueInE = e.getUpperCaseValue(Label.emptyLabel, secondContingentName);
+	//
+	// LabeledNode secondContingentNode = this.g.getNode(secondContingentName.toString());
+	// LabeledIntEdge e1 = this.g.findEdge(secondContingentNode, this.Z);
+	//
+	// int secondValueInE1 = e1.getUpperCaseValue(Label.emptyLabel, secondContingentName);// it must be present!
+	// int firstValueInE1 = Constants.INT_NULL;
+	// for (ALabel contingenName : e1.getUpperCaseValueMap().keySet()) {
+	// if (!contingenName.equals(firstContingentNodeName))
+	// continue;
+	// firstValueInE1 = e1.getUpperCaseValue(Label.emptyLabel, firstContingentNodeName);
+	// }
+	// if (firstValueInE1 == Constants.INT_NULL)
+	// return false;
+	//
+	// if (firstValueInE >= secondValueInE && secondValueInE1 >= firstValueInE1) {
+	// // it is probable that it is a negative loop
+	//
+	// }
+	// }
+	//
+	// return false;
+	// }
 }
