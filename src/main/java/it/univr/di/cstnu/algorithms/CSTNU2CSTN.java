@@ -48,8 +48,8 @@ public class CSTNU2CSTN extends CSTNU {
 	// static final String VERSIONandDATE = "Version 1.0 - September, 25 2016";
 	// static final String VERSIONandDATE = "Version 1.1 - November, 14 2017";
 	// static final String VERSIONandDATE = "Version 1.2 - December, 12 2017";
-	static final String VERSIONandDATE = "Version  1.3 - December, 23 2018";// tweaking the transformation
-
+	// static final String VERSIONandDATE = "Version 1.3 - December, 23 2018";// tweaking the transformation
+	static final String VERSIONandDATE = "Version 1.4 - January, 21 2019";// fixed an error on timeOut
 	/**
 	 * Default labeledIntValueMap
 	 */
@@ -105,7 +105,7 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG1.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG1.info("CSTN DC-checking...");
-		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
+		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph, this.timeOut);
 		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 		LOG1.info("CSTN DC-checking done.");
 
