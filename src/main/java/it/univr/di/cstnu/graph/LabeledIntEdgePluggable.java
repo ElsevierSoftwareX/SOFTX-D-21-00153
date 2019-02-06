@@ -39,14 +39,14 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	private static final long serialVersionUID = 2L;
 
 	/**
-	 * Labeled value.
-	 */
-	private LabeledIntMap labeledValue;
-
-	/**
 	 * Factory for labeled value set.
 	 */
 	LabeledIntMapFactory<? extends LabeledIntMap> labeledValueMapFactory;
+
+	/**
+	 * Labeled value.
+	 */
+	private LabeledIntMap labeledValue;
 
 	/**
 	 * @param labeledIntMapImplementation
@@ -126,6 +126,15 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	}
 
 	@Override
+	public void copyLabeledValueMap(final LabeledIntMap inputLabeledValue) {
+		LabeledIntMap map = this.labeledValueMapFactory.get();
+		for (Object2IntMap.Entry<Label> entry : inputLabeledValue.entrySet()) {
+			map.put(entry.getKey(), entry.getIntValue());
+		}
+		this.labeledValue = map;
+	}
+
+	@Override
 	public LabeledIntEdge createLabeledIntEdge() {
 		throw new UnsupportedOperationException("This class needs to know which labeled int map implementation to use.");
 	}
@@ -168,12 +177,33 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		return new LabeledIntEdgePluggable(name1, labeledIntMapImplementation);
 	}
 
+	@Override
+	public LabeledIntMapFactory<? extends LabeledIntMap> getLabeledIntValueMapFactory() {
+		return this.labeledValueMapFactory;
+	}
+
 	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */
 	@Override
 	public LabeledIntMap getLabeledValueMap() {
 		return this.labeledValue;
+	}
+
+	/**
+	 * @return the labeled values as a set
+	 */
+	@Override
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
+		return this.labeledValue.entrySet();
+	}
+
+	/**
+	 * @return the labeled values as a set
+	 */
+	@Override
+	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse) {
+		return this.labeledValue.entrySet(setToReuse);
 	}
 
 	/**
@@ -201,12 +231,6 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		return this.labeledValue.getMinValueAmongLabelsWOUnknown();
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public int getMinValueSubsumedBy(Label l) {
-		return this.labeledValue.getMinValueSubsumedBy(l);
-	}
-
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the value of label l or the minimal value of labels consistent with l if it exists, null otherwise.
@@ -230,6 +254,12 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		return this.upperCaseValue.getMinValueConsistentWith(l, upperL);
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public int getMinValueSubsumedBy(Label l) {
+		return this.labeledValue.getMinValueSubsumedBy(l);
+	}
+
 	/**
 	 * @param label label
 	 * @return the value associated to label it it exists, {@link Constants#INT_NULL} otherwise.
@@ -245,22 +275,6 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	@Override
 	public boolean isEmpty() {
 		return this.labeledValue.size() == 0 && this.lowerCaseValue.isEmpty() && this.upperCaseValue.size() == 0;
-	}
-
-	/**
-	 * @return the labeled values as a set
-	 */
-	@Override
-	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
-		return this.labeledValue.entrySet();
-	}
-
-	/**
-	 * @return the labeled values as a set
-	 */
-	@Override
-	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse) {
-		return this.labeledValue.entrySet(setToReuse);
 	}
 
 	/**
@@ -361,17 +375,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 				LabeledIntEdgePluggable.LOG.finer("Removing label '" + l + "' from the edge " + this.toString());
 			}
 		}
-		this.removedLabeledValue.remove(l);
 		return this.labeledValue.remove(l);
-	}
-
-	@Override
-	public void copyLabeledValueMap(final LabeledIntMap inputLabeledValue) {
-		LabeledIntMap map = this.labeledValueMapFactory.get();
-		for (Object2IntMap.Entry<Label> entry : inputLabeledValue.entrySet()) {
-			map.put(entry.getKey(), entry.getIntValue());
-		}
-		this.labeledValue = map;
 	}
 
 	@Override
@@ -381,6 +385,23 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		} else {
 			this.labeledValue = inputLabeledValue;
 		}
+	}
+
+	/**
+	 * Set the name of the edge. Cannot be null or empty.
+	 *
+	 * @param name the not-null not-empty new name
+	 * @return the old name
+	 */
+	@Override
+	public String setName(final String name) {
+		final String old = this.name;
+		if ((name != null) && (name.length() > 0)) {
+			this.name = name;
+			this.setChanged();
+			notifyObservers("Name:" + old);
+		}
+		return old;
 	}
 
 	@Override
@@ -414,28 +435,6 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 				+ ((this.upperCaseValue.size() > 0) ? "UL: " + this.upperCaseValue.toString() + "; " : "")
 				+ ((!this.lowerCaseValue.isEmpty()) ? "LL: " + this.lowerCaseValue.toString() + ";" : "")
 				+ "❯";
-	}
-
-	@Override
-	public LabeledIntMapFactory<? extends LabeledIntMap> getLabeledIntValueMapFactory() {
-		return this.labeledValueMapFactory;
-	}
-
-	/**
-	 * Set the name of the edge. Cannot be null or empty.
-	 *
-	 * @param name the not-null not-empty new name
-	 * @return the old name
-	 */
-	@Override
-	public String setName(final String name) {
-		final String old = this.name;
-		if ((name != null) && (name.length() > 0)) {
-			this.name = name;
-			this.setChanged();
-			notifyObservers("Name:" + old);
-		}
-		return old;
 	}
 
 }
