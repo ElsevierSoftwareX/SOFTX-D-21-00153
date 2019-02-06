@@ -54,15 +54,18 @@ Se si vuole importare nel branch modifiche fatte nel trunk
 3.2 fare i commit
 3.3 fare il merge del trunk
 
-svn merge https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk
+svn merge ^/CSTNU/trunk
 
-4) Quando si vuole riportare il tutto nel trunk per sempre
+4) Quando si vuole riportare dei commit fatti in un brancj nel trunk 
 
-4.0 fare i commit nel branch
-4.1 andare nella working dir del trunk
-4.2 fare il merge finale
+4.0 Andare nella directory del branch
+4.1 svn up
+4.2 svn ci #fare i commit nel branch
+4.3 andare nella working dir del trunk
+4.4 svn up
+4.5 fare il merge (questo vale per il client 1.8 o superiore)
 
-svn merge --reintegrate https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome branch>
+svn merge ^/CSTNU/branches/<nome branch>
 
 Il manuale consiglia poi di cancellare il branch nel repository perché non più usabile.
 La storia si può sempre recuperare facendo svn log ../branches/<nome branch>
@@ -70,17 +73,7 @@ La storia si può sempre recuperare facendo svn log ../branches/<nome branch>
 svn delete https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome branch> \
              -m "Remove <nome branch>, reintegrated with trunk."
 
-Se si vuole riaprire subito un branch per continuare (anche rimanendo nella medesima working directory del branch precedente), dare il comando
-svn copy  https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk \
-           https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome new branch> \
-           -m "Recreate <nome new branch> from trunk@HEAD."
-
-5) MODO alternativo di fare il merge VERSO IL TRUNK e tenere ancora vivo il branch
-
-5.1 Fare i punti 4.0, 4.1. e 4.2. Supponiamo che il merge finale abbia dato release number 391
-5.2 Andare nella working dir del branch
-5.3 svn update
-5.4 svn merge --record-only -c 391 ^/CSTNU/trunk
+Dalla versione 1.8, se non si cancella il branch, su può continuare a lavorare facendo merge da/per il trunk.
 
 Azioni per latex4ht
 ===================
