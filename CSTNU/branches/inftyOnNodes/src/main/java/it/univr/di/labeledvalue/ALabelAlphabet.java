@@ -74,7 +74,7 @@ public class ALabelAlphabet {
 	/**
 	 * A-Letter.
 	 */
-	public static final String ALETTER = "A-Za-z0-9α-μ_ ωΩ?";
+	public static final String ALETTER = "A-Za-z0-9_ωΩ? ";// α-μ_
 
 	/**
 	 * A-Letter range.
