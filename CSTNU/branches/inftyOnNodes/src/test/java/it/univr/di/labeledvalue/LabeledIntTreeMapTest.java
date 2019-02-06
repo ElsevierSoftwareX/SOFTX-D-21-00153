@@ -4,6 +4,7 @@
 package it.univr.di.labeledvalue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.junit.Assert;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -181,6 +183,11 @@ public class LabeledIntTreeMapTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
+
+		@Override
+		public boolean isEmpty() {
+			return this.size() == 0;
+		}
 	}
 
 	/**
@@ -220,6 +227,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.clear();
 
 		assertEquals("Test cancellazione ripetuta, di empty label e di una label inesistente:\n", this.expected, this.actual);
+		Assert.assertEquals(0, this.actual.size());
 	}
 
 	/**
@@ -237,6 +245,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("¬a"), 21);
 
 		assertEquals("Test inserimento due label di pari valore con un letterale opposto:\n", this.expected, this.actual);
+		Assert.assertEquals(2, this.actual.size());
 	}
 
 	/**
@@ -254,6 +263,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.emptyLabel, 21);
 
 		assertEquals("Test inserimento due label di pari valore con un letterale opposto con ricorsione:\n", this.expected, this.actual);
+		Assert.assertEquals(1, this.actual.size());
 	}
 
 	/**
@@ -278,6 +288,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("ab"), 10);
 
 		assertEquals("Test su creazione base A INIZIO e gestione semplificazioni:\n", this.expected, this.actual);
+		Assert.assertEquals(3, this.actual.size());
 	}
 
 	/**
@@ -319,6 +330,7 @@ public class LabeledIntTreeMapTest {
 		}
 		assertEquals("21, 10, ", sb.toString());
 		assertEquals("{(20, a) (15, ¬b) (10, ab) (12, ¬ab) }", copy.toString());
+		Assert.assertEquals(4, copy.size());
 	}
 
 	/**
@@ -341,6 +353,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("ab"), 10);
 
 		assertEquals("Test su creazione base IN MEZZO e gestione semplificazioni:\n", this.expected, this.actual);
+		Assert.assertEquals(3, this.actual.size());
 	}
 
 	/**
@@ -360,6 +373,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("ab"), 20);
 
 		assertEquals("Test su creazione base IN FINE e gestione semplificazioni:\n", this.expected, this.actual);
+		Assert.assertEquals(2, this.actual.size());
 	}
 
 	/**
@@ -388,6 +402,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.emptyLabel, 10);
 
 		assertEquals("Test su creazione e gestione semplificazioni:\n", this.expected, this.actual);
+		Assert.assertEquals(1, this.actual.size());
 
 	}
 
@@ -402,6 +417,7 @@ public class LabeledIntTreeMapTest {
 		this.expected.clear();
 		this.expected.put(Label.emptyLabel, 0);
 		assertEquals("Test su aggiunta di (empty,0):\n", this.expected, this.actual);
+		Assert.assertEquals(1, this.actual.size());
 	}
 
 	/**
@@ -681,6 +697,18 @@ public class LabeledIntTreeMapTest {
 	 * Check if the management of the base is correct.
 	 */
 	@Test
+	public final void parseLongMapTest() {
+		String longString = "{(0, ⊡) (-9, ¿a) (-1, ¬a¿b) (-9, ¿ab) (-11, ¿a¿d) (-10, ¿a¿f) (-10, ¿a¬i) (-1, abd) (-4, a¿d¬g) (-6, a¿d¿g) (-5, ¬a¿b¿h) (-13, ¿ab¿d) (-13, ¿ab¿f) (-13, ¿ab¿h) (-13, ¿ab¬i) (-33, ¿a¿b¿d) (-10, ¿a¿b¬g) (-7, ¿a¬ce) (-10, ¿a¬e¬i) (-10, ¿ah¿i) (-3, abd¬g) (-4, abd¿h) (-6, ab¿d¿g) (-6, a¿bd¿g) (-6, a¿c¿d¬g) (-9, a¿d¿g¬i) (-10, a¿d¿g¿i) (-5, ¬a¿b¿fh) (-6, ¬a¿b¿hi) (-10, ¿ab¬c¬e) (-10, ¿ab¬c¬f) (-10, ¿ab¬ch) (-13, ¿abd¬e) (-13, ¿abdf) (-13, ¿abdh) (-20, ¿abd¿h) (-20, ¿ab¿dh) (-20, ¿ab¿d¿i) (-13, ¿ab¬ef) (-13, ¿ab¬e¿h) (-13, ¿abfh) (-13, ¿ab¬f¿h) (-13, ¿ab¬f¿i) (-17, ¿a¬b¿d¿f) (-19, ¿a¿bdf) (-20, ¿a¿bd¿f) (-20, ¿a¿bdh) (-19, ¿a¿bd¿i) (-33, ¿a¿b¿d¬h) (-18, ¿a¿b¿d¬i) (-10, ¿a¿b¬e¬g) (-13, ¿a¿bhi) (-33, ¿a¿c¿d¿e) (-19, ¿a¿c¿di) (-13, ¿a¿c¿e¿f) (-11, ¿a¿c¿e¿i) (-13, ¿a¿c¿f¿i) (-10, ¿adfh) (-19, ¿a¿d¿f¿i) (-1, ¿b¬dei) (-3, abde¬g) (-3, abd¬e¬i) (-4, abd¬f¿h) (-6, abd¿g¿h) (-6, a¿bde¿g) (-7, a¿bd¿e¿g) (-9, a¿bd¿g¬i) (-10, a¿bd¿g¿i) (-3, a¿b¬d¿e¿i) (-6, ac¿d¬gh) (-11, a¬c¿d¿g¿i) (-10, a¿c¿d¬g¬i) (-1, a¬de¬g¿i) (-4, a¬d¿e¬g¿i) (-8, a¬d¿e¿g¿i) (-1, ¬a¬b¬d¿ei) (-8, ¬a¿b¿efi) (-8, ¬a¿b¿e¬hi) (-6, ¬a¿b¿fhi) (-8, ¬a¿bg¿hi) (-10, ¿ab¬ce¬h) (-33, ¿ab¿c¿dh) (-33, ¿ab¿c¿d¿i) (-11, ¿ab¿ce¬h) (-33, ¿ab¿deh) (-33, ¿ab¿de¿i) (-31, ¿ab¿d¿fh) (-31, ¿ab¿d¿f¿i) (-33, ¿ab¿d¿gh) (-33, ¿ab¿d¿g¿i) (-33, ¿ab¿dh¿i) (-10, ¿ab¬e¬f¬h) (-11, ¿ab¿e¬f¬h) (-11, ¿a¬b¬d¿e¿i) (-19, ¿a¬b¿de¿f) (-20, ¿a¬b¿d¿e¿f) (-19, ¿a¬b¿df¿i) (-19, ¿a¬b¿d¿f¬i) (-25, ¿a¿bcd¿f) (-13, ¿a¿bchi) (-20, ¿a¿b¿cdf) (-17, ¿a¿b¿cd¬i) (-20, ¿a¿b¿cd¿i) (-20, ¿a¿bd¿ef) (-25, ¿a¿bd¿e¿f) (-20, ¿a¿bd¿e¿i) (-20, ¿a¿bdf¬g) (-20, ¿a¿bdf¿i) (-25, ¿a¿bd¿f¿i) (-20, ¿a¿bd¬g¿i) (-13, ¿a¿b¬d¿ei) (-14, ¿a¿b¬d¿hi) (-15, ¿a¿b¬d¿h¿i) (-40, ¿a¿b¿de¿f) (-20, ¿a¿b¿d¿ei) (-45, ¿a¿b¿d¿fh) (-45, ¿a¿b¿d¿f¿i) (-20, ¿a¿b¿d¬g¬i) (-16, ¿a¿b¿eh¿i) (-10, ¿a¬cde¿h) (-10, ¿a¬cd¿e¿h) (-11, ¿a¬ce¿f¿i) (-11, ¿a¬ce¿h¿i) (-13, ¿a¬c¿e¿f¿i) (-11, ¿a¬c¿e¿g¿i) (-11, ¿a¬c¿eh¿i) (-11, ¿a¬c¿f¿g¿i) (-11, ¿a¿cd¬f¿i) (-11, ¿a¿cd¿f¬i) (-32, ¿a¿c¿deh) (-33, ¿a¿c¿de¿h) (-33, ¿a¿c¿de¿i) (-19, ¿a¿c¿d¿f¬i) (-33, ¿a¿c¿d¿f¿i) (-16, ¿a¿c¿d¿g¿i) (-33, ¿a¿c¿dh¿i) (-11, ¿a¿ce¬f¿i) (-13, ¿a¿ce¿fh) (-11, ¿a¿ce¿f¬i) (-13, ¿a¿c¿f¬h¿i) (-13, ¿ad¿f¿g¿i) (-13, ¿ad¿fh¿i) (-11, ¿a¬d¿e¬f¿i) (-11, ¿a¬d¿e¿f¬h) (-11, ¿a¬d¿e¿f¬i) (-12, ¿a¬d¿e¿f¿i) (-11, ¿a¬d¿e¿g¿i) (-11, ¿a¬d¿eh¿i) (-33, ¿a¿deh¿i) (-19, ¿a¿d¿e¬f¿i) (-13, ¿a¿d¿e¿f¬i) (-33, ¿a¿d¿e¿f¿i) (-17, ¿a¿d¿e¿gh) (-33, ¿a¿d¿e¿g¿i) (-19, ¿a¿df¿g¿i) (-19, ¿a¿dfh¿i) (-33, ¿a¿d¿gh¿i) (-13, ¿ae¿fh¿i) (-13, ¿a¿e¿f¿g¿i) (-13, ¿a¿f¿gh¿i) (-1, ¬b¬c¬dei) (-8, ¬b¬defi) (-12, abcd¬e¿h) (-12, abcdf¬h) (-6, abcd¬g¿h) (-3, ab¬cd¬e¬i) (-11, ab¿cde¬h) (-7, ab¿c¿d¬f¬g) (-12, ab¿c¿d¬g¬i) (-8, abd¬eg¿h) (-9, abd¬e¿g¿h) (-8, abd¿eg¬h) (-9, abd¿e¿g¬h) (-9, abd¿g¬h¬i) (-12, abd¿g¿h¿i) (-7, ab¿d¬e¿f¿g) (-12, ab¿df¿g¿i) (-13, ab¿d¿f¿g¿i) (-3, a¬b¬c¬d¿e¿i) (-7, a¬b¬c¿de¿g) (-7, a¬b¬c¿d¬g¿i) (-16, a¬b¿c¿d¿g¿i) (-8, a¬b¿df¬g¿i) (-16, a¬b¿df¿g¿i) (-7, a¿b¿cde¿g) (-7, a¿b¿cd¿f¿g) (-10, a¿b¿cd¿g¬i) (-7, a¿bd¬e¿f¿g) (-4, a¿b¬de¿hi) (-8, a¿b¬d¿ehi) (-17, a¿b¿d¿e¿g¿i) (-8, a¿b¿d¬gh¿i) (-16, a¿b¿d¿gh¿i) (-6, ac¿de¬gh) (-8, ac¿d¬gh¿i) (-10, ac¿d¬g¿h¬i) (-8, a¿c¬d¿e¬g¿i) (-10, a¿c¬d¿e¿g¿i) (-17, a¿c¿d¿e¿g¿i) (-16, a¿c¿d¬f¿g¿i) (-4, a¬de¬g¿h¿i) (-17, a¿d¿e¿gh¿i) (-16, a¿d¿f¿gh¿i) (-8, ¬a¬b¬d¿e¬hi) (-8, ¬a¿b¿fghi) (-21, ¿abcdf¬h) (-25, ¿abcdf¿h) (-25, ¿abc¿d¿f¬h) (-33, ¿abc¿dgh) (-33, ¿abc¿dg¿i) (-11, ¿ab¬cde¬h) (-11, ¿ab¬c¬d¿e¬h) (-11, ¿ab¬cef¬h) (-45, ¿ab¿c¿d¿fh) (-45, ¿ab¿c¿d¿f¿i) (-25, ¿abdf¿h¿i) (-45, ¿ab¿d¿e¿fh) (-45, ¿ab¿d¿e¿f¿i) (-16, ¿ab¿d¿e¿g¬h) (-31, ¿ab¿df¬g¿i) (-16, ¿ab¿d¿f¬g¬h) (-35, ¿ab¿d¿f¬g¿i) (-45, ¿ab¿d¿f¿gh) (-45, ¿ab¿d¿f¿g¿i) (-45, ¿ab¿d¿fh¿i) (-15, ¿ab¿d¿f¬h¬i) (-11, ¿ab¿e¬g¬hi) (-21, ¿a¬bc¿d¿e¿f) (-10, ¿a¬b¬cd¿e¬g) (-10, ¿a¬b¬ce¬hi) (-10, ¿a¬b¬c¿e¬g¬h) (-13, ¿a¬b¿cd¿f¬i) (-17, ¿a¬b¿c¿df¬i) (-25, ¿a¬b¿c¿d¿f¬i) (-11, ¿a¬b¿ce¿hi) (-11, ¿a¬b¿c¿e¬hi) (-17, ¿a¬b¬defi) (-18, ¿a¬b¬def¿i) (-19, ¿a¬b¬d¿ef¿i) (-12, ¿a¬b¬d¿e¿f¬i) (-20, ¿a¬b¬d¿e¿f¿i) (-10, ¿a¬b¬d¿e¬g¿h) (-21, ¿a¬b¿de¿f¿i) (-13, ¿a¬b¿d¿e¬f¬i) (-21, ¿a¬b¿d¿e¬f¿i) (-20, ¿a¬b¿d¿e¿gh) (-19, ¿a¬b¿d¿fg¿h) (-21, ¿a¬b¿d¿fh¿i) (-14, ¿a¿bc¬dhi) (-15, ¿a¿bc¬dh¿i) (-20, ¿a¿b¬cd¬f¿i) (-14, ¿a¿b¬c¬d¬f¿i) (-11, ¿a¿b¬ce¬hi) (-14, ¿a¿b¬c¿e¬f¿i) (-14, ¿a¿b¬c¬fh¿i) (-40, ¿a¿b¿c¿df¿i) (-25, ¿a¿bd¬e¿f¬g) (-21, ¿a¿b¬def¿i) (-15, ¿a¿b¬de¿hi) (-17, ¿a¿b¬d¿ehi) (-20, ¿a¿b¬d¿eh¿i) (-15, ¿a¿b¬df¿hi) (-15, ¿a¿b¬d¬g¿hi) (-40, ¿a¿b¿defh) (-41, ¿a¿b¿def¿h) (-40, ¿a¿b¿def¿i) (-41, ¿a¿b¿de¿f¬g) (-41, ¿a¿b¿de¿f¬h) (-20, ¿a¿b¿d¬e¬gi) (-41, ¿a¿b¿df¬g¿i) (-40, ¿a¿b¿dfh¿i) (-41, ¿a¿b¿df¿h¿i) (-33, ¿ac¿dgh¿i) (-13, ¿ac¿fgh¿i) (-13, ¿a¬cde¿f¿i) (-11, ¿a¬cdeh¿i) (-11, ¿a¬cd¿gh¿i) (-12, ¿a¬c¿de¬f¿i) (-12, ¿a¬c¿d¬f¿g¿i) (-13, ¿a¬c¬e¿f¿g¿i) (-11, ¿a¿cdgh¿i) (-34, ¿a¿c¿de¿f¿i) (-33, ¿a¿c¿de¬gh) (-45, ¿a¿c¿d¿e¿f¿i) (-45, ¿a¿c¿d¿fh¿i) (-13, ¿a¿c¿e¬f¿g¿i) (-12, ¿a¬d¬e¿f¿g¿i) (-13, ¿a¿d¬e¬f¿g¿i) (-13, ¿a¿d¬e¬fh¿i) (-45, ¿a¿d¿e¿f¿g¿i) (-45, ¿a¿d¿e¿fh¿i) (-17, ¿a¿d¿f¿gh¬i) (-45, ¿a¿d¿f¿gh¿i) (-8, ¬b¬c¬de¬hi) (-3, abcd¬eh¬i) (-12, abcd¬g¿h¬i) (-7, ab¬c¿d¬e¬f¿g) (-7, ab¬c¿d¬e¿gh) (-12, ab¬c¿d¿e¿g¿i) (-12, ab¬c¿d¬f¿g¿i) (-12, ab¬c¿d¿gh¿i) (-11, ab¿cd¬g¬h¬i) (-7, ab¿c¿d¬e¬gh) (-8, abd¬efg¬h) (-9, abd¬ef¿g¬h) (-9, abd¿eg¬h¿i) (-12, abd¿eg¿hi) (-7, ab¿d¬e¬f¿gh) (-8, a¬bc¿d¬gh¿i) (-7, a¬b¬c¬d¿e¬g¿i) (-11, a¬b¬c¬d¿e¿g¿i) (-8, a¬b¬c¿d¬g¬h¿i) (-16, a¬b¬d¿ef¿g¿i) (-14, a¬b¿def¿gi) (-17, a¬b¿def¿g¿i) (-7, a¿b¬cd¬e¬f¿g) (-7, a¿b¬cd¬e¿gh) (-13, a¿b¬c¿d¬f¿g¿i) (-10, a¿b¿cde¿g¬i) (-13, a¿b¿c¬d¿e¿g¿i) (-7, a¿bd¬e¬f¿gh) (-16, a¿b¬d¿efg¿i) (-16, a¿b¬d¿egh¿i) (-8, a¿b¬d¿eg¬hi) (-17, a¿b¿d¿efg¿i) (-17, a¿b¿d¿egh¿i) (-14, a¿b¿d¿e¿ghi) (-8, ac¬d¿e¬gh¿i) (-10, ac¬d¿e¿gh¿i) (-13, a¬c¿d¿e¿f¿g¿i) (-8, a¿c¬de¬g¿h¿i) (-16, a¿c¿de¿gh¿i) (-4, a¬de¿f¬gh¿i) (-25, ¿abcdf¬h¿i) (-20, ¿abc¿d¿e¿g¬h) (-27, ¿abc¿df¿hi) (-45, ¿abc¿d¿fgh) (-45, ¿abc¿d¿fg¿i) (-31, ¿ab¿c¿d¿f¬g¬i) (-25, ¿abd¿ef¿hi) (-18, ¿abd¿f¬g¬h¿i) (-21, ¿ab¿d¬e¬f¿h¬i) (-15, ¿ab¿d¿e¬f¬h¬i) (-31, ¿ab¿df¬gh¬i) (-16, ¿ab¿df¿g¬h¬i) (-21, ¿a¬bc¬d¿e¿f¿i) (-18, ¿a¬bc¿d¿fgh) (-10, ¿a¬b¬cdef¬g) (-10, ¿a¬b¬cde¬gh) (-10, ¿a¬b¬c¬de¬fi) (-11, ¿a¬b¬c¬de¬f¿i) (-11, ¿a¬b¬c¬de¬hi) (-13, ¿a¬b¿c¬d¿e¬f¿i) (-19, ¿a¬b¿c¿def¬i) (-12, ¿a¬b¿c¿de¬f¬i) (-12, ¿a¬b¬d¿e¬f¿g¿i) (-12, ¿a¬b¬d¿e¬fh¿i) (-11, ¿a¬b¬d¿e¬f¬hi) (-11, ¿a¬b¬d¿e¬g¿hi) (-17, ¿a¬b¿df¿gh¬i) (-19, ¿a¬b¿df¿g¿h¬i) (-15, ¿a¿bc¬dehi) (-27, ¿a¿bc¬d¿e¿f¿i) (-15, ¿a¿bc¬dfhi) (-15, ¿a¿bc¬d¬ghi) (-14, ¿a¿b¬c¬d¬eh¿i) (-41, ¿a¿b¿c¿df¬h¿i) (-23, ¿a¿b¬def¿h¿i) (-14, ¿a¿b¬d¬e¬f¬h¿i) (-25, ¿a¿b¬d¿ef¿h¿i) (-23, ¿a¿b¬d¿e¿f¬h¿i) (-41, ¿a¿b¿def¬gh) (-41, ¿a¿b¿def¬h¿i) (-45, ¿a¿b¿de¿f¬g¿i) (-14, ¿a¿b¿e¬f¬g¬h¿i) (-12, ¿ac¬d¬e¿fg¿i) (-13, ¿ac¿d¬e¬fg¿i) (-45, ¿ac¿d¿fgh¿i) (-13, ¿a¬cde¿f¬h¿i) (-13, ¿a¬c¬e¿f¿g¬h¿i) (-13, ¿a¿ce¬f¿gh¿i) (-12, ¿a¬d¬e¿fgh¿i) (-12, ¿a¬d¿e¿f¿gh¬i) (-12, abc¿d¿e¿g¬h¿i) (-9, ab¬cd¿eg¬hi) (-9, abd¿efg¬hi) (-17, a¬bc¬d¿e¿fg¿i) (-5, a¬b¬c¿de¬f¬gi) (-11, a¬b¬c¿de¿g¬hi) (-13, a¬b¬c¿d¿e¬f¿g¿i) (-11, a¬b¿c¬d¿efg¿i) (-17, a¬b¿c¬d¿ef¿g¿i) (-11, a¬b¿c¬d¿eg¬h¿i) (-7, a¬b¿c¿de¬f¬gi) (-17, a¿bc¬d¿egh¿i) (-11, a¿b¬c¬d¿eg¬h¿i) (-8, ac¬de¿f¬gh¿i) (-17, a¿c¿de¿f¿gh¿i) (-25, ¿abcd¿e¿f¬hi) (-31, ¿abc¿de¿f¬hi) (-23, ¿ab¿cd¿ef¬hi) (-23, ¿ab¿c¿def¬hi) (-25, ¿ab¿c¿df¬g¬h¬i) (-14, ¿abd¬e¿f¬g¬hi) (-25, ¿abd¬e¿f¬g¿hi) (-16, ¿abd¿e¿f¬g¬hi) (-25, ¿ab¿d¬e¬f¬g¿hi) (-22, ¿ab¿d¬e¬f¬g¿h¬i) (-16, ¿ab¿d¿e¬f¬g¬hi) (-18, ¿a¬bc¿df¿gh¬i) (-14, ¿a¬b¬c¿d¿e¬f¿g¬i) (-13, ¿a¬b¿c¬de¬fh¿i) (-18, ¿a¬b¿c¿dfgh¬i) (-19, ¿a¬b¿c¿dfg¿h¬i) (-19, ¿a¬b¿def¿gh¬i) (-22, ¿a¿bcdf¬g¬hi) (-23, ¿a¿bc¬defh¿i) (-24, ¿a¿bc¬d¿efh¿i) (-27, ¿a¿bc¬d¿ef¿h¿i) (-26, ¿a¿b¿c¬d¿efh¿i) (-27, ¿a¿b¬d¿ef¬g¿h¿i) (-24, ¿a¿b¬d¿e¿f¬g¬h¿i) (-12, ¿ac¬d¬e¿fg¬h¿i) (-17, a¬bc¬d¿ef¿gh¿i) (-17, a¬b¿c¬d¿efg¬h¿i) (-23, ¿abcd¿ef¬g¬hi) }";
+		// System.out.println("Length: " + longString.length());
+		this.actual = AbstractLabeledIntMap.parse(longString);
+
+		assertNotNull(this.actual);
+	}
+
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
 	public final void minValue() {
 		this.actual.clear();
 		this.actual.put(Label.parse("a"), 0);
@@ -873,6 +901,7 @@ public class LabeledIntTreeMapTest {
 
 		assertEquals("{(22, ce) (11, c¬e) (23, ¬ce) (19, ¬c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
+		Assert.assertEquals(11, this.actual.size());
 	}
 
 	/**

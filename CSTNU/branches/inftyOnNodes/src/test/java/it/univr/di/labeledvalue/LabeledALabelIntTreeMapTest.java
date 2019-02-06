@@ -77,6 +77,7 @@ public class LabeledALabelIntTreeMapTest {
 		set1.add(new AbstractObject2IntMap.BasicEntry<Entry<Label, ALabel>>((new SimpleEntry<>(Label.emptyLabel, new ALabel("N9", this.alpha))), 12));
 
 		Assert.assertEquals("Generation of set of triple\n", set1, set);
+		Assert.assertEquals(5, this.map.size());
 	}
 
 	/**
@@ -92,6 +93,26 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
 
 		Assert.assertEquals("Check of merge with simple simplification", this.result, this.map);
+		Assert.assertEquals(1, this.map.size());
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void immutable() {
+		this.map.clear();
+		this.map.mergeTriple("¬a¬b", new ALabel("N9", this.alpha), 13);
+		this.map.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
+
+		LabeledALabelIntTreeMap view = this.map.immutable();
+		view.remove(Label.parse("¬a"), new ALabel("N9", this.alpha));
+
+		this.result.clear();
+		this.result.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
+
+		Assert.assertEquals("Immutable makes read-only", this.result, view);
+		Assert.assertEquals(1, this.map.size());
 	}
 
 	/**
@@ -108,6 +129,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple(Label.emptyLabel, new ALabel("N9", this.alpha), 12);
 
 		Assert.assertEquals("Check of merge with double simple simplification", this.result, this.map);
+		Assert.assertEquals(1, this.map.size());
 	}
 
 	/**
@@ -125,6 +147,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple(Label.emptyLabel, new ALabel("N9", this.alpha), 12);
 
 		Assert.assertEquals("Check of merge with double simple simplification and add useless value", this.result, this.map);
+		Assert.assertEquals(1, this.map.size());
 	}
 
 	/**
@@ -144,6 +167,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("¬a¬b", new ALabel("N9", this.alpha), 11);
 
 		Assert.assertEquals("Check of merge with a final overwriting value", this.result, this.map);
+		Assert.assertEquals(2, this.map.size());
 	}
 
 	/**
@@ -165,6 +189,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("¬a¬b", new ALabel("N8", this.alpha), 11);
 
 		Assert.assertEquals("Check of merge with two different node\n", this.result, this.map);
+		Assert.assertEquals(3, this.map.size());
 	}
 
 
@@ -191,6 +216,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("¬a¬b", new ALabel("N8", this.alpha), 11);
 
 		Assert.assertEquals("Check of merge with two different nodes,\n", this.result, this.map);
+		Assert.assertEquals(4, this.map.size());
 	}
 
 	/**
@@ -211,15 +237,10 @@ public class LabeledALabelIntTreeMapTest {
 
 		this.result.clear();
 		this.result.mergeTriple("¬b", n8, 13);
-		this.result.putTriple(Label.emptyLabel, n8n9, 12);
-		// this.result.mergeTriple(Label.emptyLabel, n9, 12);
-		// 2018-12-22 Test for evaluating if the extreme optimization worths!
-		// I removed the simplification of a-labels when a new value simplifies p-labels.
-		// so, the following is still present
-		this.result.mergeTriple("¬a", n9, 12);
-		this.result.mergeTriple("a", n9, 12);
+		this.result.mergeTriple(Label.emptyLabel, n9, 12);
 
 		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
+		Assert.assertEquals(2, this.map.size());
 	}
 
 	/**
@@ -242,6 +263,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("¬a", ALabel.emptyLabel, -17);
 
 		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
+		Assert.assertEquals(2, this.map.size());
 	}
 
 	/**
@@ -250,9 +272,10 @@ public class LabeledALabelIntTreeMapTest {
 	@Test
 	public final void parse() {
 
-		this.map = LabeledALabelIntTreeMap
-				.parse("{(¬a, N9, -12) (¬a, N9" + ALabel.ALABEL_SEPARATORstring + "N12" + ALabel.ALABEL_SEPARATORstring
-				+ "N13, -20) (a, N10, -11) (" + Label.emptyLabel + ", N9, -12)}", this.alpha);
+		System.out.println(LabeledALabelIntTreeMap.labelCharsRE);
+		String m = "{(¬a, N9, -12) (¬a, N9" + ALabel.ALABEL_SEPARATORstring + "N12" + ALabel.ALABEL_SEPARATORstring + "N13, -20) (a, N10, -11) ("
+				+ Label.emptyLabel + ", N9, -12) (◇, -∞, ¿a) }";
+		this.map = LabeledALabelIntTreeMap.parse(m, this.alpha);
 
 		// System.out.printf("Map da parse: %s\n", map);
 
@@ -263,6 +286,7 @@ public class LabeledALabelIntTreeMapTest {
 		n9.conjunct(new ALetter("N12"));
 		n9.conjunct(new ALetter("N13"));
 		this.result.mergeTriple("¬a", n9, -20);
+		this.result.mergeTriple("¿a", ALabel.emptyLabel, Constants.INT_NEG_INFINITE);
 
 		Assert.assertEquals("Check of parse method", this.result, this.map);
 
@@ -282,9 +306,11 @@ public class LabeledALabelIntTreeMapTest {
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
 
 		assertTrue(this.map.getMinValue() == -14);
+		Assert.assertEquals(2, this.map.size());
 		this.map.clear();
 
 		assertTrue(this.map.getMinValue() == Constants.INT_NULL);
+		Assert.assertEquals(0, this.map.size());
 	}
 
 	/**
