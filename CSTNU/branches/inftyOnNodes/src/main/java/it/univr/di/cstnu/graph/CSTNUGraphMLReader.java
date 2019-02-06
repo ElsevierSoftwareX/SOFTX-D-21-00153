@@ -97,9 +97,19 @@ public class CSTNUGraphMLReader {
 	};
 
 	/**
+	 * The result of the loading action.
+	 */
+	LabeledIntGraph graph;
+
+	/**
 	 * ALabel alphabet for UC a-labels
 	 */
 	private ALabelAlphabet aLabelAlphabet;
+
+	/**
+	 * 
+	 */
+	private Supplier<LabeledIntEdge> edgeFactory;
 
 	/**
 	 * Input file reader
@@ -112,19 +122,9 @@ public class CSTNUGraphMLReader {
 	private boolean isCSTN;
 
 	/**
-	 * The result of the loading action.
-	 */
-	LabeledIntGraph graph;
-
-	/**
 	 * Class for representing internal labeled values.
 	 */
 	private Class<? extends LabeledIntMap> mapTypeImplementation;
-
-	/**
-	 * 
-	 */
-	private Supplier<LabeledIntEdge> edgeFactory;
 
 	/**
 	 * Allows to read a graph from a file written in GraphML format.<br>
@@ -146,7 +146,7 @@ public class CSTNUGraphMLReader {
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
 		this.edgeFactory = new InternalEdgeFactory<>(this.mapTypeImplementation);
 		this.graph = new LabeledIntGraph(this.mapTypeImplementation, this.aLabelAlphabet);
-		this.graph.setFileName(graphFile);
+		this.graph.setInputFile(graphFile);
 	}
 
 	/**
@@ -187,12 +187,23 @@ public class CSTNUGraphMLReader {
 		Function<LabeledNode, String> nodeXF = graphReader.getVertexMetadata().get(CSTNUGraphMLWriter.NODE_X_KEY).transformer;
 		// Y position
 		Function<LabeledNode, String> nodeYF = graphReader.getVertexMetadata().get(CSTNUGraphMLWriter.NODE_Y_KEY).transformer;
+		// Potential
+		GraphMLMetadata<LabeledNode> nodeLabeledPotentialValueMD = graphReader.getVertexMetadata().get(CSTNUGraphMLWriter.NODE_POTENTIAL_KEY);
+		Function<LabeledNode, String> nodeLabeledPotentialValueF = (nodeLabeledPotentialValueMD != null) ? nodeLabeledPotentialValueMD.transformer : null;
 
 		for (LabeledNode n : this.graph.getVertices()) {
 			n.setLabel(Label.parse(nodeLabelF.apply(n)));
 			String s = nodeObservedPropF.apply(n);
 			if ((s != null) && (s.length() == 1)) {
 				n.setObservable(s.charAt(0));
+			}
+
+			if (nodeLabeledPotentialValueF != null) {
+				String data = nodeLabeledPotentialValueF.apply(n);
+				LabeledALabelIntTreeMap potentialMap = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
+				if (data != null && data.length() > 2 && (potentialMap == null || potentialMap.isEmpty()))
+					throw new IllegalArgumentException("Potential values in a wrong format: " + data + " in node " + n);
+				n.setPotential(potentialMap);
 			}
 			n.setX(Double.parseDouble(nodeXF.apply(n)));
 			n.setY(Double.parseDouble(nodeYF.apply(n)));
@@ -246,6 +257,8 @@ public class CSTNUGraphMLReader {
 					e.putLabeledValue(Label.emptyLabel, Integer.parseInt(data));
 				}
 			}
+			if (this.isCSTN && e.isEmpty())
+				this.graph.removeEdge(e);
 		}
 		if (this.isCSTN)
 			return this.graph;
@@ -289,6 +302,8 @@ public class CSTNUGraphMLReader {
 			if (lowerCaseValue == null)
 				lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 			e.setLowerCaseValue(lowerCaseValue);
+			if (e.isEmpty())
+				this.graph.removeEdge(e);
 		}
 
 		return this.graph;

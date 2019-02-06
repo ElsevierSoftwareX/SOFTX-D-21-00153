@@ -19,56 +19,7 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 	/**
 	 * 
 	 */
-	static final public String GRAPH_NAME_KEY = "Name";
-
-	/**
-	 * 
-	 */
-	static final public String GRAPH_nVERTICES_KEY = "nVertices";
-
-	/**
-	 * 
-	 */
-	static final public String GRAPH_nEDGES_KEY = "nEdges";
-
-	/**
-	 * 
-	 */
-	static final public String GRAPH_nOBS_KEY = "nObservedProposition";
-
-	/**
-	 * 
-	 */
-	static final public String GRAPH_nCTG_KEY = "nContingent";
-
-	/**
-	 * 
-	 */
-	static final public String NODE_X_KEY = "x";
-	/**
-	 * 
-	 */
-	static final public String NODE_Y_KEY = "y";
-
-	/**
-	 * 
-	 */
-	static final public String NODE_OBSERVED_KEY = "Obs";
-
-	/**
-	 * 
-	 */
-	static final public String NODE_LABEL_KEY = "Label";
-
-	/**
-	 * 
-	 */
-	static final public String EDGE_TYPE_KEY = "Type";
-
-	/**
-	 * 
-	 */
-	static final public String EDGE_LABELED_VALUE_KEY = "LabeledValues";
+	static final public String EDGE_LABELED_LC_VALUE_KEY = "LowerCaseLabeledValues";
 
 	/**
 	 * 
@@ -78,7 +29,60 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 	/**
 	 * 
 	 */
-	static final public String EDGE_LABELED_LC_VALUE_KEY = "LowerCaseLabeledValues";
+	static final public String EDGE_LABELED_VALUE_KEY = "LabeledValues";
+
+	/**
+	 * 
+	 */
+	static final public String EDGE_TYPE_KEY = "Type";
+
+	/**
+	 * 
+	 */
+	static final public String GRAPH_NAME_KEY = "Name";
+
+	/**
+	 * 
+	 */
+	static final public String GRAPH_nCTG_KEY = "nContingent";
+	/**
+	 * 
+	 */
+	static final public String GRAPH_nEDGES_KEY = "nEdges";
+
+	/**
+	 * 
+	 */
+	static final public String GRAPH_nOBS_KEY = "nObservedProposition";
+	/**
+	 * 
+	 */
+	static final public String GRAPH_nVERTICES_KEY = "nVertices";
+
+	/**
+	 * 
+	 */
+	static final public String NODE_LABEL_KEY = "Label";
+
+	/**
+	 * 
+	 */
+	static final public String NODE_OBSERVED_KEY = "Obs";
+
+	/**
+	 * 
+	 */
+	static final public String NODE_POTENTIAL_KEY = "Potential";
+
+	/**
+	 * 
+	 */
+	static final public String NODE_X_KEY = "x";
+
+	/**
+	 * 
+	 */
+	static final public String NODE_Y_KEY = "y";
 
 	/**
 	 *
@@ -164,6 +168,15 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 					@Override
 					public String apply(final LabeledNode v) {
 						return (v.propositionObserved != Constants.UNKNOWN) ? "" + v.propositionObserved : null;
+					}
+				});
+		this.addVertexData(NODE_POTENTIAL_KEY, "Labeled Potential Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
+				"",
+				new Function<LabeledNode, String>() {
+					@Override
+					public String apply(final LabeledNode v) {
+						String s = v.getPotential().toString();
+						return (s.startsWith("{}")) ? null : s;
 					}
 				});
 		this.addVertexData(NODE_LABEL_KEY, "Label. Format: [¬" + Literal.PROPOSITION_RANGE + "|" + Literal.PROPOSITION_RANGE + "]+|⊡", "⊡",
