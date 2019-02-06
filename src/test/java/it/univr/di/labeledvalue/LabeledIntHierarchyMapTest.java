@@ -181,6 +181,11 @@ public class LabeledIntHierarchyMapTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
+
+		@Override
+		public boolean isEmpty() {
+			return this.size() == 0;
+		}
 	}
 
 	@SuppressWarnings("javadoc")
