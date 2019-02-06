@@ -72,12 +72,10 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 
 	/**
 	 * @param value
-	 * @param label
+	 * @param label must be not null!
 	 * @return string representing the labeled value, i.e., "(value, label)"
 	 */
 	static final public String entryAsString(Label label, int value) {
-		if (label == null)
-			return "";
 		final StringBuilder sb = new StringBuilder();
 		sb.append(Constants.OPEN_PAIR);
 		sb.append(Constants.formatInt(value));
@@ -99,14 +97,17 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		if (inputMap == null)
 			return null;
 
-		if (!AbstractLabeledIntMap.patternLabelCharsRE.matcher(inputMap).matches()) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.WARNING)) {
-					AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a set of labeled values: " + patternLabelCharsRE);
-				}
-			}
-			return null;
-		}
+		// It is not possible to check the integrity of inputMap with a RE because
+		// I verified that when inputMap has a big length, the RE match goes in stack overflow.
+
+		// if (!AbstractLabeledIntMap.patternLabelCharsRE.matcher(inputMap).matches()) {
+		// if (Debug.ON) {
+		// if (LOG.isLoggable(Level.WARNING)) {
+		// AbstractLabeledIntMap.LOG.warning("Input string is not well formed for representing a set of labeled values: " + patternLabelCharsRE);
+		// }
+		// }
+		// return null;
+		// }
 
 		LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
 		final LabeledIntMap newMap = factory.get();
@@ -121,32 +122,46 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 					AbstractLabeledIntMap.LOG.finest("s: " + s);
 				}
 			}
-			if (s.length() != 0) {
-				final String[] labInt = AbstractLabeledIntMap.splitterPair.split(s);
-				// LabeledValueTreeMap.LOG.finest("labInt: " + Arrays.toString(labInt));
-				l = Label.parse(labInt[0]);
-				// Manage old and new format!
-				if (l == null) {
-					if (labInt[0].equals("-" + Constants.INFINITY_SYMBOL))
-						value = Constants.INT_NEG_INFINITE;
-					else
-						value = Integer.parseInt(labInt[0]);
-					l = Label.parse(labInt[1]);
-				} else {
-					if (labInt[1].equals("-" + Constants.INFINITY_SYMBOL))
-						value = Constants.INT_NEG_INFINITE;
-					else
-						value = Integer.parseInt(labInt[1]);
+			try {
+				if (s.length() != 0) {
+					final String[] labInt = AbstractLabeledIntMap.splitterPair.split(s);
+					// LabeledValueTreeMap.LOG.finest("labInt: " + Arrays.toString(labInt));
+					l = Label.parse(labInt[0]);
+					// Manage old and new format!
+					if (l == null) {
+						if (labInt[0].equals("-" + Constants.INFINITY_SYMBOL))
+							value = Constants.INT_NEG_INFINITE;
+						else
+							value = Integer.parseInt(labInt[0]);
+						l = Label.parse(labInt[1]);
+						if (l == null) {
+							AbstractLabeledIntMap.LOG
+									.warning("Input string is not well formed for representing a set of labeled values. This entry is not well defined: " + s);
+							return null;
+						}
+					} else {
+						if (labInt[1].equals("-" + Constants.INFINITY_SYMBOL))
+							value = Constants.INT_NEG_INFINITE;
+						else
+							value = Integer.parseInt(labInt[1]);
+					}
+					newMap.put(l, value);
 				}
-				newMap.put(l, value);
+			} catch (NumberFormatException e) {
+				AbstractLabeledIntMap.LOG
+						.warning("Input string is not well formed for representing a set of labeled values. This entry is not well defined: " + s);
+				return null;
 			}
 		}
 		return newMap;
 	}
 
 	/**
-	 * @return true if they contain the same set of values.
+	 * The number of elements in the map
 	 */
+	int count;
+
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object o) {
 		if (o == this)
@@ -162,6 +177,17 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	@Override
 	public int hashCode() {
 		return this.entrySet().hashCode();
+	}
+
+	@Override
+	public int size() {
+		return this.count;
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public boolean isEmpty() {
+		return this.size() == 0;
 	}
 
 	/** {@inheritDoc} */
