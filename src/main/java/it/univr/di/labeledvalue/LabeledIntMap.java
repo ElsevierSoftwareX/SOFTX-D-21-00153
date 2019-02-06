@@ -43,6 +43,14 @@ public interface LabeledIntMap {
 	};
 
 	/**
+	 * @param newLabel
+	 * @param newValue
+	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
+	 *         If returns false, then the adding of the value to the map would modify the map.
+	 */
+	public boolean alreadyRepresents(Label newLabel, int newValue);
+
+	/**
 	 * Remove all entries of the map.
 	 *
 	 * @see Map#clear()
@@ -74,6 +82,7 @@ public interface LabeledIntMap {
 	 */
 	public ObjectSet<Entry<Label>> entrySet();
 
+
 	/**
 	 * It has the same specification of {@link java.util.Map#entrySet()}.
 	 * <p>
@@ -87,7 +96,6 @@ public interface LabeledIntMap {
 	 * @return a set representation of this map.
 	 */
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse);
-
 
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
@@ -138,21 +146,6 @@ public interface LabeledIntMap {
 		return (max == Constants.INT_NEG_INFINITE) ? Constants.INT_NULL : max;
 	}
 
-	/**
-	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
-	 */
-	default public int getMinValue() {
-		if (this.size() == 0)
-			return Constants.INT_NULL;
-		int min = Constants.INT_POS_INFINITE;
-
-		for (int value : this.values()) {
-			if (min > value)
-				min = value;
-		}
-		return min;
-	}
-
 
 	/**
 	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
@@ -170,6 +163,21 @@ public interface LabeledIntMap {
 			}
 		}
 		return new AbstractObject2IntMap.BasicEntry<>(label, min);
+	}
+
+	/**
+	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 */
+	default public int getMinValue() {
+		if (this.size() == 0)
+			return Constants.INT_NULL;
+		int min = Constants.INT_POS_INFINITE;
+
+		for (int value : this.values()) {
+			if (min > value)
+				min = value;
+		}
+		return min;
 	}
 
 	/**
@@ -220,6 +228,7 @@ public interface LabeledIntMap {
 		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
 
+	
 	/**
 	 * Returns the minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
 	 *
@@ -227,16 +236,12 @@ public interface LabeledIntMap {
 	 * @return minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
 	 */
 	public int getMinValueSubsumedBy(final Label l);
-
-	
-	/**
-	 * @param newLabel
-	 * @param newValue
-	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
-	 *         If returns false, then the adding of the value to the map would modify the map.
-	 */
-	public boolean alreadyRepresents(Label newLabel, int newValue);
 		
+	/**
+	 * @return true if the map has no elements.
+	 */
+	public boolean isEmpty();
+
 	/**
 	 * @return the set view of all labels in the map.
 	 */
