@@ -9,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Random;
 
 import org.junit.Test;
 
@@ -323,6 +324,34 @@ public class LabeledIntGraphTest {
 				"<A5_11,	normal,	A5,	A11,	L:{}, LL:{}, UL:{}>\n";
 		assertEquals(g.getVertexCount(), 10);
 		assertEquals(g.getEdgeCount(), 6);
+	}
+
+	@SuppressWarnings({ "static-method", "javadoc" })
+	@Test
+	public void copyCleaningRedundantLabels() {
+		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+
+		LabeledNode X = new LabeledNode("X");
+		X.setObservable('x');
+		LabeledNode Z = new LabeledNode("Z");
+		g.addVertex(Z);
+		g.addVertex(X);
+		g.addVertex(new LabeledNode("A3"));
+		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
+		g.addEdge(new LabeledIntEdgePluggable("XZ", LabeledIntTreeMap.class), X, Z);
+		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
+		g.addEdge(new LabeledIntEdgePluggable("A3_X", LabeledIntTreeMap.class), "A3", "X");
+
+		Label label = Label.parse("¿x");
+		Random rnd = new Random();
+		for (LabeledIntEdge edge : g.getEdges()) {
+			edge.mergeLabeledValue(label, -1 * rnd.nextInt(100));
+		}
+		LabeledIntGraph g1 = new LabeledIntGraph("copia", LabeledIntTreeMap.class);
+		g1.copyCleaningRedundantLabels(g);
+
+		assertEquals(g1.getVertexCount(), 3);
+		assertEquals(g1.getEdgeCount(), 0);
 	}
 
 	@SuppressWarnings({ "static-method", "javadoc" })
