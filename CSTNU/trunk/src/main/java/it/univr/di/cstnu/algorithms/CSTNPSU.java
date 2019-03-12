@@ -193,7 +193,7 @@ public class CSTNPSU extends CSTNU {
 		}
 
 		// check underneath CSTN
-		cstnInitAndCheck();
+		((CSTN) this).initAndCheck();
 		this.checkStatus.initialized = false;
 
 		// Contingent link have to be checked AFTER WD1 and WD3 have been checked and fixed!
