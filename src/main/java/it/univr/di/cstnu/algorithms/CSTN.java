@@ -2307,12 +2307,9 @@ public class CSTN {
 		// CSTNU overrides this.
 		if (g == null)
 			throw new IllegalArgumentException("Input graph is null!");
+		reset();
 		this.g = g;
 		this.Z = g.getZ();// Don't remove this assignment!
-		this.maxWeight = 0;
-		this.horizon = 0;
-
-		this.checkStatus.reset();
 	}
 
 	/**
@@ -2386,5 +2383,16 @@ public class CSTN {
 			}
 		}
 		return consistent;
+	}
+	
+	/**
+	 * Resets all internal structures
+	 */
+	void reset() {
+		this.g = null;
+		this.Z = null;
+		this.maxWeight = 0;
+		this.horizon = 0;
+		this.checkStatus.reset();
 	}
 }
