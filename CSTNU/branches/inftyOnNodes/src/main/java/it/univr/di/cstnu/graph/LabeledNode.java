@@ -5,7 +5,10 @@ import java.util.logging.Logger;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 
+import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
@@ -72,6 +75,11 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * Counts how many times a labeled value has been updated.
+	 */
+	Object2IntMap<Label> count;
+
+	/**
 	 * Possible proposition observed.
 	 */
 	char propositionObserved;
@@ -103,6 +111,7 @@ public class LabeledNode extends AbstractComponent {
 	 */
 	private double y;
 
+
 	/**
 	 * Constructor for cloning.
 	 *
@@ -117,6 +126,8 @@ public class LabeledNode extends AbstractComponent {
 		this.alabel = n.alabel;
 		this.potential = new LabeledALabelIntTreeMap(n.potential);
 		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
+		this.count = new Object2IntLinkedOpenHashMap<>(n.count);
+		this.count.defaultReturnValue(Constants.INT_NULL);
 	}
 
 	/**
@@ -132,6 +143,8 @@ public class LabeledNode extends AbstractComponent {
 		this.alabel = null;
 		this.potential = new LabeledALabelIntTreeMap();
 		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
+		this.count = new Object2IntLinkedOpenHashMap<>();
+		this.count.defaultReturnValue(Constants.INT_NULL);
 	}
 
 	/**
@@ -141,13 +154,8 @@ public class LabeledNode extends AbstractComponent {
 	 * @param proposition proposition observed by this node.
 	 */
 	public LabeledNode(final String n, final char proposition) {
-		super(n);
-		this.label = Label.emptyLabel;
+		this(n);
 		this.propositionObserved = (Literal.check(proposition)) ? proposition : Constants.UNKNOWN;
-		this.x = this.y = 0;
-		this.alabel = null;
-		this.potential = new LabeledALabelIntTreeMap();
-		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
 	}
 
 	/**
@@ -157,13 +165,8 @@ public class LabeledNode extends AbstractComponent {
 	 * @param l
 	 */
 	LabeledNode(final String n, final Label l) {
-		super(n);
+		this(n);
 		this.label = l;
-		this.propositionObserved = Constants.UNKNOWN;
-		this.x = this.y = 0;
-		this.alabel = null;
-		this.potential = new LabeledALabelIntTreeMap();
-		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
 	}
 
 	/**
@@ -177,7 +180,7 @@ public class LabeledNode extends AbstractComponent {
 		this.potential.clear();
 		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
 	}
-	
+
 	/**
 	 * @return a copy of the potential of this node.
 	 */
@@ -198,8 +201,7 @@ public class LabeledNode extends AbstractComponent {
 	public ObjectSet<ALabel> getALabelsOfPotential() {
 		return this.potential.keySet();
 	}
-
-
+	
 	/**
 	 * Getter for the field <code>label</code>.
 	 *
@@ -209,48 +211,76 @@ public class LabeledNode extends AbstractComponent {
 		return this.label;
 	}
 
-	
 	/**
 	 * @return a read-only view of potential.
 	 */
-	public LabeledALabelIntTreeMapView getPotential() {
-		return this.potential.immutable();
+	public LabeledALabelIntTreeMapView getPotentialAll() {
+		return this.potential.unmodifiable();
 	}
 
 	/**
 	 * @param aLabel
 	 * @return the labeled values associated to <code>alabel</code> in the node potential.
 	 */
-	public LabeledIntTreeMap getPotential(ALabel aLabel) {
+	public LabeledIntTreeMap getPotentialOfUC(ALabel aLabel) {
 		return this.potential.get(aLabel);
 	}
+
 
 	/**
 	 * @param aLabel
 	 * @param l
 	 * @return the value associated to aLabel and l in the potential
 	 */
-	public int getPotential(ALabel aLabel, Label l) {
+	public int getPotentialOfUC(ALabel aLabel, Label l) {
 		return this.potential.getValue(l, aLabel);
+	}
+
+	
+	/**
+	 * @return a read-only copy of the potential counters.
+	 */
+	public Object2IntMap<Label> getPotentialCount() {
+		return Object2IntMaps.unmodifiable(this.count);
+	}
+
+	/**
+	 * @param l a not null label
+	 * @return the counter value associate to label l. If the value does not exists, returns {@link Constants#INT_NULL}
+	 */
+	public int getPotentialCount(Label l) {
+		return this.count.getInt(l);
 	}
 
 	/**
 	 * @param aLabel
 	 * @return the entry set of labeled values associated to alabel in the potential of the node.
 	 */
-	public ObjectSet<Entry<Label>> getPotentialEntrySet(ALabel aLabel) {
+	public ObjectSet<Entry<Label>> getPotentialEntrySetOfUC(ALabel aLabel) {
 		return this.potential.get(aLabel).entrySet();
 	}
 
 	/**
-	 * Shortcut for {@link #getPotential(ALabel)} with argument {@link ALabel#emptyLabel}.
+	 * Shortcut for {@link #getPotentialOfUC(ALabel)} with argument {@link ALabel#emptyLabel}.
 	 * 
 	 * @return the labeled values getPotential(ALabel.emptyLabel).
-	 * @see #getPotential(ALabel)
+	 * @see #getPotentialOfUC(ALabel)
 	 */
-	public LabeledIntTreeMap getPotentialGrounded() {
-		return this.getPotential(ALabel.emptyLabel);
+	public LabeledIntTreeMap getPotential() {
+		return this.getPotentialOfUC(ALabel.emptyLabel);
 	}
+
+	/**
+	 * Shortcut for {@link #getPotentialOfUC(ALabel, Label)} with argument {@link ALabel#emptyLabel}.
+	 * 
+	 * @param l
+	 * @return the labeled value getPotential(ALabel.emptyLabel, Label).
+	 * @see #getPotentialOfUC(ALabel,Label)
+	 */
+	public int getPotential(Label l) {
+		return this.getPotentialOfUC(ALabel.emptyLabel, l);
+	}
+
 	/**
 	 * @return the proposition under the control of this node. {@link Constants#UNKNOWN}, if no observation is made.
 	 */
@@ -305,10 +335,7 @@ public class LabeledNode extends AbstractComponent {
 	 * @param value
 	 * @return true if the triple has been merged.
 	 */
-	public boolean potentialPut(ALabel aLabel, Label l, int value) {
-		if ((l == null) || (aLabel == null) || (value == Constants.INT_NULL))
-			throw new IllegalArgumentException(
-					"The label or the value has a not admitted value: (" + l + ", " + aLabel + ", " + Constants.formatInt(value) + ").");
+	final public boolean putPotential(ALabel aLabel, Label l, int value) {
 		// if (value < 0 && this.getPropositionObserved() != Constants.UNKNOWN) {// Rule qR0 It is better to solve it in a proper rule for avoiding collateral
 		// effects.
 		// l = l.remove(getPropositionObserved());
@@ -321,27 +348,40 @@ public class LabeledNode extends AbstractComponent {
 	 * @param map
 	 * @return true if the triple has been merged.
 	 */
-	public boolean potentialPut(ALabel aLabel, LabeledIntMap map) {
+	public boolean putPotential(ALabel aLabel, LabeledIntMap map) {
 		if (map == null)
 			return false;
 		boolean added = false;
 		for (Entry<Label> entry : map.entrySet()) {
-			added |= this.potentialPut(aLabel, entry.getKey(), entry.getIntValue());
+			added |= this.putPotential(aLabel, entry.getKey(), entry.getIntValue());
 		}
 		return added;
 	}
 
 	/**
 	 * Puts the labeled value (value, l) into the potential maps setting the a-letter empty.
-	 * This method is a shorthand for {@link #potentialPut(ALabel.emptyLabel, Label, int)}.
+	 * This method is a shorthand for {@link #putPotential(ALabel.emptyLabel, Label, int)}.
 	 * 
 	 * @param l
 	 * @param value
 	 * @return true if the triple has been merged.
 	 */
 	@SuppressWarnings("javadoc")
-	public boolean potentialPut(Label l, int value) {
-		return this.potentialPut(ALabel.emptyLabel, l, value);
+	final public boolean putPotential(Label l, int value) {
+		return this.putPotential(ALabel.emptyLabel, l, value);
+	}
+
+	/**
+	 * @param l a not null label
+	 * @param reset true if the count has to be reset
+	 * @return the old value associate to to label l. If the old value does not exists, returns {@link Constants#INT_NULL}
+	 */
+	public int updatePotentialCount(Label l, boolean reset) {
+		if (l == null)
+			return Constants.INT_NULL;
+		int i = this.count.getInt(l);
+		i = (i == Constants.INT_NULL || reset) ? 1 : i + 1;
+		return this.count.put(l, i);
 	}
 
 	/**

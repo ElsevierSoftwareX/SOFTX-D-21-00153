@@ -147,6 +147,7 @@ public class CSTNPotential extends CSTN {
 	 * adds
 	 * B[(u+v),γ]
 	 * where γ=α*β if v<0, γ=αβ otherwise and (u+v) < possibly previous value.
+	 * Instantaneous reaction semantics is assumed.
 	 * </pre>
 	 * 
 	 * If (u+v) is the n+1 update of labeled value associated to γ=αβ, then a negative circuit is present and the check is over.
@@ -158,12 +159,10 @@ public class CSTNPotential extends CSTN {
 	 * @return the update status (it is for convenience. It is not necessary because return the same parameter status).
 	 */
 	CSTNCheckStatus bellmanFord(final NodesToCheck nodesToCheck, final NodesToCheck obsNodesToCheck, Instant timeoutInstant) {
-
 		LabeledNode B;
-		this.checkStatus.cycles++;
 		/**
-		 * When a new labeled value is added in a potential, then it has to verified w.r.t. all obs potentials to verify if
-		 * it can be simplified. obsModified maintains footprint of obs involved in the new added values.
+		 * When a new labeled value is added in a potential, then it has to checked w.r.t. all observation potentials for verifying whether
+		 * it can be simplified. obsModified maintains footprint of observation t.p. involved in the new added values.
 		 */
 		Label obsModified = Label.emptyLabel;
 
@@ -175,7 +174,7 @@ public class CSTNPotential extends CSTN {
 				}
 			}
 			// cache
-			LabeledIntTreeMap APotential = new LabeledIntTreeMap(A.getPotentialGrounded());
+			LabeledIntTreeMap APotential = new LabeledIntTreeMap(A.getPotential());
 			ObjectSet<Label> APotentialLabel = APotential.keySet();
 
 			NodesToCheck Bsons = new NodesToCheck();
@@ -192,13 +191,16 @@ public class CSTNPotential extends CSTN {
 				for (Entry<Label> ABEntry : AB.getLabeledValueSet()) {
 					int v = ABEntry.getIntValue();
 					Label beta = ABEntry.getKey();
-					for (Label ALabel : APotentialLabel) {
-						Label newLabel = (v < 0) ? ALabel.conjunctionExtended(beta) : ALabel.conjunction(beta);
-						int newValue = Constants.sumWithOverflowCheck(APotential.get(ALabel), v);
-						if (newValue == Constants.INT_NEG_INFINITE && v >= 0)
+					for (Label alpha : APotentialLabel) {
+						Label newLabel = (v < 0) ? alpha.conjunctionExtended(beta) : alpha.conjunction(beta);// IR assumed.
+						int u = APotential.get(alpha);
+						int newValue = Constants.sumWithOverflowCheck(u, v);
+						if (newValue == Constants.INT_NEG_INFINITE && v > 0)// do not propagate -∞ through positive edges
 							continue;
+						String log = "";
 						if (newLabel != null) {
-							if (updatePotential(B, newLabel, newValue, false, "")) {
+							log = A.getName() + "[" + pairAsString(alpha, u) + "]--" + pairAsString(beta, v) + "-->" + B.getName();
+							if (updatePotential(B, newLabel, newValue, false, log + "\n")) {
 								isBModified = true;
 								obsModified = obsModified.conjunctionExtended(newLabel);
 								if (!this.checkStatus.consistency) {
@@ -206,7 +208,7 @@ public class CSTNPotential extends CSTN {
 								}
 							}
 						}
-						// FIXME I try to extend the Bellman-Ford in order to overcome the limitation of v<0 for unknown labeled values
+						// Here Bellman-Ford is extended in order to overcome the limitation of v < 0 for unknown labeled values
 						if (newLabel == null || newLabel.containsUnknown())
 							continue;
 						for (LabeledIntEdge BC : this.g.getOutEdges(B)) {
@@ -214,17 +216,19 @@ public class CSTNPotential extends CSTN {
 							boolean isCModified = false;
 							for (Entry<Label> BCEntry : BC.getLabeledValueSet()) {
 								int w = BCEntry.getIntValue();
-								Label gamma = BCEntry.getKey();
 								if (w >= 0)
 									continue;
+								Label gamma = BCEntry.getKey();
+								int vw = Constants.sumWithOverflowCheck(v, w);
+								if (u == Constants.INT_NEG_INFINITE && vw > 0)
+									continue;
 								Label newLabel1 = newLabel.conjunctionExtended(gamma);
-								int newValue1 = Constants.sumWithOverflowCheck(newValue, w);
+								int newValue1 = Constants.sumWithOverflowCheck(u, vw);
 								if (A == C && newValue1 < 0 && newLabel1.containsUnknown()) {
 									newValue1 = Constants.INT_NEG_INFINITE;
 								}
-								// if (newValue1 > 0)
-								// continue;
-								if (updatePotential(C, newLabel1, newValue1, false, "")) {
+								String log1 = log + "--" + pairAsString(gamma, w) + "-->" + C.getName() + "\n";
+								if (updatePotential(C, newLabel1, newValue1, false, log1)) {
 									isCModified = true;
 									obsModified = obsModified.conjunctionExtended(newLabel1);
 									if (!this.checkStatus.consistency) {
@@ -295,12 +299,12 @@ public class CSTNPotential extends CSTN {
 		while (!obsNodesToCheck.isEmpty()) {
 			LabeledNode obs = obsNodesToCheck.dequeue();
 			char p = obs.getPropositionObserved();
-			ObjectSet<Entry<Label>> obsEntrySet = obs.getPotentialGrounded().entrySet();
+			ObjectSet<Entry<Label>> obsEntrySet = obs.getPotential().entrySet();
 			for (LabeledNode node : nodesToCheck) {
 				if (node == obs)
 					continue;
 
-				for (Entry<Label> entryNode : node.getPotentialGrounded().entrySet()) {
+				for (Entry<Label> entryNode : node.getPotential().entrySet()) {
 					Label betap = entryNode.getKey();
 					if (!betap.contains(p))
 						continue;
@@ -351,7 +355,7 @@ public class CSTNPotential extends CSTN {
 	 */
 
 	@Override
-	boolean potentialR3_4_5_6(LabeledNode nY, NodesToCheck newNodesToCheck, EdgesToCheck newEdgesToCheck) {
+	boolean potentialR3_4_5_6(LabeledNode nY, boolean limitToZ, NodesToCheck newNodesToCheck, EdgesToCheck newEdgesToCheck) {
 		throw new RuntimeException("Not applicable.");
 	}
 
@@ -384,7 +388,7 @@ public class CSTNPotential extends CSTN {
 					LOG.log(Level.FINE, "*** Start Main Cycle " + i + " ***");
 				}
 			}
-
+			this.checkStatus.cycles++;
 			bellmanFord(nodesToCheck, obsNodesToCheck, timeoutInstant);
 			// ASSERTIONS
 			// nodesToCheck is empty
@@ -502,7 +506,7 @@ public class CSTNPotential extends CSTN {
 			newLabel = newLabel.remove(node.getPropositionObserved());
 		}
 
-		int currentValue = node.getPotentialGrounded(newLabel);
+		int currentValue = node.getPotential(newLabel);
 		if (node.putPotential(newLabel, newValue)) {
 			// the value was added
 			int count = node.updatePotentialCount(newLabel, reset || currentValue == Constants.INT_NULL);//
@@ -510,12 +514,12 @@ public class CSTNPotential extends CSTN {
 				count = 0;
 			count++;
 			if (count > this.numberOfNodes) {
-				newValue = Constants.INT_NEG_INFINITE;
-				node.putPotential(newLabel, newValue);
+					newValue = Constants.INT_NEG_INFINITE;
+					node.putPotential(newLabel, newValue);
 			}
 			if (Debug.ON) {
 				log += "Update potential on " + node.getName()
-						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + ". Update #" + count + "\n";
+						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + ". Update #" + (count - 1) + "\n";
 			}
 			if (!newLabel.containsUnknown()) {
 				if (newValue == Constants.INT_NEG_INFINITE

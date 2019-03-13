@@ -43,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.filechooser.FileFilter;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
@@ -68,9 +69,11 @@ import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
 import it.univr.di.cstnu.algorithms.CSTN.EdgesToCheck;
 import it.univr.di.cstnu.algorithms.CSTNEpsilon;
+import it.univr.di.cstnu.algorithms.CSTNEpsilon3R;
 import it.univr.di.cstnu.algorithms.CSTNIR;
 import it.univr.di.cstnu.algorithms.CSTNIR3R;
 import it.univr.di.cstnu.algorithms.CSTNPSU;
+import it.univr.di.cstnu.algorithms.CSTNPotential;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNU2CSTN;
@@ -473,11 +476,80 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			CSTNEditor.this.cstn = new CSTNIR3R(CSTNEditor.this.checkedGraph);
+
+			jl.setBackground(Color.orange);
+			switch (CSTNEditor.this.dcCurrentSem) {
+			case ε:
+				CSTNEditor.this.cstn = new CSTNEpsilon3R(CSTNEditor.this.reactionTime, CSTNEditor.this.checkedGraph);
+				break;
+			case IR:
+				CSTNEditor.this.cstn = new CSTNIR3R(CSTNEditor.this.checkedGraph);
+				break;
+			default:
+				jl.setText("<img align='middle' src='" + warnIconFile
+						+ "'>&nbsp;<b>There is no DC checking algorithm for std semantics and rules restricted to Z.</b>");
+				jl.setOpaque(true);
+				CSTNEditor.this.cycle = 0;
+				return;
+			}
 			CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
 			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
+			try {
+				CSTNEditor.this.cstnStatus = CSTNEditor.this.cstn.dynamicConsistencyCheck();
+				if (CSTNEditor.this.cstnStatus.consistency) {
+
+					jl.setText("<img align='middle' src='" + infoIconFile + "'>&nbsp;<b>The graph is CSTN consistent.");
+					jl.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+						}
+					}
+				} else {
+					// The distance graph is not consistent
+					jl.setText("<img align='middle' src='" + warnIconFile + "'>&nbsp;<b>The graph is not CSTN consistent.</b>");
+					// jl.setIcon(CSTNEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl.setText("There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNEditor.warnIcon);
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
+	private class CSTNPotentialCheckListener implements ActionListener {
+
+		public CSTNPotentialCheckListener() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+
 			jl.setBackground(Color.orange);
+			CSTNEditor.this.cstn = new CSTNPotential(CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
+			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
+
 			try {
 				CSTNEditor.this.cstnStatus = CSTNEditor.this.cstn.dynamicConsistencyCheck();
 				if (CSTNEditor.this.cstnStatus.consistency) {
@@ -533,7 +605,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				final File file = chooser.getSelectedFile();
 				CSTNEditor.this.cstn.setfOutput(file);
 				CSTNEditor.this.cstn.saveGraphToFile();
-				//aveGraphToFile(CSTNEditor.this.checkedGraph, file);
+				// aveGraphToFile(CSTNEditor.this.checkedGraph, file);
 			}
 		}
 	}
@@ -903,7 +975,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				// END iF
 				CSTNEditor.this.layoutEditor = nextLayout;
 			} catch (Exception e) {
-				e.printStackTrace();
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						CSTNEditor.LOG.warning("The instance cannot be layout with the workflow algorithm.");
+					}
+				}
 			}
 		}
 
@@ -945,6 +1021,37 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		@Override
 		public void actionPerformed(final ActionEvent e) {
 			final JFileChooser chooser = new JFileChooser(CSTNEditor.defaultDir);
+			chooser.setDragEnabled(true);
+			chooser.setFileFilter(new FileFilter() {
+
+				@Override
+				public String getDescription() {
+					return "Only CSTN(U) related stuff";
+				}
+
+				@Override
+				public boolean accept(File f) {
+					if (f.isDirectory()) {
+						return true;
+					}
+					String s = f.getName();
+					int i = s.lastIndexOf('.');
+					String ext = null;
+					if (i > 0 && i < s.length() - 1) {
+						ext = s.substring(i + 1).toLowerCase();
+					}
+					if (ext != null) {
+						if (ext.equals("stn") ||
+								ext.equals("cstn") ||
+								ext.equals("cstnu") ||
+								ext.equals("cstnpsu")) {
+							return true;
+						}
+						return false;
+					}
+					return false;
+				}
+			});
 			final int option = chooser.showOpenDialog(CSTNEditor.this);
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			if (option == JFileChooser.APPROVE_OPTION) {
@@ -1390,10 +1497,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// JComboBox<Class> jcb = new JComboBox<>(new Class[] { LabeledIntTreeMap.class, LabeledIntHierarchyMap.class});
 
 		// RWO FOR CSTNs
-		
+
 		JCheckBox withUnkwon = new JCheckBox("With unknown literals");
 		withUnkwon.setSelected(this.withUknown);
-		withUnkwon.addItemListener(new 	ItemListener() {
+		withUnkwon.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent e) {
 				CSTNEditor.this.withUknown = e.getStateChange() == ItemEvent.SELECTED;
@@ -1401,7 +1508,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		});
 		rowForCSTNButtons.add(withUnkwon);
 
-		
 		rowForCSTNButtons.add(new JLabel("DC Semantics: "));
 		JComboBox<DCSemantics> dcSemCombo = new JComboBox<>(DCSemantics.values());
 		dcSemCombo.setSelectedItem(DCSemantics.Std);
@@ -1452,8 +1558,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		this.saveCSTNResultButton.addActionListener(new CSTNSaveListener());
 		rowForCSTNButtons.add(this.saveCSTNResultButton);
 
-		buttonCheck = new JButton("CSTN 3-Rule Check");
+		buttonCheck = new JButton("CSTN 3-Rule Check (only 4 IR or ε)");
 		buttonCheck.addActionListener(new CSTNRestrictedCheckListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTN Check by Potential");
+		buttonCheck.addActionListener(new CSTNPotentialCheckListener());
 		rowForCSTNButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("CSTN All-Pair Shortest Paths");
@@ -1477,10 +1587,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("One Step CSTNU Check");
 		buttonCheck.addActionListener(new CSTNUOneStepListener());
 		rowForCSTNUButtons.add(buttonCheck);
-
-		// buttonCheck = new JButton("CSTNU Check by Potential");
-		// buttonCheck.addActionListener(new CSTNUPotentialCheckListener());
-		// rowForCSTNUButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("CSTNU2CSTN Check");
 		buttonCheck.addActionListener(new CSTNU2CSTNCheckListener());

@@ -481,7 +481,7 @@ public class CSTNRandomGenerator {
 			node.setY((i % 2 == 0) ? y + 20 : y - 20);
 
 			randomGraph.addVertex(node);
-			LOG.finer("Node added: " + node);
+			LOG.finest("Node added: " + node);
 		}
 
 		// qLoops contains, for each qLoop, the index of first and last node in the qLoop
@@ -542,7 +542,7 @@ public class CSTNRandomGenerator {
 					+ "\nThe following nodes are transformed in obs ones and they stay outside qLoops.");
 			for (; k > 0; k--) {
 				LabeledNode obs = randomGraph.getNode("n" + firstIndexNodeNotInQLoop++);
-				char p = leftProposition.get(k - 1);
+				char p = leftProposition.getChar(k - 1);
 				LOG.finer("Node transformed in obs: " + obs + "\tProposition: " + p);
 				obs.setObservable(p);
 			}
@@ -606,16 +606,25 @@ public class CSTNRandomGenerator {
 						LOG.finer("Problem to save 'current.cstn' " + e.getMessage() + "\n Program continues.");
 					}
 				}
+				LOG.fine("DC Check started.");
 				CSTNCheckStatus status = cstn.dynamicConsistencyCheck();
-				if (LOG.isLoggable(Level.FINER)) {
-					if (status.timeout) {
-						File s = new File(this.dcSubDir.getParent(), "current.cstn");
-						File d = new File(this.dcSubDir.getParent(), "timeOut" + System.currentTimeMillis() + ".cstn");
-						try {
-							Files.move(s, d);
-						} catch (IOException e) {
-							LOG.finer("Problem to save 'current.cstn' as time out instance.\n Program continues.");
-						}
+				LOG.fine("DC Check finished.");
+				if (status.timeout) {
+					String fileName = "timeOut" + System.currentTimeMillis() + ".cstn";
+					LOG.finer("DC Check finished for timeout. Instance is saved as " + fileName + ".");
+					File s = new File(this.dcSubDir.getParent(), "current.cstn");
+					File d = new File(this.dcSubDir.getParent(), fileName);
+					try {
+						Files.move(s, d);
+					} catch (IOException e) {
+						LOG.finer("Problem to save 'current.cstn' as time out instance.\n Program continues.");
+					}
+					
+					LOG.finer("The instance is modified changing edge values. Then, it will be re-checked.");
+					int sign = (notDCfound) ? 1 : -1;
+					for (LabeledIntEdge e : addedEdges) {
+						Entry<Label> entry = e.getMinLabeledValue();
+						e.mergeLabeledValue(entry.getKey(), (int) (entry.getIntValue() + sign * this.maxWeight * WEIGHT_MODIFICATION_FACTOR));
 					}
 				}
 				if (!status.consistency) {
@@ -638,7 +647,7 @@ public class CSTNRandomGenerator {
 				} else {
 					lastDC = new LabeledIntGraph(randomGraph, randomGraph.getInternalLabeledValueMapImplementationClass());
 					if (!notDCfound && alsoNotDcInstance) {
-						LOG.finer("Original random instance is DC. I start to find a not DC!");
+						LOG.finer("Original random instance is DC. Now, a not DC instance must be generated.");
 						// we lower the edge values
 						for (LabeledIntEdge e : addedEdges) {
 							Entry<Label> entry = e.getMinLabeledValue();

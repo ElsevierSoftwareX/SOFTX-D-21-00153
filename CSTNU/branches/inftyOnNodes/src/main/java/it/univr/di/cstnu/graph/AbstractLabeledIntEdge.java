@@ -597,7 +597,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 
 	@Override
 	public final int removeUpperCaseValue(final Label l, final ALabel n) {
-		this.removedUpperCaseValue.remove(new InternalEntry(l, n));
+		this.removedUpperCaseValue.removeInt(new InternalEntry(l, n));
 		return this.upperCaseValue.remove(l, n);
 	}
 

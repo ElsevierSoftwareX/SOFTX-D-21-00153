@@ -105,7 +105,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.map.mergeTriple("¬a¬b", new ALabel("N9", this.alpha), 13);
 		this.map.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
 
-		LabeledALabelIntTreeMap view = this.map.immutable();
+		LabeledALabelIntTreeMap view = this.map.unmodifiable();
 		view.remove(Label.parse("¬a"), new ALabel("N9", this.alpha));
 
 		this.result.clear();
@@ -262,8 +262,27 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("a", ALabel.emptyLabel, -16);
 		this.result.mergeTriple("¬a", ALabel.emptyLabel, -17);
 
-		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
 		Assert.assertEquals(2, this.map.size());
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void mergeWOSimplification() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple("a", ALabel.emptyLabel, -16, true);
+		this.map.mergeTriple("¬a", ALabel.emptyLabel, -16, true);
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -9, true);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9, true);
+
+		Assert.assertEquals("Check of merge with two nodes\n", "{(◇, -9, ⊡) (◇, -16, a) (◇, -16, ¬a) (N8∙N9, -9, ⊡) }", this.map.toString());
+		Assert.assertEquals(4, this.map.size());
 	}
 
 	/**

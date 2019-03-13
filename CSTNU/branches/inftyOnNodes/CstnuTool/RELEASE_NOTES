@@ -1,6 +1,12 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v1.26.0
+-------
+	date:
+
+	Removed class CSTNPotential (last svn version 296).
+	
 v1.25.0
 -------
 	date:	2018-11-22

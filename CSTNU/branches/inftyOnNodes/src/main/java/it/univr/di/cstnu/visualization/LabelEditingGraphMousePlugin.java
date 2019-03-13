@@ -671,7 +671,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 
 		// Potential
 		// ObjectSet<ALabel> labelPotential = node.getALabelsOfPotential();
-		LabeledALabelIntTreeMap potentialMap = node.getPotential();
+		LabeledALabelIntTreeMap potentialMap = node.getPotentialAll();
 		if (potentialMap != null) {
 			// for (ALabel alabel : labelPotential) {
 			jl = new JLabel("Potential: ");

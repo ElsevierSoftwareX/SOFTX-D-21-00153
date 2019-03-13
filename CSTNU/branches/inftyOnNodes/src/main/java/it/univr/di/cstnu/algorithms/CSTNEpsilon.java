@@ -22,17 +22,17 @@ import it.univr.di.cstnu.graph.LabeledNode;
 public class CSTNEpsilon extends CSTN {
 
 	/**
-	 * logger
-	 */
-	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNEpsilon.class.getName());
-
-	/**
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
 	// static public final String VERSIONandDATE = "Version 1.0 - April, 03 2017";// first release
 	static public final String VERSIONandDATE = "Version  1.1 - October, 11 2017";
+
+	/**
+	 * logger
+	 */
+	@SuppressWarnings("hiding")
+	static Logger LOG = Logger.getLogger(CSTNEpsilon.class.getName());
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -51,13 +51,6 @@ public class CSTNEpsilon extends CSTN {
 	 */
 	@Option(required = false, name = "-e", usage = "Forced Reaction Time. It must be > 0.")
 	int epsilon = 1;
-
-	/**
-	 * Default constructor. Label optimization.
-	 */
-	CSTNEpsilon() {
-		super();
-	}
 
 	/**
 	 * Constructor for CSTN.
@@ -86,6 +79,13 @@ public class CSTNEpsilon extends CSTN {
 	}
 
 	/**
+	 * Default constructor. Label optimization.
+	 */
+	CSTNEpsilon() {
+		super();
+	}
+
+	/**
 	 * @return the reactionTime
 	 */
 	public int getEspsilonReactionTime() {
@@ -96,7 +96,7 @@ public class CSTNEpsilon extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean LPMainConditionForSkipping(final int u, final int v) {
+	boolean mainConditionForSkippingInLP(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
 		return u >= this.epsilon && v < 0;
 	}
@@ -105,7 +105,7 @@ public class CSTNEpsilon extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	final boolean R0qR0MainConditionForSkipping(final int w) {
+	final boolean mainConditionForSkippingInR0qR0(final int w) {
 		// Table 2 ICAPS2016 paper for epsilon semantics
 		return w >= this.epsilon;
 	}
@@ -114,14 +114,14 @@ public class CSTNEpsilon extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	final boolean R3qR3MainConditionForSkipping(final int w, final LabeledNode nD) {
+	final boolean mainConditionForSkippingInR3qR3(final int w, final LabeledNode nD) {
 		// Table 2 ICAPS for epsilon semantics
 		// (w > 0 && nD==Z) is not added because w is always <=0 when nD==Z.
 		return w > this.epsilon;
 	}
 
 	@Override
-	final int R3qR3NewValue(final int v, final int w) {
+	final int newValueInR3qR3(final int v, final int w) {
 		// Table 2 ICAPS2016.
 		final int w1 = w - this.epsilon;
 		return (v > w1) ? v : w1;

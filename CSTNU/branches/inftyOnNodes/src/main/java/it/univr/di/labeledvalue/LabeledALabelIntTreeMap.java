@@ -497,7 +497,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/**
 	 * @return a read-only view of this.
 	 */
-	public LabeledALabelIntTreeMapView immutable() {
+	public LabeledALabelIntTreeMapView unmodifiable() {
 		return new LabeledALabelIntTreeMapView(this);
 	}
 
@@ -551,7 +551,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 */
 	public boolean mergeTriple(final Label newLabel, final ALabel newAlabel, final int newValue, final boolean force) {
 
-		if (this.alreadyRepresents(newLabel, newAlabel, newValue))
+		if (!force && this.alreadyRepresents(newLabel, newAlabel, newValue))
 			return false;
 		int prioriNewAlabelMapSize, newAlabelSize = newAlabel.size();
 		LabeledIntTreeMap newAlabelMap = this.map.get(newAlabel);
@@ -562,11 +562,21 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		} else {
 			prioriNewAlabelMapSize = newAlabelMap.size();
 		}
-		boolean added = ((force) ? newAlabelMap.putForcibly(newLabel, newValue) != Constants.INT_NULL : newAlabelMap.put(newLabel, newValue));
+		
+		boolean added;
+		if (force) {
+			newAlabelMap.putForcibly(newLabel, newValue);
+			added = true;
+		} else {
+			added = newAlabelMap.put(newLabel, newValue);
+		}
 
+		// update the count
 		boolean newAlabelModifiedTheAlreadyPresentMap = prioriNewAlabelMapSize == newAlabelMap.size();
-
 		this.count += newAlabelMap.size() - prioriNewAlabelMapSize;
+
+		if (force)
+			return added;
 		/**
 		 * 2017-10-31
 		 * Algorithm removes all a-labeled values that will become redundant after the insertion of the input a-labeled value.
