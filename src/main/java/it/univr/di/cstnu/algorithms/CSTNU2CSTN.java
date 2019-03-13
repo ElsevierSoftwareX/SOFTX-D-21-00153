@@ -36,10 +36,14 @@ import it.univr.di.labeledvalue.Literal;
 public class CSTNU2CSTN extends CSTNU {
 
 	/**
+	 * Default labeledIntValueMap
+	 */
+	static final Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
+
+	/**
 	 * logger
 	 */
 	static Logger LOG1 = Logger.getLogger(CSTNU2CSTN.class.getName());
-
 	/**
 	 * Version of the class
 	 */
@@ -48,18 +52,57 @@ public class CSTNU2CSTN extends CSTNU {
 	// static final String VERSIONandDATE = "Version 1.0 - September, 25 2016";
 	// static final String VERSIONandDATE = "Version 1.1 - November, 14 2017";
 	// static final String VERSIONandDATE = "Version 1.2 - December, 12 2017";
-	static final String VERSIONandDATE = "Version  1.3 - December, 23 2018";// tweaking the transformation
+	// static final String VERSIONandDATE = "Version 1.3 - December, 23 2018";// tweaking the transformation
+	static final String VERSIONandDATE = "Version 1.4 - January, 21 2019";// fixed an error on timeOut
 
 	/**
-	 * Default labeledIntValueMap
+	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	static final Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
+	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		LOG.finest("Start...");
+		final CSTNU2CSTN cstnu2cstn = new CSTNU2CSTN();
 
-	/**
-	 * Constructor for CSTNU2CSTN.
-	 */
-	CSTNU2CSTN() {
-		super();
+		if (!cstnu2cstn.manageParameters(args))
+			return;
+		LOG.finest("Parameters ok!");
+
+		LOG.finest("Loading graph...");
+		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnu2cstn.fInput, labeledIntValueMap);
+		cstnu2cstn.setG(graphMLReader.readGraph());
+		LOG.finest("LabeledIntGraph loaded!");
+
+		LOG.finest("DC Checking...");
+		CSTNUCheckStatus status;
+		try {
+			status = cstnu2cstn.dynamicControllabilityCheck();
+		} catch (final WellDefinitionException e) {
+			System.out.print("An error has been occured during the checking: " + e.getMessage());
+			return;
+		}
+		if (status.finished) {
+			System.out.println("Checking finished!");
+			if (status.consistency) {
+				System.out.println("The given cstnu is Dynamic controllable!");
+			} else {
+				System.out.println("The given cstnu is NOT DC!");
+			}
+			System.out.println("Details: " + status);
+		} else {
+			System.out.println("Checking has not been finished!");
+			System.out.println("Details: " + status);
+		}
+
+		if (cstnu2cstn.fOutput != null) {
+			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(null);
+			try {
+				graphWriter.save(cstnu2cstn.getG(), new PrintWriter(cstnu2cstn.output));
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -77,6 +120,13 @@ public class CSTNU2CSTN extends CSTNU {
 	 */
 	public CSTNU2CSTN(LabeledIntGraph g, int timeOut) {
 		super(g, timeOut);
+	}
+
+	/**
+	 * Constructor for CSTNU2CSTN.
+	 */
+	CSTNU2CSTN() {
+		super();
 	}
 
 	/**
@@ -105,7 +155,7 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG1.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG1.info("CSTN DC-checking...");
-		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph);
+		CSTNIR3RwoNodeLabels cstnChecker = new CSTNIR3RwoNodeLabels(cstnGraph, this.timeOut);
 		CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
 		LOG1.info("CSTN DC-checking done.");
 
@@ -297,56 +347,6 @@ public class CSTNU2CSTN extends CSTNU {
 			}
 		}
 		return cstnGraph;
-	}
-
-	/**
-	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 */
-	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		LOG.finest("Start...");
-		final CSTNU2CSTN cstnu2cstn = new CSTNU2CSTN();
-
-		if (!cstnu2cstn.manageParameters(args))
-			return;
-		LOG.finest("Parameters ok!");
-
-		LOG.finest("Loading graph...");
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnu2cstn.fInput, labeledIntValueMap);
-		cstnu2cstn.setG(graphMLReader.readGraph());
-		LOG.finest("LabeledIntGraph loaded!");
-
-		LOG.finest("DC Checking...");
-		CSTNUCheckStatus status;
-		try {
-			status = cstnu2cstn.dynamicControllabilityCheck();
-		} catch (final WellDefinitionException e) {
-			System.out.print("An error has been occured during the checking: " + e.getMessage());
-			return;
-		}
-		if (status.finished) {
-			System.out.println("Checking finished!");
-			if (status.consistency) {
-				System.out.println("The given cstnu is Dynamic controllable!");
-			} else {
-				System.out.println("The given cstnu is NOT DC!");
-			}
-			System.out.println("Details: " + status);
-		} else {
-			System.out.println("Checking has not been finished!");
-			System.out.println("Details: " + status);
-		}
-
-		if (cstnu2cstn.fOutput != null) {
-			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(null);
-			try {
-				graphWriter.save(cstnu2cstn.getG(), new PrintWriter(cstnu2cstn.output));
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 }

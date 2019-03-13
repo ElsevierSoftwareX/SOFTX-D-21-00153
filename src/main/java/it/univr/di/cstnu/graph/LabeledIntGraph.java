@@ -343,7 +343,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return false;
 		}
 
-		int destIndex = this.nodeName2index.get(v2Name);
+		int destIndex = this.nodeName2index.getInt(v2Name);
 		if (destIndex == Constants.INT_NULL) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO)) {
@@ -354,9 +354,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 
 		LabeledIntEdge old = this.adjacency[sourceIndex][destIndex];
-		if (old != null) {
-			this.edge2index.remove(old.getName());
-		}
+		removeEdgeFromIndex(old);
 		this.adjacency[sourceIndex][destIndex] = e;
 
 		this.edge2index.put(e.getName(), new EdgeIndex(e, sourceIndex, destIndex));
@@ -612,7 +610,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		int sourceNI = this.nodeName2index.getInt(s);
 		if (sourceNI == Constants.INT_NULL)
 			return null;
-		int destNI = this.nodeName2index.get(d);
+		int destNI = this.nodeName2index.getInt(d);
 		if (destNI == Constants.INT_NULL)
 			return null;
 		return this.adjacency[sourceNI][destNI];
@@ -1104,7 +1102,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return false;
 
 		this.adjacency[ei.rowAdj][ei.colAdj] = null;
-		this.edge2index.remove(ei.edge.getName());
+		removeEdgeFromIndex(edge);
 		this.lowerCaseEdges = null;
 		return true;
 	}
@@ -1171,7 +1169,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 		// End to move node to remove at the end of adjacency matrix and to remove all its edges.
 		this.index2node.remove(removingNodeIndex);
-		this.nodeName2index.remove(removingNode.name);
+		this.nodeName2index.removeInt(removingNode.name);
 		if (removingNodeIndex != last) {
 			LabeledNode nodeMovedToRemovedNodePosition = this.index2node.get(last);
 			this.index2node.remove(last);
@@ -1269,7 +1267,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 		for (final LabeledNode n : this.getVertices()) {
 			sb.append("<" + n.name + ",\t" + n.getLabel() + ",\t" + n.getPropositionObserved());
-			LabeledALabelIntTreeMap potential = n.getPotential();
+			LabeledALabelIntTreeMap potential = n.getPotentialAll();
 			if (potential != null && !potential.isEmpty()) {
 				sb.append(",\tPotential: " + potential.toString());
 			}
@@ -1283,6 +1281,24 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					+ ", UL:" + e.upperCaseValuesAsString() + ">\n");
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Transposes <code>this</code> inverting only the souce/destination of each edge.
+	 * All other attributes of an edge are not modified.
+	 */
+	public void transpose() {
+		int n = this.getVertexCount();
+		for (int i = 1; i < n; i++) {
+			for (int j = 0; j < i; j++) {
+				LabeledIntEdge eIJ = this.adjacency[i][j];
+				LabeledIntEdge eJI = this.adjacency[j][i];
+				this.adjacency[i][j] = eJI;
+				this.adjacency[j][i] = eIJ;
+				updateEdgeInIndex(eIJ, j, i);
+				updateEdgeInIndex(eJI, i, j);
+			}
+		}
 	}
 
 	@Override
@@ -1311,7 +1327,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					node.name = oldValue;
 					return;
 				}
-				this.nodeName2index.remove(oldValue);
+				this.nodeName2index.removeInt(oldValue);
 				this.nodeName2index.put(node.getName(), oldI);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {

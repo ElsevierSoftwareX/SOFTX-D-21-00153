@@ -575,7 +575,7 @@ public class CSTNUTest {
 		g.addEdge(ca, C, A);
 		g.addEdge(da, D, A);
 		this.cstnu.setG(g);
-		this.cstnu.labeledPropagationqLP(D, C, A, dc, ca, da);
+		this.cstnu.labelPropagation(D, C, A, dc, ca, da);
 
 		LabeledIntEdgePluggable daOk = new LabeledIntEdgePluggable("DA", this.labeledIntValueMapClass);
 		daOk.mergeUpperCaseValue(Label.parse("abc"), new ALabel("B", this.alpha), 14);
@@ -586,7 +586,7 @@ public class CSTNUTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labelPropagation(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_lncRule() {
@@ -626,7 +626,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationqLP(X, Y, W, XY, YW, XW);
+		this.cstnu.labelPropagation(X, Y, W, XY, YW, XW);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
@@ -644,7 +644,7 @@ public class CSTNUTest {
 	
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labelPropagation(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_lucRule() {
@@ -689,7 +689,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationqLP(X, Y, W, XY, YW, XW);
+		this.cstnu.labelPropagation(X, Y, W, XY, YW, XW);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xwOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
@@ -713,7 +713,7 @@ public class CSTNUTest {
 	
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labelPropagation(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_flucRule() {
@@ -752,7 +752,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationqLP(X, Y, this.Z, XY, YZ, XZ);
+		this.cstnu.labelPropagation(X, Y, this.Z, XY, YZ, XZ);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xzOK = new LabeledIntEdgePluggable("XW", this.labeledIntValueMapClass);
@@ -769,7 +769,7 @@ public class CSTNUTest {
 	
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labeledPropagationqLP(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTNU#labelPropagation(LabeledNode, LabeledNode, LabeledNode, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge, it.univr.di.cstnu.graph.LabeledIntEdge)}
 	 */
 	@Test
 	public final void test_lcucRule() {
@@ -808,7 +808,7 @@ public class CSTNUTest {
 		wellDefinition(g);
 //		System.out.println(XW);
 
-		this.cstnu.labeledPropagationqLP(X, Y, this.Z, XY, YZ, XZ);
+		this.cstnu.labelPropagation(X, Y, this.Z, XY, YZ, XZ);
 //		System.out.println(XW);
 		
 		LabeledIntEdgePluggable xzOK = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);

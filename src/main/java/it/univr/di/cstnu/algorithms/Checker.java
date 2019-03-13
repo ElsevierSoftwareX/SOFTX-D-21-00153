@@ -229,6 +229,11 @@ public class Checker {
 			+ CSVSep + "#R0"
 			+ CSVSep + "#R3"
 			+ CSVSep + "#LNC"
+			+ CSVSep + "#PotentialR1-2"
+			+ CSVSep + "#PotentialR3"
+			+ CSVSep + "#PotentialR4"
+			+ CSVSep + "#PotentialR5"
+			+ CSVSep + "#PotentialR6"
 			+ CSVSep;
 	/**
 	 * 
@@ -267,7 +272,12 @@ public class Checker {
 	static final String OUTPUT_ROW_TIME_STATS = OUTPUT_ROW_TIME
 			+ "%d"// r0
 			+ CSVSep + "%d"// r3
-			+ CSVSep + "%d"// lp;
+			+ CSVSep + "%d"// LNC
+			+ CSVSep + "%d"// "#PotentialR1-2"
+			+ CSVSep + "%d"// "#PotentialR3"
+			+ CSVSep + "%d"// "#PotentialR4"
+			+ CSVSep + "%d"// "#PotentialR5"
+			+ CSVSep + "%d"// "#PotentialR6"
 			+ CSVSep;
 
 	/**
@@ -547,7 +557,12 @@ public class Checker {
 				((!tester.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"),
 				status.r0calls,
 				status.r3calls,
-				status.labeledValuePropagationCalls);
+				status.labeledValuePropagationCalls,
+				status.potentialCalls[0] + status.potentialCalls[1],
+				status.potentialCalls[2],
+				status.potentialCalls[3],
+				status.potentialCalls[4],
+				status.potentialCalls[5]);
 		if (tester.cstnType == CstnType.cstnu) {
 			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
 					((CSTNUCheckStatus) status).zEsclamationRuleCalls,
@@ -724,8 +739,6 @@ public class Checker {
 	@SuppressWarnings({ "javadoc" })
 	private static CSTN makeCSTNInstance(Checker tester, LabeledIntGraph g) {
 		if (tester.cstnType == CstnType.cstnu) {
-			if (tester.potential)
-				return new CSTNUPotential(g, tester.timeOut);
 			if (tester.cstnu2cstn)
 				return new CSTNU2CSTN(g, tester.timeOut);
 			return new CSTNU(g, tester.timeOut, tester.onlyLPQR0QR3OrToZ);
@@ -734,6 +747,8 @@ public class Checker {
 			return new CSTN2CSTN0(tester.reactionTime, g, tester.timeOut);
 		}
 		CSTN cstn;
+		if (tester.potential)// the implicit semantics is IR
+			return new CSTNPotential(g, tester.timeOut);
 		switch (tester.dcSemantics) {
 		case ε:
 			if (tester.onlyLPQR0QR3OrToZ) {
@@ -752,6 +767,10 @@ public class Checker {
 			}
 			break;
 		default:
+			if (tester.onlyLPQR0QR3OrToZ) {
+				throw new IllegalArgumentException(
+						"For standard semantics there is no DC checking algorithm that works only considering constraints ending to Z.");
+			}
 			cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabel(g, tester.timeOut) : new CSTN(g, tester.timeOut);
 			break;
 		}
@@ -771,10 +790,9 @@ public class Checker {
 	private boolean cstnu2cstn = false;
 
 	/**
-	 * Parameter for asking to DC check using potential
 	 */
-	@Option(required = false, name = "-potential", usage = "Check the DC of the input instance using potential DC algorithm (ONLY FOR CSTNU).")
-	private boolean potential = false;
+	@Option(required = false, name = "-save", usage = "Save all checked instances.")
+	private boolean save = false;
 
 	/**
 	 * Which type of CSTN are input files
@@ -793,6 +811,12 @@ public class Checker {
 	 */
 	@Option(required = false, name = "-semantics", usage = "DC semantics. Possible values are: IR, ε, Std. Default is Std.")
 	private DCSemantics dcSemantics = DCSemantics.Std;
+	/**
+	 * Check a CSTN instance using BellamanFord algorithm
+	 */
+	@Option(required = false, name = "-potential", depends = { "-type cstn" }, usage = "Check a CSTN instance using BellamanFord algorithm.")
+	private boolean potential = false;
+
 	/**
 	 * The input file names. Each file has to contain a CSTN graph in GraphML format.
 	 */
@@ -831,7 +855,8 @@ public class Checker {
 	/**
 	 * Parameter for asking whether to consider only Lp,qR0, qR3* rules.
 	 */
-	@Option(required = false, name = "-onlyLPQR0QR3", aliases = { "-limitToZ" }, usage = "Check DC considering only rules LP, qR0 and QR3.")
+	@Option(required = false, name = "-onlyLPQR0QR3", aliases = {
+			"-limitToZ" }, depends = { "-semantics" }, usage = "Check DC considering only rules LP, qR0 and QR3.")
 	private boolean onlyLPQR0QR3OrToZ = false;
 
 	/**
@@ -848,13 +873,13 @@ public class Checker {
 	/**
 	 * Parameter for asking to remove a value from all constraints.
 	 */
-	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is null.")
+	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is a value representing NULL.")
 	private int removeValue = Constants.INT_NULL;
 
 	/**
 	 * Parameter for asking timeout in sec.
 	 */
-	@Option(required = false, name = "-timeOut", usage = "Time in seconds. Default is 1200 s = 20 m")
+	@Option(required = false, name = "-timeOut", usage = "Time in seconds.")
 	private int timeOut = 1200; // 20 min
 
 	/**
@@ -953,6 +978,9 @@ public class Checker {
 	 */
 	static private int getNumberExecutedRules(Checker tester, CSTNCheckStatus status) {
 		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
+		for (int i = status.potentialCalls.length; i-- != 0;)
+			nRules += status.potentialCalls[i];
+
 		if (tester.cstnType == CstnType.cstnu)
 			nRules += ((CSTNUCheckStatus) status).zEsclamationRuleCalls +
 					((CSTNUCheckStatus) status).lowerCaseRuleCalls +

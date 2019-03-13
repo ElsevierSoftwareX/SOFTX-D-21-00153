@@ -57,18 +57,18 @@ public class LabeledNodeTest {
 		ALabel C = new ALabel("C", this.alphabet);
 		ALabel D = new ALabel("D", this.alphabet);
 
-		a.potentialPut(C, Label.parse("b"), -1);
-		a.potentialPut(C.conjunction(D), Label.parse("b"), -1);// ignored
-		a.potentialPut(Label.parse("a"), -1);
+		a.putPotential(C, Label.parse("b"), -1);
+		a.putPotential(C.conjunction(D), Label.parse("b"), -1);// ignored
+		a.putPotential(Label.parse("a"), -1);
 
-		assertEquals("{a->-1}", a.getPotentialEntrySet(ALabel.emptyLabel).toString());
-		assertEquals("{b->-1}", a.getPotentialEntrySet(C).toString());
+		assertEquals("{a->-1}", a.getPotentialEntrySetOfUC(ALabel.emptyLabel).toString());
+		assertEquals("{b->-1}", a.getPotentialEntrySetOfUC(C).toString());
 
-		a.potentialPut(Label.parse("b"), -1);
-		assertEquals("{a->-1, b->-1}", a.getPotentialEntrySet(ALabel.emptyLabel).toString());
+		a.putPotential(Label.parse("b"), -1);
+		assertEquals("{a->-1, b->-1}", a.getPotentialEntrySetOfUC(ALabel.emptyLabel).toString());
 
-		a.potentialPut(Label.emptyLabel, -1);
-		assertEquals("{⊡->-1}", a.getPotentialEntrySet(ALabel.emptyLabel).toString());
+		a.putPotential(Label.emptyLabel, -1);
+		assertEquals("{⊡->-1}", a.getPotentialEntrySetOfUC(ALabel.emptyLabel).toString());
 
 	}
 

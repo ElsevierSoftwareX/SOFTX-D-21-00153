@@ -219,8 +219,10 @@ public class Luke2GraphML {
 		String[] nodeParts = line.split(patternEdge);
 		// nodeParts[0] is empty!
 
-		LabeledNode sourceNode = int2Node.get(Integer.valueOf(nodeParts[1]));
-		LabeledNode destNode = int2Node.get(Integer.valueOf(nodeParts[2]));
+		int sI = Integer.valueOf(nodeParts[1]);
+		int dI = Integer.valueOf(nodeParts[2]);
+		LabeledNode sourceNode = int2Node.get(sI);
+		LabeledNode destNode = int2Node.get(dI);
 		LabeledIntEdge edge = g.getEdgeFactory().get(sourceNode.name + "-" + destNode.name);
 		Label label = null;
 		String[] labelParts = null;

@@ -22,17 +22,17 @@ public class CSTNIR extends CSTN {
 
 
 	/**
-	 * logger
-	 */
-	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNIR.class.getName());
-
-	/**
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
 	// static public final String VERSIONandDATE = "Version 1.0 - April, 03 2017";// first release i.r.
 	static public final String VERSIONandDATE = "Version  1.1 - October, 10 2017";// removed qLables
+
+	/**
+	 * logger
+	 */
+	@SuppressWarnings("hiding")
+	static Logger LOG = Logger.getLogger(CSTNIR.class.getName());
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -45,14 +45,6 @@ public class CSTNIR extends CSTN {
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNIR3R(), "Instantaneous Reaction DC");
-	}
-
-	/**
-	 * Default constructor.
-	 */
-	CSTNIR() {
-		super();
-		this.reactionTime = 0;
 	}
 
 	/**
@@ -75,11 +67,20 @@ public class CSTNIR extends CSTN {
 	}
 
 	/**
+	 * Default constructor.
+	 */
+	CSTNIR() {
+		super();
+		this.reactionTime = 0;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean LPMainConditionForSkipping(final int u, final int v) {
+	boolean mainConditionForSkippingInLP(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
+		// u must be < 0
 		return u >= 0;
 	}
 
@@ -87,8 +88,9 @@ public class CSTNIR extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	final boolean R0qR0MainConditionForSkipping(final int w) {
+	final boolean mainConditionForSkippingInR0qR0(final int w) {
 		// Table 1 ICAPS2016 paper for IR semantics
+		// w must be < 0.
 		return w >= 0;
 	}
 

@@ -175,7 +175,7 @@ public class CSTNUGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<Labele
 				new Function<LabeledNode, String>() {
 					@Override
 					public String apply(final LabeledNode v) {
-						String s = v.getPotential().toString();
+						String s = v.getPotentialAll().toString();
 						return (s.startsWith("{}")) ? null : s;
 					}
 				});
