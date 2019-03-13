@@ -51,8 +51,15 @@ Se si vuole importare nel branch modifiche fatte nel trunk
 
 3.0 fare i commit nel trunk
 3.1 andare nella working dir del branch
-3.2 fare i commit
-3.3 fare il merge del trunk
+3.2 Vedere quali versioni saranno importate
+svn mergeinfo --show-revs eligible ^/CSTNU/trunk
+
+3.3 fare i commit nel branch!
+
+3.4 Vedere il merge senza farlo (se serve)
+svn merge --dry-run  ^/CSTNU/trunk
+
+3.5 fare il merge del trunk
 
 svn merge ^/CSTNU/trunk
 
