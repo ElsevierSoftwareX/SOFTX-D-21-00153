@@ -102,6 +102,21 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * @author posenato
 	 */
 	@SuppressWarnings("javadoc")
+	private class ContingentAlsoAsOrdinaryListener implements ItemListener {
+
+		public ContingentAlsoAsOrdinaryListener() {
+		}
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			CSTNEditor.this.contingentAlsoAsOrdinary = e.getStateChange() == ItemEvent.SELECTED;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	@SuppressWarnings("javadoc")
 	private class BigViewerListener implements ActionListener {
 
 		boolean isInputGraphLayoutToShow;
@@ -675,6 +690,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
 			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
+			CSTNEditor.this.cstnu.setContingentAlsoAsOrdinary(CSTNEditor.this.contingentAlsoAsOrdinary);
 			jl1.setBackground(Color.orange);
 			try {
 				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.dynamicControllabilityCheck();
@@ -722,8 +738,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
-
 			CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
+			CSTNEditor.this.cstnu.setContingentAlsoAsOrdinary(CSTNEditor.this.contingentAlsoAsOrdinary);
 			try {
 				CSTNEditor.this.cstnu.initAndCheck();
 			} catch (final IllegalArgumentException | WellDefinitionException ec) {
@@ -772,6 +788,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			if (CSTNEditor.this.cycle == 0) {
 				CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
 				CSTNEditor.this.cstnu = new CSTNU(CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
+				CSTNEditor.this.cstnu.setContingentAlsoAsOrdinary(CSTNEditor.this.contingentAlsoAsOrdinary);
 				CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.checkedGraph.getEdgeFactory().toString());
 				try {
 					CSTNEditor.this.cstnu.initAndCheck();
@@ -1332,6 +1349,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	boolean onlyToZ = true;
 
 	/**
+	 * True if contingent link as to be represented also as ordinary constraints.
+	 */
+	boolean contingentAlsoAsOrdinary = false;
+
+	/**
 	 * Reaction time for CSTN
 	 */
 	int reactionTime = 1;
@@ -1562,7 +1584,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new CSTNRestrictedCheckListener());
 		rowForCSTNButtons.add(buttonCheck);
 
-		buttonCheck = new JButton("CSTN Check by Potential");
+		buttonCheck = new JButton("CSTN Check using Bellman-Ford");
 		buttonCheck.addActionListener(new CSTNPotentialCheckListener());
 		rowForCSTNButtons.add(buttonCheck);
 
@@ -1575,6 +1597,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		onlyToZCB.setSelected(this.onlyToZ);
 		onlyToZCB.addItemListener(new OnlyToZListener());
 		rowForCSTNUButtons.add(onlyToZCB);
+
+		JCheckBox contingentAlsoAsOrdinaryCB = new JCheckBox("Propagate contingents also as std constraints");
+		contingentAlsoAsOrdinaryCB.setSelected(this.contingentAlsoAsOrdinary);
+		contingentAlsoAsOrdinaryCB.addItemListener(new ContingentAlsoAsOrdinaryListener());
+		rowForCSTNUButtons.add(contingentAlsoAsOrdinaryCB);
 
 		buttonCheck = new JButton("CSTNU Init Graph");
 		buttonCheck.addActionListener(new CSTNUInitListener());
