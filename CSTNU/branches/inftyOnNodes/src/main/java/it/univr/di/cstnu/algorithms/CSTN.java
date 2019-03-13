@@ -326,12 +326,14 @@ public class CSTN {
 			}
 		}
 
-		/**
-		 * @param node
-		 */
 		@Override
-		public final void enqueue(LabeledNode node) {
-			this.nodes2check.enqueue(node);
+		public boolean add(LabeledNode e) {
+			return this.nodes2check.add(e);
+		}
+
+		@Override
+		public boolean addAll(Collection<? extends LabeledNode> c) {
+			throw new UnsupportedOperationException("addAll");
 		}
 
 		/**
@@ -340,6 +342,11 @@ public class CSTN {
 		@Override
 		public void clear() {
 			this.nodes2check.clear();
+		}
+
+		@Override
+		public Comparator<? super LabeledNode> comparator() {
+			throw new UnsupportedOperationException("comparator");
 		}
 
 		/**
@@ -351,12 +358,9 @@ public class CSTN {
 			return this.nodes2check.contains(o);
 		}
 
-		/**
-		 * @return true if there is no element
-		 */
 		@Override
-		public boolean isEmpty() {
-			return this.nodes2check.isEmpty();
+		public boolean containsAll(Collection<?> c) {
+			throw new UnsupportedOperationException("containsAll");
 		}
 
 		/**
@@ -365,6 +369,47 @@ public class CSTN {
 		@Override
 		public LabeledNode dequeue() {
 			return this.nodes2check.dequeue();
+		}
+
+		/**
+		 * @param node
+		 */
+		@Override
+		public final void enqueue(LabeledNode node) {
+			this.nodes2check.enqueue(node);
+		}
+
+		@Override
+		public LabeledNode first() {
+			throw new UnsupportedOperationException("first");
+		}
+
+		/**
+		 * @return true if there is no element
+		 */
+		@Override
+		public boolean isEmpty() {
+			return this.nodes2check.isEmpty();
+		}
+
+		@Override
+		public ObjectIterator<LabeledNode> iterator() {
+			return this.nodes2check.iterator();
+		}
+
+		@Override
+		public boolean remove(Object o) {
+			return this.nodes2check.remove(o);
+		}
+
+		@Override
+		public boolean removeAll(Collection<?> c) {
+			throw new UnsupportedOperationException("removeAll");
+		}
+
+		@Override
+		public boolean retainAll(Collection<?> c) {
+			throw new UnsupportedOperationException("retainAll");
 		}
 
 		/**
@@ -383,6 +428,16 @@ public class CSTN {
 			return (this.nodes2check != null) ? this.nodes2check.toArray() : new LabeledNode[0];
 		}
 
+		@Override
+		public <T> T[] toArray(T[] a) {
+			throw new UnsupportedOperationException("toArray");
+		}
+
+		@Override
+		public String toString() {
+			return this.nodes2check.toString();
+		}
+
 		/**
 		 * Copy fields reference of into this.
 		 * After this method, this and input share the internal fields.
@@ -394,62 +449,12 @@ public class CSTN {
 				return;
 			this.nodes2check = input.nodes2check;
 		}
-
-		@Override
-		public String toString() {
-			return this.nodes2check.toString();
-		}
-
-		@Override
-		public <T> T[] toArray(T[] a) {
-			throw new UnsupportedOperationException("toArray");
-		}
-
-		@Override
-		public boolean add(LabeledNode e) {
-			return this.nodes2check.add(e);
-		}
-
-		@Override
-		public boolean remove(Object o) {
-			return this.nodes2check.remove(o);
-		}
-
-		@Override
-		public boolean containsAll(Collection<?> c) {
-			throw new UnsupportedOperationException("containsAll");
-		}
-
-		@Override
-		public boolean addAll(Collection<? extends LabeledNode> c) {
-			throw new UnsupportedOperationException("addAll");
-		}
-
-		@Override
-		public boolean removeAll(Collection<?> c) {
-			throw new UnsupportedOperationException("removeAll");
-		}
-
-		@Override
-		public boolean retainAll(Collection<?> c) {
-			throw new UnsupportedOperationException("retainAll");
-		}
-
-		@Override
-		public ObjectIterator<LabeledNode> iterator() {
-			return this.nodes2check.iterator();
-		}
-
-		@Override
-		public LabeledNode first() {
-			throw new UnsupportedOperationException("first");
-		}
-
-		@Override
-		public Comparator<? super LabeledNode> comparator() {
-			throw new UnsupportedOperationException("comparator");
-		}
 	}
+
+	/**
+	 * Suffix for file name
+	 */
+	public static String FILE_NAME_SUFFIX = ".cstn";
 
 	/**
 	 * Version of the class
@@ -467,11 +472,6 @@ public class CSTN {
 	// static final public String VERSIONandDATE = "Version 5.7 - December, 13 2017";// Code tweaking
 	// static final public String VERSIONandDATE = "Version 5.8 - January, 17 2019";// Code tweaking
 	static final public String VERSIONandDATE = "Version 6 - January, 31 2019";// Infty value management moved to nodes!
-
-	/**
-	 * Suffix for file name
-	 */
-	public static String FILE_NAME_SUFFIX = ".cstn";
 
 	/**
 	 * The name for the initial node.
@@ -565,6 +565,33 @@ public class CSTN {
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTN(), "Standard DC");
+	}
+
+	/**
+	 * Says if a new labeled value like (-14, α¿p) is an edge going to obs t.p. P?. in this case, the new value must not be store.<br>
+	 * Example Q ---(-14, α¿p)⟶ P? is useless, so it must not be stored.
+	 * 
+	 * @param obs the node having the incoming edge.
+	 * @param newLabel
+	 * @param value
+	 * @param log
+	 * @return true if the value does not be stored, false otherwise
+	 */
+	static boolean checkAndApplyUnknownAfterObs(LabeledNode obs, Label newLabel, int value, String log) {
+		if (!obs.isObserver())
+			return false;
+		char p = obs.getPropositionObserved();
+		if (newLabel.contains(Literal.valueOf(p, Literal.UNKNONW))) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					log += "\n dot not store value " + pairAsString(newLabel, value) + " because " + obs.getName() + " is the observation t.p. of proposition '"
+							+ p + "'.";
+					LOG.log(Level.FINER, log);
+				}
+			}
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -662,36 +689,14 @@ public class CSTN {
 	}
 
 	/**
-	 * Says if a new labeled value like (-14, α¿p) is an edge going to obs t.p. P?. in this case, the new value must not be store.<br>
-	 * Example Q ---(-14, α¿p)⟶ P? is useless, so it must not be stored.
-	 * 
-	 * @param obs the node having the incoming edge.
-	 * @param newLabel
-	 * @param value
-	 * @param log
-	 * @return true if the value does not be stored, false otherwise
-	 */
-	static boolean checkAndApplyUnknownAfterObs(LabeledNode obs, Label newLabel, int value, String log) {
-		if (!obs.isObserver())
-			return false;
-		char p = obs.getPropositionObserved();
-		if (newLabel.contains(Literal.valueOf(p, Literal.UNKNONW))) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					log += "\n dot not store value " + pairAsString(newLabel, value) + " because " + obs.getName() + " is the observation t.p. of proposition '"
-							+ p + "'.";
-					LOG.log(Level.FINER, log);
-				}
-			}
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * Check status
 	 */
 	CSTNCheckStatus checkStatus = new CSTNCheckStatus();
+
+	/**
+	 */
+	@Option(required = false, name = "-cleaned", usage = "Output a cleaned result. A result cleaned graph does not contain empty edges or labeled values containing unknown literals.")
+	boolean cleanCheckedInstance = true;
 
 	/**
 	 * The input file containing the CSTN graph in GraphML format.
@@ -704,11 +709,6 @@ public class CSTN {
 	 */
 	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output.", metaVar = "output_file_name")
 	File fOutput = null;
-
-	/**
-	 */
-	@Option(required = false, name = "-cleaned", usage = "Output a cleaned result. A result cleaned graph does not contain empty edges or labeled values containing unknown literals.")
-	boolean cleanCheckedInstance = true;
 
 	/**
 	 * Graph on which to operate.
@@ -1303,14 +1303,9 @@ public class CSTN {
 		// CSTNU overrides this.
 		if (g == null)
 			throw new IllegalArgumentException("Input graph is null!");
+		reset();
 		this.g = g;
 		this.Z = g.getZ();// Don't remove this assignment!
-		this.maxWeight = 0;
-		this.horizon = 0;
-		this.gCheckedCleaned = null;
-		this.fInput = g.getFileName();
-
-		this.checkStatus.reset();
 	}
 
 	/**
@@ -1336,417 +1331,6 @@ public class CSTN {
 	public void setWithUnknown(boolean withUnknown) {
 		this.withUnknown = withUnknown;
 		this.setG(this.g);// reset all
-	}
-
-	/**
-	 * Checks the labeled -∞ before putting in the potential of a node.
-	 * If the label does not contain unknowns, then it stores the value, logs that a negative loop has been found,
-	 * sets the consistency of the <code>this.status=false</code> and returns.
-	 * Otherwise, it stores the value and returns.
-	 * In any case, if the <code>node</code> is an observation time-point, the method removes from <code>label</code>
-	 * possible literal associated to the proposition observed by <code>node</code> before storing the <code>(-∞, label)</code>.
-	 * 
-	 * @param node the node where to add the <code>(-∞, label)</code>.
-	 * @param label
-	 * @param log possible text to log as prefix to the log of this method.
-	 * @return true if the value has been added, false otherwise.
-	 */
-	boolean potentialR1_2(LabeledNode node, Label label, String log) {
-		if (node.isObserver())
-			// Potential Rule 2 and RO
-			label = label.remove(node.getPropositionObserved());
-		if (Debug.ON) {
-			log += "\nputAndCheckNegativeInfty on " + node.toString()
-					+ "added: " + pairAsString(label, Constants.INT_NEG_INFINITE);
-		}
-		if (!label.containsUnknown()) {
-			node.putPotential(label, Constants.INT_NEG_INFINITE);
-			// Negative loop!
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, log + "\n***\nFound a negative loop in node " + node + "\n***");
-				}
-			}
-			this.checkStatus.consistency = false;
-			this.checkStatus.finished = true;
-			this.checkStatus.potentialCalls[0]++;
-			return true;
-		}
-		if (node.putPotential(label, Constants.INT_NEG_INFINITE)) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, log);
-				}
-			}
-			this.checkStatus.potentialCalls[0]++;
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Checks and applies Labeled Potential Rule 3 to node <code>nS</code>.
-	 * 
-	 * <pre>
-	 * Potential Rule 3
-	 * if nS ---(u,α)⟶ nD[(-∞,β)] and u ≤ 0,  
-	 * then add nS[(α★β)†]
-	 * </pre>
-	 * 
-	 * @param nS
-	 * @param nD
-	 * @param eSD
-	 * @param nDPotentialLabel if null, method checks nD potential. This parameter is useful to speed-up method calls with the same nD
-	 * @return true if the rule has been applied.
-	 */
-	boolean potentialR3(LabeledNode nS, LabeledNode nD, LabeledIntEdge eSD, ObjectSet<Label> nDPotentialLabel) {
-		if (nS == nD)
-			return false;
-		if (nDPotentialLabel == null)
-			nDPotentialLabel = nD.getPotential().keySet();
-		if (nD.getPotential().isEmpty())
-			return false;
-		String log = "";
-		boolean ruleApplied = false;
-
-		for (Entry<Label> entry : eSD.getLabeledValueSet()) {
-			int u = entry.getIntValue();
-			if (u > 0)
-				continue;
-			Label alpha = entry.getKey();
-			for (Label beta : nDPotentialLabel) {
-				Label alphaBeta = alpha.conjunctionExtended(beta);
-				if (this.withNodeLabels) {
-					alphaBeta = removeChildrenOfUnknown(alphaBeta);
-				}
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
-						log = "Labeled Potential Propagation Rule 3 applied to edge " + eSD.getName()
-								+ ":\nsource: "
-								+ nS.getName() + " ---" + pairAsString(alpha, u) + "⟶ " + nD.getName() + "{"
-								+ pairAsString(beta, Constants.INT_NEG_INFINITE) + "}";
-					}
-				}
-				if (potentialR1_2(nS, alphaBeta, log)) {
-					if (!this.checkStatus.consistency)
-						return true;
-					ruleApplied = true;
-					this.checkStatus.potentialCalls[2]++;
-				}
-			}
-		}
-		return ruleApplied;
-	}
-
-	/**
-	 * Propagates (-∞, q) with q ∈ Q* from node potential to other node potentials.
-	 * Potential Rules 1 and 2, 3, and 6 have been implemented as methods that must be used ALSO inside labelPropagation and Q3 methods for speeding up the
-	 * algorithm.
-	 * In this method, rules 3, 4, 5, and 6 are rechecked only for node nY.
-	 * 
-	 * <pre>
-	 * 4) if Y?[(-∞,β)] and A ---(u,α y')⟶ B u ≤ 0
-	 *    then add A ---(u,(α★β)†)⟶ B
-	 *  
-	 * 5) if P? ---(u,α)⟶ A  and  B[(-∞,β p')] and u ≤ 0
-	 *    then B ---(u,(α★β)†)⟶ A
-	 * 
-	 * α in Q*
-	 * β in Q* / P* 
-	 * (α★β)† is the label without children of unknown.
-	 * y' = y or ¬y or ¿y
-	 * p' = p or ¬p or ¿p
-	 * </pre>
-	 * 
-	 * @param nY
-	 * @param limitToZ true if method has to check only edge going to Z.
-	 * @param newNodesToCheck
-	 * @param newEdgesToCheck
-	 * @return true if the rule has been applied, false otherwise.
-	 */
-	boolean potentialR3_4_5_6(LabeledNode nY, boolean limitToZ, NodesToCheck newNodesToCheck, EdgesToCheck newEdgesToCheck) {
-		boolean ruleApplied = false;
-		String log = "", firstLog = "";
-		ObjectSet<Label> nYPotentialLabel = nY.getPotential().keySet();
-
-		if (!nYPotentialLabel.isEmpty()) {
-			/**
-			 * Case 3
-			 * if X ---(u,α)⟶ Y[(-∞,β)] and u ≤ 0,
-			 * then add X[(α★β)†]
-			 * Again the rule is applied to guarantee that there is no unpropagated potential.
-			 * 
-			 * @see {@link checkAndApplyPotentialRule3}
-			 */
-			for (LabeledIntEdge yInEdge : this.g.getInEdges(nY)) {
-				LabeledNode nS = this.g.getSource(yInEdge);
-				if (potentialR3(nS, nY, yInEdge, nYPotentialLabel)) {
-					newNodesToCheck.enqueue(nS);
-					ruleApplied = true;
-					if (!this.checkStatus.consistency) {
-						this.checkStatus.finished = true;
-						return true;
-					}
-				}
-			}
-			/**
-			 * Case 6
-			 * if Y[(-∞,β)] ---(u,α)⟶ X and u ≤ 0 and α subsumes β,
-			 * then DELETE (u,α) from the edge.
-			 *** Applied also in #labelPropagation() and R3qR3***
-			 */
-			if (nY != this.Z) {
-			for (LabeledIntEdge yOutEdge : this.g.getOutEdges(nY)) {
-				LabeledNode nD = this.g.getDest(yOutEdge);
-				for (Entry<Label> entry : yOutEdge.getLabeledValueSet()) {
-					int u = entry.getIntValue();
-					Label alpha = entry.getKey();
-					ruleApplied |= potentialR6(nY, nD, alpha, u, yOutEdge, "");
-				}
-			}
-			}
-			/**
-			 * Case 4 (very expensive!)
-			 * if Y?[(-∞,β)] and A ---(u,α y')⟶ B and u ≤ 0
-			 * then add A ---(u,(α★β)†)⟶ B
-			 */
-			if (nY.isObserver()) {
-				char proposition = nY.getPropositionObserved();
-				if (!nYPotentialLabel.isEmpty()) {
-					Collection<LabeledIntEdge> edgeSet = (limitToZ) ? this.g.getInEdges(this.Z) : this.g.getEdges();
-					for (LabeledIntEdge e : edgeSet) {
-						if (Debug.ON) {
-							firstLog = "Labeled Potential Propagation Rule 4 considers edge " + e.getName() + "\nand observation t.p.: " + nY.getName();
-						}
-						LabeledNode A = this.g.getSource(e), B = this.g.getDest(e);
-						boolean modified = false;
-						for (Entry<Label> entry : e.getLabeledValueSet()) {
-							int u = entry.getIntValue();
-							if (u > 0)
-								continue;
-							Label alpha = entry.getKey();
-							if (!alpha.contains(proposition))
-								continue;
-							if (Debug.ON) {
-								if (LOG.isLoggable(Level.FINER)) {
-									log = firstLog + "\nsource: " + A.getName() + " ---" + pairAsString(alpha, u) + "⟶ " + B.getName();
-								}
-							}
-							alpha = alpha.remove(proposition);
-							for (Label beta : nYPotentialLabel) {
-								Label alphaBeta = alpha.conjunctionExtended(beta);
-								if (this.withNodeLabels) {
-									alphaBeta = removeChildrenOfUnknown(alphaBeta);
-								}
-								if (alpha.equals(alphaBeta))
-									continue;
-								if (potentialR6(A, B, alphaBeta, u, e, log))
-									continue;
-								if (checkAndApplyUnknownAfterObs(B, alphaBeta, u, log))
-									continue;
-								if (e.mergeLabeledValue(alphaBeta, u)) {
-									modified = true;
-									this.checkStatus.potentialCalls[3]++;
-									if (Debug.ON) {
-										if (LOG.isLoggable(Level.FINER)) {
-											LOG.log(Level.FINER, log
-													+ " and " + nY.getName() + "[" + pairAsString(beta, Constants.INT_NEG_INFINITE) + "]"
-													+ "\nresult: "
-													+ A.getName() + " ---" + pairAsString(alphaBeta, u) + "⟶ " + B.getName());
-											firstLog = "";
-										}
-									}
-								}
-							}
-						}
-						if (modified) {
-							ruleApplied = true;
-							newEdgesToCheck.add(e, this.g.getSource(e), this.g.getDest(e), this.Z, this.g, this.propagationOnlyToZ);
-						}
-					}
-					// Second part of Rule 4 that considers node's potentials.
-					for (LabeledNode node : this.g.getNodes()) {
-						boolean modified = false;
-						for (Entry<Label> entry : node.getPotential().entrySet()) {
-							if (Debug.ON) {
-								if (LOG.isLoggable(Level.FINER)) {
-									firstLog = "Labeled Potential Propagation Rule 4 considers node " + node.getName()
-											+ "\nand observation t.p.: " + nY.getName();
-								}
-							}
-							Label alpha = entry.getKey();
-							if (!alpha.contains(proposition))
-								continue;
-							alpha = alpha.remove(proposition);
-							if (Debug.ON) {
-								if (LOG.isLoggable(Level.FINER)) {
-									log = firstLog + "\nsource: " + node.getName() + node.getPotential();
-								}
-							}
-							for (Label beta : nYPotentialLabel) {
-								Label alphaBeta = alpha.conjunctionExtended(beta);
-								if (this.withNodeLabels) {
-									alphaBeta = removeChildrenOfUnknown(alphaBeta);
-								}
-								if (potentialR1_2(node, alphaBeta, log)) {
-									modified = true;
-									this.checkStatus.potentialCalls[3]++;
-									if (!this.checkStatus.consistency) {
-										this.checkStatus.finished = true;
-										return true;
-									}
-									if (Debug.ON) {
-										if (LOG.isLoggable(Level.FINER)) {
-											LOG.log(Level.FINER, log
-													+ " and " + nY.getName() + "[" + pairAsString(beta, Constants.INT_NEG_INFINITE) + "]"
-													+ "\nresult: "
-													+ node.getName() + node.getPotential());
-											firstLog = "";
-										}
-									}
-								}
-							}
-						}
-						if (modified) {
-							ruleApplied = true;
-							newNodesToCheck.enqueue(node);
-						}
-					}
-				}
-			} // nY is an observer
-		} // nY potential is not empty
-		/**
-		 * Case 5
-		 * if P? ---(u,α)⟶ A and B[(-∞,β p')] and u ≤ 0
-		 * then B ---(u,(α★β)†)⟶ A
-		 * From here Y = P?
-		 */
-		// First of all, determines all nodes and its potential labels having label containing the proposition.
-		if (!nY.isObserver())
-			return false;
-		char proposition = nY.getPropositionObserved();
-		Object2ObjectArrayMap<LabeledNode, ObjectSet<Label>> cleanedNodeLabelMapWithPropositionInPotential = new Object2ObjectArrayMap<>();
-		for (LabeledNode node : this.g.getVertices()) {
-			for (Label beta : node.getPotential().keySet()) {
-				if (beta.contains(proposition)) {
-					ObjectSet<Label> labelSet = cleanedNodeLabelMapWithPropositionInPotential.get(node);
-					if (labelSet == null) {
-						labelSet = new ObjectArraySet<>();
-						cleanedNodeLabelMapWithPropositionInPotential.put(node, labelSet);
-					}
-					labelSet.add(beta.remove(proposition));
-				}
-			}
-		}
-		if (cleanedNodeLabelMapWithPropositionInPotential.isEmpty()) {
-			return ruleApplied;
-		}
-		// Then, for each edge outgoing from P to A having negative values, add an edge from the B to A.
-		Collection<LabeledIntEdge> edgeSet;
-		if (limitToZ) {
-			edgeSet = new ObjectArrayList<>();
-			edgeSet.add(this.g.findEdge(nY, this.Z));
-		} else {
-			edgeSet = this.g.getOutEdges(nY);
-		}
-		for (LabeledIntEdge YA : edgeSet) {
-			LabeledNode A = this.g.getDest(YA);
-
-			for (Entry<Label> entry : YA.getLabeledValueSet()) {
-				int u = entry.getIntValue();
-				if (u > 0)
-					continue;
-				Label alpha = entry.getKey();
-				for (java.util.Map.Entry<LabeledNode, ObjectSet<Label>> nodeAndPotential : cleanedNodeLabelMapWithPropositionInPotential.entrySet()) {
-					LabeledNode B = nodeAndPotential.getKey();
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
-							firstLog = "Labeled Potential Propagation Rule 5 applied to edge " + YA.getName()
-									+ "\nand node " + B.getName();
-						}
-					}
-					if (A == B)
-						continue;
-					LabeledIntEdge e = this.g.findEdge(B, A);
-					if (e == null) {
-						e = makeNewEdge(B.getName() + "_" + A.getName(), LabeledIntEdge.ConstraintType.derived);
-						this.g.addEdge(e, B, A);
-					}
-					boolean modified = false;
-					for (Label beta : nodeAndPotential.getValue()) {
-						Label alphaBeta = alpha.conjunctionExtended(beta);
-						if (this.withNodeLabels) {
-							alphaBeta = removeChildrenOfUnknown(alphaBeta);
-						}
-						if (checkAndApplyUnknownAfterObs(A, alphaBeta, u, log))
-							continue;
-
-						if (e.mergeLabeledValue(alphaBeta, u)) {
-							modified = true;
-							this.checkStatus.potentialCalls[4]++;
-							if (Debug.ON) {
-								if (LOG.isLoggable(Level.FINER)) {
-									LOG.log(Level.FINER, firstLog
-											+ "\nSource: " + nY.getName() + " ---" + pairAsString(alpha, u) + "⟶ " + A.getName() + " and node "
-											+ B.getName() + "[" + beta + "]"
-											+ "\nResult: " + B.getName() + " ---" + pairAsString(alphaBeta, u) + "⟶ " + A.getName());
-									firstLog = "";
-								}
-							}
-						}
-					}
-					if (modified) {
-						ruleApplied = true;
-						newEdgesToCheck.add(e, B, A, this.Z, this.g, this.propagationOnlyToZ);
-					}
-				}
-			}
-		}
-		return ruleApplied;
-	}
-
-	/**
-	 * Checks and applies Labeled Potential Rule 6 to edge <code>eSD</code>.
-	 * 
-	 * <pre>
-	 * Potential Rule 6
-	 * if nS[(-∞,β)] ---(value, α)⟶ nD and value ≤ 0 and α subsumes β,  
-	 * then DELETE (u,α) from the edge.
-	 * </pre>
-	 * 
-	 * @param nS the origin node of the edge
-	 * @param nD
-	 * @param alpha the new label to store
-	 * @param value the present value
-	 * @param eSD the edge
-	 * @param preLog possible log string to prefix the log of this method.
-	 * @return true if the rule was applied, false otherwise.
-	 */
-	boolean potentialR6(LabeledNode nS, LabeledNode nD, Label alpha, int value, LabeledIntEdge eSD, String preLog) {
-		if (nS == nD || nS.getPotential().isEmpty() || value > 0)
-			return false;
-		for (Label beta : nS.getPotential().keySet()) {
-			if (alpha.subsumes(beta)) {
-				if (value != Constants.INT_NULL) {
-					// it may be possible that in the edge there is already a value associated to newLabel.
-					// in such a case, it must be removed.
-					eSD.removeLabeledValue(alpha);
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
-							LOG.log(Level.FINER, preLog
-									+ "\nLabeled Potential Propagation Rule 6 is applicable:\n"
-									+ nS.getName() + nS.getPotential() + " removes value " + pairAsString(alpha, value) + " in "
-									+ eSD.getName()
-									+ "\nResults:" + eSD);
-						}
-					}
-				}
-				// the newLabel (and its value) must not be stored.
-				this.checkStatus.potentialCalls[5]++;
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -2147,58 +1731,6 @@ public class CSTN {
 	}
 
 	/**
-	 * Returns the label to use for storing the new value considering rule R0qR0.
-	 * <b>Standard DC semantics is assumed.</b>
-	 * Derived classes can modify rule conditions of this method overriding {@link #mainConditionForSkippingInR0qR0(int)}.
-	 * 
-	 * <pre>
-	 * R0:
-	 * nP? --[w, α p]--&gt; nX 
-	 * changes in 
-	 * nP? --[w, α']--&gt; nX when w &le; 0
-	 * where:
-	 * p is the positive or the negative literal associated to proposition observed in P?,
-	 * α is a label,
-	 * α' is α without 'p', P? children, and any children of possible q-literals.
-	 * </pre>
-	 * 
-	 * It is assumed that P? != X.<br>
-	 * Rule qR0 has X==Z.
-	 * 
-	 * @param nP the observation node. Per efficiency reason, there is no a security check!
-	 * @param nX the other node
-	 * @param alpha
-	 * @param w
-	 * @return the newLabel adjusted if the rule has been applied, original label otherwise.
-	 */
-	Label labelModificationR0qR0Light(final LabeledNode nP, final LabeledNode nX, final Label alpha, int w) {
-		if (this.propagationOnlyToZ) {
-			if (nX != this.Z)
-				return alpha;
-		}
-		final char p = nP.getPropositionObserved();
-		if (this.withNodeLabels) {
-			if (nX.getLabel().contains(p)) {
-				// It is a strange case because only with IR it is possible to manage such case.
-				// In all other case is the premise of a negative loop.
-				// We let this possibility
-				return alpha;
-			}
-		}
-
-		if (w == Constants.INT_NULL || mainConditionForSkippingInR0qR0(w)) {
-			return alpha;
-		}
-
-		final Label alphaPrime = makeAlphaPrime(nX, nP, p, alpha);
-		if (alphaPrime == null || alphaPrime.equals(alpha)) {
-			return alpha;
-		}
-		this.checkStatus.r0calls++;
-		return alphaPrime;
-	}
-
-	/**
 	 * Applies rule R0/qR0: label containing a proposition that can be decided only in the future is simplified removing such proposition.
 	 * <b>Standard DC semantics is assumed.</b>
 	 * Derived classes can modify rule conditions of this method overriding {@link #mainConditionForSkippingInR0qR0(int)}.
@@ -2305,6 +1837,58 @@ public class CSTN {
 			}
 		}
 		return ruleApplied;
+	}
+
+	/**
+	 * Returns the label to use for storing the new value considering rule R0qR0.
+	 * <b>Standard DC semantics is assumed.</b>
+	 * Derived classes can modify rule conditions of this method overriding {@link #mainConditionForSkippingInR0qR0(int)}.
+	 * 
+	 * <pre>
+	 * R0:
+	 * nP? --[w, α p]--&gt; nX 
+	 * changes in 
+	 * nP? --[w, α']--&gt; nX when w &le; 0
+	 * where:
+	 * p is the positive or the negative literal associated to proposition observed in P?,
+	 * α is a label,
+	 * α' is α without 'p', P? children, and any children of possible q-literals.
+	 * </pre>
+	 * 
+	 * It is assumed that P? != X.<br>
+	 * Rule qR0 has X==Z.
+	 * 
+	 * @param nP the observation node. Per efficiency reason, there is no a security check!
+	 * @param nX the other node
+	 * @param alpha
+	 * @param w
+	 * @return the newLabel adjusted if the rule has been applied, original label otherwise.
+	 */
+	Label labelModificationR0qR0Light(final LabeledNode nP, final LabeledNode nX, final Label alpha, int w) {
+		if (this.propagationOnlyToZ) {
+			if (nX != this.Z)
+				return alpha;
+		}
+		final char p = nP.getPropositionObserved();
+		if (this.withNodeLabels) {
+			if (nX.getLabel().contains(p)) {
+				// It is a strange case because only with IR it is possible to manage such case.
+				// In all other case is the premise of a negative loop.
+				// We let this possibility
+				return alpha;
+			}
+		}
+
+		if (w == Constants.INT_NULL || mainConditionForSkippingInR0qR0(w)) {
+			return alpha;
+		}
+
+		final Label alphaPrime = makeAlphaPrime(nX, nP, p, alpha);
+		if (alphaPrime == null || alphaPrime.equals(alpha)) {
+			return alpha;
+		}
+		this.checkStatus.r0calls++;
+		return alphaPrime;
 	}
 
 	/**
@@ -3338,6 +2922,417 @@ public class CSTN {
 	}
 
 	/**
+	 * Checks the labeled -∞ before putting in the potential of a node.
+	 * If the label does not contain unknowns, then it stores the value, logs that a negative loop has been found,
+	 * sets the consistency of the <code>this.status=false</code> and returns.
+	 * Otherwise, it stores the value and returns.
+	 * In any case, if the <code>node</code> is an observation time-point, the method removes from <code>label</code>
+	 * possible literal associated to the proposition observed by <code>node</code> before storing the <code>(-∞, label)</code>.
+	 * 
+	 * @param node the node where to add the <code>(-∞, label)</code>.
+	 * @param label
+	 * @param log possible text to log as prefix to the log of this method.
+	 * @return true if the value has been added, false otherwise.
+	 */
+	boolean potentialR1_2(LabeledNode node, Label label, String log) {
+		if (node.isObserver())
+			// Potential Rule 2 and RO
+			label = label.remove(node.getPropositionObserved());
+		if (Debug.ON) {
+			log += "\nputAndCheckNegativeInfty on " + node.toString()
+					+ "added: " + pairAsString(label, Constants.INT_NEG_INFINITE);
+		}
+		if (!label.containsUnknown()) {
+			node.putPotential(label, Constants.INT_NEG_INFINITE);
+			// Negative loop!
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, log + "\n***\nFound a negative loop in node " + node + "\n***");
+				}
+			}
+			this.checkStatus.consistency = false;
+			this.checkStatus.finished = true;
+			this.checkStatus.potentialCalls[0]++;
+			return true;
+		}
+		if (node.putPotential(label, Constants.INT_NEG_INFINITE)) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, log);
+				}
+			}
+			this.checkStatus.potentialCalls[0]++;
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Checks and applies Labeled Potential Rule 3 to node <code>nS</code>.
+	 * 
+	 * <pre>
+	 * Potential Rule 3
+	 * if nS ---(u,α)⟶ nD[(-∞,β)] and u ≤ 0,  
+	 * then add nS[(α★β)†]
+	 * </pre>
+	 * 
+	 * @param nS
+	 * @param nD
+	 * @param eSD
+	 * @param nDPotentialLabel if null, method checks nD potential. This parameter is useful to speed-up method calls with the same nD
+	 * @return true if the rule has been applied.
+	 */
+	boolean potentialR3(LabeledNode nS, LabeledNode nD, LabeledIntEdge eSD, ObjectSet<Label> nDPotentialLabel) {
+		if (nS == nD)
+			return false;
+		if (nDPotentialLabel == null)
+			nDPotentialLabel = nD.getPotential().keySet();
+		if (nD.getPotential().isEmpty())
+			return false;
+		String log = "";
+		boolean ruleApplied = false;
+
+		for (Entry<Label> entry : eSD.getLabeledValueSet()) {
+			int u = entry.getIntValue();
+			if (u > 0)
+				continue;
+			Label alpha = entry.getKey();
+			for (Label beta : nDPotentialLabel) {
+				Label alphaBeta = alpha.conjunctionExtended(beta);
+				if (this.withNodeLabels) {
+					alphaBeta = removeChildrenOfUnknown(alphaBeta);
+				}
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						log = "Labeled Potential Propagation Rule 3 applied to edge " + eSD.getName()
+								+ ":\nsource: "
+								+ nS.getName() + " ---" + pairAsString(alpha, u) + "⟶ " + nD.getName() + "{"
+								+ pairAsString(beta, Constants.INT_NEG_INFINITE) + "}";
+					}
+				}
+				if (potentialR1_2(nS, alphaBeta, log)) {
+					if (!this.checkStatus.consistency)
+						return true;
+					ruleApplied = true;
+					this.checkStatus.potentialCalls[2]++;
+				}
+			}
+		}
+		return ruleApplied;
+	}
+
+	/**
+	 * Propagates (-∞, q) with q ∈ Q* from node potential to other node potentials.
+	 * Potential Rules 1 and 2, 3, and 6 have been implemented as methods that must be used ALSO inside labelPropagation and Q3 methods for speeding up the
+	 * algorithm.
+	 * In this method, rules 3, 4, 5, and 6 are rechecked only for node nY.
+	 * 
+	 * <pre>
+	 * 4) if Y?[(-∞,β)] and A ---(u,α y')⟶ B u ≤ 0
+	 *    then add A ---(u,(α★β)†)⟶ B
+	 *  
+	 * 5) if P? ---(u,α)⟶ A  and  B[(-∞,β p')] and u ≤ 0
+	 *    then B ---(u,(α★β)†)⟶ A
+	 * 
+	 * α in Q*
+	 * β in Q* / P* 
+	 * (α★β)† is the label without children of unknown.
+	 * y' = y or ¬y or ¿y
+	 * p' = p or ¬p or ¿p
+	 * </pre>
+	 * 
+	 * @param nY
+	 * @param limitToZ true if method has to check only edge going to Z.
+	 * @param newNodesToCheck
+	 * @param newEdgesToCheck
+	 * @return true if the rule has been applied, false otherwise.
+	 */
+	boolean potentialR3_4_5_6(LabeledNode nY, boolean limitToZ, NodesToCheck newNodesToCheck, EdgesToCheck newEdgesToCheck) {
+		boolean ruleApplied = false;
+		String log = "", firstLog = "";
+		ObjectSet<Label> nYPotentialLabel = nY.getPotential().keySet();
+
+		if (!nYPotentialLabel.isEmpty()) {
+			/**
+			 * Case 3
+			 * if X ---(u,α)⟶ Y[(-∞,β)] and u ≤ 0,
+			 * then add X[(α★β)†]
+			 * Again the rule is applied to guarantee that there is no unpropagated potential.
+			 * 
+			 * @see {@link checkAndApplyPotentialRule3}
+			 */
+			for (LabeledIntEdge yInEdge : this.g.getInEdges(nY)) {
+				LabeledNode nS = this.g.getSource(yInEdge);
+				if (potentialR3(nS, nY, yInEdge, nYPotentialLabel)) {
+					newNodesToCheck.enqueue(nS);
+					ruleApplied = true;
+					if (!this.checkStatus.consistency) {
+						this.checkStatus.finished = true;
+						return true;
+					}
+				}
+			}
+			/**
+			 * Case 6
+			 * if Y[(-∞,β)] ---(u,α)⟶ X and u ≤ 0 and α subsumes β,
+			 * then DELETE (u,α) from the edge.
+			 *** Applied also in #labelPropagation() and R3qR3***
+			 */
+			if (nY != this.Z) {
+			for (LabeledIntEdge yOutEdge : this.g.getOutEdges(nY)) {
+				LabeledNode nD = this.g.getDest(yOutEdge);
+				for (Entry<Label> entry : yOutEdge.getLabeledValueSet()) {
+					int u = entry.getIntValue();
+					Label alpha = entry.getKey();
+					ruleApplied |= potentialR6(nY, nD, alpha, u, yOutEdge, "");
+				}
+			}
+			}
+			/**
+			 * Case 4 (very expensive!)
+			 * if Y?[(-∞,β)] and A ---(u,α y')⟶ B and u ≤ 0
+			 * then add A ---(u,(α★β)†)⟶ B
+			 */
+			if (nY.isObserver()) {
+				char proposition = nY.getPropositionObserved();
+				if (!nYPotentialLabel.isEmpty()) {
+					Collection<LabeledIntEdge> edgeSet = (limitToZ) ? this.g.getInEdges(this.Z) : this.g.getEdges();
+					for (LabeledIntEdge e : edgeSet) {
+						if (Debug.ON) {
+							firstLog = "Labeled Potential Propagation Rule 4 considers edge " + e.getName() + "\nand observation t.p.: " + nY.getName();
+						}
+						LabeledNode A = this.g.getSource(e), B = this.g.getDest(e);
+						boolean modified = false;
+						for (Entry<Label> entry : e.getLabeledValueSet()) {
+							int u = entry.getIntValue();
+							if (u > 0)
+								continue;
+							Label alpha = entry.getKey();
+							if (!alpha.contains(proposition))
+								continue;
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									log = firstLog + "\nsource: " + A.getName() + " ---" + pairAsString(alpha, u) + "⟶ " + B.getName();
+								}
+							}
+							alpha = alpha.remove(proposition);
+							for (Label beta : nYPotentialLabel) {
+								Label alphaBeta = alpha.conjunctionExtended(beta);
+								if (this.withNodeLabels) {
+									alphaBeta = removeChildrenOfUnknown(alphaBeta);
+								}
+								if (alpha.equals(alphaBeta))
+									continue;
+								if (potentialR6(A, B, alphaBeta, u, e, log))
+									continue;
+								if (checkAndApplyUnknownAfterObs(B, alphaBeta, u, log))
+									continue;
+								if (e.mergeLabeledValue(alphaBeta, u)) {
+									modified = true;
+									this.checkStatus.potentialCalls[3]++;
+									if (Debug.ON) {
+										if (LOG.isLoggable(Level.FINER)) {
+											LOG.log(Level.FINER, log
+													+ " and " + nY.getName() + "[" + pairAsString(beta, Constants.INT_NEG_INFINITE) + "]"
+													+ "\nresult: "
+													+ A.getName() + " ---" + pairAsString(alphaBeta, u) + "⟶ " + B.getName());
+											firstLog = "";
+										}
+									}
+								}
+							}
+						}
+						if (modified) {
+							ruleApplied = true;
+							newEdgesToCheck.add(e, this.g.getSource(e), this.g.getDest(e), this.Z, this.g, this.propagationOnlyToZ);
+						}
+					}
+					// Second part of Rule 4 that considers node's potentials.
+					for (LabeledNode node : this.g.getNodes()) {
+						boolean modified = false;
+						for (Entry<Label> entry : node.getPotential().entrySet()) {
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									firstLog = "Labeled Potential Propagation Rule 4 considers node " + node.getName()
+											+ "\nand observation t.p.: " + nY.getName();
+								}
+							}
+							Label alpha = entry.getKey();
+							if (!alpha.contains(proposition))
+								continue;
+							alpha = alpha.remove(proposition);
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									log = firstLog + "\nsource: " + node.getName() + node.getPotential();
+								}
+							}
+							for (Label beta : nYPotentialLabel) {
+								Label alphaBeta = alpha.conjunctionExtended(beta);
+								if (this.withNodeLabels) {
+									alphaBeta = removeChildrenOfUnknown(alphaBeta);
+								}
+								if (potentialR1_2(node, alphaBeta, log)) {
+									modified = true;
+									this.checkStatus.potentialCalls[3]++;
+									if (!this.checkStatus.consistency) {
+										this.checkStatus.finished = true;
+										return true;
+									}
+									if (Debug.ON) {
+										if (LOG.isLoggable(Level.FINER)) {
+											LOG.log(Level.FINER, log
+													+ " and " + nY.getName() + "[" + pairAsString(beta, Constants.INT_NEG_INFINITE) + "]"
+													+ "\nresult: "
+													+ node.getName() + node.getPotential());
+											firstLog = "";
+										}
+									}
+								}
+							}
+						}
+						if (modified) {
+							ruleApplied = true;
+							newNodesToCheck.enqueue(node);
+						}
+					}
+				}
+			} // nY is an observer
+		} // nY potential is not empty
+		/**
+		 * Case 5
+		 * if P? ---(u,α)⟶ A and B[(-∞,β p')] and u ≤ 0
+		 * then B ---(u,(α★β)†)⟶ A
+		 * From here Y = P?
+		 */
+		// First of all, determines all nodes and its potential labels having label containing the proposition.
+		if (!nY.isObserver())
+			return false;
+		char proposition = nY.getPropositionObserved();
+		Object2ObjectArrayMap<LabeledNode, ObjectSet<Label>> cleanedNodeLabelMapWithPropositionInPotential = new Object2ObjectArrayMap<>();
+		for (LabeledNode node : this.g.getVertices()) {
+			for (Label beta : node.getPotential().keySet()) {
+				if (beta.contains(proposition)) {
+					ObjectSet<Label> labelSet = cleanedNodeLabelMapWithPropositionInPotential.get(node);
+					if (labelSet == null) {
+						labelSet = new ObjectArraySet<>();
+						cleanedNodeLabelMapWithPropositionInPotential.put(node, labelSet);
+					}
+					labelSet.add(beta.remove(proposition));
+				}
+			}
+		}
+		if (cleanedNodeLabelMapWithPropositionInPotential.isEmpty()) {
+			return ruleApplied;
+		}
+		// Then, for each edge outgoing from P to A having negative values, add an edge from the B to A.
+		Collection<LabeledIntEdge> edgeSet;
+		if (limitToZ) {
+			edgeSet = new ObjectArrayList<>();
+			edgeSet.add(this.g.findEdge(nY, this.Z));
+		} else {
+			edgeSet = this.g.getOutEdges(nY);
+		}
+		for (LabeledIntEdge YA : edgeSet) {
+			LabeledNode A = this.g.getDest(YA);
+
+			for (Entry<Label> entry : YA.getLabeledValueSet()) {
+				int u = entry.getIntValue();
+				if (u > 0)
+					continue;
+				Label alpha = entry.getKey();
+				for (java.util.Map.Entry<LabeledNode, ObjectSet<Label>> nodeAndPotential : cleanedNodeLabelMapWithPropositionInPotential.entrySet()) {
+					LabeledNode B = nodeAndPotential.getKey();
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							firstLog = "Labeled Potential Propagation Rule 5 applied to edge " + YA.getName()
+									+ "\nand node " + B.getName();
+						}
+					}
+					if (A == B)
+						continue;
+					LabeledIntEdge e = this.g.findEdge(B, A);
+					if (e == null) {
+						e = makeNewEdge(B.getName() + "_" + A.getName(), LabeledIntEdge.ConstraintType.derived);
+						this.g.addEdge(e, B, A);
+					}
+					boolean modified = false;
+					for (Label beta : nodeAndPotential.getValue()) {
+						Label alphaBeta = alpha.conjunctionExtended(beta);
+						if (this.withNodeLabels) {
+							alphaBeta = removeChildrenOfUnknown(alphaBeta);
+						}
+						if (checkAndApplyUnknownAfterObs(A, alphaBeta, u, log))
+							continue;
+
+						if (e.mergeLabeledValue(alphaBeta, u)) {
+							modified = true;
+							this.checkStatus.potentialCalls[4]++;
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									LOG.log(Level.FINER, firstLog
+											+ "\nSource: " + nY.getName() + " ---" + pairAsString(alpha, u) + "⟶ " + A.getName() + " and node "
+											+ B.getName() + "[" + beta + "]"
+											+ "\nResult: " + B.getName() + " ---" + pairAsString(alphaBeta, u) + "⟶ " + A.getName());
+									firstLog = "";
+								}
+							}
+						}
+					}
+					if (modified) {
+						ruleApplied = true;
+						newEdgesToCheck.add(e, B, A, this.Z, this.g, this.propagationOnlyToZ);
+					}
+				}
+			}
+		}
+		return ruleApplied;
+	}
+
+	/**
+	 * Checks and applies Labeled Potential Rule 6 to edge <code>eSD</code>.
+	 * 
+	 * <pre>
+	 * Potential Rule 6
+	 * if nS[(-∞,β)] ---(value, α)⟶ nD and value ≤ 0 and α subsumes β,  
+	 * then DELETE (u,α) from the edge.
+	 * </pre>
+	 * 
+	 * @param nS the origin node of the edge
+	 * @param nD
+	 * @param alpha the new label to store
+	 * @param value the present value
+	 * @param eSD the edge
+	 * @param preLog possible log string to prefix the log of this method.
+	 * @return true if the rule was applied, false otherwise.
+	 */
+	boolean potentialR6(LabeledNode nS, LabeledNode nD, Label alpha, int value, LabeledIntEdge eSD, String preLog) {
+		if (nS == nD || nS.getPotential().isEmpty() || value > 0)
+			return false;
+		for (Label beta : nS.getPotential().keySet()) {
+			if (alpha.subsumes(beta)) {
+				if (value != Constants.INT_NULL) {
+					// it may be possible that in the edge there is already a value associated to newLabel.
+					// in such a case, it must be removed.
+					eSD.removeLabeledValue(alpha);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.log(Level.FINER, preLog
+									+ "\nLabeled Potential Propagation Rule 6 is applicable:\n"
+									+ nS.getName() + nS.getPotential() + " removes value " + pairAsString(alpha, value) + " in "
+									+ eSD.getName()
+									+ "\nResults:" + eSD);
+						}
+					}
+				}
+				// the newLabel (and its value) must not be stored.
+				this.checkStatus.potentialCalls[5]++;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Returns a new label removing all children of possibly present unknown literals in <code>l</code>.
 	 * <code>l</code> is unchanged!
 	 * 
@@ -3349,5 +3344,16 @@ public class CSTN {
 			l = l.remove(this.g.getChildrenOf(this.g.getObserver(unknownLit)));
 		}
 		return l;
+	}
+
+	/**
+	 * Resets all internal structures
+	 */
+	void reset() {
+		this.g = null;
+		this.Z = null;
+		this.maxWeight = 0;
+		this.horizon = 0;
+		this.checkStatus.reset();
 	}
 }

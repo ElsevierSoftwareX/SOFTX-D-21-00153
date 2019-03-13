@@ -109,10 +109,6 @@ public class CSTNUGraphMLWriterTest {
 			"<desc>The y coordinate for the visualitation. A positive value.</desc>\n" +
 			"<default>0</default>\n" +
 			"</key>\n" +
-			"<key id=\"Potential\" for=\"node\">\n" +
-			"<desc>Labeled Potential Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>\n" +
-			"<default></default>\n" +
-			"</key>\n" +
 			"<key id=\"Type\" for=\"edge\">\n" +
 			"<desc>Type: Possible values: normal|contingent|constraint.</desc>\n" +
 			"<default>normal</default>\n" +

@@ -1,12 +1,20 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
-v1.26.0
+v2.0.0
 -------
 	date:
 
 	Removed class CSTNPotential (last svn version 296).
 	
+v1.26.0
+-------
+	date:	2019-03-23
+	
+	CSTNU class has a new field, contingentAlsoAsOrdinary, default false.
+	When it is true, the DC checking method propagates contingent links also as ordinary constraints. 
+	This allows one to see some ordinary values more accurate.
+
 v1.25.0
 -------
 	date:	2018-11-22

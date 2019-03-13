@@ -115,7 +115,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	// static final public String VERSIONandDATE = "Version 5.0 - September, 8 2017";// removed qLabels
 	// static final public String VERSIONandDATE = "Version 5.1 - November, 9 2017";// Replace Ω node with equivalent constraints.
 	// static final public String VERSIONandDATE = "Version 5.2 - December, 13 2017";// Adjusted after CSTN consolidation
-	static final public String VERSIONandDATE = "Version 6.0 - February, 21 2018";// zUCore added
+	// static final public String VERSIONandDATE = "Version 6.0 - February, 21 2018";// zUCore added
+	static final public String VERSIONandDATE = "Version 6.1 - March, 12 2019";// full propagation option added
 
 	/**
 	 * logger
@@ -259,14 +260,30 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	Object2ObjectMap<LabeledNode, LabeledIntEdge> lowerContingentLink;
 
 	/**
+	 * Represent contingent links also as ordinary constraints.
+	 */
+	boolean contingentAlsoAsOrdinary;
+
+	/**
+	 * Default constructor, package use only!
+	 */
+	CSTNU() {
+		super();
+		this.checkStatus = new CSTNUCheckStatus();
+		this.activationNode = new Object2ObjectOpenHashMap<>();
+		this.lowerContingentLink = new Object2ObjectOpenHashMap<>();
+		this.propagationOnlyToZ = false;
+		this.contingentAlsoAsOrdinary = false;
+	}
+
+	/**
 	 * Constructor for CSTNU
 	 * 
 	 * @param g graph to check
 	 */
 	public CSTNU(LabeledIntGraph g) {
-		super(g);// Remember that super(g) calls CSTNU.setG(g)!
-		this.checkStatus = new CSTNUCheckStatus();
-		this.propagationOnlyToZ = false;
+		this();
+		this.setG(g);
 	}
 
 	/**
@@ -293,16 +310,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		this.propagationOnlyToZ = propagationOnlyToZ;
 	}
 
-	/**
-	 * Default constructor, package use only!
-	 */
-	CSTNU() {
-		super();
-		this.checkStatus = new CSTNUCheckStatus();
-		this.activationNode = new Object2ObjectOpenHashMap<>();
-		this.lowerContingentLink = new Object2ObjectOpenHashMap<>();
-		this.propagationOnlyToZ = false;
-	}
 
 	@Override
 	public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
@@ -466,14 +473,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	}
 
 	/**
-	 * @return the checkStatus
-	 */
-	@Override
-	public final CSTNUCheckStatus getCheckStatus() {
-		return ((CSTNUCheckStatus) this.checkStatus);
-	}
-
-	/**
 	 * Calls {@link CSTN#initAndCheck()} and, then, check all contingent links.
 	 * This method works only with streamlined instances!
 	 * 
@@ -512,10 +511,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			/***
 			 * Manage contingent link.
 			 */
-			Entry<Label> minLabeledValue = e.getMinLabeledValue(); // we assume that instance was streamlined! Moreover, we consider only one value, the one
-																	// with label == conjunctedLabel in the original network.
+			Entry<Label> minLabeledValue = e.getMinLabeledValue(); // we assume that in the source file there is only one value specified as ordinary value.
+																	// such a value is used to determine upper/lower case value.
 			int initialValue = minLabeledValue.getIntValue();
-			Label conjunctedLabel = minLabeledValue.getKey();// s.getLabel().conjunction(d.getLabel());
+			Label conjunctedLabel = minLabeledValue.getKey();
 
 			if (initialValue == Constants.INT_NULL) {
 				if (e.lowerCaseValueSize() == 0 && e.upperCaseValueSize() == 0) {
@@ -534,16 +533,16 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			}
 
 			LabeledIntEdge eInverted = this.g.findEdge(d, s);
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER))
-					LOG.log(Level.FINER, "Edge " + e + " is contingent. Found its companion: " + eInverted);
-			}
 			if (eInverted == null) {
 				throw new IllegalArgumentException("Contingent edge " + e + " is alone. The companion contingent edge between " + d.getName()
 						+ " and " + s.getName() + " does not exist. It must!");
 			}
 			if (!eInverted.isContingentEdge()) {
 				throw new IllegalArgumentException("Edge " + e + " is contingent while the companion edge " + eInverted + " is not contingent!\nIt must be!");
+			}
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER))
+					LOG.log(Level.FINER, "Edge " + e + " is contingent. Found its companion: " + eInverted);
 			}
 			/**
 			 * Memo.
@@ -582,7 +581,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right lower bound w.r.t. Z!
 						 * 2018-02-21 initialValue = minLabeledValue.getIntValue() allows the reduction of # propagations.
 						 */
-						e.removeLabeledValue(conjunctedLabel);
+						if (!this.contingentAlsoAsOrdinary)
+							e.removeLabeledValue(conjunctedLabel);
 
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
@@ -599,7 +599,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right upper bound w.r.t. Z!
 							 * 2018-02-21 Upper bound are not necessary for the completeness, we ignore it.
 							 */
-							eInverted.removeLabeledValue(conjunctedLabel);
+							if (!this.contingentAlsoAsOrdinary)
+								eInverted.removeLabeledValue(conjunctedLabel);
 
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
@@ -644,7 +645,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						/**
 						 * @see comment "History for upper bound." above.
 						 */
-						e.removeLabeledValue(conjunctedLabel);
+						if (!this.contingentAlsoAsOrdinary)
+							e.removeLabeledValue(conjunctedLabel);
 
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							lowerCaseValue = -eInvertedInitialValue;
@@ -656,7 +658,8 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 							/**
 							 * @see comment "History for lower bound." above.
 							 */
-							eInverted.removeLabeledValue(conjunctedLabel);
+							if (!this.contingentAlsoAsOrdinary)
+								eInverted.removeLabeledValue(conjunctedLabel);
 
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
@@ -1109,21 +1112,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 	}
 
 	/**
-	 * @param g the g to set
-	 */
-	@Override
-	public void setG(LabeledIntGraph g) {
-		super.setG(g);
-		if (this.activationNode == null) {
-			this.activationNode = new Object2ObjectOpenHashMap<>();
-			this.lowerContingentLink = new Object2ObjectOpenHashMap<>();
-			return;
-		}
-		this.activationNode.clear();
-		this.lowerContingentLink.clear();
-	}
-
-	/**
 	 * Calls {@link CSTN#checkWellDefinitionProperty1and3(LabeledNode, LabeledNode, LabeledIntEdge, boolean)}
 	 * and, then, checks upper and lower case values.
 	 *
@@ -1225,30 +1213,6 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * @param nC
-	 * @return the activation node associated to the contingent link having nC as contingent time point.
-	 */
-	LabeledNode getActivationNode(LabeledNode nC) {
-		return this.activationNode.get(nC);
-	}
-
-	/**
-	 * @param nC
-	 * @return the edge containing the lower case value associated to the contingent link having nC as contingent time point.
-	 */
-	LabeledIntEdge getLowerContingentLink(LabeledNode nC) {
-		return this.lowerContingentLink.get(nC);
-	}
-
-	/**
-	 * @param nA
-	 * @return true if nA is an activation time point
-	 */
-	boolean isActivationNode(LabeledNode nA) {
-		return this.activationNode.containsValue(nA);
 	}
 
 	/**
@@ -2010,6 +1974,79 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				LOG.log(Level.FINER, "zLR: end.");
 		}
 		return ruleApplied;
+	}
+
+	/**
+	 * @return the checkStatus
+	 */
+	@Override
+	public final CSTNUCheckStatus getCheckStatus() {
+		return ((CSTNUCheckStatus) this.checkStatus);
+	}
+
+	/**
+	 * @param g the g to set
+	 */
+	@Override
+	public void setG(LabeledIntGraph g) {
+		reset();
+		super.setG(g);
+	}
+
+	/**
+	 * @param nC
+	 * @return the activation node associated to the contingent link having nC as contingent time point.
+	 */
+	LabeledNode getActivationNode(LabeledNode nC) {
+		return this.activationNode.get(nC);
+	}
+
+	/**
+	 * @param nC
+	 * @return the edge containing the lower case value associated to the contingent link having nC as contingent time point.
+	 */
+	LabeledIntEdge getLowerContingentLink(LabeledNode nC) {
+		return this.lowerContingentLink.get(nC);
+	}
+
+	/**
+	 * @param nA
+	 * @return true if nA is an activation time point
+	 */
+	boolean isActivationNode(LabeledNode nA) {
+		return this.activationNode.containsValue(nA);
+	}
+
+	/**
+	 * @return the contingentAlsoAsOrdinary
+	 */
+	public boolean isContingentAlsoAsOrdinary() {
+		return this.contingentAlsoAsOrdinary;
+	}
+
+	/**
+	 * @param contingentAlsoAsOrdinary the contingentAlsoAsOrdinary to set
+	 */
+	public void setContingentAlsoAsOrdinary(boolean contingentAlsoAsOrdinary) {
+		if (this.contingentAlsoAsOrdinary == contingentAlsoAsOrdinary)
+			return;
+		this.contingentAlsoAsOrdinary = contingentAlsoAsOrdinary;
+		setG(this.g);// this resets everything.
+	}
+
+	/**
+	 * Resets all internal structures
+	 */
+	@Override
+	void reset() {
+		super.reset();
+		if (this.activationNode == null) {
+			this.activationNode = new Object2ObjectOpenHashMap<>();
+			this.lowerContingentLink = new Object2ObjectOpenHashMap<>();
+			return;
+		}
+		this.activationNode.clear();
+		this.lowerContingentLink.clear();
 	}
 
 	// /**
