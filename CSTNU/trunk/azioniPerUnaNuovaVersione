@@ -56,7 +56,7 @@ Se si vuole importare nel branch modifiche fatte nel trunk
 
 svn merge ^/CSTNU/trunk
 
-4) Quando si vuole riportare dei commit fatti in un brancj nel trunk 
+4) Quando si vuole riportare dei commit fatti in un branch nel trunk 
 
 4.0 Andare nella directory del branch
 4.1 svn up
