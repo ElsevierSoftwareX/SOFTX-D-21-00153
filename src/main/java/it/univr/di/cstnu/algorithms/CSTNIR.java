@@ -78,7 +78,7 @@ public class CSTNIR extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean mainConditionForSkippingInLP(final int u, final int v) {
+	boolean mainConditionForRestrictedLP(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
 		// u must be < 0
 		return u >= 0;
