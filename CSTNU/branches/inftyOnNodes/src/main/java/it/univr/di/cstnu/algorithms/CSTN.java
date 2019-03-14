@@ -1757,22 +1757,11 @@ public class CSTN {
 	boolean labelModificationR0qR0(final LabeledNode nObs, final LabeledNode nX, final LabeledIntEdge eObsX) {
 		// Visibility is package because there is Junit Class test that checks this method.
 
-		if (this.propagationOnlyToZ) {
-			if (nX != this.Z)
-				return false;
-		}
-
 		boolean ruleApplied = false, mergeStatus;
 
 		final char p = nObs.getPropositionObserved();
-		if (p == Constants.UNKNOWN) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINEST)) {
-					LOG.log(Level.FINEST, "Method labelModificationR0 called passing a non observation node as first parameter!");
-				}
-			}
+		if (p == Constants.UNKNOWN)
 			return false;
-		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, "Label Modification R0: start.");
@@ -1865,10 +1854,6 @@ public class CSTN {
 	 * @return the newLabel adjusted if the rule has been applied, original label otherwise.
 	 */
 	Label labelModificationR0qR0Light(final LabeledNode nP, final LabeledNode nX, final Label alpha, int w) {
-		if (this.propagationOnlyToZ) {
-			if (nX != this.Z)
-				return alpha;
-		}
 		final char p = nP.getPropositionObserved();
 		if (this.withNodeLabels) {
 			if (nX.getLabel().contains(p)) {
@@ -1934,19 +1919,12 @@ public class CSTN {
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3qR3(final LabeledNode nS, final LabeledNode nD, final LabeledIntEdge eSD) {
-
-		if (this.propagationOnlyToZ) {
-			if (nD != this.Z)
-				return false;
-		}
-
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
 				LOG.log(Level.FINEST, "Label Modification R3: start.");
 			}
 		}
 		boolean ruleApplied = false;
-
 		boolean nSisObs = nS.isObserver();
 
 		ObjectList<LabeledIntEdge> Obs2nDEdges = this.getEdgeFromObserversToNode(nD);
@@ -1955,18 +1933,16 @@ public class CSTN {
 
 		final ObjectSet<Label> SDLabelSet = eSD.getLabeledValueMap().keySet();
 
+		/*
+		 * allLiteralsSD is a label that contains all propositions (each represented with any its literals)
+		 * that compares in labels of labeled values in the edge nS-->nD.
+		 */
 		Label allLiteralsSD = Label.emptyLabel;
 		for (Label l : SDLabelSet) {
-			if (this.withUnknown) {
-				allLiteralsSD = allLiteralsSD.conjunctionExtended(l);
-			} else {
-				allLiteralsSD = allLiteralsSD.conjunction(l);
-				if (allLiteralsSD == null) {
-					allLiteralsSD = Label.emptyLabel;
-					break;
-				}
-			}
+			allLiteralsSD = allLiteralsSD.conjunctionExtended(l);
 		}
+
+		ObjectSet<Label> nDPotentialLabel = nD.getPotential().keySet();
 
 		for (final LabeledIntEdge eObsD : Obs2nDEdges) {
 			final LabeledNode nObs = this.g.getSource(eObsD);
@@ -1992,8 +1968,6 @@ public class CSTN {
 			}
 
 			String firstLog = "R3 considers edge " + eSD.getName() + " and observation t.p. " + nObs.getName();
-
-			ObjectSet<Label> nDPotentialLabel = nD.getPotential().keySet();
 			// all labels from current Obs
 			for (final Object2IntMap.Entry<Label> entryObsD : eObsD.getLabeledValueSet()) {
 				final int w = entryObsD.getIntValue();
@@ -2003,6 +1977,8 @@ public class CSTN {
 
 				final Label ObsDLabel = entryObsD.getKey();
 
+				// all labels from nS-->nD
+				boolean ruleAppliedOnSnD = false;
 				for (final Label SDLabel : SDLabelSet) {
 					if (SDLabel == null || !SDLabel.contains(p)) {
 						continue;
@@ -2042,6 +2018,7 @@ public class CSTN {
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 
 					if (ruleApplied) {
+						ruleAppliedOnSnD = true;
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								LOG.log(Level.FINER, log
@@ -2050,8 +2027,11 @@ public class CSTN {
 							}
 						}
 						this.checkStatus.r3calls++;
-						potentialR3(nS, nD, eSD, nDPotentialLabel);
+
 					}
+				} // all labeled value in nS-->nD has been checked.
+				if (ruleAppliedOnSnD) {
+					potentialR3(nS, nD, eSD, nDPotentialLabel);
 				}
 			}
 		}
@@ -2125,7 +2105,8 @@ public class CSTN {
 				final Label labelBC = BCEntry.getKey();
 				boolean qLabel = false;
 				Label newLabelAC = null;
-				if (this.propagationOnlyToZ || mainConditionForSkippingInLP(u, v)) {
+				if (this.propagationOnlyToZ || mainConditionForRestrictedLP(u, v)) {// Even if we published that when nC == Z, the label must be consistent, we
+					// also showed (but bnot published that if u<0, then label can contains unknown even when nC==Z.
 					newLabelAC = labelAB.conjunction(labelBC);
 					if (newLabelAC == null) {
 						continue;
@@ -2161,7 +2142,7 @@ public class CSTN {
 					}
 				}
 				if (nA == nC) {
-					if (sum < 0 && potentialR1_2(nA, newLabelAC, log)) {
+					if (potentialR1_2(nA, newLabelAC, log)) {
 						// The labeled value is negative and label is in Q*.
 						// The -∞ value is now stored on node A (==C) as potential value if label is in Q*/P*, otherwise, a negative loop has been found!
 						ruleApplied = true;
@@ -2213,7 +2194,7 @@ public class CSTN {
 	}
 
 	/**
-	 * Returns true if {@link #labelPropagation} method has to not apply.<br>
+	 * Returns true if {@link #labelPropagation} method has to apply only for consistent labels.<br>
 	 * Overriding this method it is possible implement the different semantics in the {@link #labelPropagation} method.
 	 * 
 	 * @param u
@@ -2221,7 +2202,7 @@ public class CSTN {
 	 * @return true if the rule has to not apply.
 	 */
 	@SuppressWarnings("static-method")
-	boolean mainConditionForSkippingInLP(final int u, final int v) {
+	boolean mainConditionForRestrictedLP(final int u, final int v) {
 		// Table 1 2016 ICAPS paper for standard DC extended with rules on page 6 of file noteAboutLP.tex
 		// Moreover, Luke and I verified on 2018-11-22 that with u≤0, qLP+ can be applied.
 		return u > 0;
@@ -3079,14 +3060,14 @@ public class CSTN {
 			 *** Applied also in #labelPropagation() and R3qR3***
 			 */
 			if (nY != this.Z) {
-			for (LabeledIntEdge yOutEdge : this.g.getOutEdges(nY)) {
-				LabeledNode nD = this.g.getDest(yOutEdge);
-				for (Entry<Label> entry : yOutEdge.getLabeledValueSet()) {
-					int u = entry.getIntValue();
-					Label alpha = entry.getKey();
-					ruleApplied |= potentialR6(nY, nD, alpha, u, yOutEdge, "");
+				for (LabeledIntEdge yOutEdge : this.g.getOutEdges(nY)) {
+					LabeledNode nD = this.g.getDest(yOutEdge);
+					for (Entry<Label> entry : yOutEdge.getLabeledValueSet()) {
+						int u = entry.getIntValue();
+						Label alpha = entry.getKey();
+						ruleApplied |= potentialR6(nY, nD, alpha, u, yOutEdge, "");
+					}
 				}
-			}
 			}
 			/**
 			 * Case 4 (very expensive!)
