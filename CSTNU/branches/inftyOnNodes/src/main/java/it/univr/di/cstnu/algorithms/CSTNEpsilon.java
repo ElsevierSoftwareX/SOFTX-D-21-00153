@@ -96,7 +96,7 @@ public class CSTNEpsilon extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean mainConditionForSkippingInLP(final int u, final int v) {
+	boolean mainConditionForRestrictedLP(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
 		return u >= this.epsilon && v < 0;
 	}
