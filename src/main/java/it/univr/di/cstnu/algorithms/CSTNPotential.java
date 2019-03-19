@@ -203,6 +203,7 @@ public class CSTNPotential extends CSTN {
 							if (updatePotential(B, newLabel, newValue, false, log + "\n")) {
 								isBModified = true;
 								obsModified = obsModified.conjunctionExtended(newLabel);
+								this.checkStatus.labeledValuePropagationCalls++;
 								if (!this.checkStatus.consistency) {
 									return this.checkStatus;
 								}
@@ -231,6 +232,7 @@ public class CSTNPotential extends CSTN {
 								if (updatePotential(C, newLabel1, newValue1, false, log1)) {
 									isCModified = true;
 									obsModified = obsModified.conjunctionExtended(newLabel1);
+									this.checkStatus.labeledValuePropagationCalls++;
 									if (!this.checkStatus.consistency) {
 										return this.checkStatus;
 									}
@@ -455,11 +457,6 @@ public class CSTNPotential extends CSTN {
 	}
 
 	@Override
-	boolean labelModificationR0qR0(final LabeledNode nObs, final LabeledNode nX, final LabeledIntEdge eObsX) {
-		throw new UnsupportedOperationException("labelModificationR0qR0");
-	}
-
-	@Override
 	Label labelModificationR0qR0Light(final LabeledNode nP, final LabeledNode nX, final Label alpha, int w) {
 		throw new UnsupportedOperationException("labelModificationR0qR0Light");
 	}
@@ -519,7 +516,7 @@ public class CSTNPotential extends CSTN {
 			}
 			if (Debug.ON) {
 				log += "Update potential on " + node.getName()
-						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + ". Update #" + (count - 1) + "\n";
+						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + ". Update #" + (count) + "\n";
 			}
 			if (!newLabel.containsUnknown()) {
 				if (newValue == Constants.INT_NEG_INFINITE
