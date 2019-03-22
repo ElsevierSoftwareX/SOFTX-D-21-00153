@@ -218,7 +218,7 @@ public class CSTNir3RwoNodeLabelTest extends CSTNTest {
 		// xyOK.mergeLabeledValue(Label.parse("¬b"), 8);if positive value are not admitted.
 		xyOK.mergeLabeledValue(Label.parse("¬ab"), -2);
 		xyOK.mergeLabeledValue(Label.parse("b"), -1);
-		// xyOK.mergeLabeledValue(Label.parse("¿b"), -11);
+		// xyOK.mergeLabeledValue(Label.parse("¿b"), -11);// Propagations to Z does not generate unknown values.
 
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
@@ -249,7 +249,7 @@ public class CSTNir3RwoNodeLabelTest extends CSTNTest {
 
 		// System.out.println("xy: " +xy);
 
-		// xyOK.mergeLabeledValue(Label.parse("¿b"), -20);
+		// xyOK.mergeLabeledValue(Label.parse("¿b"), -20);// Propagations to Z does not generate unknown values.
 		xyOK.mergeLabeledValue(Label.parse("¬b"), -1);
 
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
@@ -770,7 +770,7 @@ public class CSTNir3RwoNodeLabelTest extends CSTNTest {
 
 
 		this.cstn.labelPropagation(this.X, Y, this.Z, XY, YZ, XZ);
-		assertEquals("XZ", "{(-2, ¬p) }", XZ.getLabeledValueMap().toString());
+		// assertEquals("XZ", "{(-2, ¬p) (-3, ¿p) }", XZ.getLabeledValueMap().toString());// Propagations to Z does not generate unknown values.
 		// Z contains a negative loop (forced). At first propagation to X (label p), the
 		// method finds the negative loop, stores it, and returns.
 		this.cstn.potentialR3(this.X, this.Z, XZ, null);

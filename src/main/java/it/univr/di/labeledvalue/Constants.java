@@ -16,6 +16,16 @@ public final class Constants implements Serializable {
 	public static final String CLOSE_PAIR = ")";// '⟩';
 
 	/**
+	 * A tupla closing char
+	 */
+	public static final String CLOSE_TUPLE = "❯";
+
+	/**
+	 * A tupla opening char
+	 */
+	public static final String OPEN_TUPLE = "❮";
+
+	/**
 	 * Char representing empty label: ⊡.
 	 */
 	public static final char EMPTY_LABEL = '\u22A1';

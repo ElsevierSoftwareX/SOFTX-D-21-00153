@@ -390,7 +390,7 @@ public class CSTNepsilonTest extends CSTNTest {
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getPotential().toString());// 2017-10-10: qlabel are not more generated!
+		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getPotential().toString());
 	}
 
 	/**

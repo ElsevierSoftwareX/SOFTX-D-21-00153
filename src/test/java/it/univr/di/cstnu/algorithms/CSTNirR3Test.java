@@ -214,8 +214,7 @@ public class CSTNirR3Test extends CSTNTest {
 		// xyOK.mergeLabeledValue(Label.parse("¬b"), 8);if positive value are not admitted.
 		xyOK.mergeLabeledValue(Label.parse("¬ab"), -2);
 		xyOK.mergeLabeledValue(Label.parse("b"), -1);
-		// xyOK.mergeLabeledValue(Label.parse("¿b"), -11);
-
+		// xyOK.mergeLabeledValue(Label.parse("¿b"), -11);// Propagations to Z does not generate unknown values.
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
 		XP.clearLabels();
@@ -245,7 +244,7 @@ public class CSTNirR3Test extends CSTNTest {
 
 		// System.out.println("xy: " +xy);
 
-		// xyOK.mergeLabeledValue(Label.parse("¿b"), -20);
+		// xyOK.mergeLabeledValue(Label.parse("¿b"), -20);// Propagations to Z does not generate unknown values.
 		xyOK.mergeLabeledValue(Label.parse("¬b"), -1);
 
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());

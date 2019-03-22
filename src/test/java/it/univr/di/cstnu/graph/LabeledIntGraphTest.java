@@ -362,30 +362,27 @@ public class LabeledIntGraphTest {
 		assertEquals(g.getVertexCount(), 11);
 		assertEquals(g.getEdgeCount(), 8);
 		String expected = "%LabeledIntGraph: prova\n" +
-				"%LabeledIntGraph Syntax\n" +
-				"%LabeledNode: <name, label, proposition observed>\n" +
-				"%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>\n" +
-				"Nodes:\n" +
-				"<Z,	⊡,	¿>\n" +
-				"<A3,	⊡,	¿>\n" +
-				"<A7,	⊡,	¿>\n" +
-				"<A5,	⊡,	¿>\n" +
-				"<A9,	⊡,	¿>\n" +
-				"<A10,	⊡,	¿>\n" +
-				"<A11,	⊡,	¿>\n" +
-				"<X,	⊡,	¿>\n" +
-				"<A4,	⊡,	¿>\n" +
-				"<A8,	⊡,	¿>\n" +
-				"<A6,	⊡,	¿>\n" +
-				"Edges:\n" +
-				"<A11_3,	normal,	A3,	A11,	L:{}, LL:{}, UL:{}>\n" +
-				"<A11_4,	normal,	A4,	A11,	L:{}, LL:{}, UL:{}>\n" +
-				"<A11_5,	normal,	A5,	A11,	L:{}, LL:{}, UL:{}>\n" +
-				"<A3_11,	normal,	A11,	A3,	L:{}, LL:{}, UL:{}>\n" +
-				"<A4_11,	normal,	A11,	A4,	L:{}, LL:{}, UL:{}>\n" +
-				"<Z3,	normal,	A3,	Z,	L:{}, LL:{}, UL:{}>\n" +
-				"<Z4,	normal,	A4,	Z,	L:{}, LL:{}, UL:{}>\n" +
-				"<ZX,	normal,	X,	Z,	L:{}, LL:{}, UL:{}>\n";
+				"%Nodes:\n" +
+				"❮Z; ⊡❯\n" +
+				"❮A3; ⊡❯\n" +
+				"❮A7; ⊡❯\n" +
+				"❮A5; ⊡❯\n" +
+				"❮A9; ⊡❯\n" +
+				"❮A10; ⊡❯\n" +
+				"❮A11; ⊡❯\n" +
+				"❮X; ⊡❯\n" +
+				"❮A4; ⊡❯\n" +
+				"❮A8; ⊡❯\n" +
+				"❮A6; ⊡❯\n" +
+				"%Edges:\n" +
+				"❮A11_3; normal; ❯\n" +
+				"❮A11_4; normal; ❯\n" +
+				"❮A11_5; normal; ❯\n" +
+				"❮A3_11; normal; ❯\n" +
+				"❮A4_11; normal; ❯\n" +
+				"❮Z3; normal; ❯\n" +
+				"❮Z4; normal; ❯\n" +
+				"❮ZX; normal; ❯\n";
 		assertEquals("Reversed graph:", expected, g.toString());
 	}
 }

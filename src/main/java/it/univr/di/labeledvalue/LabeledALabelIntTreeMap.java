@@ -400,6 +400,8 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		 * Check if there is already a value in the map that represents the new value.
 		 */
 		for (ALabel otherALabel : this.keySet()) {
+			if (otherALabel.equals(newAlabel))
+				continue;
 			if (newAlabel.contains(otherALabel)) {
 				LabeledIntTreeMap labeledValuesOfOtherALabel = this.get(otherALabel);
 				if (labeledValuesOfOtherALabel.alreadyRepresents(newLabel, newValue)) {

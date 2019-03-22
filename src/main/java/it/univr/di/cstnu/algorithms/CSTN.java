@@ -425,7 +425,16 @@ public class CSTN {
 		 */
 		@Override
 		public LabeledNode[] toArray() {
-			return (this.nodes2check != null) ? this.nodes2check.toArray() : new LabeledNode[0];
+			if (this.nodes2check != null) {
+//				LabeledNode[] a = this.nodes2check.toArray();//It doesn't work because LabeledNode has no empty constructor!
+				LabeledNode[] a = new LabeledNode[this.size()];
+				int i=0;
+				for (LabeledNode n : this.nodes2check) {
+					a[i++]=n;
+				}
+				return a;
+			}
+			return new LabeledNode[0];
 		}
 
 		@Override
@@ -1040,8 +1049,15 @@ public class CSTN {
 					node.setLabel(nodeLabel);
 				}
 
-				edge.mergeLabeledValue(nodeLabel, 0);// in any case, all nodes must be after Z!
-
+				boolean added = edge.mergeLabeledValue(nodeLabel, 0);// in any case, all nodes must be after Z!
+				if (Debug.ON) {
+					if (added) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.log(Level.FINER,
+									"Added " + edge.getName() + ": " + node.getName() + "--" + pairAsString(nodeLabel, 0) + "-->" + this.Z.getName());
+						}
+					}
+				}
 				// UPPER BOUND FROM Z
 				edge = this.g.findEdge(this.Z, node);
 				if (edge == null) {
@@ -1054,7 +1070,16 @@ public class CSTN {
 						}
 					}
 				}
-				edge.mergeLabeledValue(nodeLabel, this.horizon);
+				added = edge.mergeLabeledValue(nodeLabel, this.horizon);
+				if (Debug.ON) {
+					if (added) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.log(Level.FINER,
+									"Added " + edge.getName() + ": " + this.Z.getName() + "--" + pairAsString(nodeLabel, this.horizon) + "-->"
+											+ node.getName());
+						}
+					}
+				}
 			}
 
 			if (this.withNodeLabels) {
@@ -1069,6 +1094,21 @@ public class CSTN {
 			this.withNodeLabels &= thereIsASignificantNodeLabel;
 		}
 
+		// it is usefull to apply R0 before starting, otherwise first cycles of algorithm can propagate dirty values before R0 can clean it
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "Preliminary cleaning by R0");
+			}
+		}
+		for (LabeledNode obs : this.g.getObservers()) {
+			if (this.propagationOnlyToZ) {
+				labelModificationR0qR0(obs, this.Z, this.g.findEdge(obs, this.Z));
+			} else {
+				for (LabeledIntEdge e : this.g.getOutEdges(obs)) {
+					labelModificationR0qR0(obs, this.g.getDest(e), e);
+				}
+			}
+		}
 		this.checkStatus.reset();
 		this.checkStatus.initialized = true;
 
@@ -1699,8 +1739,10 @@ public class CSTN {
 						"Stable state reached. Number of cycles: " + (i - 1) + " over the maximum allowed " + maxCycles + ".\nStatus: " + this.checkStatus);
 			}
 		}
-		this.gCheckedCleaned = new LabeledIntGraph(this.g.getName(), this.g.getInternalLabeledValueMapImplementationClass());
-		this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
+		if (this.cleanCheckedInstance) {
+			this.gCheckedCleaned = new LabeledIntGraph(this.g.getName(), this.g.getInternalLabeledValueMapImplementationClass());
+			this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
+		}
 		this.saveGraphToFile();
 		return this.checkStatus;
 	}
@@ -2010,11 +2052,12 @@ public class CSTN {
 						newLabel = labelModificationR0qR0Light(nS, nD, newLabel, max);
 					}
 					// Before storing the new value, checks that it can be stored!
-					if (potentialR6(nS, nD, newLabel, max, eSD, log))
-						continue;
-					if (checkAndApplyUnknownAfterObs(nD, newLabel, max, log))
-						continue;
-
+					if (!this.propagationOnlyToZ) {
+						if (potentialR6(nS, nD, newLabel, max, eSD, log))
+							continue;
+						if (checkAndApplyUnknownAfterObs(nD, newLabel, max, log))
+							continue;
+					}
 					ruleApplied = eSD.mergeLabeledValue(newLabel, max);
 
 					if (ruleApplied) {
@@ -2030,7 +2073,7 @@ public class CSTN {
 
 					}
 				} // all labeled value in nS-->nD has been checked.
-				if (ruleAppliedOnSnD) {
+				if (ruleAppliedOnSnD && !this.propagationOnlyToZ) {
 					potentialR3(nS, nD, eSD, nDPotentialLabel);
 				}
 			}
@@ -2142,7 +2185,7 @@ public class CSTN {
 					}
 				}
 				if (nA == nC) {
-					if (potentialR1_2(nA, newLabelAC, log)) {
+					if (sum < 0 && potentialR1_2(nA, newLabelAC, log)) {// sum can be 0!
 						// The labeled value is negative and label is in Q*.
 						// The -∞ value is now stored on node A (==C) as potential value if label is in Q*/P*, otherwise, a negative loop has been found!
 						ruleApplied = true;
@@ -2159,11 +2202,13 @@ public class CSTN {
 					continue;
 				}
 
-				// Checks the new labeled value w.r.t. some rules before storing it.
-				if (potentialR6(nA, nC, newLabelAC, oldValue, eAC, log))
-					continue;
-				if (checkAndApplyUnknownAfterObs(nC, newLabelAC, sum, log))
-					continue;
+				if (!this.propagationOnlyToZ) {
+					// Checks the new labeled value w.r.t. some rules before storing it.
+					if (potentialR6(nA, nC, newLabelAC, oldValue, eAC, log))
+						continue;
+					if (checkAndApplyUnknownAfterObs(nC, newLabelAC, sum, log))
+						continue;
+				}
 
 				// here sum has to be add!
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
@@ -2727,6 +2772,7 @@ public class CSTN {
 	 * For each edge B-->Z in edgesToCheck, rules R0--R3 are applied on it and, then, label propagation rule
 	 * is applied to A-->B-->Z for all A-->B.
 	 * All modified or new edges are returned in the set 'edgesToCheck'.
+	 * This method does not manage –∞ as node potential.
 	 * 
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param nodesToCheck
@@ -2738,8 +2784,6 @@ public class CSTN {
 		// 2018-01-25: with this method, performances worsen.
 		LabeledNode B, A;
 		LabeledIntEdge AZ, edgeCopy;
-		LabeledIntTreeMap sourceNodeOriginalPotential;
-		boolean nodeToAdd = false;
 
 		this.checkStatus.cycles++;
 
@@ -2751,7 +2795,6 @@ public class CSTN {
 
 		EdgesToCheck newEdgesToCheck = new EdgesToCheck(edgesToCheck.edgesToCheck);
 		EdgesToCheck newEdgesToCheckR0R3 = new EdgesToCheck();
-		NodesToCheck newNodesToCheck = new NodesToCheck();
 		int i = 1, j = 1, n;
 		// Find a stable state using R0 and R3.
 		while (edgesToCheck.size() != 0) {
@@ -2770,7 +2813,6 @@ public class CSTN {
 					}
 				}
 				B = this.g.getSource(BZ);
-				sourceNodeOriginalPotential = new LabeledIntTreeMap(B.getPotential());
 				// initAndCheck does not resolve completely a qStar.
 				// It is necessary to check here the edge before to consider the second edge.
 				// If the second edge is not present, in any case the current edge has been analyzed by R0 and R3 (qStar can be solved)!
@@ -2785,12 +2827,6 @@ public class CSTN {
 				if (!BZ.equalsAllLabeledValues(edgeCopy)) {
 					newEdgesToCheckR0R3.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
 					newEdgesToCheck.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
-				}
-
-				if (nodeToAdd && !B.getPotential().equals(sourceNodeOriginalPotential)) {
-					// A new -∞ value has been added to B
-					newNodesToCheck.enqueue(B);
-					nodeToAdd = false;
 				}
 
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -2809,14 +2845,12 @@ public class CSTN {
 
 		// now it is time to propagate a stable configuration
 		for (LabeledIntEdge BZ : edgesToCheck) {
-			nodeToAdd = true;
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG.log(Level.FINER, "\n\n*** LP: considering edge " + (i++) + "/" + n + ": " + BZ.getName());
 				}
 			}
 			B = this.g.getSource(BZ);
-			sourceNodeOriginalPotential = new LabeledIntTreeMap(this.Z.getPotential());
 			/**
 			 * Make all propagation considering edge AB as first edge.<br>
 			 * A-->B-->Z
@@ -2847,14 +2881,9 @@ public class CSTN {
 
 				if (edgeModified) {
 					newEdgesToCheck.add(AZ, A, this.Z, this.Z, this.g, this.propagationOnlyToZ);
-					potentialR3(A, this.Z, AZ, null);
+					// potentialR3(A, this.Z, AZ, null);
 				}
 
-				if (nodeToAdd && !this.Z.getPotential().equals(sourceNodeOriginalPotential)) {
-					// A new -∞ value has been added to B
-					newNodesToCheck.enqueue(this.Z);
-					nodeToAdd = false;
-				}
 				if (!this.checkStatus.consistency) {
 					this.checkStatus.finished = true;
 					return this.checkStatus;
@@ -2872,21 +2901,6 @@ public class CSTN {
 			}
 		}
 
-		// Manage -∞ on nodes!
-		while (newNodesToCheck.size() != 0) {
-			nodesToCheck.enqueue(newNodesToCheck.dequeue());
-		}
-		while (nodesToCheck.size() != 0) {
-			LabeledNode node = nodesToCheck.dequeue();
-			potentialR3_4_5_6(node, true, newNodesToCheck, newEdgesToCheck);
-			if (!this.checkStatus.consistency) {
-				this.checkStatus.finished = true;
-				return this.checkStatus;
-			}
-			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
-				return this.checkStatus;
-			}
-		}
 		if (!this.checkStatus.consistency) {
 			this.checkStatus.finished = true;
 			return this.checkStatus;
@@ -2894,10 +2908,9 @@ public class CSTN {
 
 		edgesToCheck.clear();
 		nodesToCheck.clear();
-		this.checkStatus.finished = newEdgesToCheck.size() == 0 && newNodesToCheck.size() == 0;
+		this.checkStatus.finished = newEdgesToCheck.size() == 0;
 		if (!this.checkStatus.finished) {
 			edgesToCheck.takeIn(newEdgesToCheck);
-			nodesToCheck.takeIn(newNodesToCheck);
 		}
 		return this.checkStatus;
 	}
@@ -2921,7 +2934,7 @@ public class CSTN {
 			label = label.remove(node.getPropositionObserved());
 		if (Debug.ON) {
 			log += "\nputAndCheckNegativeInfty on " + node.toString()
-					+ "added: " + pairAsString(label, Constants.INT_NEG_INFINITE);
+					+ " added: " + pairAsString(label, Constants.INT_NEG_INFINITE);
 		}
 		if (!label.containsUnknown()) {
 			node.putPotential(label, Constants.INT_NEG_INFINITE);
@@ -2953,7 +2966,7 @@ public class CSTN {
 	 * 
 	 * <pre>
 	 * Potential Rule 3
-	 * if nS ---(u,α)⟶ nD[(-∞,β)] and u ≤ 0,  
+	 * if nS ---(u,α)⟶ nD[(-∞,β)] and u < 0,  
 	 * then add nS[(α★β)†]
 	 * </pre>
 	 * 
@@ -2975,7 +2988,7 @@ public class CSTN {
 
 		for (Entry<Label> entry : eSD.getLabeledValueSet()) {
 			int u = entry.getIntValue();
-			if (u > 0)
+			if (u >= 0)
 				continue;
 			Label alpha = entry.getKey();
 			for (Label beta : nDPotentialLabel) {
@@ -3009,7 +3022,7 @@ public class CSTN {
 	 * In this method, rules 3, 4, 5, and 6 are rechecked only for node nY.
 	 * 
 	 * <pre>
-	 * 4) if Y?[(-∞,β)] and A ---(u,α y')⟶ B u ≤ 0
+	 * 4) if Y?[(-∞,β)] and A ---(u,α y')⟶ B u < 0
 	 *    then add A ---(u,(α★β)†)⟶ B
 	 *  
 	 * 5) if P? ---(u,α)⟶ A  and  B[(-∞,β p')] and u ≤ 0
@@ -3083,10 +3096,11 @@ public class CSTN {
 							firstLog = "Labeled Potential Propagation Rule 4 considers edge " + e.getName() + "\nand observation t.p.: " + nY.getName();
 						}
 						LabeledNode A = this.g.getSource(e), B = this.g.getDest(e);
+						boolean aIsObs = A.isObserver();
 						boolean modified = false;
 						for (Entry<Label> entry : e.getLabeledValueSet()) {
 							int u = entry.getIntValue();
-							if (u > 0)
+							if (u >= 0)
 								continue;
 							Label alpha = entry.getKey();
 							if (!alpha.contains(proposition))
@@ -3108,6 +3122,10 @@ public class CSTN {
 									continue;
 								if (checkAndApplyUnknownAfterObs(B, alphaBeta, u, log))
 									continue;
+								if (aIsObs) {
+									alphaBeta = labelModificationR0qR0Light(A, B, alphaBeta, u);
+								}
+
 								if (e.mergeLabeledValue(alphaBeta, u)) {
 									modified = true;
 									this.checkStatus.potentialCalls[3]++;
@@ -3301,7 +3319,7 @@ public class CSTN {
 									+ "\nLabeled Potential Propagation Rule 6 is applicable:\n"
 									+ nS.getName() + nS.getPotential() + " removes value " + pairAsString(alpha, value) + " in "
 									+ eSD.getName()
-									+ "\nResults:" + eSD);
+									+ "\nResults: " + eSD);
 						}
 					}
 				}

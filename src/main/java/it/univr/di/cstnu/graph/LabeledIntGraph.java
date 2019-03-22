@@ -39,7 +39,6 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
@@ -532,6 +531,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
 			vNew = new LabeledNode(v);
+			for (Label label : vNew.getPotential().keySet()) {
+				if (label.containsUnknown())
+					vNew.removePotential(label);
+			}
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
@@ -1260,25 +1263,20 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		final StringBuffer sb = new StringBuffer(
 				"%LabeledIntGraph: "
 						+ ((this.name != null) ? this.name : (this.inputFile != null) ? this.inputFile.toString() : "no name")
-						+ "\n%LabeledIntGraph Syntax\n"
-						+ "%LabeledNode: <name, label, proposition observed>\n"
-						+ "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>\n");
-		sb.append("Nodes:\n");
+		// + "\n%LabeledIntGraph Syntax\n"
+		// + "%LabeledNode: <name, label, [observed proposition], [>\n"
+						// + "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>"
+						+ "\n");
+		sb.append("%Nodes:\n");
 
 		for (final LabeledNode n : this.getVertices()) {
-			sb.append("<" + n.name + ",\t" + n.getLabel() + ",\t" + n.getPropositionObserved());
-			LabeledALabelIntTreeMap potential = n.getPotentialAll();
-			if (potential != null && !potential.isEmpty()) {
-				sb.append(",\tPotential: " + potential.toString());
-			}
-			sb.append(">\n");
+			sb.append(n.toString());
+			sb.append("\n");
 		}
-		sb.append("Edges:\n");
+		sb.append("%Edges:\n");
 		for (final LabeledIntEdge e : this.getEdges()) {
-			sb.append("<" + e.getName() + ",\t" + e.getConstraintType() + ",\t" + this.getSource(e).getName() + ",\t"
-					+ this.getDest(e).getName() + ",\tL:" + e.getLabeledValueMap().toString() + ", LL:"
-					+ e.lowerCaseValueAsString()
-					+ ", UL:" + e.upperCaseValuesAsString() + ">\n");
+			sb.append(e.toString());
+			sb.append("\n");
 		}
 		return sb.toString();
 	}

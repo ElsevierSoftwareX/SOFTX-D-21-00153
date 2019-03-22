@@ -244,7 +244,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					jl.setBackground(Color.green);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.checkedGraph);
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.cstn.getGChecked());
 						}
 					}
 				} else {
@@ -1567,7 +1567,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new CSTNInitListener());
 		rowForCSTNButtons.add(buttonCheck);
 
-		buttonCheck = new JButton("CSTN 6-Rule Check");
+		buttonCheck = new JButton("CSTN 9-Rule Check");
 		buttonCheck.addActionListener(new CSTNCheckListener());
 		rowForCSTNButtons.add(buttonCheck);
 
