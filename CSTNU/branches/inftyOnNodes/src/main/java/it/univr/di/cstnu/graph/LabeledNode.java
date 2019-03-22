@@ -75,9 +75,9 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
-	 * Counts how many times a labeled value has been updated.
+	 * First counter of labeled value updating
 	 */
-	Object2IntMap<Label> count;
+	Object2IntMap<Label> potentialCount;
 
 	/**
 	 * Possible proposition observed.
@@ -125,9 +125,11 @@ public class LabeledNode extends AbstractComponent {
 		this.y = n.y;
 		this.alabel = n.alabel;
 		this.potential = new LabeledALabelIntTreeMap(n.potential);
-		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
-		this.count = new Object2IntLinkedOpenHashMap<>(n.count);
-		this.count.defaultReturnValue(Constants.INT_NULL);
+		if (getPotential() == null) {
+			this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
+		}
+		this.potentialCount = new Object2IntLinkedOpenHashMap<>(n.potentialCount);
+		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
 	}
 
 	/**
@@ -143,8 +145,9 @@ public class LabeledNode extends AbstractComponent {
 		this.alabel = null;
 		this.potential = new LabeledALabelIntTreeMap();
 		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
-		this.count = new Object2IntLinkedOpenHashMap<>();
-		this.count.defaultReturnValue(Constants.INT_NULL);
+		this.potentialCount = new Object2IntLinkedOpenHashMap<>();
+		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
+
 	}
 
 	/**
@@ -179,6 +182,7 @@ public class LabeledNode extends AbstractComponent {
 		this.alabel = null;
 		this.potential.clear();
 		this.potential.put(ALabel.emptyLabel, new LabeledIntTreeMap());
+		this.potentialCount.clear();
 	}
 
 	/**
@@ -236,20 +240,31 @@ public class LabeledNode extends AbstractComponent {
 		return this.potential.getValue(l, aLabel);
 	}
 
+	/**
+	 * Remove value identified by aLabel, label.
+	 * 
+	 * @param aLabel
+	 * @param l
+	 * @return the old value associated to aLabel and l in the potential
+	 */
+	public int removePotentialOfUC(ALabel aLabel, Label l) {
+		return this.potential.remove(l, aLabel);
+	}
 	
 	/**
 	 * @return a read-only copy of the potential counters.
 	 */
 	public Object2IntMap<Label> getPotentialCount() {
-		return Object2IntMaps.unmodifiable(this.count);
+		return Object2IntMaps.unmodifiable(this.potentialCount);
 	}
 
 	/**
 	 * @param l a not null label
-	 * @return the counter value associate to label l. If the value does not exists, returns {@link Constants#INT_NULL}
+	 * @return the counter value associate to label l. If the value does not exists, returns 0;
 	 */
 	public int getPotentialCount(Label l) {
-		return this.count.getInt(l);
+		int i = this.potentialCount.getInt(l);
+		return (i == Constants.INT_NULL) ? 0 : i;
 	}
 
 	/**
@@ -268,6 +283,17 @@ public class LabeledNode extends AbstractComponent {
 	 */
 	public LabeledIntTreeMap getPotential() {
 		return this.getPotentialOfUC(ALabel.emptyLabel);
+	}
+
+	/**
+	 * Shortcut for {@link #removePotentialOfUC(ALabel,Label)} with argument {@link ALabel#emptyLabel}.
+	 * 
+	 * @param l the label to remove
+	 * @return the old value
+	 * @see #removePotentialOfUC(ALabel,Label)
+	 */
+	public int removePotential(Label l) {
+		return this.removePotentialOfUC(ALabel.emptyLabel, l);
 	}
 
 	/**
@@ -374,14 +400,15 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * @param l a not null label
 	 * @param reset true if the count has to be reset
-	 * @return the old value associate to to label l. If the old value does not exists, returns {@link Constants#INT_NULL}
+	 * @return the old value associate to to label l. If the old value does not exists, returns 0.
 	 */
 	public int updatePotentialCount(Label l, boolean reset) {
 		if (l == null)
 			return Constants.INT_NULL;
-		int i = this.count.getInt(l);
+		int i = this.potentialCount.getInt(l);
 		i = (i == Constants.INT_NULL || reset) ? 1 : i + 1;
-		return this.count.put(l, i);
+		this.potentialCount.put(l, i);
+		return i - 1;
 	}
 
 	/**
@@ -481,7 +508,7 @@ public class LabeledNode extends AbstractComponent {
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
-		final StringBuilder sb = new StringBuilder("〈");
+		final StringBuilder sb = new StringBuilder(Constants.OPEN_TUPLE);
 		sb.append(this.getName());
 		sb.append("; ");
 		sb.append(this.getLabel());
@@ -493,7 +520,7 @@ public class LabeledNode extends AbstractComponent {
 			sb.append("; Potential: ");
 			sb.append(this.potential.toString());
 		}
-		sb.append("〉");
+		sb.append(Constants.CLOSE_TUPLE);
 		return sb.toString();
 	}
 }

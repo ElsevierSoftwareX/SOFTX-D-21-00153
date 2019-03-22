@@ -296,26 +296,54 @@ public class CSTNPotential extends CSTN {
 	boolean potentialR3(final LabeledNode[] nodesToCheck, final NodesToCheck obsNodesToCheck, final NodesToCheck newNodesToCheck,
 			Instant timeoutInstant) {
 		boolean ruleApplied = false;
-		Label beta;
+
+		// First of all, check all obs node among them in order to have the minimum common potential among obs t.p.
+		ruleApplied = potentialR3internalCycle(obsNodesToCheck.toArray(), new NodesToCheck(obsNodesToCheck), newNodesToCheck, true, timeoutInstant);
+		if (!this.checkStatus.consistency)
+			return true;
+		if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
+			return ruleApplied;
+		}
+
+		// Secondly, check the nodesToCheck w.r.t. obs nodes
+		ruleApplied |= potentialR3internalCycle(nodesToCheck, obsNodesToCheck, newNodesToCheck, false, timeoutInstant);
+
+		return ruleApplied;
+	}
+
+	/**
+	 * @param nodesToCheck
+	 * @param obsNodes
+	 * @param newNodesToCheck
+	 * @param obsAlignment
+	 * @param timeoutInstant
+	 * @return true if at least a value has been modified.
+	 */
+	private boolean potentialR3internalCycle(final LabeledNode[] nodesToCheck, final NodesToCheck obsNodes, final NodesToCheck newNodesToCheck,
+			boolean obsAlignment, Instant timeoutInstant) {
+		boolean ruleApplied = false;
 		String log = "";
-		while (!obsNodesToCheck.isEmpty()) {
-			LabeledNode obs = obsNodesToCheck.dequeue();
+		while (!obsNodes.isEmpty()) {
+			LabeledNode obs = obsNodes.dequeue();
 			char p = obs.getPropositionObserved();
 			ObjectSet<Entry<Label>> obsEntrySet = obs.getPotential().entrySet();
 			for (LabeledNode node : nodesToCheck) {
 				if (node == obs)
 					continue;
-
+				int minNodeValue = node.getPotential(Label.emptyLabel);
+				if (minNodeValue == Constants.INT_NULL)
+					minNodeValue = Constants.INT_POS_INFINITE;
 				for (Entry<Label> entryNode : node.getPotential().entrySet()) {
 					Label betap = entryNode.getKey();
 					if (!betap.contains(p))
 						continue;
-					beta = betap.remove(p);
 					int v = entryNode.getIntValue();
-
+					Label beta = betap.remove(p);
 					for (Entry<Label> obsEntry : obsEntrySet) {
 						Label alpha = obsEntry.getKey();
 						int u = obsEntry.getIntValue();
+						if (u >= minNodeValue)
+							continue;
 						int max = Math.max(u, v);
 						Label alphaBeta = alpha.conjunctionExtended(beta);
 
@@ -332,17 +360,20 @@ public class CSTNPotential extends CSTN {
 						if (updatePotential(node, alphaBeta, max, true, log)) {
 							ruleApplied = true;
 							this.checkStatus.potentialCalls[2]++;
-							newNodesToCheck.enqueue(node);
+							if (obsAlignment)
+								obsNodes.enqueue(node);
+							newNodesToCheck.enqueue(node);// in any case a modified obsNode has to be rechecked using bellmanFord method.
 							if (!this.checkStatus.consistency)
 								return true;
 						}
 					}
+
 				}
 			}
-			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
-				return ruleApplied;
-			}
-		} // for all obs
+		}
+		if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
+			return ruleApplied;
+		}
 		return ruleApplied;
 	}
 
@@ -489,15 +520,17 @@ public class CSTNPotential extends CSTN {
 	 * it means that a negative circuit is present and the check is stopped.<br>
 	 * If <code>(value, label)</code> has already updated for more than #nodes times and label does contain unknown literals,
 	 * then value is set to -∞.
+	 * If <code>(value, label)</code> has been set by rule R3, then a secondary counter is incremented for counting how many time R3 adjusts
+	 * such value. If such second counter is greater than #nodes, then the value is update to obsValue.
 	 * 
 	 * @param node
 	 * @param newLabel
 	 * @param newValue it is assumed that it is != {@link Constants#INT_NULL}
-	 * @param reset true if the count has to be reset.
+	 * @param fromR3 true if the count has to be reset.
 	 * @param log
 	 * @return true if the value was added.
 	 */
-	boolean updatePotential(LabeledNode node, Label newLabel, int newValue, boolean reset, String log) {
+	private boolean updatePotential(LabeledNode node, Label newLabel, int newValue, boolean fromR3, String log) {
 		// R0
 		if (node.isObserver()) {
 			newLabel = newLabel.remove(node.getPropositionObserved());
@@ -506,28 +539,31 @@ public class CSTNPotential extends CSTN {
 		int currentValue = node.getPotential(newLabel);
 		if (node.putPotential(newLabel, newValue)) {
 			// the value was added
-			int count = node.updatePotentialCount(newLabel, reset || currentValue == Constants.INT_NULL);//
-			if (count == Constants.INT_NULL)
-				count = 0;
-			count++;
-			if (count > this.numberOfNodes) {
+			int count = node.updatePotentialCount(newLabel, currentValue == Constants.INT_NULL || fromR3) + 1;//
+				if (count > this.numberOfNodes) {
 					newValue = Constants.INT_NEG_INFINITE;
 					node.putPotential(newLabel, newValue);
-			}
-			if (Debug.ON) {
-				log += "Update potential on " + node.getName()
-						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + ". Update #" + (count) + "\n";
-			}
-			if (!newLabel.containsUnknown()) {
-				if (newValue == Constants.INT_NEG_INFINITE
-						|| (newValue < 0 && node == this.Z)) {
-					// found a negative cycle!
-					log += "\n***\nFound a negative loop in node " + node + "\n***";
-					this.checkStatus.consistency = false;
-					this.checkStatus.finished = true;
 				}
-			}
+				if (!newLabel.containsUnknown() && (newValue == Constants.INT_NEG_INFINITE || (newValue < 0 && node == this.Z))) {
+						// found a negative cycle!
+						this.checkStatus.consistency = false;
+						this.checkStatus.finished = true;
+				}
+			/**
+			 * It is not possible to speed up the update of a node when the value of an observation is very late w.r.t. the node value
+			 * because in some cases this can generate a wrong update.
+			 * See test 088_1negQloop1posQloop1Shared.cstn as test case where the update of each node has to be done
+			 * following the update of each obs node and each obs node is update by 1 at each cycle.
+			 */
 			if (Debug.ON) {
+				if (fromR3) {
+					log += "R3 ";
+				}
+				log += "Update potential on " + node.getName()
+						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + ". Update #" + count;
+				if (!this.checkStatus.consistency) {
+					log += "\n***\nFound a negative loop in node " + node + "\n***";
+				}
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG.log(Level.FINER, log);
 				}

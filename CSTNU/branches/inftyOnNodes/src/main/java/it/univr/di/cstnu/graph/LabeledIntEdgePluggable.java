@@ -430,11 +430,11 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 */
 	@Override
 	public String toString() {
-		return "❮" + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "
+		return Constants.OPEN_TUPLE + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "
 				+ ((this.labeledValue.size() > 0) ? this.labeledValue.toString() + "; " : "")
 				+ ((this.upperCaseValue.size() > 0) ? "UL: " + this.upperCaseValue.toString() + "; " : "")
 				+ ((!this.lowerCaseValue.isEmpty()) ? "LL: " + this.lowerCaseValue.toString() + ";" : "")
-				+ "❯";
+				+ Constants.CLOSE_TUPLE;
 	}
 
 }
