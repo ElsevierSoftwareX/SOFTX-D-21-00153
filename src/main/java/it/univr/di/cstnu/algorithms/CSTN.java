@@ -426,8 +426,7 @@ public class CSTN {
 		@Override
 		public LabeledNode[] toArray() {
 			if (this.nodes2check != null) {
-//				LabeledNode[] a = this.nodes2check.toArray();//It doesn't work because LabeledNode has no empty constructor!
-				LabeledNode[] a = new LabeledNode[this.size()];
+				LabeledNode[] a = this.nodes2check.toArray(new LabeledNode[this.size()]);
 				int i=0;
 				for (LabeledNode n : this.nodes2check) {
 					a[i++]=n;
