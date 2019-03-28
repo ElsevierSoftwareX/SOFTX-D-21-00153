@@ -10,6 +10,7 @@ import java.util.NoSuchElementException;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.PriorityQueue;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 
 /**
@@ -33,20 +34,25 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	/** The standard initial capacity of a queue. */
 	public static final int INITIAL_CAPACITY = 4;
 	/** The backing array. */
-	protected transient K array[];
-	/** The current (cached) length of {@link #array}. */
+	protected K[] backingArray;
+	/** The current (cached) length of {@link #backingArray}. */
 	protected transient int length;
 	/**
-	 * The start position in {@link #array}. It is always strictly smaller than
+	 * The start position in {@link #backingArray}. It is always strictly smaller than
 	 * {@link #length}.
 	 */
 	protected transient int start;
 	/**
-	 * The end position in {@link #array}. It is always strictly smaller than
+	 * The end position in {@link #backingArray}. It is always strictly smaller than
 	 * {@link #length}. Might be actually smaller than {@link #start} because
-	 * {@link #array} is used cyclically.
+	 * {@link #backingArray} is used cyclically.
 	 */
 	protected transient int end;
+
+	/**
+	 * To fast check if a element is present
+	 */
+	protected transient ObjectSet<K> present;
 
 	/**
 	 * Creates a new empty queue with given capacity.
@@ -58,8 +64,9 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	public ObjectArrayFIFOSetQueue(final int capacity) {
 		if (capacity < 0)
 			throw new IllegalArgumentException("Initial capacity (" + capacity + ") is negative");
-		this.array = (K[]) new Object[Math.max(1, capacity)]; // Never build a queue with zero-sized backing array.
-		this.length = this.array.length;
+		this.backingArray = (K[]) new Object[Math.max(1, capacity)]; // Never build a queue with zero-sized backing array.
+		this.length = this.backingArray.length;
+		this.present = new ObjectOpenHashSet<K>();
 	}
 
 	/**
@@ -84,8 +91,9 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	public K dequeue() {
 		if (this.start == this.end)
 			throw new NoSuchElementException();
-		final K t = this.array[this.start];
-		this.array[this.start] = null; // Clean-up for the garbage collector.
+		final K t = this.backingArray[this.start];
+		this.backingArray[this.start] = null; // Clean-up for the garbage collector.
+		this.present.remove(t);
 		if (++this.start == this.length)
 			this.start = 0;
 		reduce();
@@ -104,8 +112,9 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			throw new NoSuchElementException();
 		if (this.end == 0)
 			this.end = this.length;
-		final K t = this.array[--this.end];
-		this.array[this.end] = null; // Clean-up for the garbage collector.
+		final K t = this.backingArray[--this.end];
+		this.backingArray[this.end] = null; // Clean-up for the garbage collector.
+		this.present.remove(t);
 		reduce();
 		return t;
 	}
@@ -119,14 +128,14 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		final K[] newArray = (K[]) new Object[newLength];
 		if (this.start >= this.end) {
 			if (size != 0) {
-				System.arraycopy(this.array, this.start, newArray, 0, this.length - this.start);
-				System.arraycopy(this.array, 0, newArray, this.length - this.start, this.end);
+				System.arraycopy(this.backingArray, this.start, newArray, 0, this.length - this.start);
+				System.arraycopy(this.backingArray, 0, newArray, this.length - this.start, this.end);
 			}
 		} else
-			System.arraycopy(this.array, this.start, newArray, 0, this.end - this.start);
+			System.arraycopy(this.backingArray, this.start, newArray, 0, this.end - this.start);
 		this.start = 0;
 		this.end = size;
-		this.array = newArray;
+		this.backingArray = newArray;
 		this.length = newLength;
 	}
 
@@ -150,7 +159,8 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	public void enqueue(K x) {
 		if (this.contains(x))
 			return;
-		this.array[this.end++] = x;
+		this.backingArray[this.end++] = x;
+		this.present.add(x);
 		if (this.end == this.length)
 			this.end = 0;
 		if (this.end == this.start)
@@ -168,7 +178,8 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			return;
 		if (this.start == 0)
 			this.start = this.length;
-		this.array[--this.start] = x;
+		this.backingArray[--this.start] = x;
+		this.present.add(x);
 		if (this.end == this.start)
 			expand();
 	}
@@ -177,23 +188,23 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	public K first() {
 		if (this.start == this.end)
 			throw new NoSuchElementException();
-		return this.array[this.start];
+		return this.backingArray[this.start];
 	}
 
 	@Override
 	public K last() {
 		if (this.start == this.end)
 			throw new NoSuchElementException();
-		return this.array[(this.end == 0 ? this.length : this.end) - 1];
+		return this.backingArray[(this.end == 0 ? this.length : this.end) - 1];
 	}
 
 	@Override
 	public void clear() {
 		if (this.start <= this.end)
-			Arrays.fill(this.array, this.start, this.end, null);
+			Arrays.fill(this.backingArray, this.start, this.end, null);
 		else {
-			Arrays.fill(this.array, this.start, this.length, null);
-			Arrays.fill(this.array, 0, this.end, null);
+			Arrays.fill(this.backingArray, this.start, this.length, null);
+			Arrays.fill(this.backingArray, 0, this.end, null);
 		}
 		this.start = this.end = 0;
 	}
@@ -204,14 +215,14 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		final int size = size();
 		final K[] newArray = (K[]) new Object[size + 1];
 		if (this.start <= this.end)
-			System.arraycopy(this.array, this.start, newArray, 0, this.end - this.start);
+			System.arraycopy(this.backingArray, this.start, newArray, 0, this.end - this.start);
 		else {
-			System.arraycopy(this.array, this.start, newArray, 0, this.length - this.start);
-			System.arraycopy(this.array, 0, newArray, this.length - this.start, this.end);
+			System.arraycopy(this.backingArray, this.start, newArray, 0, this.length - this.start);
+			System.arraycopy(this.backingArray, 0, newArray, this.length - this.start, this.end);
 		}
 		this.start = 0;
 		this.length = (this.end = size) + 1;
-		this.array = newArray;
+		this.backingArray = newArray;
 	}
 
 	@Override
@@ -224,12 +235,12 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	 * @param o
 	 * @return true if the queue contains o.
 	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean contains(Object o) {
 		if (o == null || (this.start == this.end))
 			return false;
-		return (this.getIndex((K) o) != -1);
+		return this.present.contains(o);
+		// return (this.getIndex((K) o) != -1);
 	}
 
 	/**
@@ -239,7 +250,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	private int getIndex(K k) {
 		int size = size();
 		for (int i = this.start; size-- != 0;) {
-			if (this.array[i++].equals(k))
+			if (this.backingArray[i++].equals(k))
 				return i - 1;
 			if (i == this.length)
 				i = 0;
@@ -251,19 +262,39 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	 * @return a copy of the queue as an array.
 	 */
 	@Override
-	@SuppressWarnings("unchecked")
 	public K[] toArray() {
 		final int size = size();
-		final K[] newArray = (K[]) new Object[size + 1];
+		@SuppressWarnings("unchecked")
+		final K[] newArray = (K[]) new Object[size];
+		return copyArray(newArray);
+	}
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T[] toArray(T[] a) {
+		final int size = size();
+		if (a.length < size) {
+			a = (T[]) java.lang.reflect.Array.newInstance(a.getClass().getComponentType(), size);
+		} else {
+			if (a.length > size)
+				a[size] = null;
+		}
+		return copyArray(a);
+	}
+
+	/**
+	 * @param newArray
+	 * @return the copy of this.array
+	 */
+	private <T> T[] copyArray(T[] newArray) {
 		if (this.start <= this.end)
-			System.arraycopy(this.array, this.start, newArray, 0, this.end - this.start);
+			System.arraycopy(this.backingArray, this.start, newArray, 0, this.end - this.start);
 		else {
-			System.arraycopy(this.array, this.start, newArray, 0, this.length - this.start);
-			System.arraycopy(this.array, 0, newArray, this.length - this.start, this.end);
+			System.arraycopy(this.backingArray, this.start, newArray, 0, this.length - this.start);
+			System.arraycopy(this.backingArray, 0, newArray, this.length - this.start, this.end);
 		}
 		return newArray;
 	}
-
 
 	/**
 	 * @return an iterator on the current queue. If the queue is modified during the use of the iterator, then the iterator behavior is undefined.
@@ -284,7 +315,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			public K next() {
 				if (!hasNext())
 					throw new NoSuchElementException();
-				final K t = ObjectArrayFIFOSetQueue.this.array[this.pos];
+				final K t = ObjectArrayFIFOSetQueue.this.backingArray[this.pos];
 				if (++this.pos == this.max)
 					this.pos = 0;
 				return t;
@@ -292,10 +323,6 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		};
 	}
 
-	@Override
-	public <T> T[] toArray(T[] a) {
-		throw new UnsupportedOperationException("toArray");
-	}
 
 	@Override
 	public boolean add(K e) {
@@ -309,19 +336,19 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	public boolean remove(Object o) {
 		if (o == null || this.start == this.end)
 			return false;
+		if (!this.present.contains(o))
+			return false;
 		@SuppressWarnings("unchecked")
 		K ok = (K) o;
 		int i = getIndex(ok);
-		if (i==-1) 
-			return false;
 		if (i <= this.end) {
 			for (; i < this.end;) {
-				this.array[i] = this.array[++i];
+				this.backingArray[i] = this.backingArray[++i];
 			}
 			this.end--;
 		} else {
 			for (; i > this.start;) {
-				this.array[i] = this.array[--i];
+				this.backingArray[i] = this.backingArray[--i];
 			}
 			this.start++;
 		}
@@ -367,7 +394,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		int size = size();
 		s.writeInt(size);
 		for (int i = this.start; size-- != 0;) {
-			s.writeObject(this.array[i++]);
+			s.writeObject(this.backingArray[i++]);
 			if (i == this.length)
 				i = 0;
 		}
@@ -378,7 +405,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		int size = size();
 		StringBuffer sb = new StringBuffer("[");
 		for (int i = this.start; size-- != 0;) {
-			sb.append(this.array[i++].toString());
+			sb.append(this.backingArray[i++].toString());
 			sb.append(", ");
 			if (i == this.length)
 				i = 0;
@@ -396,9 +423,11 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
 		s.defaultReadObject();
 		this.end = s.readInt();
-		this.array = (K[]) new Object[this.length = HashCommon.nextPowerOfTwo(this.end + 1)];
-		for (int i = 0; i < this.end; i++)
-			this.array[i] = (K) s.readObject();
+		this.backingArray = (K[]) new Object[this.length = HashCommon.nextPowerOfTwo(this.end + 1)];
+		for (int i = 0; i < this.end; i++) {
+			this.backingArray[i] = (K) s.readObject();
+			this.present.add(this.backingArray[i]);
+		}
 	}
 
 	@Override
