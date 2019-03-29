@@ -425,15 +425,7 @@ public class CSTN {
 		 */
 		@Override
 		public LabeledNode[] toArray() {
-			if (this.nodes2check != null) {
-				LabeledNode[] a = this.nodes2check.toArray(new LabeledNode[this.size()]);
-				int i=0;
-				for (LabeledNode n : this.nodes2check) {
-					a[i++]=n;
-				}
-				return a;
-			}
-			return new LabeledNode[0];
+			return (this.nodes2check != null) ? this.nodes2check.toArray(new LabeledNode[this.nodes2check.size()]) : new LabeledNode[0];
 		}
 
 		@Override
