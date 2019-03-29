@@ -118,15 +118,20 @@ public class LabeledIntEdgeSimpleTest {
 		assertEquals("{(-8, ¬b) (-20, ab) (-∞, ¿ab) }", map.toString());
 
 		map = AbstractLabeledIntMap.parse("{(-20, ab) (-∞, ¿ab) (-8, ¬b) (-17, b) }");
-		assertEquals("{(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }", map.toString());
+		// assertEquals("{(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }", map.toString());
+		assertEquals("{(-8, ⊡) (-17, b) (-20, ab) (-∞, ¿ab) }", map.toString());
 
 		e.setLabeledValueMap(map);
 		LabeledALabelIntTreeMap map1 = LabeledALabelIntTreeMap
 				.parse("{(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }", this.alpha);
 		e.setUpperCaseValueMap(map1);
 
+		// assertEquals(
+		// "❮e; normal; {(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b)
+		// (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
+		// e.toString());
 		assertEquals(
-				"❮e; normal; {(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
+				"❮e; normal; {(-8, ⊡) (-17, b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
 				e.toString());
 
 		LabeledIntEdgePluggable e1 = edgeFactory.get(e);
@@ -180,8 +185,12 @@ public class LabeledIntEdgeSimpleTest {
 				e.toString());
 
 		e.mergeUpperCaseValue(Label.parse("b"), ALabel.parse("I", this.alpha), -60);
+		// assertEquals(
+		// "❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -60, b) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring
+		// + "I, -60, ¬b) }; ❯",
+		// e.toString());
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -60, b) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring
+				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ⊡) (I, -60, b) (D" + ALabel.ALABEL_SEPARATORstring
 						+ "I, -60, ¬b) }; ❯",
 				e.toString());
 
