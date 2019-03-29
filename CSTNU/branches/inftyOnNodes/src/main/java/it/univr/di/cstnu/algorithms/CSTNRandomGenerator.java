@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.logging.Level;
@@ -60,7 +61,13 @@ public class CSTNRandomGenerator {
 	 * Version of the class
 	 */
 	// static public final String VERSIONandDATE = "Version 0 - November, 23 2018";
-	static public final String VERSIONandDATE = "Version 0.5 - November, 28 2018";
+	// static public final String VERSIONandDATE = "Version 0.5 - November, 28 2018";
+	static public final String VERSIONandDATE = "Version 0.6 - March, 29 2019";
+
+	/**
+	 * Checker
+	 */
+	static final Class<CSTNPotential> CSTN_CLASS = it.univr.di.cstnu.algorithms.CSTNPotential.class;
 
 	/**
 	 * Base name for generated files
@@ -466,12 +473,12 @@ public class CSTNRandomGenerator {
 		// Add all node but Z (Z is not considered)
 		double shift = 200, x = 0, y = 0;
 		int nodesInQloops = this.nNodesQLoop * this.nQLoops;
-		int divisore;
+		int divisor;
 		for (int i = 0; i < this.nNodes; i++) {
 			LabeledNode node = new LabeledNode("n" + i);
 			if (i != 0) {
-				divisore = (i > nodesInQloops) ? 2 * this.nNodesQLoop : this.nNodesQLoop;
-				if (i % divisore == 0) {
+				divisor = (i > nodesInQloops) ? 2 * this.nNodesQLoop : this.nNodesQLoop;
+				if (i % divisor == 0) {
 					x = 0;
 					y += shift;
 				}
@@ -592,7 +599,13 @@ public class CSTNRandomGenerator {
 
 		int checkN = 0;
 		boolean notDCfound = false;
-		CSTN cstn = new CSTN(randomGraph, this.timeOut);
+		CSTN cstn;
+		try {
+			cstn = CSTN_CLASS.getDeclaredConstructor(new Class[] { LabeledIntGraph.class, int.class }).newInstance(randomGraph, this.timeOut);
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+				| SecurityException e2) {
+			throw new RuntimeException("The class " + CSTN_CLASS + " for the checker is not available: " + e2.getMessage());
+		}
 		cstn.withNodeLabels = false;
 		while (true) {
 			try {
