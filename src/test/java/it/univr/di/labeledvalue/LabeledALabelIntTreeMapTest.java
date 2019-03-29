@@ -1,5 +1,6 @@
 package it.univr.di.labeledvalue;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
@@ -263,6 +264,65 @@ public class LabeledALabelIntTreeMapTest {
 		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
 	}
 
+
+	/**
+	 * 
+	 */
+	@Test
+	public final void mergeConSemplificazione8() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple(Label.emptyLabel, n8, -16);
+		this.map.mergeTriple(Label.emptyLabel, n9, -17);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, n8, -16);
+		this.result.mergeTriple(Label.emptyLabel, n9, -17);
+
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public final void mergeConSemplificazione9() {
+		this.map.clear();
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -16);
+		this.map.mergeTriple("a", ALabel.emptyLabel, -17);
+		this.map.mergeTriple("¬a", ALabel.emptyLabel, -17);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -17);
+
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void mergeConSemplificazione10() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple("a", n8, -16);
+		this.map.mergeTriple("¬a", n9, -17);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -20);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -20);
+
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
 	/**
 	 *
 	 */
@@ -309,6 +369,30 @@ public class LabeledALabelIntTreeMapTest {
 		this.alpha.clear();
 		this.map = LabeledALabelIntTreeMap.parse(mapS, this.alpha);
 		// Assert.assertEquals(mapS, this.map.toString());
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public final void canRepresentTest() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple(Label.emptyLabel, n8, -16);
+		this.map.mergeTriple(Label.emptyLabel, n9, -17);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, n8, -16);
+		this.result.mergeTriple(Label.emptyLabel, n9, -17);
+
+		assertTrue(this.map.alreadyRepresents(Label.emptyLabel, n89, -4));
+		assertTrue(this.map.alreadyRepresents(Label.parse("a"), n89, -4));
+		assertTrue(this.map.alreadyRepresents(Label.emptyLabel, n89, -16));
+		assertFalse(this.map.alreadyRepresents(Label.parse("a"), n89, -18));
 	}
 
 	/**

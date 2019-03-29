@@ -124,6 +124,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		public LabeledALabelIntTreeMapView(LabeledALabelIntTreeMap inputMap) {
 			this.map = inputMap.map;
 		}
+
 		@Override
 		/**
 		 * Object Read-only. It does nothing.
@@ -384,30 +385,27 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 */
 
 	/**
-	 * @param newLabel
-	 * @param newAlabel
+	 * @param newLabel it must be not null
+	 * @param newAlabel it must be not null
 	 * @param newValue
 	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
 	 *         If returns false, then the adding of the value to the map would modify the map.
 	 */
 	public boolean alreadyRepresents(final Label newLabel, final ALabel newAlabel, final int newValue) {
-		int valuePresented = getValue(newLabel, newAlabel);
-		if (valuePresented > newValue)
-			return false;// the newValue would simplify the map.
-		if (valuePresented != Constants.INT_NULL && valuePresented < newValue)
+		final LabeledIntTreeMap map1 = this.map.get(newAlabel);
+		if (map1 != null && map1.alreadyRepresents(newLabel, newValue))
 			return true;
 		/**
-		 * Check if there is already a value in the map that represents the new value.
+		 * Check if there is already a value in the map having shorter ALabel that can represent the new value.
 		 */
+		final int newALabelSize = newAlabel.size();
 		for (ALabel otherALabel : this.keySet()) {
-			if (otherALabel.equals(newAlabel))
+			if (newALabelSize <= otherALabel.size() || !newAlabel.contains(otherALabel))
 				continue;
-			if (newAlabel.contains(otherALabel)) {
-				LabeledIntTreeMap labeledValuesOfOtherALabel = this.get(otherALabel);
-				if (labeledValuesOfOtherALabel.alreadyRepresents(newLabel, newValue)) {
-					// a smaller conjuncted upper case value map already contains the input value
-					return true;
-				}
+			LabeledIntTreeMap labeledValuesOfOtherALabel = this.get(otherALabel);
+			if (labeledValuesOfOtherALabel.alreadyRepresents(newLabel, newValue)) {
+				// a smaller conjuncted upper case value map already contains the input value
+				return true;
 			}
 		}
 		return false;
@@ -564,7 +562,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		} else {
 			prioriNewAlabelMapSize = newAlabelMap.size();
 		}
-		
+
 		boolean added;
 		if (force) {
 			newAlabelMap.putForcibly(newLabel, newValue);
@@ -582,17 +580,16 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		/**
 		 * 2017-10-31
 		 * Algorithm removes all a-labeled values that will become redundant after the insertion of the input a-labeled value.
+		 * The a-label removed contain newALabel strictly.
 		 * I verified that following optimization reduces global computation time.
 		 */
 		ObjectSet<Entry<Label>> newAlabelEntrySet = newAlabelMap.entrySet();
 		LabeledIntTreeMap otherLabelValueMap;
 		for (ALabel otherALabel : this.keySet()) {
-			if (otherALabel.size() < newAlabelSize || !otherALabel.contains(newAlabel)) {
+			if (otherALabel.equals(newAlabel) || otherALabel.size() < newAlabelSize || !otherALabel.contains(newAlabel)) {
 				continue;
 			}
 			otherLabelValueMap = this.get(otherALabel);
-			if (otherLabelValueMap == newAlabelMap)
-				continue;
 
 			// Check only a-labels that contain newALabel strictly.
 			for (Object2IntMap.Entry<Label> entry : otherLabelValueMap.entrySet()) {
@@ -657,7 +654,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * @return the old map if one was associated to alabel, null otherwise
 	 */
 	public LabeledIntTreeMap put(ALabel alabel, LabeledIntMap labeledValueMap) {
-		
+
 		LabeledIntTreeMap oldMap = this.map.get(alabel);
 		if (oldMap != null) {
 			this.count -= oldMap.size();
