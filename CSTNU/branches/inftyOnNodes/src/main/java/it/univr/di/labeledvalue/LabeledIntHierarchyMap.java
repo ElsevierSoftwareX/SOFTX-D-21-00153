@@ -147,11 +147,6 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 
 		@Override
-		public Integer setValue(Integer value) {
-			return setValue(value.intValue());
-		}
-
-		@Override
 		public String toString() {
 			if (this.label == null)
 				return "";
