@@ -149,7 +149,7 @@ public class CSTN {
 				if (i == 0)
 					sb.append("1-2").append(" has been applied ").append(this.potentialCalls[i] + this.potentialCalls[i + 1]);
 				else
-					sb.append(i).append(" has been applied ").append(this.potentialCalls[i]);
+					sb.append(i).append(" has been applied ").append(this.potentialCalls[i + 1]);
 				sb.append(" times.\n");
 			}
 			if (this.timeout)
@@ -738,7 +738,6 @@ public class CSTN {
 	/**
 	 * Check using full set of rules R0, qR0, R3, qR3, LP, qLP or the reduced set qR0, qR3, LP.
 	 */
-	@Option(required = false, name = "-limitToZ", usage = "Check DC propagating only values on edges to Z.")
 	boolean propagationOnlyToZ = false;
 
 	/**
@@ -777,6 +776,7 @@ public class CSTN {
 	 * DCChecking requires to use unknown literals to be complete.
 	 * This flag can disable unknown literals if one want to verify if they are necessary for a specific check.
 	 */
+	@Option(required = false, name = "-woNodeLabels", usage = "Ignore labels on nodes")
 	boolean withUnknown = true;
 
 	/**
@@ -2968,12 +2968,10 @@ public class CSTN {
 	 * @return true if the rule has been applied.
 	 */
 	boolean potentialR3(LabeledNode nS, LabeledNode nD, LabeledIntEdge eSD, ObjectSet<Label> nDPotentialLabel) {
-		if (nS == nD)
+		if (nS == nD || nD.getPotential().isEmpty())
 			return false;
 		if (nDPotentialLabel == null)
 			nDPotentialLabel = nD.getPotential().keySet();
-		if (nD.getPotential().isEmpty())
-			return false;
 		String log = "";
 		boolean ruleApplied = false;
 

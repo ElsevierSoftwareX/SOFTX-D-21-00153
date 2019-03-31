@@ -19,27 +19,27 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMap;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
- * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1).
+ * The dynamic consistency check (DC check) is done assuming standard IR semantics (cf. ICAPS 2016 paper, table 1).
+ * and that the instance is streamlined (cf TIME 2018 paper).
  * In this class is supposed that instances have only negative edges (minimal distance required).
- * Then, it tries to solve using an extended Bellman-Ford algorithm and R0, and R3 rules.<br>
- * 20190226 Found problems:
- * 1) negative q-loop cannot be solved (avoiding positive edges does it solve?) There is an instance for which algorithm does not stop.
- * 2) Is it possible to avoid to reset the counter when R3 is applied? It would eliminate pseudo-polynomiality
+ * Then, it tries to solve using an extended Bellman-Ford algorithm and R0, and R3 rules.
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNPotential extends CSTN {
+public class CSTNPotential extends CSTNIR {
 
 	/**
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
-	static final public String VERSIONandDATE = "Version 0.1 - February, 20 2019";// Infty value management moved to nodes!
+//	static final public String VERSIONandDATE = "Version 0.1 - February, 20 2019";// Infty value management moved to nodes!
+	static final public String VERSIONandDATE = "Version 0.2 - March, 31 2019";// It extends CSTNIR. I proved that pseudo-polynomiality cannot be avoid.
+	
 
 	/**
 	 * logger
@@ -68,8 +68,8 @@ public class CSTNPotential extends CSTN {
 	 * @param g graph to check
 	 */
 	public CSTNPotential(LabeledIntGraph g) {
-		this();
-		this.setG(g);// sets also checkStatus!
+		super(g);
+		this.withNodeLabels = false;
 	}
 
 	/**
@@ -77,8 +77,8 @@ public class CSTNPotential extends CSTN {
 	 * @param timeOut timeout for the check
 	 */
 	public CSTNPotential(LabeledIntGraph g, int timeOut) {
-		this(g);
-		this.timeOut = timeOut;
+		super(g, timeOut);
+		this.withNodeLabels = false;
 	}
 
 	/**
@@ -86,6 +86,7 @@ public class CSTNPotential extends CSTN {
 	 */
 	CSTNPotential() {
 		super();
+		this.withNodeLabels = false;
 	}
 
 	/**
@@ -174,7 +175,7 @@ public class CSTNPotential extends CSTN {
 				}
 			}
 			// cache
-			LabeledIntTreeMap APotential = new LabeledIntTreeMap(A.getPotential());
+			LabeledIntMap APotential = A.getPotential();
 			ObjectSet<Label> APotentialLabel = APotential.keySet();
 
 			NodesToCheck Bsons = new NodesToCheck();
@@ -239,6 +240,8 @@ public class CSTNPotential extends CSTN {
 								}
 							}
 							if (isCModified) {
+								if (C == A)
+									APotentialLabel = A.getPotential().keySet();
 								Bsons.enqueue(C);
 								if (C.isObserver())
 									obsNodesToCheck.enqueue(C);
@@ -347,9 +350,9 @@ public class CSTNPotential extends CSTN {
 						int max = Math.max(u, v);
 						Label alphaBeta = alpha.conjunctionExtended(beta);
 
-						if (this.withNodeLabels) {
-							alphaBeta = removeChildrenOfUnknown(alphaBeta);
-						}
+						// if (this.withNodeLabels) {
+						// alphaBeta = removeChildrenOfUnknown(alphaBeta);
+						// }
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								log = "Potential R3 applied to " + obs.getName() + " and " + node.getName()

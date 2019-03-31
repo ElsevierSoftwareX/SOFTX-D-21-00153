@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Label;
 
@@ -50,26 +49,18 @@ public class LabeledNodeTest {
 	/**
 	 * Test method for {@link it.univr.di.cstnu.graph.LabeledNode#LabeledNode(java.lang.String)}.
 	 */
+	@SuppressWarnings("static-method")
 	@Test
-	public final void potentialPut1() { 
+	public final void potentialPut1() {
 		LabeledNode a = new LabeledNode("A", Label.emptyLabel);
-		
-		ALabel C = new ALabel("C", this.alphabet);
-		ALabel D = new ALabel("D", this.alphabet);
-
-		a.putPotential(C, Label.parse("b"), -1);
-		a.putPotential(C.conjunction(D), Label.parse("b"), -1);// ignored
+		a.putPotential(Label.parse("b"), -1);
+		a.putPotential(Label.parse("b"), -1);// ignored
 		a.putPotential(Label.parse("a"), -1);
 
-		assertEquals("{a->-1}", a.getPotentialEntrySetOfUC(ALabel.emptyLabel).toString());
-		assertEquals("{b->-1}", a.getPotentialEntrySetOfUC(C).toString());
+		assertEquals("{b->-1, a->-1}", a.getPotential().entrySet().toString());
 
-		a.putPotential(Label.parse("b"), -1);
-		assertEquals("{a->-1, b->-1}", a.getPotentialEntrySetOfUC(ALabel.emptyLabel).toString());
-
-		a.putPotential(Label.emptyLabel, -1);
-		assertEquals("{⊡->-1}", a.getPotentialEntrySetOfUC(ALabel.emptyLabel).toString());
-
+		a.putPotential(Label.parse("¬b"), -1);
+		assertEquals("{⊡->-1}", a.getPotential().entrySet().toString());
 	}
 
 }

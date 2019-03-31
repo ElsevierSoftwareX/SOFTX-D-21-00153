@@ -187,6 +187,12 @@ public class LabeledIntHierarchyMapTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
+
+		@Override
+		public LabeledIntMapView unmodifiable() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 
 	@SuppressWarnings("javadoc")
