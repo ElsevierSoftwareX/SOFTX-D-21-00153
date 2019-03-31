@@ -149,7 +149,7 @@ public class CSTN {
 				if (i == 0)
 					sb.append("1-2").append(" has been applied ").append(this.potentialCalls[i] + this.potentialCalls[i + 1]);
 				else
-					sb.append(i).append(" has been applied ").append(this.potentialCalls[i + 1]);
+					sb.append(i + 1).append(" has been applied ").append(this.potentialCalls[i]);
 				sb.append(" times.\n");
 			}
 			if (this.timeout)
@@ -627,7 +627,7 @@ public class CSTN {
 	 * @throws IOException
 	 */
 	static void defaultMain(final String[] args, final CSTN cstn, String kindOfChecking) throws IOException, ParserConfigurationException, SAXException {
-		cstn.printVersion();
+		System.out.println(cstn.getVersionAndCopyright());
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Start...");
@@ -1262,12 +1262,19 @@ public class CSTN {
 	}
 
 	/**
-	 * Print version of the this class in System.out.
+	 * @return version and copyright string
 	 */
-	public void printVersion() {
+	public String getVersionAndCopyright() {
 		// I use a non-static method for having a general method that prints the right name for each derived class.
-		System.out.println(this.getClass().getName() + " " + VERSIONandDATE + ".\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2017-2019, Roberto Posenato");
+		String s = "\nAcademic and non-commercial use only.\n"
+				+ "Copyright © 2017-2019, Roberto Posenato.\n";
+		try {
+			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
+					+ s;
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			//
+		}
+		return s;
 	}
 
 	/**
