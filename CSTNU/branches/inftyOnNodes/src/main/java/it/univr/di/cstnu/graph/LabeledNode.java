@@ -11,7 +11,7 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMapFactory;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -70,6 +70,12 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * Factory for labeled value set.
+	 */
+	LabeledIntMapFactory<? extends LabeledIntMap> labeledValueMapFactory;
+
+
+	/**
 	 * First counter of labeled value updating
 	 */
 	Object2IntMap<Label> potentialCount;
@@ -119,7 +125,8 @@ public class LabeledNode extends AbstractComponent {
 		this.x = n.x;
 		this.y = n.y;
 		this.alabel = n.alabel;
-		this.potential = new LabeledIntTreeMap(n.potential);
+		this.labeledValueMapFactory = new LabeledIntMapFactory<>();
+		this.potential = this.labeledValueMapFactory.get(n.potential);
 		this.potentialCount = new Object2IntLinkedOpenHashMap<>(n.potentialCount);
 		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
 	}
@@ -135,7 +142,8 @@ public class LabeledNode extends AbstractComponent {
 		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.alabel = null;
-		this.potential = new LabeledIntTreeMap();
+		this.labeledValueMapFactory = new LabeledIntMapFactory<>();
+		this.potential = this.labeledValueMapFactory.get();
 		this.potentialCount = new Object2IntLinkedOpenHashMap<>();
 		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
 
@@ -173,13 +181,6 @@ public class LabeledNode extends AbstractComponent {
 		this.alabel = null;
 		this.potential.clear();
 		this.potentialCount.clear();
-	}
-
-	/**
-	 * @return a copy of the potential of this node.
-	 */
-	public LabeledIntTreeMap clonePotential() {
-		return new LabeledIntTreeMap(this.potential);
 	}
 
 	/**
