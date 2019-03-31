@@ -188,6 +188,12 @@ public class LabeledIntTreeMapTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
+
+		@Override
+		public LabeledIntMapView unmodifiable() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 
 	/**
@@ -244,6 +250,23 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("¬a"), 21);
 
 		assertEquals("Test inserimento due label di pari valore con un letterale opposto:\n", this.expected, this.actual);
+	}
+
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
+	public final void semplificazione0Test() {
+		Label b = Label.parse("¬b");
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), -1);
+		this.actual.put(Label.parse("b"), -1);
+		this.actual.put(b, -1);
+
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, -1);
+
+		assertEquals(this.expected, this.actual);
 	}
 
 	/**
@@ -914,7 +937,7 @@ public class LabeledIntTreeMapTest {
 
 		// assertEquals("{(22, ce) (11, c¬e) (23, ¬ce) (19, ¬c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 		// this.actual.toString());
-		assertEquals("{(23, ⊡) (22, c) (19, ¬e) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
+		assertEquals("{(23, ⊡) (22, c) (19, ¬e) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
 				this.actual.toString());
 	}
 

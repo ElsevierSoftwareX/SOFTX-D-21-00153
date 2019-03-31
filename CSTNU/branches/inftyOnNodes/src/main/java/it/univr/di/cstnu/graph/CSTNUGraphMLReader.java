@@ -200,7 +200,7 @@ public class CSTNUGraphMLReader {
 
 			if (nodeLabeledPotentialValueF != null) {
 				String data = nodeLabeledPotentialValueF.apply(n);
-				LabeledALabelIntTreeMap potentialMap = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
+				LabeledIntMap potentialMap = AbstractLabeledIntMap.parse(data);
 				if (data != null && data.length() > 2 && (potentialMap == null || potentialMap.isEmpty()))
 					throw new IllegalArgumentException("Potential values in a wrong format: " + data + " in node " + n);
 				n.setPotential(potentialMap);

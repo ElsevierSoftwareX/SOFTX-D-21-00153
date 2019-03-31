@@ -39,7 +39,6 @@ import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntMapFactory;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -670,10 +669,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Label
 		}
 
 		// Potential
-		// ObjectSet<ALabel> labelPotential = node.getALabelsOfPotential();
-		LabeledALabelIntTreeMap potentialMap = node.getPotentialAll();
+		LabeledIntMap potentialMap = node.getPotential();
 		if (potentialMap != null) {
-			// for (ALabel alabel : labelPotential) {
 			jl = new JLabel("Potential: ");
 			jp.add(jl);
 			JLabel potentialValues = new JLabel(

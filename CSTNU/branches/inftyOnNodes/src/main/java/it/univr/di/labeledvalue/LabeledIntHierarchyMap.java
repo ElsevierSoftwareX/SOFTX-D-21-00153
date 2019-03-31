@@ -21,6 +21,25 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 
 	/**
+	 * A read-only view of an object
+	 * 
+	 * @author posenato
+	 */
+	public static class LabeledIntHierarchyMapView extends LabeledIntHierarchyMap implements LabeledIntMapView {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * @param inputMap
+		 */
+		public LabeledIntHierarchyMapView(LabeledIntHierarchyMap inputMap) {
+			this.root = inputMap.root;
+		}
+	}
+
+	/**
 	 * Simple class to represent a labeled value in the hierarchy.
 	 * 
 	 * @author posenato
@@ -456,7 +475,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	 * Root of hierarchy Design choice: the set of labeled values of this map is organized as a double linked hierarchy of labeled values. A labeled value
 	 * (label, value) is father of another labeled value (label1, value1) if label1 subsumes label and value1 &lt; value.
 	 */
-	private HierarchyNode root;
+	protected HierarchyNode root;
 
 	/**
 	 * Just to force the control that, after each put, the format of hierarchy is still valid. Don't set true in a production program!
@@ -1045,5 +1064,10 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	public boolean alreadyRepresents(Label newLabel, int newValue) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public LabeledIntMapView unmodifiable() {
+		return new LabeledIntHierarchyMapView(this);
 	}
 }

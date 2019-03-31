@@ -43,6 +43,37 @@ public interface LabeledIntMap {
 	};
 
 	/**
+	 * A read-only view of an object
+	 * 
+	 * @author posenato
+	 */
+	public interface LabeledIntMapView extends LabeledIntMap {
+
+		@Override
+		default public void clear() {
+			return;
+		}
+
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		@Override
+		default public boolean put(Label l, int i) {
+			return false;
+		}
+
+		@Override
+		default public void putAll(LabeledIntMap inputMap) {
+			return;
+		}
+
+		@Override
+		default public int remove(Label l) {
+			return Constants.INT_NULL;
+		}
+	}
+
+	/**
 	 * @param newLabel
 	 * @param newValue
 	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
@@ -304,5 +335,10 @@ public interface LabeledIntMap {
 	 * @return the set of all integer present in the map as an ordered list.
 	 */
 	public IntSet values();
+
+	/**
+	 * @return a read-only view of this.
+	 */
+	public LabeledIntMapView unmodifiable();
 
 }

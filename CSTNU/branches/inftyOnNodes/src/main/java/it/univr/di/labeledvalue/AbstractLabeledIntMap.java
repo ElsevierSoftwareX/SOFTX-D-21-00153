@@ -156,6 +156,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		return newMap;
 	}
 
+
 	/**
 	 * The number of elements in the map
 	 */
