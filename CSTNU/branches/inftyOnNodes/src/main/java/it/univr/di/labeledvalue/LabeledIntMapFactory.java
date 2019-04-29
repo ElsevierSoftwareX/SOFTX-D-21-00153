@@ -23,7 +23,7 @@ public final class LabeledIntMapFactory<C extends LabeledIntMap> implements Supp
 	/**
 	 * 
 	 */
-	static final public Class<LabeledIntTreeMap> DEFAULT_LABELEDINTMAP_CLASS = LabeledIntTreeMap.class;
+	static final public Class<? extends LabeledIntMap> DEFAULT_LABELEDINTMAP_CLASS = LabeledIntTreeMap.class;
 
 	/**
 	 * 

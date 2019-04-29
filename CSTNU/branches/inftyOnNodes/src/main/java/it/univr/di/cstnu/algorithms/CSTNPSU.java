@@ -22,6 +22,7 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
@@ -82,7 +83,7 @@ public class CSTNPSU extends CSTNU {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Loading graph...");
 		}
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnpsu.fInput, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader = new CSTNUGraphMLReader<>(cstnpsu.fInput, LabeledIntTreeMap.class);
 		cstnpsu.setG(graphMLReader.readGraph());
 		cstnpsu.g.setInputFile(cstnpsu.fInput);
 
@@ -496,10 +497,10 @@ public class CSTNPSU extends CSTNU {
 				LabeledIntTreeMap valuesMap = eXA.getUpperCaseValueMap().get(aleph);
 				if (valuesMap == null)// a previous cycle could have removed it
 					continue;
-				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfXA : valuesMap.entrySet()) {
-					final Label beta = upperCaseEntryOfXA.getKey();
-					int v = upperCaseEntryOfXA.getIntValue();
-
+				for (Label beta : valuesMap.keySet()) {
+					int v = eXA.getUpperCaseValue(beta, aleph);
+					if (v == Constants.INT_NULL)
+						continue;
 					LabeledLowerCaseValue ACLowerCaseValueObj = eAC.getLowerCaseValue();
 					final Label alpha = ACLowerCaseValueObj.getLabel();
 					int x = eCA.getValue(alpha); // in the guarded, the lower bound is considered, no the guard ACLowerCaseValueObj.getValue();
@@ -568,10 +569,10 @@ public class CSTNPSU extends CSTNU {
 			LabeledIntTreeMap YZvaluesMap = eYZ.getUpperCaseValueMap().get(aleph);
 			if (YZvaluesMap == null)
 				continue;
-			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfYA : YZvaluesMap.entrySet()) {
-				final Label beta = upperCaseEntryOfYA.getKey();
-				int v = upperCaseEntryOfYA.getIntValue();
-
+			for (Label beta : YZvaluesMap.keySet()) {
+				int v = eYZ.getUpperCaseValue(beta, aleph);
+				if (v == Constants.INT_NULL)
+					continue;
 				for (ALetter nodeLetter : aleph) {
 					LabeledNode nC = this.g.getNode(nodeLetter.name);
 					if (nY == nC) // Z is the activation time point!

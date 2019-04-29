@@ -34,7 +34,7 @@ public class CSTNUGraphMLReaderTest {
 	@SuppressWarnings({ "javadoc" })
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
-		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader<LabeledIntTreeMap> reader = new CSTNUGraphMLReader<>(this.file, LabeledIntTreeMap.class);
 		LabeledIntGraph g = reader.readGraph();
 		Assert.assertEquals(1, g.getEdge("YX").getUpperCaseValueMap().size());
 		Assert.assertEquals(2, g.getEdge("XY").getLowerCaseValue().getValue());
@@ -43,7 +43,7 @@ public class CSTNUGraphMLReaderTest {
 	@SuppressWarnings({ "javadoc" })
 	@Test
 	public void testCSTN() throws IOException, ParserConfigurationException, SAXException {
-		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader<LabeledIntTreeMap> reader = new CSTNUGraphMLReader<>(this.file, LabeledIntTreeMap.class);
 		LabeledIntGraph g = reader.readGraph();
 		Assert.assertEquals(8, g.getEdgeCount());
 	}

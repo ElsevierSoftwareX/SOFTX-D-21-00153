@@ -14,7 +14,7 @@ import it.univr.di.labeledvalue.LabeledIntMap;
  * LabeledIntEdgePluggabble supplier.
  * 
  * @author posenato
- * @param <C>
+ * @param <C> type for managing labeled values.
  */
 public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier<LabeledIntEdge> {
 
@@ -27,10 +27,6 @@ public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier
 	/**
 	 * 
 	 */
-	private LabeledIntEdgePluggable internal;
-	/**
-	 * 
-	 */
 	private Class<C> labeledIntValueMapImpl;
 
 	/**
@@ -39,14 +35,14 @@ public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier
 	public LabeledIntEdgeSupplier(Class<C> labeledIntMapImplementation) {
 		super();
 		this.labeledIntValueMapImpl = labeledIntMapImplementation;
-		this.internal = new LabeledIntEdgePluggable(labeledIntMapImplementation);
 	}
 
 	/**
 	 * @return a new LabeledIntMap concrete object.
 	 */
+	@Override
 	public LabeledIntEdgePluggable get() {
-		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(this.labeledIntValueMapImpl);
+		return new LabeledIntEdgePluggable(this.labeledIntValueMapImpl);
 	}
 
 	/**
@@ -54,7 +50,7 @@ public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier
 	 * @return a new edge
 	 */
 	public LabeledIntEdgePluggable get(LabeledIntEdge edge) {
-		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(edge, this.labeledIntValueMapImpl);
+		return new LabeledIntEdgePluggable(edge, this.labeledIntValueMapImpl);
 	}
 
 	/**
@@ -62,15 +58,15 @@ public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier
 	 * @return  a new edge
 	 */
 	public LabeledIntEdgePluggable get(String name) {
-		return (LabeledIntEdgePluggable) this.internal.createLabeledIntEdge(name, this.labeledIntValueMapImpl);
+		return new LabeledIntEdgePluggable(name, this.labeledIntValueMapImpl);
 	}
 
 	/**
 	 * @param n dimension
 	 * @return a new LabeledIntEdge array of size n.
 	 */
-	public LabeledIntEdgePluggable[] get(int n) {
-		return (LabeledIntEdgePluggable[]) Array.newInstance(this.internal.getClass(), n);
+	public static LabeledIntEdgePluggable[] get(int n) {
+		return (LabeledIntEdgePluggable[]) Array.newInstance(LabeledIntEdgePluggable.class, n);
 	}
 
 	/**
@@ -80,8 +76,9 @@ public class LabeledIntEdgeSupplier<C extends LabeledIntMap> implements Supplier
 		return this.labeledIntValueMapImpl;
 	}
 
+	@Override
 	public String toString() {
-		return "Labeled value set managed as " + this.internal.labeledValueMapFactory.toString() + ".";
+		return "Labeled value set managed as " + this.labeledIntValueMapImpl.toString() + ".";
 	}
 
 }

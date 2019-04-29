@@ -40,7 +40,6 @@ import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -50,7 +49,8 @@ import it.univr.di.labeledvalue.Literal;
  * @author posenato
  * @version $Id: $Id
  */
-public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntEdge> implements DirectedGraph<LabeledNode, LabeledIntEdge>, Observer {
+public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntEdge>
+		implements DirectedGraph<LabeledNode, LabeledIntEdge>, Observer {
 
 	/**
 	 * Represents the association of an edge with its position in the adjacency matrix of the graph.
@@ -106,7 +106,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return an instance for childrenOfObserver field.
 	 */
-	private static final Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
+	private final static Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
 		return new Object2ObjectArrayMap<>();// in Label I showed that for small map, ArrayMap is faster than Object2ObjectRBTreeMap and
 												// Object2ObjectAVLTreeMap.
 	}
@@ -114,7 +114,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return an instance for propositionToNode field.
 	 */
-	private static final Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
+	private final static Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
 		return new Char2ObjectArrayMap<>();// I verified that Char2ObjectArrayMap is faster than Openhash when proposition are limited, as in this application.
 	}
 
@@ -149,9 +149,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private Object2ObjectMap<String, EdgeIndex> edge2index;
 
 	/**
-	 * Factory
+	 * Edge factory
 	 */
 	private LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory;
+
+	/**
+	 * Node factory
+	 */
+	private LabeledNodeSupplier<? extends LabeledIntMap> nodeFactory;
 
 	/**
 	 * A possible input file containing this graph.
@@ -204,10 +209,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 */
 	public <C extends LabeledIntMap> LabeledIntGraph(Class<C> internalMapImplementationClass) {
 		super(EdgeType.DIRECTED);
-		if (internalMapImplementationClass.isInterface())
-			throw new IllegalArgumentException("Parameter cannot be an interface. It must be a name of implementation class.");
 		this.internalMapImplementationClass = internalMapImplementationClass;
 		this.edgeFactory = new LabeledIntEdgeSupplier<>(internalMapImplementationClass);
+		this.nodeFactory = new LabeledNodeSupplier<>(internalMapImplementationClass);
 		this.order = 0;
 		this.adjacency = createAdjacency(10);
 		this.nodeName2index = new Object2IntOpenHashMap<>();
@@ -248,7 +252,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// clone all nodes
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
-			vNew = new LabeledNode(v);
+			vNew = this.nodeFactory.get(v);
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
@@ -285,7 +289,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param name a name for the graph
 	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
 	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
-	 * @param alphabet alfabet for upper case letter used to label values in the edges.
+	 * @param alphabet alphabet for upper case letter used to label values in the edges.
 	 */
 	public <C extends LabeledIntMap> LabeledIntGraph(final String name, Class<C> internalMapImplementationClass, ALabelAlphabet alphabet) {
 		this(internalMapImplementationClass);
@@ -501,7 +505,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// Clone all nodes
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
-			vNew = new LabeledNode(v);
+			vNew = this.nodeFactory.get(v);
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
@@ -530,7 +534,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// clone all nodes
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
-			vNew = new LabeledNode(v);
+			vNew = this.nodeFactory.get(v);
 			for (Label label : vNew.getPotential().keySet()) {
 				if (label.containsUnknown())
 					vNew.removePotential(label);
@@ -542,7 +546,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 
 		// clone all edges giving the right new endpoints corresponding the old ones.
-		LabeledIntEdge eNew;
+		AbstractLabeledIntEdge eNew;
 		int value;
 		Label label;
 		for (final LabeledIntEdge e : g.getEdges()) {
@@ -561,8 +565,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				eNew.mergeLabeledValue(entry.getKey(), value);
 			}
 			for (ALabel alabel : e.getUpperCaseValueMap().keySet()) {
-				LabeledIntTreeMap labeledValues = e.getUpperCaseValueMap().get(alabel);
-				for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+				for (Object2IntMap.Entry<Label> entry1 : e.getUpperCaseValueMap().get(alabel).entrySet()) {// entrySet read-only
 					value = entry1.getIntValue();
 					if (value == Constants.INT_NEG_INFINITE)
 						continue;
@@ -576,7 +579,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			eNew.setLowerCaseValue(e.getLowerCaseValue());
 			if (eNew.isEmpty())
 				continue;
-			addEdge((AbstractLabeledIntEdge) eNew, g.getSource(e).getName(), g.getDest(e).getName());
+			addEdge(eNew, g.getSource(e).getName(), g.getDest(e).getName());
 		}
 	}
 
@@ -712,6 +715,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
+	 * @return the nodeFactory
+	 */
+	public LabeledNodeSupplier<? extends LabeledIntMap> getNodeFactory() {
+		return this.nodeFactory;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -731,7 +741,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the set of edges as an array.
 	 */
 	public LabeledIntEdge[] getEdgesArray() {
-		final LabeledIntEdge[] edgesA = this.getEdges().toArray(this.edgeFactory.get(this.getEdgeCount()));
+		final LabeledIntEdge[] edgesA = this.getEdges().toArray(LabeledIntEdgeSupplier.get(this.getEdgeCount()));
 		return edgesA;
 	}
 
@@ -1016,7 +1026,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the set of vertices as an array ordered w.r.t the name of node in ascending order.
 	 */
 	public LabeledNode[] getVerticesArray() {
-		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[0]); //At pag. 248 of Effective Java, author shows that it is better to not pre-allocate.
+		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[0]);
 		return nodes;
 	}
 

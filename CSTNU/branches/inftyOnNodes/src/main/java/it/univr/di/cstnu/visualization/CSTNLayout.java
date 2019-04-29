@@ -284,7 +284,8 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	 * @param marked
 	 * @param nObs
 	 */
-	private void redraw(LabeledNode firstNode, double nodeX, double nodeY, LabeledIntGraph g, ObjectSet<LabeledNode> marked, int nObs) {
+	private void redraw(LabeledNode firstNode, double nodeX, double nodeY, LabeledIntGraph g, ObjectSet<LabeledNode> marked,
+			int nObs) {
 		if (firstNode == null)
 			return;
 		double shiftX = nodeX - firstNode.getX();

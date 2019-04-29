@@ -39,11 +39,6 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	private static final long serialVersionUID = 2L;
 
 	/**
-	 * Factory for labeled value set.
-	 */
-	LabeledIntMapFactory<? extends LabeledIntMap> labeledValueMapFactory;
-
-	/**
 	 * Labeled value.
 	 */
 	private LabeledIntMap labeledValue;
@@ -51,20 +46,9 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	/**
 	 * @param labeledIntMapImplementation
 	 */
-	public <C extends LabeledIntMap> LabeledIntEdgePluggable(Class<C> labeledIntMapImplementation) {
+	<C extends LabeledIntMap> LabeledIntEdgePluggable(Class<C> labeledIntMapImplementation) {
 		super();
-		this.labeledValueMapFactory = new LabeledIntMapFactory<>(labeledIntMapImplementation);
-		this.labeledValue = this.labeledValueMapFactory.get();
-	}
-
-	/**
-	 * A simple constructor cloner. The internal labeled int value map is implemented as in e if it is not null, LabeledIntTreeMap otherwise.
-	 *
-	 * @param e edge to clone. If null, an empty edge is created with type = normal.
-	 */
-	@SuppressWarnings("unchecked")
-	public <C extends LabeledIntMap> LabeledIntEdgePluggable(final LabeledIntEdge e) {
-		this(e, ((Class<C>) ((e == null) ? LabeledIntTreeMap.class : e.getLabeledIntValueMapFactory().getReturnedObjectClass())));
+		this.labeledValue = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
 	}
 
 	/**
@@ -73,13 +57,12 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @param e edge to clone. If null, an empty edge is created with type = normal.
 	 * @param labeledIntMapImplementation
 	 */
-	public <C extends LabeledIntMap> LabeledIntEdgePluggable(final LabeledIntEdge e, Class<C> labeledIntMapImplementation) {
+	<C extends LabeledIntMap> LabeledIntEdgePluggable(final LabeledIntEdge e, Class<C> labeledIntMapImplementation) {
 		super(e);
-		this.labeledValueMapFactory = new LabeledIntMapFactory<>(labeledIntMapImplementation);
 		if (e != null) {
-			this.labeledValue = this.labeledValueMapFactory.get(e.getLabeledValueMap());
+			this.labeledValue = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get(e.getLabeledValueMap());
 		} else {
-			this.labeledValue = this.labeledValueMapFactory.get();
+			this.labeledValue = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
 		}
 	}
 
@@ -89,10 +72,9 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @param n a {@link java.lang.String} object.
 	 * @param labeledIntMapImplementation
 	 */
-	public <C extends LabeledIntMap> LabeledIntEdgePluggable(final String n, Class<C> labeledIntMapImplementation) {
+	<C extends LabeledIntMap> LabeledIntEdgePluggable(final String n, Class<C> labeledIntMapImplementation) {
 		super(n);
-		this.labeledValueMapFactory = new LabeledIntMapFactory<>(labeledIntMapImplementation);
-		this.labeledValue = this.labeledValueMapFactory.get();
+		this.labeledValue = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
 	}
 
 	/**
@@ -102,7 +84,7 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 	 * @param t the type of the edge
 	 * @param labeledIntMapImplementation
 	 */
-	public <C extends LabeledIntMap> LabeledIntEdgePluggable(final String name, final ConstraintType t, Class<C> labeledIntMapImplementation) {
+	<C extends LabeledIntMap> LabeledIntEdgePluggable(final String name, final ConstraintType t, Class<C> labeledIntMapImplementation) {
 		this(name, labeledIntMapImplementation);
 		this.setConstraintType(t);
 	}
@@ -125,62 +107,6 @@ public class LabeledIntEdgePluggable extends AbstractLabeledIntEdge implements L
 		this.labeledValue.clear();
 	}
 
-	@Override
-	public void copyLabeledValueMap(final LabeledIntMap inputLabeledValue) {
-		LabeledIntMap map = this.labeledValueMapFactory.get();
-		for (Object2IntMap.Entry<Label> entry : inputLabeledValue.entrySet()) {
-			map.put(entry.getKey(), entry.getIntValue());
-		}
-		this.labeledValue = map;
-	}
-
-	@Override
-	public LabeledIntEdge createLabeledIntEdge() {
-		throw new UnsupportedOperationException("This class needs to know which labeled int map implementation to use.");
-	}
-
-	/**
-	 * @param labeledIntMapImplementation
-	 * @return a new edge
-	 * @see LabeledIntEdgePluggable#LabeledIntEdgePluggable(LabeledIntEdge)
-	 */
-	@SuppressWarnings("static-method")
-	public <C extends LabeledIntMap> LabeledIntEdge createLabeledIntEdge(Class<C> labeledIntMapImplementation) {
-		return new LabeledIntEdgePluggable(labeledIntMapImplementation);
-	}
-
-	/**
-	 * @see LabeledIntEdgePluggable#LabeledIntEdgePluggable(LabeledIntEdge)
-	 */
-	@Override
-	public LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e) {
-		return new LabeledIntEdgePluggable(e);
-	}
-
-	/**
-	 * @param e
-	 * @param labeledIntMapImplementation
-	 * @return a new edge copy of input edge e.
-	 */
-	@SuppressWarnings("static-method")
-	public <C extends LabeledIntMap> LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e, Class<C> labeledIntMapImplementation) {
-		return new LabeledIntEdgePluggable(e, labeledIntMapImplementation);
-	}
-
-	/**
-	 * @param name1
-	 * @param labeledIntMapImplementation
-	 * @return a new empty edge with name name.
-	 */
-	@SuppressWarnings("static-method")
-	public <C extends LabeledIntMap> LabeledIntEdge createLabeledIntEdge(String name1, Class<C> labeledIntMapImplementation) {
-		return new LabeledIntEdgePluggable(name1, labeledIntMapImplementation);
-	}
-
-	@Override
-	public LabeledIntMapFactory<? extends LabeledIntMap> getLabeledIntValueMapFactory() {
-		return this.labeledValueMapFactory;
-	}
 
 	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.

@@ -73,7 +73,7 @@ import it.univr.di.cstnu.algorithms.CSTNEpsilon3R;
 import it.univr.di.cstnu.algorithms.CSTNIR;
 import it.univr.di.cstnu.algorithms.CSTNIR3R;
 import it.univr.di.cstnu.algorithms.CSTNPSU;
-import it.univr.di.cstnu.algorithms.CSTNPotential;
+import it.univr.di.cstnu.algorithms.CSTNSPFA;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNU2CSTN;
@@ -85,6 +85,7 @@ import it.univr.di.cstnu.graph.LabeledIntEdge;
 import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.LabeledNodeSupplier;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
@@ -171,7 +172,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-			CSTNEditor.this.checkedGraph.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
+			CSTNEditor.this.checkedGraph
+					.takeIn(new LabeledIntGraph(CSTNEditor.this.inputGraph, CSTNEditor.labeledIntValueMap));
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
 			jl.setBackground(Color.orange);
@@ -561,7 +563,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
 			jl.setBackground(Color.orange);
-			CSTNEditor.this.cstn = new CSTNPotential(CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstn = new CSTNSPFA(CSTNEditor.this.checkedGraph);
 			CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
 			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
@@ -1386,6 +1388,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Default constructor
 	 */
+	@SuppressWarnings("unchecked")
 	public CSTNEditor() {
 		super("Simple CSTNU Editor. CSTN " + CSTN.VERSIONandDATE + ". CSTNU " + CSTNU.VERSIONandDATE);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -1399,8 +1402,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		}
 		CSTNEditor.preferredSize = new Dimension((bounds.width - 30) / 2, bounds.height - 260);
 
-		this.inputGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
-		this.checkedGraph = new LabeledIntGraph(CSTNEditor.labeledIntValueMap);
+		this.inputGraph = new LabeledIntGraph((Class<? extends LabeledIntMap>) CSTNEditor.labeledIntValueMap);
+		this.checkedGraph = new LabeledIntGraph((Class<? extends LabeledIntMap>) CSTNEditor.labeledIntValueMap);
 		this.layoutEditor = new StaticLayout<>(this.inputGraph, CSTNEditor.preferredSize);
 		this.layoutViewer = new StaticLayout<>(this.checkedGraph, CSTNEditor.preferredSize);
 		this.vvEditor = new VisualizationViewer<>(this.layoutEditor, CSTNEditor.preferredSize);
@@ -1468,7 +1471,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		// FIRST ROW OF COMMANDS
 		// mode box for the editor
-		@SuppressWarnings("unchecked")
 		JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vvEditor.getGraphMouse()).getModeComboBox();
 		rowForAppButtons.add(modeBox);
 
@@ -1508,7 +1510,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		rowForAppButtons.add(buttonCheck);
 
 		// mode box for the distance viewer
-		@SuppressWarnings("unchecked")
 		JComboBox<Mode> modeBoxViewer = ((EditingModalGraphMouse<LabeledNode, LabeledIntEdge>) this.vvViewer.getGraphMouse()).getModeComboBox();
 		rowForAppButtons.add(modeBoxViewer);
 
@@ -1671,7 +1672,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// MOUSE setting
 		// Create a graph mouse and add it to the visualization component
 		Supplier<LabeledIntEdge> edgeFactory = new LabeledIntEdgeSupplier<>(CSTNEditor.labeledIntValueMap);
-		EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon, LabeledNode.getFactory(), edgeFactory,
+		EditingModalGraphMouse<LabeledNode, LabeledIntEdge> graphMouse = new EditingModalGraphMouse<>(renderCon,
+				new LabeledNodeSupplier<>(CSTNEditor.labeledIntValueMap), edgeFactory,
 				CSTNEditor.this, firstViewer);
 		LOG.severe("buildRenderContext.graphMouse " + graphMouse);
 		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
@@ -1688,7 +1690,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * @throws IOException
 	 */
 	void loadGraphG(final File fileName) throws IOException, ParserConfigurationException, SAXException {
-		final CSTNUGraphMLReader graphReader = new CSTNUGraphMLReader(fileName, CSTNEditor.labeledIntValueMap);
+		final CSTNUGraphMLReader<? extends LabeledIntMap> graphReader = new CSTNUGraphMLReader<>(fileName, CSTNEditor.labeledIntValueMap);
 		CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
 		CSTNEditor.this.inputGraph.setInputFile(fileName);
 	}

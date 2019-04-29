@@ -650,7 +650,7 @@ public class CSTN {
 				LOG.finer("Loading graph...");
 			}
 		}
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstn.fInput, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader = new CSTNUGraphMLReader<>(cstn.fInput, LabeledIntTreeMap.class);
 		cstn.setG(graphMLReader.readGraph());
 
 		if (Debug.ON) {
@@ -765,10 +765,11 @@ public class CSTN {
 	boolean versionReq = false;
 
 	/**
-	 * DCchecking can be done also assuming that all node labels are empty.
-	 * This assumption usually make the checking slower in medium size network, but faster in small ones.
-	 * So, in standard class it is assumed to consider also node labels.
-	 * Derived classes can put this values false for checking the network with the alternative approach.
+	 * DC checking can be done also assuming that all node labels are empty.
+	 * This assumption usually make the checking slower in medium size network, but faster in small ones.<br>
+	 * During the {@link #initAndCheck()}, if no node has a label, this variable is set to false.
+	 * If before {@link #initAndCheck()} the variable is already set false, {@link #initAndCheck()} does not change its value
+	 * even if any node has label.
 	 */
 	boolean withNodeLabels = true;
 
@@ -901,7 +902,7 @@ public class CSTN {
 			this.Z = this.g.getNode(CSTN.ZeroNodeName);
 			if (this.Z == null) {
 				// We add by authority!
-				this.Z = new LabeledNode(CSTN.ZeroNodeName);
+				this.Z = this.g.getNodeFactory().get(CSTN.ZeroNodeName);
 				this.Z.setX(10);
 				this.Z.setY(10);
 				this.g.addVertex(this.Z);
@@ -921,6 +922,17 @@ public class CSTN {
 			}
 		}
 
+		if (this.withNodeLabels) {
+			// check if at least one node has label
+			boolean foundLabel = false;
+			for (LabeledNode node : this.g.getVertices()) {
+				if (!node.getLabel().equals(Label.emptyLabel)) {
+					foundLabel = true;
+					break;
+				}
+			}
+			this.withNodeLabels = !foundLabel;
+		}
 		// Checks well definiteness of edges and determine maxWeight
 		int minNegWeight = 0;
 		for (final LabeledIntEdge e : this.g.getEdges()) {
@@ -945,12 +957,13 @@ public class CSTN {
 				continue;
 			}
 			// WD1 is checked and adjusted here
-			try {
-				checkWellDefinitionProperty1and3(s, d, e, true);
-			} catch (final WellDefinitionException ex) {
-				throw new IllegalArgumentException("Edge " + e + " has the following problem: " + ex.getMessage());
+			if (this.withNodeLabels) {
+				try {
+					checkWellDefinitionProperty1and3(s, d, e, true);
+				} catch (final WellDefinitionException ex) {
+					throw new IllegalArgumentException("Edge " + e + " has the following problem: " + ex.getMessage());
+				}
 			}
-
 			if (e.isEmpty()) {
 				// The merge removed labels...
 				this.g.removeEdge(e);
@@ -977,7 +990,8 @@ public class CSTN {
 		// Determine horizon value
 		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product >= Constants.INT_POS_INFINITE) {
-			throw new ArithmeticException("Horizon value is not representable by an integer.");
+			throw new ArithmeticException(
+					"Horizon value is not representable by an integer. maxWeight = " + this.maxWeight + ", #vertices = " + this.g.getVertexCount());
 		}
 		this.horizon = (int) product;
 		if (Debug.ON) {
@@ -991,31 +1005,34 @@ public class CSTN {
 		/*
 		 * Checks well definiteness of nodes
 		 */
-		boolean thereIsASignificantNodeLabel = false;
 		final Collection<LabeledNode> nodeSet = this.g.getVertices();
 		for (final LabeledNode node : nodeSet) {
 
-			// 1. Checks that observation node doesn't have the observed proposition in its label!
-			final char obs = node.getPropositionObserved();
-			Label label = node.getLabel();
-			if (obs != Constants.UNKNOWN && label.contains(obs)) {
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.WARNING)) {
-						LOG.log(Level.WARNING, "Literal '" + obs + "' cannot be part of the label '" + label + "' of the observation node '" + node.getName()
-								+ "'. Removed!");
+			if (this.withNodeLabels) {
+				// 1. Checks that observation node doesn't have the observed proposition in its label!
+				final char obs = node.getPropositionObserved();
+				if (obs != Constants.UNKNOWN) {
+					Label label = node.getLabel();
+					if (label.contains(obs)) {
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.WARNING)) {
+								LOG.log(Level.WARNING,
+										"Literal '" + obs + "' cannot be part of the label '" + label + "' of the observation node '" + node.getName()
+												+ "'. Removed!");
+							}
+						}
+						label = label.remove(obs);
+						node.setLabel(label);
 					}
 				}
-				label = label.remove(obs);
-				node.setLabel(label);
-			}
 
-			// WD2 is checked and adjusted here
-			try {
-				checkWellDefinitionProperty2(node, true);
-			} catch (final WellDefinitionException ex) {
-				throw new WellDefinitionException("WellDefinition 2 problem found at node " + node + ": " + ex.getMessage());
+				// WD2 is checked and adjusted here
+				try {
+					checkWellDefinitionProperty2(node, true);
+				} catch (final WellDefinitionException ex) {
+					throw new WellDefinitionException("WellDefinition 2 problem found at node " + node + ": " + ex.getMessage());
+				}
 			}
-
 			// 3. Checks that each node has an edge to Z and and edge from Z with bound = horizon.
 			if (node != this.Z) {
 				// LOWER BOUND FROM Z
@@ -1072,17 +1089,6 @@ public class CSTN {
 					}
 				}
 			}
-
-			if (this.withNodeLabels) {
-				// maybe all node labels are empty... so this.withNodeLabels can be reset.
-				thereIsASignificantNodeLabel |= !node.getLabel().isEmpty();
-			}
-		}
-
-		// if withNodeLabel has been set false in a derived class, such assignment has to be preserved.
-		if (this.withNodeLabels) {
-			// it can be reset...in that case, algorithm is faster.
-			this.withNodeLabels &= thereIsASignificantNodeLabel;
 		}
 
 		// it is usefull to apply R0 before starting, otherwise first cycles of algorithm can propagate dirty values before R0 can clean it
@@ -1436,8 +1442,11 @@ public class CSTN {
 			throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelInconsistent);
 		}
 		// check the ordinary labeled values
-		for (final Object2IntMap.Entry<Label> entry : eSN.getLabeledValueMap().entrySet()) {
-			Label currentLabel = entry.getKey();
+		for (Label currentLabel : eSN.getLabeledValueMap().keySet()) {
+			int v = eSN.getValue(currentLabel);
+			if (v == Constants.INT_NULL) {
+				continue;
+			}
 			if (!currentLabel.isConsistentWith(conjunctedLabel)) {
 				String msg = "Found a labeled value in " + eSN + " that does not subsume the conjunction of node labels, "
 						+ conjunctedLabel + ".";
@@ -1453,7 +1462,7 @@ public class CSTN {
 				throw new WellDefinitionException(msg, WellDefinitionException.Type.LabelInconsistent);
 			}
 			if (!currentLabel.subsumes(conjunctedLabel)) {
-				final String msg = "Labeled value " + pairAsString(currentLabel, entry.getIntValue()) + " of edge " + eSN.getName()
+				final String msg = "Labeled value " + pairAsString(currentLabel, v) + " of edge " + eSN.getName()
 						+ " does not subsume the endpoint labels '" + conjunctedLabel + "'.";
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING)) {
@@ -1461,7 +1470,6 @@ public class CSTN {
 					}
 				}
 				if (hasToBeFixed) {
-					int v = entry.getIntValue();
 					eSN.removeLabeledValue(currentLabel);
 					currentLabel = currentLabel.conjunction(conjunctedLabel);
 					eSN.putLabeledValue(currentLabel, v);
@@ -1491,7 +1499,8 @@ public class CSTN {
 				// Checks WD3 and adjusts
 				final Label obsLabel = obs.getLabel();
 				if (!currentLabel.subsumes(obsLabel)) {
-					final String msg = "Label " + currentLabel + " of edge " + eSN + " does not subsume label of obs node " + obs + ". It has been fixed.";
+					final String msg = "Label " + currentLabel + " of edge " + eSN + " does not subsume label " + obsLabel + " of obs node " + obs
+							+ ". It has been fixed.";
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING, msg);
@@ -1510,7 +1519,6 @@ public class CSTN {
 				}
 			}
 			if (!currentLabelModified.equals(currentLabel)) {
-				int v = entry.getIntValue();
 				eSN.removeLabeledValue(currentLabel);
 				eSN.putLabeledValue(currentLabelModified, v);
 				if (Debug.ON) {
@@ -1608,7 +1616,7 @@ public class CSTN {
 				}
 				if (hasToBeFixed) {
 					if (e == null) {
-						e = makeNewEdge(node.getName() + "_" + obs.getName(), LabeledIntEdge.ConstraintType.derived);
+						e = makeNewEdge(node.getName() + "_" + obs.getName(), LabeledIntEdge.ConstraintType.internal);
 						this.g.addEdge(e, node, obs);
 					}
 					e.mergeLabeledValue(nodeLabel, -this.reactionTime);// this is not necessary, but it can speed up the DC checking.
@@ -2147,7 +2155,7 @@ public class CSTN {
 				boolean qLabel = false;
 				Label newLabelAC = null;
 				if (this.propagationOnlyToZ || mainConditionForRestrictedLP(u, v)) {// Even if we published that when nC == Z, the label must be consistent, we
-					// also showed (but bnot published that if u<0, then label can contains unknown even when nC==Z.
+					// also showed (but not published that if u<0, then label can contains unknown even when nC==Z.
 					newLabelAC = labelAB.conjunction(labelBC);
 					if (newLabelAC == null) {
 						continue;
@@ -3145,14 +3153,16 @@ public class CSTN {
 					// Second part of Rule 4 that considers node's potentials.
 					for (LabeledNode node : this.g.getNodes()) {
 						boolean modified = false;
-						for (Entry<Label> entry : node.getPotential().entrySet()) {
+						for (Label alpha : node.getPotential().keySet()) {
+							if (node.getPotential(alpha) == Constants.INT_NULL) {
+								continue; // a previous cycle removed it!
+							}
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									firstLog = "Labeled Potential Propagation Rule 4 considers node " + node.getName()
 											+ "\nand observation t.p.: " + nY.getName();
 								}
 							}
-							Label alpha = entry.getKey();
 							if (!alpha.contains(proposition))
 								continue;
 							alpha = alpha.remove(proposition);

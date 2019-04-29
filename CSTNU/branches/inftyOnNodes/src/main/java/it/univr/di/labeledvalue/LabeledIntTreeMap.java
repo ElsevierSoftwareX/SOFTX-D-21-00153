@@ -208,7 +208,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * {@inheritDoc}<br>
+	 * <br>
 	 * Up to 1000 items in the map it is better to use {@link #entrySet()} instead of {@link #keySet()} and {@link #get(Label)}.<br>
 	 * With 1000 or more items, it is better to use {@link #keySet()} approach.
 	 */
@@ -218,7 +219,12 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		return entrySet(coll);
 	}
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}<br>
+	 * <br>
+	 * 
+	 * @see LabeledIntTreeMap#entrySet()
+	 */
 	@Override
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
 		setToReuse.clear();
@@ -303,7 +309,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * @return a set view of all labels present into this map.
+	 * {@inheritDoc}
 	 */
 	@Override
 	public ObjectSet<Label> keySet() {
@@ -312,7 +318,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * @return a set view of all labels present into this map.
+	 * {@inheritDoc}
 	 */
 	@Override
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {

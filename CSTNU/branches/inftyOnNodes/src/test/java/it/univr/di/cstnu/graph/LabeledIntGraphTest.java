@@ -78,8 +78,8 @@ public class LabeledIntGraphTest {
 	public void create() {
 		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
 
-		g.addVertex(new LabeledNode("Z"));
-		g.addVertex(new LabeledNode("X"));
+		g.addVertex(g.getNodeFactory().get("Z"));
+		g.addVertex(g.getNodeFactory().get("X"));
 		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "Z", "X");
 		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "X", "Z");
 		g.addEdge(edgeWithOUTNodeSetFactory.get("XZ"), "X", "Z");
@@ -93,8 +93,8 @@ public class LabeledIntGraphTest {
 	public void removeNode() {
 		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
 
-		LabeledNode X = new LabeledNode("X");
-		LabeledNode Z = new LabeledNode("Z");
+		LabeledNode X = g.getNodeFactory().get("X");
+		LabeledNode Z = g.getNodeFactory().get("Z");
 		g.addVertex(Z);
 		g.addVertex(X);
 		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), Z, X);
@@ -112,19 +112,19 @@ public class LabeledIntGraphTest {
 	public void addManyNodes() {
 		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
 
-		LabeledNode X = new LabeledNode("X");
-		LabeledNode Z = new LabeledNode("Z");
+		LabeledNode X = g.getNodeFactory().get("X");
+		LabeledNode Z = g.getNodeFactory().get("Z");
 		g.addVertex(Z);
 		g.addVertex(X);
-		g.addVertex(new LabeledNode("A3"));
-		g.addVertex(new LabeledNode("A4"));
-		g.addVertex(new LabeledNode("A5"));
-		g.addVertex(new LabeledNode("A6"));
-		g.addVertex(new LabeledNode("A7"));
-		g.addVertex(new LabeledNode("A8"));
-		g.addVertex(new LabeledNode("A9"));
-		g.addVertex(new LabeledNode("A10"));
-		g.addVertex(new LabeledNode("A11"));
+		g.addVertex(g.getNodeFactory().get("A3"));
+		g.addVertex(g.getNodeFactory().get("A4"));
+		g.addVertex(g.getNodeFactory().get("A5"));
+		g.addVertex(g.getNodeFactory().get("A6"));
+		g.addVertex(g.getNodeFactory().get("A7"));
+		g.addVertex(g.getNodeFactory().get("A8"));
+		g.addVertex(g.getNodeFactory().get("A9"));
+		g.addVertex(g.getNodeFactory().get("A10"));
+		g.addVertex(g.getNodeFactory().get("A11"));
 		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
 		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), "X", "Z");
 		g.addEdge(new LabeledIntEdgePluggable("XZ", LabeledIntTreeMap.class), X, Z);
@@ -180,12 +180,12 @@ public class LabeledIntGraphTest {
 	@Test
 	public final void testGetChildrenOf() {
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
-		LabeledNode P = new LabeledNode("P?", 'p');
-		LabeledNode X = new LabeledNode("X");
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
+		LabeledNode P = g.getNodeFactory().get("P?", 'p');
+		LabeledNode X = g.getNodeFactory().get("X");
+		LabeledNode Y = g.getNodeFactory().get("Y");
+		LabeledNode A = g.getNodeFactory().get("A?", 'a');
 		A.setLabel(Label.parse("p"));
-		LabeledNode B = new LabeledNode("B?", 'b');
+		LabeledNode B = g.getNodeFactory().get("B?", 'b');
 		B.setLabel(Label.parse("¬pa"));
 
 		g.addVertex(P);
@@ -215,8 +215,8 @@ public class LabeledIntGraphTest {
 	@Test
 	public final void cloneTest() {
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
-		LabeledNode Z = new LabeledNode("Z");
-		LabeledNode U = new LabeledNode("U");
+		LabeledNode Z = g.getNodeFactory().get("Z");
+		LabeledNode U = g.getNodeFactory().get("U");
 		g.addVertex(Z);
 		g.addVertex(U);
 		g.setZ(Z);
@@ -260,19 +260,19 @@ public class LabeledIntGraphTest {
 	public void managinDifferentEdges() {
 		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
 
-		LabeledNode X = new LabeledNode("X");
-		LabeledNode Z = new LabeledNode("Z");
+		LabeledNode X = g.getNodeFactory().get("X");
+		LabeledNode Z = g.getNodeFactory().get("Z");
 		g.addVertex(Z);
 		g.addVertex(X);
-		g.addVertex(new LabeledNode("A3"));
-		g.addVertex(new LabeledNode("A4"));
-		g.addVertex(new LabeledNode("A5"));
-		g.addVertex(new LabeledNode("A6"));
-		g.addVertex(new LabeledNode("A7"));
-		g.addVertex(new LabeledNode("A8"));
-		g.addVertex(new LabeledNode("A9"));
-		g.addVertex(new LabeledNode("A10"));
-		g.addVertex(new LabeledNode("A11"));
+		g.addVertex(g.getNodeFactory().get("A3"));
+		g.addVertex(g.getNodeFactory().get("A4"));
+		g.addVertex(g.getNodeFactory().get("A5"));
+		g.addVertex(g.getNodeFactory().get("A6"));
+		g.addVertex(g.getNodeFactory().get("A7"));
+		g.addVertex(g.getNodeFactory().get("A8"));
+		g.addVertex(g.getNodeFactory().get("A9"));
+		g.addVertex(g.getNodeFactory().get("A10"));
+		g.addVertex(g.getNodeFactory().get("A11"));
 		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
 		g.addEdge(new LabeledIntEdgePluggable("XZ", LabeledIntTreeMap.class), X, Z);
 		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
@@ -330,19 +330,19 @@ public class LabeledIntGraphTest {
 	public void reverse() {
 		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
 
-		LabeledNode X = new LabeledNode("X");
-		LabeledNode Z = new LabeledNode("Z");
+		LabeledNode X = g.getNodeFactory().get("X");
+		LabeledNode Z = g.getNodeFactory().get("Z");
 		g.addVertex(Z);
 		g.addVertex(X);
-		g.addVertex(new LabeledNode("A3"));
-		g.addVertex(new LabeledNode("A4"));
-		g.addVertex(new LabeledNode("A5"));
-		g.addVertex(new LabeledNode("A6"));
-		g.addVertex(new LabeledNode("A7"));
-		g.addVertex(new LabeledNode("A8"));
-		g.addVertex(new LabeledNode("A9"));
-		g.addVertex(new LabeledNode("A10"));
-		g.addVertex(new LabeledNode("A11"));
+		g.addVertex(g.getNodeFactory().get("A3"));
+		g.addVertex(g.getNodeFactory().get("A4"));
+		g.addVertex(g.getNodeFactory().get("A5"));
+		g.addVertex(g.getNodeFactory().get("A6"));
+		g.addVertex(g.getNodeFactory().get("A7"));
+		g.addVertex(g.getNodeFactory().get("A8"));
+		g.addVertex(g.getNodeFactory().get("A9"));
+		g.addVertex(g.getNodeFactory().get("A10"));
+		g.addVertex(g.getNodeFactory().get("A11"));
 		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
 		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
 		g.addEdge(new LabeledIntEdgePluggable("Z4", LabeledIntTreeMap.class), "Z", "A4");

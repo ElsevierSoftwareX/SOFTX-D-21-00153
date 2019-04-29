@@ -104,27 +104,28 @@ public interface LabeledIntMap {
 	public LabeledIntMap createLabeledIntMap(LabeledIntMap lim);
 
 	/**
-	 * It has the same specification of {@link java.util.Map#entrySet()}.
+	 * The set of all entries of the map. The set can be a view of the map,
+	 * so any modification of the map can be reflected on the returned entrySet.<br>
+	 * In other word, don't modify the map during the use of this returned set.
 	 * 
 	 * @see java.util.Map#entrySet()
 	 * @see ObjectSet
 	 * @see it.unimi.dsi.fastutil.objects.Object2IntMap.Entry
-	 * @return a set representation of this map.
+	 * @return The set of all entries of the map.
 	 */
 	public ObjectSet<Entry<Label>> entrySet();
 
 
 	/**
-	 * It has the same specification of {@link java.util.Map#entrySet()}.
-	 * <p>
-	 * It accepts setToReuse in order to reuse it (it is an attempt to save memory because on March, 01 2016 I verified that with some instances there occurs
-	 * "GC overhead limit exceeded").
+	 * The set of all entries of the map. The set can be a view of the map,
+	 * so any modification of the map can be reflected on the returned entrySet().<br>
+	 * In other word, don't modify the map during the use of this returned set.
 	 * 
 	 * @param setToReuse
 	 * @see java.util.Map#entrySet()
-	 * @see ObjectSet
+	 * @see ObjectSet an containter for the returned set
 	 * @see it.unimi.dsi.fastutil.objects.Object2IntMap.Entry
-	 * @return a set representation of this map.
+	 * @return The set of all entries of the map.
 	 */
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse);
 
@@ -266,7 +267,27 @@ public interface LabeledIntMap {
 	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
 	 * @return minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
 	 */
-	public int getMinValueSubsumedBy(final Label l);
+	default public int getMinValueSubsumedBy(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		int min = this.get(l);
+		if (min == Constants.INT_NULL) {
+			// the label does not exits, try all consistent labels
+			min = Constants.INT_POS_INFINITE;
+			int v1;
+			Label l1 = null;
+			for (final Entry<Label> e : this.entrySet()) {
+				l1 = e.getKey();
+				if (l.subsumes(l1)) {
+					v1 = e.getIntValue();
+					if (min > v1) {
+						min = v1;
+					}
+				}
+			}
+		}
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+	}
 		
 	/**
 	 * @return true if the map has no elements.
@@ -274,17 +295,15 @@ public interface LabeledIntMap {
 	public boolean isEmpty();
 
 	/**
-	 * @return the set view of all labels in the map.
+	 * A a copy of all labels in the map. The set must not be connected with the map.
+	 * 
+	 * @return a copy of all labels in the map.
 	 */
 	public ObjectSet<Label> keySet();
 
 	/**
-	 * <p>
-	 * It accepts setToReuse in order to reuse it (it is an attempt to save memory because on March, 01 2016 I verified that with some instances there occurs
-	 * "GC overhead limit exceeded").
-	 * 
-	 * @param setToReuse
-	 * @return the set view of all labels in the map.
+	 * @param setToReuse a set to be reused for filling with the copy of labels
+	 * @return a copy of all labels in the map. The set must not be connected with the map.
 	 */
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse);
 

@@ -395,9 +395,9 @@ public class Checker {
 			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
-		CSTNUGraphMLReader graphMLReader;
+		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader;
 		try {
-			graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);
+			graphMLReader = new CSTNUGraphMLReader<>(file, labeledIntValueMap);
 		} catch (FileNotFoundException e2) {
 			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
 			LOG.warning(msg);
@@ -748,7 +748,7 @@ public class Checker {
 		}
 		CSTN cstn;
 		if (tester.potential)// the implicit semantics is IR
-			return new CSTNPotential(g, tester.timeOut);
+			return new CSTNSPFA(g, tester.timeOut);
 		switch (tester.dcSemantics) {
 		case ε:
 			if (tester.onlyLPQR0QR3OrToZ) {

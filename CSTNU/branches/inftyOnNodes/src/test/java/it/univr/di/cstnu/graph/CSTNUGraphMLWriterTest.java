@@ -30,10 +30,10 @@ public class CSTNUGraphMLWriterTest {
 		Label p = Label.valueOf('p', Literal.NEGATED);
 
 		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
-		LabeledNode Z = new LabeledNode("Z");
-		LabeledNode Ω = new LabeledNode("Ω");
-		LabeledNode X = new LabeledNode("X");
-		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode Z = g.getNodeFactory().get("Z");
+		LabeledNode Ω = g.getNodeFactory().get("Ω");
+		LabeledNode X = g.getNodeFactory().get("X");
+		LabeledNode Y = g.getNodeFactory().get("Y");
 		Y.setObservable('p');
 		X.setLabel(p);
 		LabeledIntEdgePluggable xy = new LabeledIntEdgePluggable("XY", LabeledIntTreeMap.class);

@@ -31,114 +31,19 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  */
 public class Luke2GraphML {
 	/**
-	 * Version
-	 */
-	static final String VERSIONandDATE = "1.1, March, 11 2016";
-
-	/**
 	 * class logger
 	 */
 	static final Logger LOG = Logger.getLogger("it.univr.di.cstnu.graph.Luke2GraphML");
 
 	/**
-	 * The input file names. Each file has to contain a CSTN graph in GraphML
-	 * format.
+	 * Version
 	 */
-	@Argument(required = true, index = 0, usage = "Input file. It has to be a CSTN graph in Luke's format.", metaVar = "CSTN_file_name")
-	private String fileNameInput;
-
-	/**
-	 * Output file where to write the CSTN in GraphML format.
-	 */
-	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in GraphML format.", metaVar = "outputFile")
-	private File fOutput = null;
-
-	/**
-	 * Output stream to fOutput
-	 */
-	private PrintStream output = null;
-
-	/**
-	 * Software Version.
-	 */
-	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
-	private boolean versionReq = false;
-
-	/**
-	 * Class for representing edge labeled values.
-	 */
-	static private final Class<? extends LabeledIntMap> labeledIntValueMapClass = LabeledIntTreeMap.class;
+	static final String VERSIONandDATE = "1.1, March, 11 2016";
 
 	/**
 	 * 
 	 */
-	private File inputCSTNFile;
-
-	/**
-	 * Simple method to manage command line parameters using args4j library.
-	 * 
-	 * @param args
-	 * @return false if a parameter is missing or it is wrong. True if every
-	 *         parameters are given in a right format.
-	 */
-	private boolean manageParameters(String[] args) {
-		CmdLineParser parser = new CmdLineParser(this);
-		try {
-			parser.parseArgument(args);
-		} catch (CmdLineException e) {
-			// if there's a problem in the command line, you'll get this
-			// exception. this will report an error message.
-			System.err.println(e.getMessage());
-			System.err
-					.println("java -cp CSTNU-<version>.jar -cp it.univr.di.cstnu.Luke2GraphML [options...] argument.");
-			// print the list of available options
-			parser.printUsage(System.err);
-			System.err.println();
-
-			// print option sample. This is useful some time
-			// System.err.println("Example: java -jar Checker.jar" +
-			// parser.printExample(OptionHandlerFilter.REQUIRED) +
-			// " <CSTN_file_name0> <CSTN_file_name1>...");
-			return false;
-		}
-		LOG.finest("File name: " + this.fileNameInput);
-		this.inputCSTNFile = new File(this.fileNameInput);
-		if (!this.inputCSTNFile.exists()) {
-			System.err.println("File " + this.inputCSTNFile + " does not exit.");
-			parser.printUsage(System.err);
-			System.err.println();
-			return false;
-		}
-		LOG.finest("File: " + this.inputCSTNFile);
-
-		if (this.fOutput != null) {
-			if (this.fOutput.isDirectory()) {
-				System.err.println("Output file is a directory.");
-				parser.printUsage(System.err);
-				System.err.println();
-				return false;
-			}
-			if (!this.fOutput.getName().endsWith(".csv")) {
-				this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
-			}
-			if (this.fOutput.exists()) {
-				this.fOutput.renameTo(new File(this.fOutput.getAbsoluteFile() + ".old"));
-				this.fOutput.delete();
-			}
-			try {
-				this.fOutput.createNewFile();
-				this.output = new PrintStream(this.fOutput);
-			} catch (IOException e) {
-				System.err.println("Output file cannot be created: " + e.getMessage());
-				parser.printUsage(System.err);
-				System.err.println();
-				return false;
-			}
-		} else {
-			this.output = System.out;
-		}
-		return true;
-	}
+	static final Class<? extends LabeledIntMap> labeledIntMapImpl = LabeledIntTreeMap.class;
 
 	/**
 	 * @param args
@@ -168,7 +73,8 @@ public class Luke2GraphML {
 			return;
 		}
 
-		LabeledIntGraph g = new LabeledIntGraph(labeledIntValueMapClass);
+
+		LabeledIntGraph g = new LabeledIntGraph(labeledIntMapImpl);
 
 		Int2ObjectMap<LabeledNode> int2Node = new Int2ObjectOpenHashMap<>();
 		int2Node.defaultReturnValue(null);
@@ -256,14 +162,14 @@ public class Luke2GraphML {
 	 * @param int2Node
 	 * @throws Exception
 	 */
-	private static void addNode(BufferedReader reader, String line, LabeledIntGraph g,
+	private static <C extends LabeledIntMap> void addNode(BufferedReader reader, String line, LabeledIntGraph g,
 			Int2ObjectMap<LabeledNode> int2Node) throws Exception {
 		final String patternNode = new String("TP\\(|\\):[\\s\u00A0]+|,\\s+\\[|\\],\\s+|\\]");
 		String[] nodeParts = line.split(patternNode);
 		// nodeParts[0] is empty!
 		LOG.info("NodeParts:" + Arrays.toString(nodeParts) + ". Lenght:" + nodeParts.length);
 		LOG.info("nodeParts[2]: '" + nodeParts[2] + "'");// . Leading char code: "+ Character.codePointAt(nodeParts[2], 0));
-		LabeledNode node = new LabeledNode(nodeParts[2]);
+		LabeledNode node = new LabeledNode(nodeParts[2], labeledIntMapImpl);
 		boolean added = g.addVertex(node);
 		if (!added)
 			throw new Exception("Node " + node + " cannot be insert.");
@@ -288,5 +194,105 @@ public class Luke2GraphML {
 	 */
 	private static String toLabel(String lukeFormat) {
 		return lukeFormat.trim().replace("(", "").replace(")", "").replace("-", "¬");
+	}
+
+	/**
+	 * Class to use for managing labeled values of edges.
+	 */
+	Class<LabeledIntMap> internalMapImplementationClass;
+
+	/**
+	 * The input file names. Each file has to contain a CSTN graph in GraphML
+	 * format.
+	 */
+	@Argument(required = true, index = 0, usage = "Input file. It has to be a CSTN graph in Luke's format.", metaVar = "CSTN_file_name")
+	private String fileNameInput;
+
+	/**
+	 * Output file where to write the CSTN in GraphML format.
+	 */
+	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in GraphML format.", metaVar = "outputFile")
+	private File fOutput = null;
+
+	/**
+	 * 
+	 */
+	private File inputCSTNFile;
+
+	/**
+	 * Output stream to fOutput
+	 */
+	private PrintStream output = null;
+
+	/**
+	 * Software Version.
+	 */
+	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
+	private boolean versionReq = false;
+
+	/**
+	 * Simple method to manage command line parameters using args4j library.
+	 * 
+	 * @param args
+	 * @return false if a parameter is missing or it is wrong. True if every
+	 *         parameters are given in a right format.
+	 */
+	private boolean manageParameters(String[] args) {
+		CmdLineParser parser = new CmdLineParser(this);
+		try {
+			parser.parseArgument(args);
+		} catch (CmdLineException e) {
+			// if there's a problem in the command line, you'll get this
+			// exception. this will report an error message.
+			System.err.println(e.getMessage());
+			System.err
+					.println("java -cp CSTNU-<version>.jar -cp it.univr.di.cstnu.Luke2GraphML [options...] argument.");
+			// print the list of available options
+			parser.printUsage(System.err);
+			System.err.println();
+
+			// print option sample. This is useful some time
+			// System.err.println("Example: java -jar Checker.jar" +
+			// parser.printExample(OptionHandlerFilter.REQUIRED) +
+			// " <CSTN_file_name0> <CSTN_file_name1>...");
+			return false;
+		}
+		LOG.finest("File name: " + this.fileNameInput);
+		this.inputCSTNFile = new File(this.fileNameInput);
+		if (!this.inputCSTNFile.exists()) {
+			System.err.println("File " + this.inputCSTNFile + " does not exit.");
+			parser.printUsage(System.err);
+			System.err.println();
+			return false;
+		}
+		LOG.finest("File: " + this.inputCSTNFile);
+
+		if (this.fOutput != null) {
+			if (this.fOutput.isDirectory()) {
+				System.err.println("Output file is a directory.");
+				parser.printUsage(System.err);
+				System.err.println();
+				return false;
+			}
+			if (!this.fOutput.getName().endsWith(".csv")) {
+				this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
+			}
+			if (this.fOutput.exists()) {
+				this.fOutput.renameTo(new File(this.fOutput.getAbsoluteFile() + ".old"));
+				this.fOutput.delete();
+			}
+			try {
+				this.fOutput.createNewFile();
+				this.output = new PrintStream(this.fOutput);
+			} catch (IOException e) {
+				System.err.println("Output file cannot be created: " + e.getMessage());
+				parser.printUsage(System.err);
+				System.err.println();
+				return false;
+			}
+		} else {
+			this.output = System.out;
+		}
+		return true;
 	}
 }
