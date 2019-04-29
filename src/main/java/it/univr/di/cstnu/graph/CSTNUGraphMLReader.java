@@ -39,8 +39,9 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  * 
  * @author posenato
  * @version $Id: $Id
+ *  @param <C> type for managing labeled values.
  */
-public class CSTNUGraphMLReader {
+public class CSTNUGraphMLReader<C extends LabeledIntMap> {
 	/**
 	 * * Since we want to preserve edge names given by in the file and such namescan conflict with the ones given by the standard edgeFactory,
 	 * we modify the standard factory altering the default name
@@ -60,7 +61,7 @@ public class CSTNUGraphMLReader {
 		 */
 		public InternalEdgeFactory(Class<C> mapTypeImplementation) {
 			super();
-			this.edgeFactory = new LabeledIntEdgeSupplier<>(mapTypeImplementation);
+			this.edgeFactory = new LabeledIntEdgeSupplier<C>(mapTypeImplementation);
 		}
 
 		@Override
@@ -72,6 +73,36 @@ public class CSTNUGraphMLReader {
 	}
 
 	/**
+	 * * Since we want to preserve edge names given by in the file and such namescan conflict with the ones given by the standard edgeFactory,
+	 * we modify the standard factory altering the default name
+	 * 
+	 * @author posenato
+	 * @param <C>
+	 */
+	static private class InternalVertexFactory<C extends LabeledIntMap> implements Supplier<LabeledNode> {
+
+		/**
+		 * 
+		 */
+		Supplier<LabeledNode> nodeFactory;
+
+		/**
+		 * @param mapTypeImplementation
+		 */
+		public InternalVertexFactory(Class<C> mapTypeImplementation) {
+			super();
+			this.nodeFactory = new LabeledNodeSupplier<>(mapTypeImplementation);
+		}
+
+		@Override
+		public LabeledNode get() {
+			LabeledNode e = this.nodeFactory.get();
+			e.setName(prefix + e.getName());
+			return e;
+		}
+	}
+	
+	/**
 	 * logger
 	 */
 	static final Logger LOG = Logger.getLogger(CSTNUGraphMLReader.class.getName());
@@ -80,21 +111,6 @@ public class CSTNUGraphMLReader {
 	 * 
 	 */
 	static final String prefix = "__";
-
-	/**
-	 * 
-	 */
-	private static Supplier<LabeledNode> vertexFactory = new Supplier<LabeledNode>() {
-
-		Supplier<LabeledNode> factory = LabeledNode.getFactory();
-
-		@Override
-		public LabeledNode get() {
-			LabeledNode node = this.factory.get();
-			node.setName(prefix + node.getName());
-			return node;
-		}
-	};
 
 	/**
 	 * The result of the loading action.
@@ -110,6 +126,10 @@ public class CSTNUGraphMLReader {
 	 * 
 	 */
 	private Supplier<LabeledIntEdge> edgeFactory;
+	/**
+	 * 
+	 */
+	private Supplier<LabeledNode> nodeFactory;
 
 	/**
 	 * Input file reader
@@ -124,7 +144,7 @@ public class CSTNUGraphMLReader {
 	/**
 	 * Class for representing internal labeled values.
 	 */
-	private Class<? extends LabeledIntMap> mapTypeImplementation;
+	private Class<C> mapTypeImplementation;
 
 	/**
 	 * Allows to read a graph from a file written in GraphML format.<br>
@@ -136,7 +156,7 @@ public class CSTNUGraphMLReader {
 	 * @param labeledValueSetImplementationClass it is necessary for creating the right factory.
 	 * @throws FileNotFoundException if the graphFile is not found
 	 */
-	public CSTNUGraphMLReader(final File graphFile, Class<? extends LabeledIntMap> labeledValueSetImplementationClass) throws FileNotFoundException {
+	public CSTNUGraphMLReader(final File graphFile, Class<C> labeledValueSetImplementationClass) throws FileNotFoundException {
 		if (graphFile == null) {
 			throw new FileNotFoundException("The given file does not exist.");
 		}
@@ -145,6 +165,7 @@ public class CSTNUGraphMLReader {
 		this.aLabelAlphabet = new ALabelAlphabet();
 		this.mapTypeImplementation = labeledValueSetImplementationClass;
 		this.edgeFactory = new InternalEdgeFactory<>(this.mapTypeImplementation);
+		this.nodeFactory = new InternalVertexFactory<>(this.mapTypeImplementation);
 		this.graph = new LabeledIntGraph(this.mapTypeImplementation, this.aLabelAlphabet);
 		this.graph.setInputFile(graphFile);
 	}
@@ -161,7 +182,7 @@ public class CSTNUGraphMLReader {
 		 * edge attributes that are very long, like the labeled upper case values of a checked CSTNU.
 		 * CSTNUGraphMLReader is a little less intuitive but it manages all attributes in a right way!
 		 */
-		GraphMLReader<LabeledIntGraph, LabeledNode, LabeledIntEdge> graphReader = new GraphMLReader<>(vertexFactory, this.edgeFactory);
+		GraphMLReader<LabeledIntGraph, LabeledNode, LabeledIntEdge> graphReader = new GraphMLReader<>(this.nodeFactory, this.edgeFactory);
 		// populate the graph.
 		graphReader.load(this.fileReader, this.graph);
 
@@ -200,7 +221,7 @@ public class CSTNUGraphMLReader {
 
 			if (nodeLabeledPotentialValueF != null) {
 				String data = nodeLabeledPotentialValueF.apply(n);
-				LabeledIntMap potentialMap = AbstractLabeledIntMap.parse(data);
+				LabeledIntMap potentialMap = AbstractLabeledIntMap.parse(data, this.mapTypeImplementation);
 				if (data != null && data.length() > 2 && (potentialMap == null || potentialMap.isEmpty()))
 					throw new IllegalArgumentException("Potential values in a wrong format: " + data + " in node " + n);
 				n.setPotential(potentialMap);

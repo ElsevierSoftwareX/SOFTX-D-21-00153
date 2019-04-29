@@ -19,7 +19,7 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @author posenato
  * @version $Id: $Id
  */
-public class ObservableValidator implements Validator<String> {
+public class  ObservableValidator implements Validator<String> {
 
 	/**
 	 * logger

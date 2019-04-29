@@ -12,55 +12,60 @@ import org.junit.Test;
 
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Label;
-
+import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
- *
  */
 public class LabeledNodeTest {
+
+	@SuppressWarnings("javadoc")
+	static LabeledNodeSupplier<LabeledIntTreeMap> nodeFactory = new LabeledNodeSupplier<>(LabeledIntTreeMap.class);
 
 	/**
 	 * 
 	 */
 	ALabelAlphabet alphabet;
+
+	/**
+	 * 
+	 */
+	LabeledNode a;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
 		this.alphabet = new ALabelAlphabet();
+		this.a = nodeFactory.get("A");
+		this.a.setLabel(Label.emptyLabel);
 	}
 
-
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.LabeledNode#LabeledNode(java.lang.String)}.
 	 */
-	@SuppressWarnings({ "deprecation", "static-method" })
+	@SuppressWarnings("deprecation")
 	@Test
 	public final void testEquals() {
-		LabeledNode a = new LabeledNode("A");
-		LabeledNode aa = new LabeledNode("A", Label.emptyLabel);
-		
-		assertTrue(a.equalsByName(aa));
-		assertFalse(a.equals(aa));
+		LabeledNode aa = nodeFactory.get("A");
+		aa.setLabel(Label.emptyLabel);
+
+		assertTrue(this.a.equalsByName(aa));
+		assertFalse(this.a.equals(aa));
 	}
-	
+
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.LabeledNode#LabeledNode(java.lang.String)}.
 	 */
-	@SuppressWarnings("static-method")
 	@Test
 	public final void potentialPut1() {
-		LabeledNode a = new LabeledNode("A", Label.emptyLabel);
-		a.putPotential(Label.parse("b"), -1);
-		a.putPotential(Label.parse("b"), -1);// ignored
-		a.putPotential(Label.parse("a"), -1);
+		this.a.putPotential(Label.parse("b"), -1);
+		this.a.putPotential(Label.parse("b"), -1);// ignored
+		this.a.putPotential(Label.parse("a"), -1);
 
-		assertEquals("{b->-1, a->-1}", a.getPotential().entrySet().toString());
+		assertEquals("{b->-1, a->-1}", this.a.getPotential().entrySet().toString());
 
-		a.putPotential(Label.parse("¬b"), -1);
-		assertEquals("{⊡->-1}", a.getPotential().entrySet().toString());
+		this.a.putPotential(Label.parse("¬b"), -1);
+		assertEquals("{⊡->-1}", this.a.getPotential().entrySet().toString());
 	}
 
 }

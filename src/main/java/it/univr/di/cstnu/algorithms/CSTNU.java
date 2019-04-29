@@ -157,7 +157,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Loading graph...");
 		}
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnu.fInput, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader<LabeledIntTreeMap> graphMLReader = new CSTNUGraphMLReader<>(cstnu.fInput, LabeledIntTreeMap.class);
 		cstnu.setG(graphMLReader.readGraph());
 		cstnu.g.setInputFile(cstnu.fInput);
 
@@ -1268,7 +1268,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			boolean emptyAleph = aleph.isEmpty();
 
 			final boolean alephNOTEmpty = !aleph.isEmpty();
-			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryCX : valuesMap.entrySet()) {
+			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryCX : valuesMap.entrySet()) {// entrySet read-only
 				final int v = entryCX.getIntValue();
 				if (v >= 0)// the following condition is not applicable because we are considering instantaneous reaction: || (v == 0 && nX == nC))
 					continue; // Rule condition!
@@ -1382,13 +1382,13 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			for (final ALabel aleph : eXA.getUpperCaseValueMap().keySet()) {
 				if (!aleph.contains(nC.getAlabel()))
 					continue;
-				LabeledIntTreeMap valuesMap = eXA.getUpperCaseValueMap().get(aleph);
-				if (valuesMap == null)
+				LabeledIntTreeMap eXAValueMap = eXA.getUpperCaseValueMap().get(aleph);
+				if (eXAValueMap == null)
 					continue;
-				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfXA : valuesMap.entrySet()) {
-					final Label beta = upperCaseEntryOfXA.getKey();
-					int v = upperCaseEntryOfXA.getIntValue();
-
+				for (Label beta : eXAValueMap.keySet()) {
+					int v = eXA.getUpperCaseValue(beta, aleph);
+					if (v == Constants.INT_NULL)
+						continue;
 					LabeledLowerCaseValue ACLowerCaseValueObj = eAC.getLowerCaseValue();
 					final Label alpha = ACLowerCaseValueObj.getLabel();
 					int x = ACLowerCaseValueObj.getValue();
@@ -1461,12 +1461,10 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 		LabeledALabelIntTreeMap mapOfAllValues = ePZ.getAllUpperCaseAndLabeledValuesMaps();
 		for (final ALabel aleph : mapOfAllValues.keySet()) {
 			boolean alephNOTEmpty = !aleph.isEmpty();
-			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryPZ : mapOfAllValues.get(aleph).entrySet()) {
-				Label alpha = entryPZ.getKey();
+			for (Label alpha : mapOfAllValues.get(aleph).keySet()) {
 				if (alpha == null || !alpha.contains(p)) {
 					continue;
 				}
-
 				final int w = (alephNOTEmpty) ? ePZ.getUpperCaseValue(alpha, aleph) : ePZ.getValue(alpha);
 				// It is necessary to re-check if the value is still present. Verified that it is necessary on Nov, 26 2015
 				if (w == Constants.INT_NULL || mainConditionForSkippingInR0qR0(w)) {// Table 1 ICAPS paper
@@ -1556,7 +1554,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			// all labels from current Obs
 			LabeledALabelIntTreeMap allValueMapObsZ = eObsZ.getAllUpperCaseAndLabeledValuesMaps();
 			for (final ALabel aleph1 : allValueMapObsZ.keySet()) {
-				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryObsZ : allValueMapObsZ.get(aleph1).entrySet()) {
+				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryObsZ : allValueMapObsZ.get(aleph1).entrySet()) {// entrySet read-only
 					final int w = entryObsZ.getIntValue();
 					if (mainConditionForSkippingInR3qR3(w, this.Z)) { // Table 1 ICAPS
 						continue;
@@ -1564,11 +1562,9 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 
 					final Label gamma = entryObsZ.getKey();
 
-					Label SZLabel;
 					for (final ALabel aleph : allValueMapSZ.keySet()) {
 
-						for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entrySZ : allValueMapSZ.get(aleph).entrySet()) {
-							SZLabel = entrySZ.getKey();
+						for (Label SZLabel : allValueMapSZ.get(aleph).keySet()) {
 
 							if (SZLabel == null || !SZLabel.contains(p)) {
 								continue;
@@ -1675,7 +1671,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 				if (nWisNotZ && aleph.size() > 1)
 					continue;// rule condition
 
-				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryYW : YWAllLabeledValueMap.get(aleph).entrySet()) {
+				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryYW : YWAllLabeledValueMap.get(aleph).entrySet()) {// entrySet read-only
 					final Label beta = entryYW.getKey();
 					Label alphaBeta;
 					alphaBeta = alpha.conjunction(beta);
@@ -1758,12 +1754,13 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			if (upperCaseLabel.size() != 1 || !upperCaseLabel.equals(nXasALabel)) {
 				continue;// only UC label corresponding to original contingent upper case value is considered.
 			}
-			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryXY : eXY.getUpperCaseValueMap().get(upperCaseLabel).entrySet()) {
+			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryXY : eXY.getUpperCaseValueMap().get(upperCaseLabel).entrySet()) {// entrySet
+																																				// read-only
 				final Label alpha = entryXY.getKey();
 				final int u = entryXY.getIntValue();
 
 				for (final ALabel aleph : YWAllLabeledValueMap.keySet()) {
-					for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryYW : YWAllLabeledValueMap.get(aleph).entrySet()) {
+					for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryYW : YWAllLabeledValueMap.get(aleph).entrySet()) {// entrySet read-only
 						final Label beta = entryYW.getKey();
 
 						Label alphaBeta = alpha.conjunction(beta);
@@ -1872,7 +1869,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 			LabeledIntTreeMap YZvaluesMap = eYZ.getUpperCaseValueMap().get(aleph);
 			if (YZvaluesMap == null)
 				continue;
-			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfYA : YZvaluesMap.entrySet()) {
+			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfYA : YZvaluesMap.entrySet()) {// entrySet read-only
 				final Label beta = upperCaseEntryOfYA.getKey();
 				int v = upperCaseEntryOfYA.getIntValue();
 
@@ -1929,7 +1926,7 @@ public class CSTNU extends CSTNIR3RwoNodeLabels {
 						LabeledIntTreeMap AZAlephMap = AZ.getAllUpperCaseAndLabeledValuesMaps().get(aleph1);
 						if (AZAlephMap == null)
 							continue;
-						for (Entry<Label> entryAZ : AZAlephMap.entrySet()) {
+						for (Entry<Label> entryAZ : AZAlephMap.entrySet()) {// entrySet read-only
 							final Label alpha = entryAZ.getKey();
 							final int w = entryAZ.getIntValue();
 

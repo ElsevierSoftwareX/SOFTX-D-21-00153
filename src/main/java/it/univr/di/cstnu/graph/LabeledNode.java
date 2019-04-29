@@ -3,7 +3,6 @@ package it.univr.di.cstnu.graph;
 import java.util.logging.Logger;
 
 import com.google.common.base.Function;
-import com.google.common.base.Supplier;
 
 import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -56,26 +55,6 @@ public class LabeledNode extends AbstractComponent {
 	private static final long serialVersionUID = 2L;
 
 	/**
-	 * Factory as Supplier type.
-	 * 
-	 * @return a supplier to get empty nodes.
-	 */
-	public static Supplier<LabeledNode> getFactory() {
-		return new Supplier<LabeledNode>() {
-			@Override
-			public LabeledNode get() {
-				return new LabeledNode("n" + idSeq++, Label.emptyLabel);// if you change this default, change also in CSTNUGraphMLReader
-			}
-		};
-	}
-
-	/**
-	 * Factory for labeled value set.
-	 */
-	LabeledIntMapFactory<? extends LabeledIntMap> labeledValueMapFactory;
-
-
-	/**
 	 * First counter of labeled value updating
 	 */
 	Object2IntMap<Label> potentialCount;
@@ -117,16 +96,16 @@ public class LabeledNode extends AbstractComponent {
 	 * Constructor for cloning.
 	 *
 	 * @param n the node to copy.
+	 * @param labeledIntMapImplementation
 	 */
-	public LabeledNode(final LabeledNode n) {
+	<C extends LabeledIntMap> LabeledNode(final LabeledNode n, Class<C> labeledIntMapImplementation) {
 		super(n);
 		this.label = n.label;
 		this.propositionObserved = n.getPropositionObserved();
 		this.x = n.x;
 		this.y = n.y;
 		this.alabel = n.alabel;
-		this.labeledValueMapFactory = new LabeledIntMapFactory<>();
-		this.potential = this.labeledValueMapFactory.get(n.potential);
+		this.potential = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
 		this.potentialCount = new Object2IntLinkedOpenHashMap<>(n.potentialCount);
 		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
 	}
@@ -135,15 +114,15 @@ public class LabeledNode extends AbstractComponent {
 	 * Constructor for LabeledNode.
 	 *
 	 * @param string a {@link java.lang.String} object.
+	 * @param labeledIntMapImplementation
 	 */
-	public LabeledNode(final String string) {
+	<C extends LabeledIntMap> LabeledNode(final String string, Class<C> labeledIntMapImplementation) {
 		super(string);
 		this.label = Label.emptyLabel;
 		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.alabel = null;
-		this.labeledValueMapFactory = new LabeledIntMapFactory<>();
-		this.potential = this.labeledValueMapFactory.get();
+		this.potential = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
 		this.potentialCount = new Object2IntLinkedOpenHashMap<>();
 		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
 
@@ -154,21 +133,11 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @param n name of the node.
 	 * @param proposition proposition observed by this node.
+	 * @param labeledIntMapImplementation
 	 */
-	public LabeledNode(final String n, final char proposition) {
-		this(n);
+	<C extends LabeledIntMap> LabeledNode(final String n, final char proposition, Class<C> labeledIntMapImplementation) {
+		this(n, labeledIntMapImplementation);
 		this.propositionObserved = (Literal.check(proposition)) ? proposition : Constants.UNKNOWN;
-	}
-
-	/**
-	 * Standard constructor
-	 *
-	 * @param n
-	 * @param l
-	 */
-	LabeledNode(final String n, final Label l) {
-		this(n);
-		this.label = l;
 	}
 
 	/**

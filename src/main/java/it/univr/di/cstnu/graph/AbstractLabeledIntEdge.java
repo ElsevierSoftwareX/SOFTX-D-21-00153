@@ -28,7 +28,7 @@ import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
 /**
- * It contains all information of a CSTPU edge.
+ * Base class for implementing LabeledIntEdge.
  *
  * @author posenato
  * @version $Id: $Id
@@ -257,6 +257,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 		};
 	}
 
+
 	/**
 	 * An edge is usually draw as an arc between two points. The area delimited by the arc and the straight line connecting the two edge points can be filled by
 	 * a color.
@@ -370,21 +371,6 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	@Override
 	public final void clearUpperCaseValues() {
 		this.upperCaseValue.clear();
-	}
-
-	@Override
-	public void copyLabeledValueMap(LabeledIntMap labeledValue) {
-		throw new UnsupportedOperationException("Core class.");
-	}
-
-	@Override
-	public LabeledIntEdge createLabeledIntEdge() {
-		throw new UnsupportedOperationException("Core class.");
-	}
-
-	@Override
-	public LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e) {
-		throw new UnsupportedOperationException("Core class.");
 	}
 
 	@Override

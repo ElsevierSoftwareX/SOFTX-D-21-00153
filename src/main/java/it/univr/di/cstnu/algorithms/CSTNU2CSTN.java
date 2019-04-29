@@ -70,7 +70,7 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG.finest("Parameters ok!");
 
 		LOG.finest("Loading graph...");
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnu2cstn.fInput, labeledIntValueMap);
+		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader = new CSTNUGraphMLReader<>(cstnu2cstn.fInput, labeledIntValueMap);
 		cstnu2cstn.setG(graphMLReader.readGraph());
 		LOG.finest("LabeledIntGraph loaded!");
 
@@ -243,7 +243,7 @@ public class CSTNU2CSTN extends CSTNU {
 		// Clone all nodes
 		LabeledNode newV;
 		for (final LabeledNode v : this.g.getVertices()) {
-			newV = new LabeledNode(v);
+			newV = this.g.getNodeFactory().get(v);
 			cstnGraph.addVertex(newV);
 			if (v.equalsByName(this.Z)) {
 				cstnGraph.setZ(newV);
@@ -290,7 +290,7 @@ public class CSTNU2CSTN extends CSTNU {
 				throw new IllegalStateException("Something is wrong with the two contingent edges " + e + " and " + eInverted);
 			}
 			// new observation time point K
-			LabeledNode newK = new LabeledNode(availableProposition[firstPropAvailable] + "?", availableProposition[firstPropAvailable++]);
+			LabeledNode newK = this.g.getNodeFactory().get(availableProposition[firstPropAvailable] + "?", availableProposition[firstPropAvailable++]);
 			// newK.setLabel(cstn.getNode(dInG.getName()).getLabel()); we consider only streamlined CSTN
 			newK.setX(sInG.getX() + 10);
 			newK.setY(sInG.getY());

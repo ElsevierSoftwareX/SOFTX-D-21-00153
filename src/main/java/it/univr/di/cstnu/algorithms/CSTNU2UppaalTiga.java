@@ -43,6 +43,7 @@ import it.univr.di.cstnu.graph.LabeledIntGraph;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
@@ -585,7 +586,7 @@ public class CSTNU2UppaalTiga {
 		int labelOrdinal = 0;
 		String sourceState = null;
 		String destState = null;
-		for (Entry<Label, HashSet<Constraint>> entry : this.allConstraintsByLabel.entrySet()) {
+		for (Entry<Label, HashSet<Constraint>> entry : this.allConstraintsByLabel.entrySet()) {// entrySet read-only
 			Label label = entry.getKey();
 			HashSet<Constraint> constSet = entry.getValue();
 
@@ -845,7 +846,7 @@ public class CSTNU2UppaalTiga {
 	 * @throws IOException
 	 */
 	private boolean loadCSTNU(File fileName) throws IOException, ParserConfigurationException, SAXException {
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(fileName, LabeledIntTreeMap.class);
+		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader = new CSTNUGraphMLReader<>(fileName, LabeledIntTreeMap.class);
 		this.cstnu = graphMLReader.readGraph();
 		return checkCSTNUSyntax();
 	}

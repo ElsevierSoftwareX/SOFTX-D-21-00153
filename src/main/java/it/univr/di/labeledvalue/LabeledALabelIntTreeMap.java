@@ -592,7 +592,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			otherLabelValueMap = this.get(otherALabel);
 
 			// Check only a-labels that contain newALabel strictly.
-			for (Object2IntMap.Entry<Label> entry : otherLabelValueMap.entrySet()) {
+			for (Object2IntMap.Entry<Label> entry : otherLabelValueMap.entrySet()) {// entrySet read-only
 				Label otherLabel = entry.getKey();
 				int otherValue = entry.getIntValue();
 

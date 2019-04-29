@@ -14,7 +14,6 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapFactory;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
 /**
@@ -99,28 +98,6 @@ public interface LabeledIntEdge extends Component {
 	public void clearUpperCaseValues();
 
 	/**
-	 * Cleans internal labeled value map and, then, copies the given labeledValue into the internal labeled value map.
-	 *
-	 * @param labeledValue the labeledValue to set
-	 */
-	public void copyLabeledValueMap(final LabeledIntMap labeledValue);
-
-	/**
-	 * Public method to enable a Factory class.
-	 * 
-	 * @return an object of type LabeledIntEdge.
-	 */
-	public LabeledIntEdge createLabeledIntEdge();
-
-	/**
-	 * Public method to enable a Factory class.
-	 * 
-	 * @param e an object to clone.
-	 * @return an object of type LabeledIntEdge.
-	 */
-	public LabeledIntEdge createLabeledIntEdge(LabeledIntEdge e);
-
-	/**
 	 * A different kind of equals. It allows one to compare two edges with respect to ALL their labeled values (ordinary, upper- and lower-case ones).
 	 *
 	 * @param e a not null edge
@@ -133,18 +110,12 @@ public interface LabeledIntEdge extends Component {
 	 */
 	public ConstraintType getConstraintType();
 
-	
 	/**
 	 * @return the set of maps of labeled values and labeled upper-case ones.
-	 * The maps of labeled values has ALabel empty.
+	 *         The maps of labeled values has ALabel empty.
 	 */
 	public LabeledALabelIntTreeMap getAllUpperCaseAndLabeledValuesMaps();
 	
-	/**
-	 * @return the factory for building the internal labeled value map.
-	 */
-	public LabeledIntMapFactory<? extends LabeledIntMap> getLabeledIntValueMapFactory();
-
 	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */

@@ -91,9 +91,10 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 * This method is also capable to parse the old format: {\[(&lt;key&gt;, &lt;value&gt;) \]*}
 	 *
 	 * @param inputMap a {@link java.lang.String} object.
+	 * @param labeledIntMapClass
 	 * @return a LabeledValueTreeMap object if <code>inputMap</code> represents a valid map, null otherwise.
 	 */
-	static public LabeledIntMap parse(final String inputMap) {
+	static public LabeledIntMap parse(final String inputMap, Class<? extends LabeledIntMap> labeledIntMapClass) {
 		if (inputMap == null)
 			return null;
 
@@ -109,7 +110,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		// return null;
 		// }
 
-		LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
+		LabeledIntMapFactory<? extends LabeledIntMap> factory = new LabeledIntMapFactory<>(labeledIntMapClass);
 		final LabeledIntMap newMap = factory.get();
 
 		final String[] entryPair = AbstractLabeledIntMap.splitterEntry.split(inputMap);
@@ -156,6 +157,14 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		return newMap;
 	}
 
+	/**
+	 * @param inputMap
+	 * @return a new labeledintmap object
+	 * @see AbstractLabeledIntMap#parse(String, Class)
+	 */
+	static public LabeledIntMap parse(final String inputMap) {
+		return parse(inputMap, LabeledIntTreeMap.class);
+	}
 
 	/**
 	 * The number of elements in the map

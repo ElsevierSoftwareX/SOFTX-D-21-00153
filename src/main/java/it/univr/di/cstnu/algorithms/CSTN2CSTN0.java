@@ -168,7 +168,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 																								// oldObs.setObservable(Constants.UNKNOWN);
 
 		for (final LabeledNode oldObs : observers) {
-			LabeledNode newObs = new LabeledNode(oldObs);
+			LabeledNode newObs = this.g.getNodeFactory().get(oldObs);
 			newObs.setName(newObs.getName() + "^0");
 			newObs.setX(newObs.getX() + 30);
 			newObs.setY(newObs.getY() + 30);

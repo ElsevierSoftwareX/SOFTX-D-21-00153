@@ -25,7 +25,7 @@ public class AbstractLabeledIntEdgeTest {
 	@SuppressWarnings("javadoc")
 	static LabeledIntEdgeSupplier<LabeledIntTreeMap> edgeFactory = new LabeledIntEdgeSupplier<>(LabeledIntTreeMap.class);
 	@SuppressWarnings("javadoc")
-	static Class<? extends LabeledIntMap> labeledValueClass = edgeFactory.get().labeledValueMapFactory.get().getClass();
+	static Class<? extends LabeledIntMap> labeledValueClass = edgeFactory.getInternalObjectClass();
 
 	/**
 	 * 

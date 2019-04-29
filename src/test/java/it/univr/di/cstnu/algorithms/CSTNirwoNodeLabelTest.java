@@ -57,12 +57,12 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@SuppressWarnings({ "javadoc" })
 	@Test
 	public final void testAlphaBetaGamaPrime() {
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
+		LabeledNode A = this.g.getNodeFactory().get("A?", 'a');
 		A.setLabel(Label.parse("¬p"));
-		LabeledNode B = new LabeledNode("B?", 'b');
+		LabeledNode B = this.g.getNodeFactory().get("B?", 'b');
 		B.setLabel(Label.parse("a¬p"));
-		LabeledNode G = new LabeledNode("G?", 'g');
+		LabeledNode G = this.g.getNodeFactory().get("G?", 'g');
 
 		this.g.addVertex(this.P);
 		this.g.addVertex(A);
@@ -72,17 +72,17 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
 		XP.mergeLabeledValue(Label.parse("¬a¬p"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
 		XP.mergeLabeledValue(Label.parse("ba¬p"), 9);
 
-		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("¬b"), 9);
 		YX.mergeLabeledValue(Label.parse("b"), -10);
 
-		LabeledIntEdgePluggable AP = new LabeledIntEdgePluggable("AP", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable AP = this.g.getEdgeFactory().get("AP");
 		AP.mergeLabeledValue(Label.parse("¬p"), -1);
 
 		this.g.addEdge(XP, this.X, this.P);
@@ -138,9 +138,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabeledPropagation() {
 
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
-		LabeledNode B = new LabeledNode("B?", 'b');
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
+		LabeledNode A = this.g.getNodeFactory().get("A?", 'a');
+		LabeledNode B = this.g.getNodeFactory().get("B?", 'b');
 		this.g.addVertex(this.P);
 		this.g.addVertex(A);
 		this.g.addVertex(B);
@@ -148,17 +148,17 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
 		XP.mergeLabeledValue(Label.parse("¬a"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
 		XP.mergeLabeledValue(Label.parse("b"), 9);
 
-		LabeledIntEdgePluggable PY = new LabeledIntEdgePluggable("PY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable PY = this.g.getEdgeFactory().get("PY");
 		PY.mergeLabeledValue(Label.parse("¬b"), 9);
 		PY.mergeLabeledValue(Label.parse("b"), -10);
 
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
 		
 		this.g.addEdge(XP, this.X, this.P);
 		this.g.addEdge(PY, this.P, Y);
@@ -171,7 +171,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		// System.out.println(XP);
 		// System.out.println(PY);
 
-		LabeledIntEdgePluggable XYok = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XYok = this.g.getEdgeFactory().get("XY");
 		// xyOK.mergeLabeledValue(Label.parse("¬A¬B"), 17);
 		// EqLP+
 		// XYok.mergeLabeledValue(Label.parse("¬b"), 8);if positive value are not admitted.
@@ -223,7 +223,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabeledPropagation1() {
 
-		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
@@ -231,17 +231,17 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 
 		// Ricostruisco i passi di un caso di errore
-		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.parse("p"), -2);
 		XZ.mergeLabeledValue(Label.parse("¿p"), -5);
 		XZ.mergeLabeledValue(Label.parse("¬p"), -1);
 		XZ.mergeLabeledValue(Label.parse("¿p"), -5);
 
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.parse("¬p"), -1);
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
 
@@ -276,7 +276,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabeledPropagation2() {
 
-		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
@@ -288,13 +288,13 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		nodeSet.add(Y.getName());
 
 		// Ricostruisco i passi di un caso di errore
-		LabeledIntEdgePluggable YZ = new LabeledIntEdgePluggable("YZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XZ = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.parse("¬p"), -1);
 		XY.mergeLabeledValue(Label.emptyLabel, 0);
@@ -319,12 +319,12 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabeledPropagation3() {
 
-		LabeledNode Y = new LabeledNode("Y");
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 
-		LabeledIntEdgePluggable XY = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.parse("¿p"), -5);
 		XY.mergeLabeledValue(Label.parse("¬p"), 3);
@@ -332,13 +332,13 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 		assertEquals("XY: ", AbstractLabeledIntMap.parse("{(3, ¬p) (-2, p) (-5, ¿p) }"), XY.getLabeledValueMap());
 
-		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("p"), 3);
 		YX.mergeLabeledValue(Label.parse("¬p"), -1);
 
 		assertEquals("YX: ", AbstractLabeledIntMap.parse("{(-1, ¬p) (3, p) }"), YX.getLabeledValueMap());
 
-		LabeledIntEdgePluggable XX = new LabeledIntEdgePluggable("XX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XX = this.g.getEdgeFactory().get("XX");
 
 		this.g.addEdge(XX, this.X, this.X);
 		this.g.addEdge(XY, this.X, Y);
@@ -375,12 +375,12 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabeledPropagation4() {
 
-		LabeledNode Q = new LabeledNode("Q?", 'q');
-		LabeledNode X2 = new LabeledNode("X2");
-		LabeledNode X3 = new LabeledNode("X3");
-		LabeledNode X4 = new LabeledNode("X4");
-		LabeledNode X5 = new LabeledNode("X5");
-		LabeledNode X6 = new LabeledNode("X6");
+		LabeledNode Q = this.g.getNodeFactory().get("Q?", 'q');
+		LabeledNode X2 = this.g.getNodeFactory().get("X2");
+		LabeledNode X3 = this.g.getNodeFactory().get("X3");
+		LabeledNode X4 = this.g.getNodeFactory().get("X4");
+		LabeledNode X5 = this.g.getNodeFactory().get("X5");
+		LabeledNode X6 = this.g.getNodeFactory().get("X6");
 		this.g.addVertex(this.Z);
 		this.g.addVertex(this.P);
 		this.g.addVertex(Q);
@@ -390,35 +390,35 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(X5);
 		this.g.addVertex(X6);
 
-		LabeledIntEdgePluggable e = new LabeledIntEdgePluggable("X2X4", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable e = this.g.getEdgeFactory().get("X2X4");
 		e.mergeLabeledValue(Label.parse("p"), -2);
 		this.g.addEdge(e, X2, X4);
 
-		e = new LabeledIntEdgePluggable("X4X3", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("X4X3");
 		e.mergeLabeledValue(Label.parse("¬p"), -1);
 		this.g.addEdge(e, X4, X3);
 
-		e = new LabeledIntEdgePluggable("X3Q", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("X3Q");
 		e.mergeLabeledValue(Label.parse("p"), -2);
 		this.g.addEdge(e, X3, Q);
 
-		e = new LabeledIntEdgePluggable("QX2", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("QX2");
 		e.mergeLabeledValue(Label.parse("¬p"), -3);
 		this.g.addEdge(e, Q, X2);
 
-		e = new LabeledIntEdgePluggable("X4X5", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("X4X5");
 		e.mergeLabeledValue(Label.parse("¬q"), -3);
 		this.g.addEdge(e, X4, X5);
 
-		e = new LabeledIntEdgePluggable("X5P", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("X5P");
 		e.mergeLabeledValue(Label.parse("q"), -2);
 		this.g.addEdge(e, X5, this.P);
 
-		e = new LabeledIntEdgePluggable("PX6", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("PX6");
 		e.mergeLabeledValue(Label.parse("¬q"), -1);
 		this.g.addEdge(e, this.P, X6);
 
-		e = new LabeledIntEdgePluggable("X6X4", this.labeledIntValueMapClass);
+		e = this.g.getEdgeFactory().get("X6X4");
 		e.mergeLabeledValue(Label.parse("q"), -2);
 		this.g.addEdge(e, X6, X4);
 
@@ -445,7 +445,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabelModificationR0() {
 
-		LabeledIntEdgePluggable px = new LabeledIntEdgePluggable("PX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("ABp"), -10);
 		px.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		px.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
@@ -457,7 +457,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.cstn.setG(this.g);
 		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
-		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable pxOK = this.g.getEdgeFactory().get("XY");
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.parse("¬p¬A¬B"), 0);// IR semantics
 		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
@@ -473,18 +473,18 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabelModificationR0Z() {
 
-		LabeledIntEdgePluggable px = new LabeledIntEdgePluggable("PX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("ABp"), -10);
 		px.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		px.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
 		this.g.addEdge(px, this.P, this.X);
 		this.g.setZ(this.X);
-		this.g.addVertex(new LabeledNode("A", 'A'));
-		this.g.addVertex(new LabeledNode("B", 'B'));
+		this.g.addVertex(this.g.getNodeFactory().get("A", 'A'));
+		this.g.addVertex(this.g.getNodeFactory().get("B", 'B'));
 
 		this.cstn.setG(this.g);
 
-		LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable pxOK = this.g.getEdgeFactory().get("XY");
 		pxOK.mergeLabeledValue(Label.parse("ABp"), -10);
 		pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
@@ -502,11 +502,11 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabelModificationR3() {
 
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
-		LabeledNode B = new LabeledNode("B?", 'b');
-		LabeledNode C = new LabeledNode("C?", 'c');
-		LabeledNode G = new LabeledNode("G?", 'g');
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
+		LabeledNode A = this.g.getNodeFactory().get("A?", 'a');
+		LabeledNode B = this.g.getNodeFactory().get("B?", 'b');
+		LabeledNode C = this.g.getNodeFactory().get("C?", 'c');
+		LabeledNode G = this.g.getNodeFactory().get("G?", 'g');
 		this.g.addVertex(this.P);
 		this.g.addVertex(A);
 		this.g.addVertex(B);
@@ -516,11 +516,11 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable px = new LabeledIntEdgePluggable("PX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("¬b"), 0);
 		px.mergeLabeledValue(Label.parse("ab"), -10);
 
-		LabeledIntEdgePluggable yx = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable yx = this.g.getEdgeFactory().get("YX");
 		yx.mergeLabeledValue(Label.parse("bgp"), -4);
 		yx.mergeLabeledValue(Label.parse("cp"), -10);
 		yx.mergeLabeledValue(Label.parse("c¬p"), 11);
@@ -534,7 +534,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 		this.cstn.labelModificationR3qR3(Y, this.X, yx);
 
-		LabeledIntEdgePluggable yxOK = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable yxOK = this.g.getEdgeFactory().get("YX");
 		// std semantics
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
 		yxOK.mergeLabeledValue(Label.parse("abc"), -10);
@@ -554,11 +554,11 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testLabelModificationR3withUnkown() {
 
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
-		LabeledNode B = new LabeledNode("B?", 'b');
-		LabeledNode C = new LabeledNode("C?", 'c');
-		LabeledNode G = new LabeledNode("G?", 'g');
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
+		LabeledNode A = this.g.getNodeFactory().get("A?", 'a');
+		LabeledNode B = this.g.getNodeFactory().get("B?", 'b');
+		LabeledNode C = this.g.getNodeFactory().get("C?", 'c');
+		LabeledNode G = this.g.getNodeFactory().get("G?", 'g');
 		this.g.addVertex(this.P);
 		this.g.addVertex(A);
 		this.g.addVertex(B);
@@ -568,12 +568,12 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable pz = new LabeledIntEdgePluggable("PZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable pz = this.g.getEdgeFactory().get("PZ");
 		pz.mergeLabeledValue(Label.parse("¬b"), -1);
 		pz.mergeLabeledValue(Label.parse("ab"), -10);
 		pz.mergeLabeledValue(Label.parse("¿c"), -11);
 
-		LabeledIntEdgePluggable xz = new LabeledIntEdgePluggable("XZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable xz = this.g.getEdgeFactory().get("XZ");
 		xz.mergeLabeledValue(Label.parse("abgp"), -4);
 		xz.mergeLabeledValue(Label.parse("abcp"), -10);
 		xz.mergeLabeledValue(Label.parse("abc¬p"), -11);
@@ -600,8 +600,8 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testQstar() throws WellDefinitionException {
 
-		LabeledNode Q = new LabeledNode("Q?", 'q');
-		LabeledNode R = new LabeledNode("R?", 'r');
+		LabeledNode Q = this.g.getNodeFactory().get("Q?", 'q');
+		LabeledNode R = this.g.getNodeFactory().get("R?", 'r');
 		this.g.addVertex(this.Z);
 		this.g.addVertex(this.P);
 		this.g.addVertex(Q);
@@ -609,13 +609,13 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 
 		// Ricostruisco i passi di un caso di errore
-		LabeledIntEdgePluggable RZ = new LabeledIntEdgePluggable("RZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable RZ = this.g.getEdgeFactory().get("RZ");
 		RZ.mergeLabeledValue(Label.parse("p¬q"), -16);
 
-		LabeledIntEdgePluggable QZ = new LabeledIntEdgePluggable("QZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable QZ = this.g.getEdgeFactory().get("QZ");
 		QZ.mergeLabeledValue(Label.parse("p¬r"), -14);
 
-		LabeledIntEdgePluggable PZ = new LabeledIntEdgePluggable("PZ", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable PZ = this.g.getEdgeFactory().get("PZ");
 		PZ.mergeLabeledValue(Label.parse("¬q¬r"), -12);
 
 		this.g.addEdge(RZ, R, this.Z);
@@ -664,12 +664,12 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	@Test
 	public final void testRemoveChildren() {
 
-		LabeledNode Y = new LabeledNode("Y");
-		LabeledNode A = new LabeledNode("A?", 'a');
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
+		LabeledNode A = this.g.getNodeFactory().get("A?", 'a');
 		A.setLabel(Label.parse("¬p"));
-		LabeledNode B = new LabeledNode("B?", 'b');
+		LabeledNode B = this.g.getNodeFactory().get("B?", 'b');
 		B.setLabel(Label.parse("a¬p"));
-		LabeledNode G = new LabeledNode("G?", 'g');
+		LabeledNode G = this.g.getNodeFactory().get("G?", 'g');
 
 		this.g.addVertex(this.P);
 		this.g.addVertex(A);
@@ -679,17 +679,17 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable XP = new LabeledIntEdgePluggable("XP", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
 		XP.mergeLabeledValue(Label.parse("¬a¬p"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
 		XP.mergeLabeledValue(Label.parse("ba¬p"), 9);
 
-		LabeledIntEdgePluggable YX = new LabeledIntEdgePluggable("YX", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("¬b"), 9);
 		YX.mergeLabeledValue(Label.parse("b"), -10);
 
-		LabeledIntEdgePluggable AP = new LabeledIntEdgePluggable("AP", this.labeledIntValueMapClass);
+		LabeledIntEdgePluggable AP = this.g.getEdgeFactory().get("AP");
 		AP.mergeLabeledValue(Label.parse("¬p"), -1);
 
 		this.g.addEdge(XP, this.X, this.P);

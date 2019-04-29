@@ -236,6 +236,23 @@ public class LabeledIntTreeMapTest {
 	}
 
 	/**
+	 * 
+	 */
+	@Test
+	public void testEntrySet1() {
+		this.actual.put(Label.emptyLabel, 0);
+		this.actual.put(Label.parse("a"), -1);
+		this.actual.put(Label.parse("¬c"), -1);
+		this.actual.put(Label.parse("b"), -1);
+
+		assertEquals("{(0, ⊡) (-1, a) (-1, b) (-1, ¬c) }", this.actual.toString());
+		ObjectSet<Entry<Label>> entrySet = this.actual.entrySet();
+		assertEquals("{⊡->0, a->-1, ¬c->-1, b->-1}", entrySet.toString());
+
+		this.actual.remove(Label.parse("¬c"));
+		assertEquals("{⊡->0, a->-1, ¬c->-1, b->-1}", entrySet.toString());
+	}
+	/**
 	 * Check if the management of the base is correct.
 	 */
 	@Test
@@ -624,6 +641,24 @@ public class LabeledIntTreeMapTest {
 
 		assertEquals("{(30, ⊡) (25, ¬a) (24, b) (23, ab) }", this.actual.toString());
 		// assertEquals("{(30, ⊡) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
+	}
+
+	/**
+	 * Test method for {@link it.univr.di.labeledvalue.LabeledIntSimpleMap#keySet()}.
+	 */
+	@Test
+	public void testKeySet() {
+		this.actual.put(Label.emptyLabel, 0);
+		this.actual.put(Label.parse("a"), -1);
+		this.actual.put(Label.parse("¬c"), -1);
+		this.actual.put(Label.parse("b"), -1);
+
+		assertEquals("{(0, ⊡) (-1, a) (-1, b) (-1, ¬c) }", this.actual.toString());
+		ObjectSet<Label> entrySet = this.actual.keySet();
+		assertEquals("{⊡, a, ¬c, b}", entrySet.toString());
+
+		this.actual.remove(Label.parse("¬c"));
+		assertEquals("{⊡, a, ¬c, b}", entrySet.toString());
 	}
 
 	/**
