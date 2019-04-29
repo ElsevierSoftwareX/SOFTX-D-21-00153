@@ -969,7 +969,6 @@ public class CSTNTest {
 
 		// Ricostruisco i passi di un caso di errore
 		LabeledIntEdgePluggable RZ = this.g.getEdgeFactory().get("RZ");
-		;
 		RZ.mergeLabeledValue(Label.parse("p¬q"), -16);
 
 		LabeledIntEdgePluggable QZ = this.g.getEdgeFactory().get("QZ");
