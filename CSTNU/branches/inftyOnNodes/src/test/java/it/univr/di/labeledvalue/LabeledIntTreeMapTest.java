@@ -143,55 +143,46 @@ public class LabeledIntTreeMapTest {
 
 		@Override
 		public LabeledIntMap createLabeledIntMap() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public LabeledIntMap createLabeledIntMap(LabeledIntMap lim) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public int getMinValueSubsumedBy(Label l) {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public int getMaxValue() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public boolean alreadyRepresents(Label newLabel, int newValue) {
-			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
 		public boolean isEmpty() {
-			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
 		public LabeledIntMapView unmodifiable() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 	}
@@ -644,7 +635,6 @@ public class LabeledIntTreeMapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.LabeledIntSimpleMap#keySet()}.
 	 */
 	@Test
 	public void testKeySet() {
