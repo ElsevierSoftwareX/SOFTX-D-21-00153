@@ -301,7 +301,9 @@ public class CSTNRandomGenerator {
 	// static public final String VERSIONandDATE = "Version 0 - November, 23 2018";
 	// static public final String VERSIONandDATE = "Version 0.5 - November, 28 2018";
 	// static public final String VERSIONandDATE = "Version 0.6 - March, 29 2019";
-	static public final String VERSIONandDATE = "Version 0.7 - April, 24 2019";
+	// static public final String VERSIONandDATE = "Version 0.7 - April, 24 2019";
+	static public final String VERSIONandDATE = "Version 0.8 - May, 08 2019";
+
 
 	/**
 	 * Checker
@@ -366,7 +368,18 @@ public class CSTNRandomGenerator {
 	/**
 	 * Maximum checks for a network
 	 */
-	static final int MAX_CHECKS = 20;
+	static final int MAX_CHECKS = 10;
+
+	/**
+	 * @param n
+	 * @return a string format "%0&lt;i&gt;d" where <code>i</code> is the max between 3 and the digit number of <code>n</code>.
+	 */
+	private static String makeNumberFormat(int n) {
+		int nDigits = (int) Math.floor(Math.log10(n)) + 1;
+		if (nDigits < 3)
+			nDigits = 3;
+		return "%0" + nDigits + "d";
+	}
 
 	/**
 	 * @param args
@@ -392,13 +405,11 @@ public class CSTNRandomGenerator {
 		}
 		System.out.println("Starting execution...");
 
+
 		String fileNamePrefix = createFolders(generator);
 		createReadmeFiles(generator);
 
-		int nDigits = (int) Math.floor(Math.log10(generator.dcInstances)) + 1;
-		if (nDigits < 3)
-			nDigits = 3;
-		final String numberFormat = "%0" + nDigits + "d";
+		final String numberFormat = makeNumberFormat(generator.dcInstances);
 
 		CSTNUGraphMLWriter cstnWriter = new CSTNUGraphMLWriter(null);
 		Pair<LabeledIntGraph> instances = null;
@@ -443,7 +454,7 @@ public class CSTNRandomGenerator {
 		if (!baseDir.exists()) {
 			baseDir.mkdirs();
 		}
-		String suffix = "_" + generator.nNodes + "nodes_" + generator.nPropositions + "props_"
+		String suffix = "_" + String.format(makeNumberFormat(generator.nNodes), generator.nNodes) + "nodes_" + generator.nPropositions + "props_"
 				+ generator.nQLoops + "qLoops_" + generator.nNodesQLoop + "nodeInQLoop_"
 				+ generator.nPropsQLoop + "propInQLoop_" + generator.nObsQLoop + "obsInQLoop";
 
@@ -719,12 +730,17 @@ public class CSTNRandomGenerator {
 	 */
 	public Pair<LabeledIntGraph> buildAPairRndCSTNInstances(boolean alsoNotDcInstance) {
 
+		LOG.info("Start building a new random instance");
 		LabeledIntGraph randomGraph = new LabeledIntGraph(LabeledIntTreeMap.class),
 				notDCGraph = null;
 
 		// Add all node but Z (Z is not considered)
 		double shift = 200, x = 0, y = 0;
 		int nodesInQloops = this.nNodesQLoop * this.nQLoops;
+		LOG.info("Nodes: " + this.nNodes
+				+ "\nq-loops: " + this.nQLoops
+				+ "\nNodes in a q-loop: " + this.nNodesQLoop
+				+ "\nNodes in q-loops: " + nodesInQloops);
 		int divisor;
 		for (int i = 0; i < this.nNodes; i++) {
 			LabeledNode node = randomGraph.getNodeFactory().get("n" + i);
@@ -749,49 +765,58 @@ public class CSTNRandomGenerator {
 			qLoopIndexes[i][0] = i * this.nNodesQLoop;
 			qLoopIndexes[i][1] = (i + 1) * this.nNodesQLoop - 1;
 		}
-		LOG.finer("qLoopIndexes: " + Arrays.deepToString(qLoopIndexes));
+		LOG.info("First and last node index of each q-loop: " + Arrays.deepToString(qLoopIndexes));
 
 		// Propositions
 		char[] proposition = new char[this.nPropositions];
 		for (char i = 'a'; i < 'a' + this.nPropositions; i++) {
 			proposition[i - 'a'] = i;
 		}
-		LOG.finer("proposition: " + Arrays.toString(proposition));
+		LOG.info("Proposition: " + Arrays.toString(proposition));
 
-		// Propositions used in each qLoop
-		char[][] qLoopPropositions = new char[this.nQLoops][this.nPropsQLoop];
+		// Propositions used 4 making qLoop. For each q-loop, we mark the proposition used for creating the q-loop.
+		char[][] qLoopPropositionsMap = new char[this.nQLoops][this.nPropsQLoop];
 		int k = 0;
 		for (int i = 0; i < this.nQLoops; i++) {
 			for (int j = 0; j < this.nPropsQLoop; j++) {
-				qLoopPropositions[i][j] = proposition[k++];
+				qLoopPropositionsMap[i][j] = proposition[k++];
 			}
 		}
-		LOG.finer("qLoopPropositions: " + Arrays.deepToString(qLoopPropositions));
+		LOG.info("Propositions used for making q-loops: " + Arrays.deepToString(qLoopPropositionsMap));
 
 		// Observation t.p. in qLoop
-		CharList leftProposition = new CharArrayList(proposition);
+		CharList propNotUsed4MakingQLoop = new CharArrayList(proposition);
 		CharList qLoopProps = null;
 		for (int i = 0; i < this.nQLoops; i++) {
 			int indexNodeInQLoop = qLoopIndexes[i][0];
-			qLoopProps = new CharArrayList(qLoopPropositions[i]);
+			qLoopProps = new CharArrayList(qLoopPropositionsMap[i]);
 			for (int j = 0; j < this.nObsQLoop; j++) {
 				// choose a proposition not belonging to the one associated to qLoop
 				char p = ' ';
 				boolean search = true;
+				int trial = 0;
 				while (search) {
-					k = this.rnd.nextInt(leftProposition.size());
-					p = leftProposition.getChar(k);
+					// first we use propInQloops, the the others
+					k = this.rnd.nextInt(propNotUsed4MakingQLoop.size());
+					p = propNotUsed4MakingQLoop.getChar(k);
 					search = qLoopProps.contains(p);
+					trial++;
+					if (trial > 10) {
+						search = false;// this is for unlock the occurrence in which rnd choices determine that for a q-loop only local proposition can be
+										// choosen.
+						LOG.info("Unfortunately, proposition " + p + " will be associate to node n" + (indexNodeInQLoop + j)
+								+ " in a q-loop defined using also " + p);
+					}
 				}
 				LabeledNode obs = randomGraph.getNode("n" + (indexNodeInQLoop + j));
-				LOG.finer("Node in qLoop " + i + " transformed in obs: " + obs + "\tProposition: " + p);
+				LOG.info("Node in qLoop " + i + " transformed in obs: " + obs + "\tProposition: " + p);
 				obs.setObservable(p);
-				leftProposition.rem(p);
+				propNotUsed4MakingQLoop.rem(p);
 			}
 		}
 
 		// Remaining observation t.p.
-		k = leftProposition.size();
+		k = propNotUsed4MakingQLoop.size();
 		if (k > 0) {
 			int firstIndexNodeNotInQLoop = qLoopIndexes[this.nQLoops - 1][1] + 1;
 			if ((firstIndexNodeNotInQLoop + k) >= this.nNodes) {
@@ -801,7 +826,7 @@ public class CSTNRandomGenerator {
 					+ "\nThe following nodes are transformed in obs ones and they stay outside qLoops.");
 			for (; k > 0; k--) {
 				LabeledNode obs = randomGraph.getNode("n" + firstIndexNodeNotInQLoop++);
-				char p = leftProposition.getChar(k - 1);
+				char p = propNotUsed4MakingQLoop.getChar(k - 1);
 				LOG.finer("Node transformed in obs: " + obs + "\tProposition: " + p);
 				obs.setObservable(p);
 			}
@@ -810,7 +835,7 @@ public class CSTNRandomGenerator {
 		// Add all qLoops
 		for (int i = 0; i < this.nQLoops; i++) {
 			LOG.finer("Random generation of qLoop " + i);
-			buildQLoop(randomGraph, qLoopIndexes[i][0], qLoopIndexes[i][1], qLoopPropositions[i]);
+			buildQLoop(randomGraph, qLoopIndexes[i][0], qLoopIndexes[i][1], qLoopPropositionsMap[i]);
 		}
 
 		// For any pair of nodes, add an edge with probability this.edgeProb.
@@ -822,9 +847,9 @@ public class CSTNRandomGenerator {
 		LOG.finer("Starting adding edges among qLoops and free nodes");
 		for (int i = 0; i < nodesInQloops; i++) {
 			// one node in a qLoop, the other in other qLoop or free. I exploit the order of nodes!
-			propsWithout1Qloop = setDifference(proposition, qLoopPropositions[i / this.nNodesQLoop]);
+			propsWithout1Qloop = setDifference(proposition, qLoopPropositionsMap[i / this.nNodesQLoop]);
 			for (int j = i + this.nNodesQLoop; j < this.nNodes; j++) {
-				propsToUse = (j < nodesInQloops) ? setDifference(propsWithout1Qloop, qLoopPropositions[j / this.nNodesQLoop]) : propsWithout1Qloop;
+				propsToUse = (j < nodesInQloops) ? setDifference(propsWithout1Qloop, qLoopPropositionsMap[j / this.nNodesQLoop]) : propsWithout1Qloop;
 				LOG.finest("propsToUse: " + Arrays.toString(propsToUse));
 				addRndEdge(i, j, propsToUse, randomGraph, edgeFactory, addedEdges);
 				addRndEdge(j, i, propsToUse, randomGraph, edgeFactory, addedEdges);
@@ -859,6 +884,7 @@ public class CSTNRandomGenerator {
 		}
 		cstn.withNodeLabels = false;
 		while (true) {
+			cstn.reset();
 			cstn.setG(new LabeledIntGraph(randomGraph, randomGraph.getInternalLabeledValueMapImplementationClass()));
 			if (LOG.isLoggable(Level.FINER)) {
 				try (PrintWriter writer = new PrintWriter(new File(this.dcSubDir.getParent(), "current.cstn"))) {
