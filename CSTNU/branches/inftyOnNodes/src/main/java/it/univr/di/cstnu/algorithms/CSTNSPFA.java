@@ -44,18 +44,14 @@ public class CSTNSPFA extends CSTNIR {
 	@SuppressWarnings("hiding")
 	// static final public String VERSIONandDATE = "Version 0.1 - February, 20 2019";
 	// static final public String VERSIONandDATE = "Version 0.2 - March, 31 2019";// It extends CSTNIR. I proved that pseudo-polynomiality cannot be avoid.
-	static final public String VERSIONandDATE = "Version 2.0 - April, 26 2019";// During the init, all nodes in the negative subpath of a negative q-loop will
-																				// be identified by putting -∞ in their potential.
+	// static final public String VERSIONandDATE = "Version 2.0 - April, 26 2019";// During the init, all nodes in the negative subpath of a negative q-loop
+	// will be identified by putting -∞ in their potential.
+	static final public String VERSIONandDATE = "Version 3.0 - May, 01 2019";// It apply SPFA approach directly on instance adjusting the SPFA.
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
 	static Logger LOG = Logger.getLogger(CSTNSPFA.class.getName());
-
-	/**
-	 * Checks the extended graph
-	 */
-	static final boolean PREPROCESSING_GRAPH_FINDING_POTENTIALS_OF_QLOOP_NODES = true;
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -100,7 +96,7 @@ public class CSTNSPFA extends CSTNIR {
 	}
 
 	/**
-	 * Calls {@link CSTN#initAndCheck()} and, if everything is ok, it transposes the graph.
+	 * Calls {@link CSTN#initAndCheck()} and, if everything is ok, it determined all possible -∞ potentials in negative q-loops.
 	 * 
 	 * @return true if the graph is a well formed
 	 * @throws WellDefinitionException if the initial graph is not well defined.
@@ -115,85 +111,74 @@ public class CSTNSPFA extends CSTNIR {
 		if (!super.initAndCheck())
 			return false;
 
-		if (PREPROCESSING_GRAPH_FINDING_POTENTIALS_OF_QLOOP_NODES) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINE)) {
-					LOG.log(Level.FINE, "Starting completition of graph with edges having negative weights...");
-				}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "Starting completition of graph with edges having negative weights...");
 			}
-			// Completes the graph adding only new negative edges for n round.
-			// In this way it should find negative cycles.
-			ObjectArrayList<LabeledIntEdge> edgesToCheck = new ObjectArrayList<>(this.g.getEdges());
-			ObjectArrayList<LabeledIntEdge> newEdgesToCheck = new ObjectArrayList<>();
+		}
+		// Completes the graph adding only new negative edges for n round.
+		// In this way it should find negative cycles.
+		ObjectArrayList<LabeledIntEdge> edgesToCheck = new ObjectArrayList<>(this.g.getEdges());
+		ObjectArrayList<LabeledIntEdge> newEdgesToCheck = new ObjectArrayList<>();
 
-			int n = this.g.getVertexCount();
-			boolean noFirstRound = false;
-			int negInftyPotentialCount = 0;
-			while (edgesToCheck.size() > 0 && n-- > 0) {
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "***Cycle countdown: " + n);
-					}
-				}
-				for (LabeledIntEdge edgeAB : edgesToCheck) {
-					LabeledNode A = this.g.getSource(edgeAB);
-					LabeledNode B = this.g.getDest(edgeAB);
-					for (LabeledIntEdge edgeBC : this.g.getOutEdges(B)) {
-						LabeledNode C = this.g.getDest(edgeBC);
-						LabeledIntEdge edgeAC = this.g.findEdge(A, C);
-
-						// Propagate only to new edges.
-						// At first round, even an already defined edge has to be considered new.
-						if (edgeAC == null) {
-							edgeAC = makeNewEdge("∞", LabeledIntEdge.ConstraintType.derived);
-						} else {
-							if (noFirstRound)
-								continue;
-						}
-
-						if (labelPropagation(A, B, C, edgeAB, edgeBC, edgeAC)) {
-							if (!this.checkStatus.consistency) {
-								this.checkStatus.initialized = true;
-								this.checkStatus.finished = true;
-								return true;
-							}
-
-							if (A != C && !edgeAC.isEmpty()) {
-								newEdgesToCheck.add(edgeAC);
-							}
-							if (Debug.ON) {
-								if (A == C) {
-									negInftyPotentialCount++;
-								}
-							}
-						}
-					}
-				}
-				edgesToCheck = newEdgesToCheck;
-				newEdgesToCheck = new ObjectArrayList<>();
-				noFirstRound = true;
-			}
+		int n = this.g.getVertexCount();
+		boolean noFirstRound = false;
+		int negInftyPotentialCount = 0;
+		while (edgesToCheck.size() > 0 && n-- > 0) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "All possible -∞ potential found. They are " + negInftyPotentialCount + ".");
+					LOG.log(Level.FINER, "***Cycle countdown: " + n);
 				}
 			}
+			for (LabeledIntEdge edgeAB : edgesToCheck) {
+				LabeledNode A = this.g.getSource(edgeAB);
+				LabeledNode B = this.g.getDest(edgeAB);
+				for (LabeledIntEdge edgeBC : this.g.getOutEdges(B)) {
+					LabeledNode C = this.g.getDest(edgeBC);
+					LabeledIntEdge edgeAC = this.g.findEdge(A, C);
 
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINE)) {
-					LOG.log(Level.FINE, "Done.");
+					// Propagate only to new edges.
+					// At first round, even an already defined edge has to be considered new.
+					if (edgeAC == null) {
+						edgeAC = makeNewEdge("∞", LabeledIntEdge.ConstraintType.derived);
+					} else {
+						if (noFirstRound)
+							continue;
+					}
+
+					if (labelPropagation(A, B, C, edgeAB, edgeBC, edgeAC)) {
+						if (!this.checkStatus.consistency) {
+							this.checkStatus.initialized = true;
+							this.checkStatus.finished = true;
+							return true;
+						}
+
+						if (A != C && !edgeAC.isEmpty()) {
+							newEdgesToCheck.add(edgeAC);
+						}
+						if (Debug.ON) {
+							if (A == C) {
+								negInftyPotentialCount++;
+							}
+						}
+					}
 				}
+			}
+			edgesToCheck = newEdgesToCheck;
+			newEdgesToCheck = new ObjectArrayList<>();
+			noFirstRound = true;
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "All possible -∞ potential found. They are " + negInftyPotentialCount + ".");
 			}
 		}
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
-				LOG.log(Level.FINE, "Transpose the distance graph.");
+				LOG.log(Level.FINE, "Done.");
 			}
 		}
-		// To find the minimal distance of all nodes from Z, MultipleSourcesSingleDestination (MSSD),
-		// the BellmanFord algorithm is applied to the transposed/reverted graph.
-		this.g.transpose();
 
 		this.numberOfNodes = this.g.getVertexCount();
 
@@ -222,7 +207,7 @@ public class CSTNSPFA extends CSTNIR {
 	 * Executes one step of the BellmanFord algorithm.
 	 * 
 	 * <pre>
-	 * A[u,α]---(v,β)-->B
+	 * A[u,α]<---(v,β)---B
 	 * adds
 	 * B[(u+v),γ]
 	 * where γ=α*β if v<0, γ=αβ otherwise and (u+v) < possibly previous value.
@@ -237,7 +222,7 @@ public class CSTNSPFA extends CSTNIR {
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (it is for convenience. It is not necessary because return the same parameter status).
 	 */
-	CSTNCheckStatus bellmanFord(final NodesToCheck nodesToCheck, final NodesToCheck obsNodesToCheck, Instant timeoutInstant) {
+	CSTNCheckStatus SPFA(final NodesToCheck nodesToCheck, final NodesToCheck obsNodesToCheck, Instant timeoutInstant) {
 		LabeledNode B;
 		/**
 		 * When a new labeled value is added in a potential, then it has to checked w.r.t. all observation potentials for verifying whether
@@ -257,17 +242,18 @@ public class CSTNSPFA extends CSTNIR {
 			ObjectSet<Label> APotentialLabel = APotential.keySet();
 
 			NodesToCheck Bsons = new NodesToCheck();
-			for (LabeledIntEdge AB : this.g.getOutEdges(A)) {
+			for (LabeledIntEdge AB : this.g.getInEdges(A)) {
+				B = this.g.getSource(AB);
+				ObjectSet<Entry<Label>> ABEntrySet = AB.getLabeledValueSet();
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "*** Considering edge " + (AB.getName()) + " related to node " + A.getName());
+						LOG.log(Level.FINER, "*** Considering " + A.getName() + " <--" + ABEntrySet + "-- " + B.getName());
 					}
 				}
-				B = this.g.getDest(AB);
 				boolean isBModified = false;
 				Bsons.clear();
 
-				for (Entry<Label> ABEntry : AB.getLabeledValueSet()) {
+				for (Entry<Label> ABEntry : ABEntrySet) {
 					int v = ABEntry.getIntValue();
 					Label beta = ABEntry.getKey();
 					for (Label alpha : APotentialLabel) {
@@ -276,10 +262,11 @@ public class CSTNSPFA extends CSTNIR {
 							continue; // It could occur that APotential is modified during the cycle (look ahead).
 							// So, it is necessary to check if the value is still present
 						}
-						Label newLabel = (v < 0) ? alpha.conjunctionExtended(beta) : alpha.conjunction(beta);// IR assumed.
 						int newValue = Constants.sumWithOverflowCheck(u, v);
-						if (newValue == Constants.INT_NEG_INFINITE && v > 0)// do not propagate -∞ through positive edges
-							continue;
+						if (newValue > 0 || (newValue == Constants.INT_NEG_INFINITE && v > 0))
+							continue;// only non-positive values are interesting and -∞ through positive edges cannot be propagated
+						Label newLabel = (v < 0) ? alpha.conjunctionExtended(beta) : alpha.conjunction(beta);// IR assumed.
+						// Label newLabel = alpha.conjunction(beta);// FIXME maybe unknown literals must not to be propagated
 						String log = "";
 						if (newLabel != null) {
 							log = A.getName() + "[" + pairAsString(alpha, u) + "]--" + pairAsString(beta, v) + "-->" + B.getName();
@@ -289,46 +276,6 @@ public class CSTNSPFA extends CSTNIR {
 								this.checkStatus.labeledValuePropagationCalls++;
 								if (!this.checkStatus.consistency) {
 									return this.checkStatus;
-								}
-							}
-						}
-						if (!PREPROCESSING_GRAPH_FINDING_POTENTIALS_OF_QLOOP_NODES) {
-							// Here Bellman-Ford is extended in order to overcome the limitation of v < 0 for unknown labeled values
-							// when PREPROCESSING_GRAPH_FINDING_POTENTIALS_OF_QLOOP_NODES, all possible -∞ for qloops are already present in the node
-							// potentials.
-							// so, the following extension is useless.
-							if (newLabel == null || newLabel.containsUnknown())
-								continue;
-							for (LabeledIntEdge BC : this.g.getOutEdges(B)) {
-								LabeledNode C = this.g.getDest(BC);
-								boolean isCModified = false;
-								for (Entry<Label> BCEntry : BC.getLabeledValueSet()) {
-									int w = BCEntry.getIntValue();
-									if (w >= 0)
-										continue;
-									Label gamma = BCEntry.getKey();
-									int vw = Constants.sumWithOverflowCheck(v, w);
-									if (u == Constants.INT_NEG_INFINITE && vw > 0)
-										continue;
-									Label newLabel1 = newLabel.conjunctionExtended(gamma);
-									int newValue1 = Constants.sumWithOverflowCheck(u, vw);
-									if (A == C && newValue1 < 0 && newLabel1.containsUnknown()) {
-										newValue1 = Constants.INT_NEG_INFINITE;
-									}
-									String log1 = log + "--" + pairAsString(gamma, w) + "-->" + C.getName() + "\n";
-									if (updatePotential(C, newLabel1, newValue1, false, log1)) {
-										isCModified = true;
-										obsModified = obsModified.conjunctionExtended(newLabel1);
-										this.checkStatus.labeledValuePropagationCalls++;
-										if (!this.checkStatus.consistency) {
-											return this.checkStatus;
-										}
-									}
-								}
-								if (isCModified) {
-									Bsons.enqueue(C);
-									if (C.isObserver())
-										obsNodesToCheck.enqueue(C);
 								}
 							}
 						}
@@ -381,7 +328,7 @@ public class CSTNSPFA extends CSTNIR {
 				}
 			}
 			this.checkStatus.cycles++;
-			bellmanFord(nodesToCheck, obsNodesToCheck, timeoutInstant);
+			SPFA(nodesToCheck, obsNodesToCheck, timeoutInstant);
 			// ASSERTIONS
 			// nodesToCheck is empty
 			// obsNodesToCheck may be not empty
@@ -642,6 +589,11 @@ public class CSTNSPFA extends CSTNIR {
 	}
 
 	/**
+	 * Checks the potential of each node X in <code>nodesToCheck</code> w.r.t. each node in <code>obsNodes</code>.<br>
+	 * If the potential of X is modified, X is added to <code>newNodesToCheck</code>.<br>
+	 * If <code>obsAlignment</code> is true, then it assumed that <code>nodesToCheck</code> contains obs nodes only and such nodes has to be aligned among them.
+	 * Therefore, the rule is applied considering only obs nodes until no potential is modified.
+	 * 
 	 * @param nodesToCheck
 	 * @param obsNodes
 	 * @param newNodesToCheck
@@ -658,7 +610,7 @@ public class CSTNSPFA extends CSTNIR {
 			char p = obs.getPropositionObserved();
 			ObjectSet<Entry<Label>> obsEntrySet = obs.getPotential().entrySet();
 			for (LabeledNode node : nodesToCheck) {
-				if (node == obs)
+				if (node == obs || (!obsAlignment && node.isObserver()))
 					continue;
 				int minNodeValue = node.getPotential(Label.emptyLabel);
 				if (minNodeValue == Constants.INT_NULL)
