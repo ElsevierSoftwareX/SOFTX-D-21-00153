@@ -288,15 +288,15 @@ public class Literal implements Comparable<Literal> {
 	 * This class is immutable, use {@link #valueOf(char, char)}
 	 * 
 	 * @param v the proposition letter
-	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
+	 * @param state1 one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
 	 */
-	private Literal(final char v, final char state) {
+	private Literal(final char v, final char state1) {
 		if (!Literal.check(v))
 			throw new IllegalArgumentException("The char is not an admissible proposition!");
-		if (getStateOrdinal(state) < 0)
+		if (getStateOrdinal(state1) < 0)
 			throw new IllegalArgumentException("The state is not an admissible one!");
 		this.name = v;
-		this.state = state;
+		this.state = state1;
 	}
 
 	/**

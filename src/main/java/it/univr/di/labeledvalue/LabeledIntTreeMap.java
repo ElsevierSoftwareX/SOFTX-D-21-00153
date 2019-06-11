@@ -152,7 +152,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 			return;
 		this.base = ((LabeledIntTreeMap) lvm).base;
 		for (final Entry<Label> entry : lvm.entrySet()) {
-			this.putForcibly(entry.getKey(), entry.getIntValue());
+			this.put(entry.getKey(), entry.getIntValue());
 		}
 	}
 
