@@ -133,14 +133,14 @@ public class ALabelAlphabet {
 	}
 
 	/**
-	 * @param size initial size of alphabet
+	 * @param size1 initial size of alphabet
 	 */
-	public ALabelAlphabet(int size) {
+	public ALabelAlphabet(int size1) {
 		this();
-		if (size > MAX_ALABELALPHABET_SIZE)
+		if (size1 > MAX_ALABELALPHABET_SIZE)
 			throw new IllegalArgumentException("Dimension exceeds the maximum capacity!");
-		this.value = new ALetter[size];
-		this.value2int = new Object2IntOpenHashMap<>(size);
+		this.value = new ALetter[size1];
+		this.value2int = new Object2IntOpenHashMap<>(size1);
 		this.value2int.defaultReturnValue(DEFAULT_BYTE_RET_VALUE);
 	}
 

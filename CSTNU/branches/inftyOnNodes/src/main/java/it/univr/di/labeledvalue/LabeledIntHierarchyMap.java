@@ -159,9 +159,9 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 
 		@Override
-		public int setValue(int value) {
+		public int setValue(int value1) {
 			int old = this.value;
-			this.value = value;
+			this.value = value1;
 			return old;
 		}
 
