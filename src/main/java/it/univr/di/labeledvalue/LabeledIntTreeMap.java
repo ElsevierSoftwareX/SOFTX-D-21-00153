@@ -99,7 +99,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	/**
 	 * logger
 	 */
-	static private Logger LOG = Logger.getLogger(LabeledIntTreeMap.class.getName());
+	static private Logger LOG = Logger.getLogger("LabeledIntTreeMap");
 
 	/**
 	 *
@@ -150,7 +150,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		this();
 		if (lvm == null)
 			return;
-		this.base = ((LabeledIntTreeMap) lvm).base;
+		// this.base = ((LabeledIntTreeMap) lvm).base;It is wrong to set the base before because the following put can add base values as last values! The base
+		// has to be determined during the put!
 		for (final Entry<Label> entry : lvm.entrySet()) {
 			this.put(entry.getKey(), entry.getIntValue());
 		}
@@ -198,12 +199,12 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	@Override
-	public LabeledIntTreeMap createLabeledIntMap() {
+	public LabeledIntTreeMap newInstance() {
 		return new LabeledIntTreeMap();
 	}
 
 	@Override
-	public LabeledIntTreeMap createLabeledIntMap(LabeledIntMap lim) {
+	public LabeledIntTreeMap newInstance(LabeledIntMap lim) {
 		return new LabeledIntTreeMap(lim);
 	}
 

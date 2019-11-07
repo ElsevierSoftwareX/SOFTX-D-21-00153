@@ -31,7 +31,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	/**
 	 * logger
 	 */
-	static private Logger LOG = Logger.getLogger(AbstractLabeledIntMap.class.getName());
+	static private Logger LOG = Logger.getLogger("AbstractLabeledIntMap");
 
 	/**
 	 * Matcher for a set of labeled values.
@@ -110,7 +110,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		// return null;
 		// }
 
-		LabeledIntMapFactory<? extends LabeledIntMap> factory = new LabeledIntMapFactory<>(labeledIntMapClass);
+		LabeledIntMapSupplier<? extends LabeledIntMap> factory = new LabeledIntMapSupplier<>(labeledIntMapClass);
 		final LabeledIntMap newMap = factory.get();
 
 		final String[] entryPair = AbstractLabeledIntMap.splitterEntry.split(inputMap);
@@ -163,7 +163,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 * @see AbstractLabeledIntMap#parse(String, Class)
 	 */
 	static public LabeledIntMap parse(final String inputMap) {
-		return parse(inputMap, LabeledIntTreeMap.class);
+		return parse(inputMap, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 	}
 
 	/**

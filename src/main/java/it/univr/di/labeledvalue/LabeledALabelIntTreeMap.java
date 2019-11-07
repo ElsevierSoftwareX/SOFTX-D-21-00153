@@ -196,7 +196,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/**
 	 * logger
 	 */
-	private static final Logger LOG = Logger.getLogger(LabeledALabelIntTreeMap.class.getName());
+	private static final Logger LOG = Logger.getLogger("LabeledALabelIntTreeMap");
 
 	/**
 	 *

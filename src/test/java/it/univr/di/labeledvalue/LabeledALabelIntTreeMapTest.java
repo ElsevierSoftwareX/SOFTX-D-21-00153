@@ -27,7 +27,6 @@ public class LabeledALabelIntTreeMapTest {
 	/**
 	 *
 	 */
-	@SuppressWarnings("javadoc")
 	LabeledALabelIntTreeMap map,
 			result;
 

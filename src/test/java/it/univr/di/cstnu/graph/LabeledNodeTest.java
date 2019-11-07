@@ -19,7 +19,6 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  */
 public class LabeledNodeTest {
 
-	@SuppressWarnings("javadoc")
 	static LabeledNodeSupplier<LabeledIntTreeMap> nodeFactory = new LabeledNodeSupplier<>(LabeledIntTreeMap.class);
 
 	/**
@@ -58,14 +57,14 @@ public class LabeledNodeTest {
 	 */
 	@Test
 	public final void potentialPut1() {
-		this.a.putPotential(Label.parse("b"), -1);
-		this.a.putPotential(Label.parse("b"), -1);// ignored
-		this.a.putPotential(Label.parse("a"), -1);
+		this.a.putLabeledPotential(Label.parse("b"), -1);
+		this.a.putLabeledPotential(Label.parse("b"), -1);// ignored
+		this.a.putLabeledPotential(Label.parse("a"), -1);
 
-		assertEquals("{b->-1, a->-1}", this.a.getPotential().entrySet().toString());
+		assertEquals("{b->-1, a->-1}", this.a.getLabeledPotential().entrySet().toString());
 
-		this.a.putPotential(Label.parse("¬b"), -1);
-		assertEquals("{⊡->-1}", this.a.getPotential().entrySet().toString());
+		this.a.putLabeledPotential(Label.parse("¬b"), -1);
+		assertEquals("{⊡->-1}", this.a.getLabeledPotential().entrySet().toString());
 	}
 
 }

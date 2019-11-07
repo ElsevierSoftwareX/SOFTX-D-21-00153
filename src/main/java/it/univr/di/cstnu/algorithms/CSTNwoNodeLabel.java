@@ -7,13 +7,14 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.TNGraph;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
- * In this class, an input CSTN graph is transformed into an equivalent CSTN instance where node labels are empty.<br>
+ * In this class, an input CSTN tNGraph is transformed into an equivalent CSTN instance where node labels are empty.<br>
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -24,7 +25,7 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNwoNodeLabel.class.getName());
+	static Logger LOG = Logger.getLogger("CSTNwoNodeLabel");
 
 	/**
 	 * Version of the class
@@ -59,19 +60,19 @@ public class CSTNwoNodeLabel extends CSTN {
 	/**
 	 * Constructor for
 	 * 
-	 * @param g graph to check
+	 * @param graph TNGraph to check
 	 */
-	public CSTNwoNodeLabel(LabeledIntGraph g) {
-		super(g);
+	public CSTNwoNodeLabel(TNGraph<CSTNEdge> graph) {
+		super(graph);
 		this.withNodeLabels = false;
 	}
 
 	/**
-	 * @param g
-	 * @param timeOut
+	 * @param graph
+	 * @param givenTimeOut
 	 */
-	public CSTNwoNodeLabel(LabeledIntGraph g, int timeOut) {
-		super(g, timeOut);
+	public CSTNwoNodeLabel(TNGraph<CSTNEdge> graph, int givenTimeOut) {
+		super(graph, givenTimeOut);
 		this.withNodeLabels = false;
 	}
 }

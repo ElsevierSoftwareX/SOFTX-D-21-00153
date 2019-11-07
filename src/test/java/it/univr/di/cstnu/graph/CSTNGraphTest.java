@@ -14,18 +14,23 @@ import org.junit.Test;
 
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
  */
-public class LabeledIntGraphTest {
+public class CSTNGraphTest {
 
-	@SuppressWarnings("javadoc")
-	static LabeledIntEdgeSupplier<LabeledIntTreeMap> edgeWithOUTNodeSetFactory = new LabeledIntEdgeSupplier<>(LabeledIntTreeMap.class);
-	// static LabeledIntEdgeSupplier<LabeledIntNodeSetTreeMap> edgeWithNodeSetFactory = new LabeledIntEdgeSupplier<>(LabeledIntNodeSetTreeMap.class);
+	/**
+	 * 
+	 */
+	static Class<? extends CSTNEdge> edgeImplClass = CSTNEdgePluggable.class;
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	static EdgeSupplier<CSTNEdge> edgeFactory = new EdgeSupplier<>(edgeImplClass, LabeledIntTreeMap.class);
+	static Class<? extends LabeledIntMap> labeledValueMapImplClass = edgeFactory.getLabeledIntValueMapImplClass();
+
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public void enlarge() {
 		int order = 4;
@@ -73,33 +78,33 @@ public class LabeledIntGraphTest {
 				Arrays.deepToString(adjacency));
 	}
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public void create() {
-		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
 
 		g.addVertex(g.getNodeFactory().get("Z"));
 		g.addVertex(g.getNodeFactory().get("X"));
-		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "Z", "X");
-		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "X", "Z");
-		g.addEdge(edgeWithOUTNodeSetFactory.get("XZ"), "X", "Z");
+		g.addEdge(edgeFactory.get("ZX"), "Z", "X");
+		g.addEdge(edgeFactory.get("ZX"), "X", "Z");
+		g.addEdge(edgeFactory.get("XZ"), "X", "Z");
 
 		assertEquals(g.getVertexCount(), 2);
 		assertEquals(g.getEdgeCount(), 2);
 	}
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public void removeNode() {
-		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
 		g.addVertex(Z);
 		g.addVertex(X);
-		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), Z, X);
-		g.addEdge(edgeWithOUTNodeSetFactory.get("ZX"), "X", "Z");
-		g.addEdge(edgeWithOUTNodeSetFactory.get("XZ"), X, Z);
+		g.addEdge(edgeFactory.get("ZX"), Z, X);
+		g.addEdge(edgeFactory.get("ZX"), "X", "Z");
+		g.addEdge(edgeFactory.get("XZ"), X, Z);
 
 		g.removeVertex(X);
 		assertEquals(g.getVertexCount(), 1);
@@ -107,10 +112,10 @@ public class LabeledIntGraphTest {
 
 	}
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public void addManyNodes() {
-		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
@@ -125,30 +130,30 @@ public class LabeledIntGraphTest {
 		g.addVertex(g.getNodeFactory().get("A9"));
 		g.addVertex(g.getNodeFactory().get("A10"));
 		g.addVertex(g.getNodeFactory().get("A11"));
-		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
-		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), "X", "Z");
-		g.addEdge(new LabeledIntEdgePluggable("XZ", LabeledIntTreeMap.class), X, Z);
-		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
-		g.addEdge(new LabeledIntEdgePluggable("Z4", LabeledIntTreeMap.class), "Z", "A4");
-		g.addEdge(new LabeledIntEdgePluggable("Z5", LabeledIntTreeMap.class), "Z", "A5");
-		g.addEdge(new LabeledIntEdgePluggable("Z6", LabeledIntTreeMap.class), "Z", "A6");
-		g.addEdge(new LabeledIntEdgePluggable("Z7", LabeledIntTreeMap.class), "Z", "A7");
-		g.addEdge(new LabeledIntEdgePluggable("Z8", LabeledIntTreeMap.class), "Z", "A8");
-		g.addEdge(new LabeledIntEdgePluggable("Z9", LabeledIntTreeMap.class), "Z", "A9");
-		g.addEdge(new LabeledIntEdgePluggable("Z10", LabeledIntTreeMap.class), "Z", "A10");
-		g.addEdge(new LabeledIntEdgePluggable("Z11", LabeledIntTreeMap.class), "Z", "A11");
+		g.addEdge(edgeFactory.get("ZX"), Z, X);
+		g.addEdge(edgeFactory.get("ZX"), "X", "Z");
+		g.addEdge(edgeFactory.get("XZ"), X, Z);
+		g.addEdge(edgeFactory.get("Z3"), "Z", "A3");
+		g.addEdge(edgeFactory.get("Z4"), "Z", "A4");
+		g.addEdge(edgeFactory.get("Z5"), "Z", "A5");
+		g.addEdge(edgeFactory.get("Z6"), "Z", "A6");
+		g.addEdge(edgeFactory.get("Z7"), "Z", "A7");
+		g.addEdge(edgeFactory.get("Z8"), "Z", "A8");
+		g.addEdge(edgeFactory.get("Z9"), "Z", "A9");
+		g.addEdge(edgeFactory.get("Z10"), "Z", "A10");
+		g.addEdge(edgeFactory.get("Z11"), "Z", "A11");
 
-		g.addEdge(new LabeledIntEdgePluggable("A3_11", LabeledIntTreeMap.class), "A3", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_3", LabeledIntTreeMap.class), "A11", "A3");
-		g.addEdge(new LabeledIntEdgePluggable("A4_11", LabeledIntTreeMap.class), "A4", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_4", LabeledIntTreeMap.class), "A11", "A4");
-		g.addEdge(new LabeledIntEdgePluggable("A5_11", LabeledIntTreeMap.class), "A5", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_5", LabeledIntTreeMap.class), "A11", "A5");
+		g.addEdge(edgeFactory.get("A3_11"), "A3", "A11");
+		g.addEdge(edgeFactory.get("A11_3"), "A11", "A3");
+		g.addEdge(edgeFactory.get("A4_11"), "A4", "A11");
+		g.addEdge(edgeFactory.get("A11_4"), "A11", "A4");
+		g.addEdge(edgeFactory.get("A5_11"), "A5", "A11");
+		g.addEdge(edgeFactory.get("A11_5"), "A11", "A5");
 		// System.out.println("G: "+g);
 		g.removeVertex(Z);
 		@SuppressWarnings("unused")
-		String expected = "%LabeledIntGraph: prova\n" +
-				"%LabeledIntGraph Syntax\n" +
+		String expected = "%TNGraph: prova\n" +
+				"%TNGraph Syntax\n" +
 				"%LabeledNode: <name, label, proposition observed>\n" +
 				"%T: <name, type, source node, dest. node, L:{labeled values}, LL:{lower case labeled values}, UL:{upper case labeled values}>\n" +
 				"Nodes:\n" +
@@ -179,7 +184,7 @@ public class LabeledIntGraphTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testGetChildrenOf() {
-		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass, labeledValueMapImplClass);
 		LabeledNode P = g.getNodeFactory().get("P?", 'p');
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Y = g.getNodeFactory().get("Y");
@@ -211,10 +216,10 @@ public class LabeledIntGraphTest {
 
 	}
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void cloneTest() {
-		LabeledIntGraph g = new LabeledIntGraph(LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass, labeledValueMapImplClass);
 		LabeledNode Z = g.getNodeFactory().get("Z");
 		LabeledNode U = g.getNodeFactory().get("U");
 		g.addVertex(Z);
@@ -222,7 +227,7 @@ public class LabeledIntGraphTest {
 		g.setZ(Z);
 
 		Label l = Label.parse("¬p¬q");
-		LabeledIntEdgePluggable eUZ = new LabeledIntEdgePluggable("eUZ", LabeledIntTreeMap.class);
+		CSTNEdge eUZ = edgeFactory.get("eUZ");
 		eUZ.mergeLabeledValue(Label.parse("¬p¿q"), -13);
 		eUZ.mergeLabeledValue(l, -13);
 		eUZ.mergeLabeledValue(Label.parse("¿p"), -15);
@@ -236,7 +241,7 @@ public class LabeledIntGraphTest {
 
 		// System.out.println(g);
 
-		LabeledIntGraph g1 = new LabeledIntGraph(LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g1 = new TNGraph<>(edgeImplClass, labeledValueMapImplClass);
 		g1.copy(g);
 
 		// System.out.println(g1);
@@ -250,15 +255,15 @@ public class LabeledIntGraphTest {
 		// System.out.println(g);
 		assertFalse(g1.hasSameEdgesOf(g));
 
-		g1 = new LabeledIntGraph(g, LabeledIntTreeMap.class);
+		g1 = new TNGraph<>(g, edgeImplClass, labeledValueMapImplClass);
 		assertEquals(g.toString(), g1.toString());
 		assertTrue(g1.hasSameEdgesOf(g));
 	}
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public void managinDifferentEdges() {
-		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
@@ -273,34 +278,34 @@ public class LabeledIntGraphTest {
 		g.addVertex(g.getNodeFactory().get("A9"));
 		g.addVertex(g.getNodeFactory().get("A10"));
 		g.addVertex(g.getNodeFactory().get("A11"));
-		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
-		g.addEdge(new LabeledIntEdgePluggable("XZ", LabeledIntTreeMap.class), X, Z);
-		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
-		g.addEdge(new LabeledIntEdgePluggable("Z4", LabeledIntTreeMap.class), "Z", "A4");
-		g.addEdge(new LabeledIntEdgePluggable("Z5", LabeledIntTreeMap.class), "Z", "A5");
-		g.addEdge(new LabeledIntEdgePluggable("Z6", LabeledIntTreeMap.class), "Z", "A6");
-		g.addEdge(new LabeledIntEdgePluggable("Z7", LabeledIntTreeMap.class), "Z", "A7");
-		g.addEdge(new LabeledIntEdgePluggable("Z8", LabeledIntTreeMap.class), "Z", "A8");
-		g.addEdge(new LabeledIntEdgePluggable("Z9", LabeledIntTreeMap.class), "Z", "A9");
-		g.addEdge(new LabeledIntEdgePluggable("Z10", LabeledIntTreeMap.class), "Z", "A10");
-		g.addEdge(new LabeledIntEdgePluggable("Z11", LabeledIntTreeMap.class), "Z", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A3_11", LabeledIntTreeMap.class), "A3", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_3", LabeledIntTreeMap.class), "A11", "A3");
-		g.addEdge(new LabeledIntEdgePluggable("A4_11", LabeledIntTreeMap.class), "A4", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_4", LabeledIntTreeMap.class), "A11", "A4");
-		g.addEdge(new LabeledIntEdgePluggable("A5_11", LabeledIntTreeMap.class), "A5", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_5", LabeledIntTreeMap.class), "A11", "A5");
+		g.addEdge(edgeFactory.get("ZX"), Z, X);
+		g.addEdge(edgeFactory.get("XZ"), X, Z);
+		g.addEdge(edgeFactory.get("Z3"), "Z", "A3");
+		g.addEdge(edgeFactory.get("Z4"), "Z", "A4");
+		g.addEdge(edgeFactory.get("Z5"), "Z", "A5");
+		g.addEdge(edgeFactory.get("Z6"), "Z", "A6");
+		g.addEdge(edgeFactory.get("Z7"), "Z", "A7");
+		g.addEdge(edgeFactory.get("Z8"), "Z", "A8");
+		g.addEdge(edgeFactory.get("Z9"), "Z", "A9");
+		g.addEdge(edgeFactory.get("Z10"), "Z", "A10");
+		g.addEdge(edgeFactory.get("Z11"), "Z", "A11");
+		g.addEdge(edgeFactory.get("A3_11"), "A3", "A11");
+		g.addEdge(edgeFactory.get("A11_3"), "A11", "A3");
+		g.addEdge(edgeFactory.get("A4_11"), "A4", "A11");
+		g.addEdge(edgeFactory.get("A11_4"), "A11", "A4");
+		g.addEdge(edgeFactory.get("A5_11"), "A5", "A11");
+		g.addEdge(edgeFactory.get("A11_5"), "A11", "A5");
 		// System.out.println("G: "+g);
 		g.removeVertex(Z);
 
-		LabeledIntEdgePluggable e1;
-		for (LabeledIntEdge edge : g.getEdges()) {
-			e1 = new LabeledIntEdgePluggable(edge.getName() + "new", LabeledIntTreeMap.class);
-			((LabeledIntEdgePluggable) edge).takeIn(e1);
+		CSTNEdge e1;
+		for (CSTNEdge edge : g.getEdges()) {
+			e1 = edgeFactory.get(edge.getName() + "new");
+			edge.takeIn(e1);
 		}
 		@SuppressWarnings("unused")
-		String expected = "%LabeledIntGraph: prova\n" +
-				"%LabeledIntGraph Syntax\n" +
+		String expected = "%TNGraph: prova\n" +
+				"%TNGraph Syntax\n" +
 				"%LabeledNode: <name, label, proposition observed>\n" +
 				"%T: <name, type, source node, dest. node, L:{labeled values}, LL:{lower case labeled values}, UL:{upper case labeled values}>\n" +
 				"Nodes:\n" +
@@ -325,10 +330,10 @@ public class LabeledIntGraphTest {
 		assertEquals(g.getEdgeCount(), 6);
 	}
 
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public void reverse() {
-		LabeledIntGraph g = new LabeledIntGraph("prova", LabeledIntTreeMap.class);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
@@ -343,25 +348,25 @@ public class LabeledIntGraphTest {
 		g.addVertex(g.getNodeFactory().get("A9"));
 		g.addVertex(g.getNodeFactory().get("A10"));
 		g.addVertex(g.getNodeFactory().get("A11"));
-		g.addEdge(new LabeledIntEdgePluggable("ZX", LabeledIntTreeMap.class), Z, X);
-		g.addEdge(new LabeledIntEdgePluggable("Z3", LabeledIntTreeMap.class), "Z", "A3");
-		g.addEdge(new LabeledIntEdgePluggable("Z4", LabeledIntTreeMap.class), "Z", "A4");
-		g.addEdge(new LabeledIntEdgePluggable("A3_11", LabeledIntTreeMap.class), "A3", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_3", LabeledIntTreeMap.class), "A11", "A3");
-		g.addEdge(new LabeledIntEdgePluggable("A4_11", LabeledIntTreeMap.class), "A4", "A11");
-		g.addEdge(new LabeledIntEdgePluggable("A11_4", LabeledIntTreeMap.class), "A11", "A4");
-		g.addEdge(new LabeledIntEdgePluggable("A11_5", LabeledIntTreeMap.class), "A11", "A5");
+		g.addEdge(edgeFactory.get("ZX"), Z, X);
+		g.addEdge(edgeFactory.get("Z3"), "Z", "A3");
+		g.addEdge(edgeFactory.get("Z4"), "Z", "A4");
+		g.addEdge(edgeFactory.get("A3_11"), "A3", "A11");
+		g.addEdge(edgeFactory.get("A11_3"), "A11", "A3");
+		g.addEdge(edgeFactory.get("A4_11"), "A4", "A11");
+		g.addEdge(edgeFactory.get("A11_4"), "A11", "A4");
+		g.addEdge(edgeFactory.get("A11_5"), "A11", "A5");
 		// System.out.println("G: "+g);
 
-		LabeledIntEdgePluggable e1;
-		for (LabeledIntEdge edge : g.getEdges()) {
-			e1 = new LabeledIntEdgePluggable(edge.getName() + "new", LabeledIntTreeMap.class);
-			((LabeledIntEdgePluggable) edge).takeIn(e1);
+		CSTNEdge e1;
+		for (CSTNEdge edge : g.getEdges()) {
+			e1 = edgeFactory.get(edge.getName() + "new");
+			edge.takeIn(e1);
 		}
 		g.reverse();
 		assertEquals(g.getVertexCount(), 11);
 		assertEquals(g.getEdgeCount(), 8);
-		String expected = "%LabeledIntGraph: prova\n" +
+		String expected = "%TNGraph: prova\n" +
 				"%Nodes:\n" +
 				"❮Z; ⊡❯\n" +
 				"❮A3; ⊡❯\n" +
@@ -383,6 +388,6 @@ public class LabeledIntGraphTest {
 				"❮Z3; normal; ❯\n" +
 				"❮Z4; normal; ❯\n" +
 				"❮ZX; normal; ❯\n";
-		assertEquals("Reversed graph:", expected, g.toString());
+		assertEquals("Reversed tNGraph:", expected, g.toString());
 	}
 }

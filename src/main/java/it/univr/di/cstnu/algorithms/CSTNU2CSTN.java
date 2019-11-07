@@ -13,17 +13,17 @@ import org.xml.sax.SAXException;
 
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
-import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
-import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.Edge.ConstraintType;
+import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.cstnu.graph.TNGraphMLReader;
+import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 import it.univr.di.labeledvalue.Literal;
 
@@ -36,14 +36,9 @@ import it.univr.di.labeledvalue.Literal;
 public class CSTNU2CSTN extends CSTNU {
 
 	/**
-	 * Default labeledIntValueMap
-	 */
-	static final Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
-
-	/**
 	 * logger
 	 */
-	static Logger LOG1 = Logger.getLogger(CSTNU2CSTN.class.getName());
+	static Logger LOG1 = Logger.getLogger("CSTNU2CSTN");
 	/**
 	 * Version of the class
 	 */
@@ -69,10 +64,11 @@ public class CSTNU2CSTN extends CSTNU {
 			return;
 		LOG.finest("Parameters ok!");
 
-		LOG.finest("Loading graph...");
-		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader = new CSTNUGraphMLReader<>(cstnu2cstn.fInput, labeledIntValueMap);
+		LOG.finest("Loading tNGraph...");
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 		cstnu2cstn.setG(graphMLReader.readGraph());
-		LOG.finest("LabeledIntGraph loaded!");
+		LOG.finest("TNGraph loaded!");
 
 		LOG.finest("DC Checking...");
 		CSTNUCheckStatus status;
@@ -96,7 +92,7 @@ public class CSTNU2CSTN extends CSTNU {
 		}
 
 		if (cstnu2cstn.fOutput != null) {
-			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(null);
+			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
 			try {
 				graphWriter.save(cstnu2cstn.getG(), new PrintWriter(cstnu2cstn.output));
 			} catch (final IOException e) {
@@ -106,20 +102,20 @@ public class CSTNU2CSTN extends CSTNU {
 	}
 
 	/**
-	 * @param g
+	 * @param graph
 	 */
-	public CSTNU2CSTN(LabeledIntGraph g) {
-		super(g);
+	public CSTNU2CSTN(TNGraph<CSTNUEdge> graph) {
+		super(graph);
 	}
 
 	/**
 	 * Constructor for CSTNU
 	 * 
-	 * @param g graph to check
-	 * @param timeOut timeout for the check
+	 * @param graph TNGraph to check
+	 * @param givenTimeOut timeout for the check
 	 */
-	public CSTNU2CSTN(LabeledIntGraph g, int timeOut) {
-		super(g, timeOut);
+	public CSTNU2CSTN(TNGraph<CSTNUEdge> graph, int givenTimeOut) {
+		super(graph, givenTimeOut);
 	}
 
 	/**
@@ -144,14 +140,14 @@ public class CSTNU2CSTN extends CSTNU {
 
 		initAndCheck();
 
-		LabeledIntGraph nextGraph = new LabeledIntGraph(this.g, labeledIntValueMap);
-		nextGraph.setName("Next graph");
+		TNGraph<CSTNUEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+		nextGraph.setName("Next tNGraph");
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 
 		Instant startInstant = Instant.now();
 
 		LOG1.info("Conversion to the corresponding CSTN instance...");
-		LabeledIntGraph cstnGraph = transform();
+		TNGraph<CSTNEdge> cstnGraph = transform();
 		LOG1.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG1.info("CSTN DC-checking...");
@@ -199,8 +195,9 @@ public class CSTNU2CSTN extends CSTNU {
 	 * 
 	 * @return g represented as a CSTN
 	 */
-	LabeledIntGraph transform() {
-		LabeledIntGraph cstnGraph = new LabeledIntGraph(this.g, labeledIntValueMap);
+	TNGraph<CSTNEdge> transform() {
+		TNGraph<CSTNEdge> cstnGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS, this.g.getLabeledValueMapImplClass());
+		cstnGraph.copy(cstnGraph.getClass().cast(this.g));
 
 		int nOfContingents = this.g.getContingentCount();
 		if (nOfContingents == 0) {
@@ -252,11 +249,11 @@ public class CSTNU2CSTN extends CSTNU {
 		}
 
 		// clone all edges, transforming the contingent ones
-		LabeledIntEdgePluggable newE;
-		LabeledIntEdge eInverted;
+		CSTNEdge newE;
+		CSTNUEdge eInverted;
 		LabeledLowerCaseValue lowerCaseValueTuple;
 		int firstPropAvailable = 0;
-		for (final LabeledIntEdge e : this.g.getEdges()) {
+		for (final CSTNUEdge e : this.g.getEdges()) {
 			LabeledNode sInG = this.g.getSource(e);
 			LabeledNode dInG = this.g.getDest(e);
 			if (!e.isContingentEdge()) {

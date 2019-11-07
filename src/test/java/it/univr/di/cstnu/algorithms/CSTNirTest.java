@@ -11,11 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
-import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
+import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Label;
 
@@ -40,15 +39,16 @@ public class CSTNirTest extends CSTNTest {
 	public void setUp() throws Exception {
 		super.setUp();
 	}
+	
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
 	 */
 	@Override
 	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationR0() {
 
-		LabeledIntEdgePluggable px = this.g.getEdgeFactory().get("PX");
+		CSTNEdge px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("ABp"), -10);
 		px.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		px.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
@@ -59,7 +59,7 @@ public class CSTNirTest extends CSTNTest {
 
 		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
-		LabeledIntEdgePluggable pxOK = this.g.getEdgeFactory().get("XY");
+		CSTNEdge pxOK = this.g.getEdgeFactory().get("XY");
 		//if R0 is applied!
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);// ir semantics
@@ -74,14 +74,14 @@ public class CSTNirTest extends CSTNTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
 	 */
 	@Override
 	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationR0Z() {
 
-		LabeledIntEdgePluggable px = this.g.getEdgeFactory().get("PX");
+		CSTNEdge px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("ABp"), -10);
 		px.mergeLabeledValue(Label.parse("AB¬p"), 0);
 		px.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
@@ -97,7 +97,7 @@ public class CSTNirTest extends CSTNTest {
 		}
 		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
-		LabeledIntEdgePluggable pxOK = this.g.getEdgeFactory().get("XY");
+		CSTNEdge pxOK = this.g.getEdgeFactory().get("XY");
 		pxOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pxOK.mergeLabeledValue(Label.emptyLabel, 0);
 
@@ -105,13 +105,13 @@ public class CSTNirTest extends CSTNTest {
 	}
 
 	// /**
-	// * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR2(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable,
+	// * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR2(TNGraph, LabeledNode, LabeledNode, CSTNEdge,
 	// CSTNCheckStatus)}.
 	// */
 	// @SuppressWarnings({ "deprecation", "javadoc" })
 	// @Test
 	// public final void testLabelModificationR2() {
-	// LabeledIntGraph g = new LabeledIntGraph(labeledIntValueMapClass);
+	// TNGraph g = new TNGraph(labeledIntValueMapClass);
 	// LabeledNode P = g.getNodeFactory().get("P?", 'p');
 	// LabeledNode A = g.getNodeFactory().get("A?", 'a');
 	// LabeledNode B = g.getNodeFactory().get("B?", 'b');
@@ -123,7 +123,7 @@ public class CSTNirTest extends CSTNTest {
 	// g.addVertex(X);
 	// g.addVertex(C);
 	//
-	// LabeledIntEdgePluggable xp = new LabeledIntEdgePluggable("XP", labeledIntValueMapClass);
+	// CSTNEdge xp = new CSTNEdge("XP", labeledIntValueMapClass);
 	// xp.mergeLabeledValue(Label.parse("ABp"), 10);
 	// xp.mergeLabeledValue(Label.parse("AB¬p"), 0);
 	// xp.mergeLabeledValue(Label.parse("C¬p"), -1);
@@ -134,13 +134,13 @@ public class CSTNirTest extends CSTNTest {
 	//
 	// cstn.labelModificationR2(g, P, X, xp, status);
 	//
-	// LabeledIntEdgePluggable pxOK = new LabeledIntEdgePluggable("XY", labeledIntValueMapClass);
+	// CSTNEdge pxOK = new CSTNEdge("XY", labeledIntValueMapClass);
 	// //Reaction time = 0
 	// pxOK.mergeLabeledValue(Label.parse("AB"), 0);
 	// pxOK.mergeLabeledValue(Label.parse("C¬p"), -1);
 	// pxOK.mergeLabeledValue(Label.parse("C"), 0);
 	// //Reaction time = 1
-	// pxOK = new LabeledIntEdgePluggable("XY", labeledIntValueMapClass);
+	// pxOK = new CSTNEdge("XY", labeledIntValueMapClass);
 	// pxOK.mergeLabeledValue(Label.parse("AB"), 1);
 	// pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
 	// pxOK.mergeLabeledValue(Label.parse("C"), 1);
@@ -150,19 +150,19 @@ public class CSTNirTest extends CSTNTest {
 	// }
 
 	// /**
-	// * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR1(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable,
+	// * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR1(TNGraph, LabeledNode, LabeledNode, CSTNEdge,
 	// CSTNCheckStatus)}.
 	// */
 	// @SuppressWarnings({ "deprecation", "javadoc" })
 	// @Test
 	// public final void testLabelModificationR1() {
 	// // System.out.printf("R1 CASE\n");
-	// LabeledIntGraph g = new LabeledIntGraph(labeledIntValueMapClass);
+	// TNGraph g = new TNGraph(labeledIntValueMapClass);
 	// LabeledNode Z = g.getNodeFactory().get("Z");
 	// LabeledNode P = g.getNodeFactory().get("P", 'p');
 	// LabeledNode X = g.getNodeFactory().get("X");
 	// LabeledNode Y = g.getNodeFactory().get("Y");
-	// LabeledIntEdgePluggable px = new LabeledIntEdgePluggable("PX", labeledIntValueMapClass);
+	// CSTNEdge px = new CSTNEdge("PX", labeledIntValueMapClass);
 	// LabeledNode A = g.getNodeFactory().get("A?", 'a');
 	// LabeledNode B = g.getNodeFactory().get("B?", 'b');
 	// LabeledNode C = g.getNodeFactory().get("C?", 'c');
@@ -179,7 +179,7 @@ public class CSTNirTest extends CSTNTest {
 	// px.mergeLabeledValue(Label.parse("¬b"), 0);
 	// px.mergeLabeledValue(Label.parse("ab"), -10);
 	//
-	// LabeledIntEdgePluggable xy = new LabeledIntEdgePluggable("XY", labeledIntValueMapClass);
+	// CSTNEdge xy = new CSTNEdge("XY", labeledIntValueMapClass);
 	// xy.mergeLabeledValue(Label.parse("bgp"), 10);
 	// xy.mergeLabeledValue(Label.parse("cp"), -1);
 	//
@@ -191,7 +191,7 @@ public class CSTNirTest extends CSTNTest {
 	// CSTN cstn1 = new CSTN(1, true, labeledIntValueMapClass);
 	// cstn1.labelModificationR1(g, X, Y, Z, xy, new CSTNCheckStatus());
 	//
-	// LabeledIntEdgePluggable xyOK = new LabeledIntEdgePluggable("XY", labeledIntValueMapClass);
+	// CSTNEdge xyOK = new CSTNEdge("XY", labeledIntValueMapClass);
 	// xyOK.putLabeledValue(Label.parse("abc"), -1);
 	// xyOK.putLabeledValue(Label.parse("¬bc"), -1);
 	// xyOK.putLabeledValue(Label.parse("bgp"), 10);
@@ -213,7 +213,7 @@ public class CSTNirTest extends CSTNTest {
 
 	@Override
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR3(LabeledIntGraph, LabeledNode, LabeledNode, LabeledIntEdgePluggable, CSTNCheckStatus)}.
+	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR3(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
 	 */
 	@Test
 	public final void testLabelModificationR3() {
@@ -232,11 +232,11 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable px = this.g.getEdgeFactory().get("PX");
+		CSTNEdge px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("¬b"), 0);
 		px.mergeLabeledValue(Label.parse("ab"), -10);
 
-		LabeledIntEdgePluggable yx = this.g.getEdgeFactory().get("YX");
+		CSTNEdge yx = this.g.getEdgeFactory().get("YX");
 		yx.mergeLabeledValue(Label.parse("bgp"), -4);
 		yx.mergeLabeledValue(Label.parse("cp"), -10);
 		yx.mergeLabeledValue(Label.parse("c¬p"), 11);
@@ -250,7 +250,7 @@ public class CSTNirTest extends CSTNTest {
 
 		this.cstn.labelModificationR3qR3(Y, this.X, yx);
 
-		LabeledIntEdgePluggable yxOK = this.g.getEdgeFactory().get("YX");
+		CSTNEdge yxOK = this.g.getEdgeFactory().get("YX");
 		// std semantics
 		// yxOK.mergeLabeledValue(Label.parse("¬abgp"), -4);
 		//if R3 is applied!
@@ -290,12 +290,12 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable pz = this.g.getEdgeFactory().get("PZ");
+		CSTNEdge pz = this.g.getEdgeFactory().get("PZ");
 		pz.mergeLabeledValue(Label.parse("¬b"), -1);
 		pz.mergeLabeledValue(Label.parse("ab"), -10);
 		pz.mergeLabeledValue(Label.parse("¿c"), -11);
 
-		LabeledIntEdgePluggable xz = this.g.getEdgeFactory().get("XZ");
+		CSTNEdge xz = this.g.getEdgeFactory().get("XZ");
 		xz.mergeLabeledValue(Label.parse("abgp"), -4);
 		xz.mergeLabeledValue(Label.parse("abcp"), -10);
 		xz.mergeLabeledValue(Label.parse("abc¬p"), -11);
@@ -313,7 +313,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -330,17 +330,17 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 
-		LabeledIntEdgePluggable XP = this.g.getEdgeFactory().get("XP");
+		CSTNEdge XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
 		XP.mergeLabeledValue(Label.parse("¬a"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
 		XP.mergeLabeledValue(Label.parse("b"), 9);
 
-		LabeledIntEdgePluggable PY = this.g.getEdgeFactory().get("PY");
+		CSTNEdge PY = this.g.getEdgeFactory().get("PY");
 		PY.mergeLabeledValue(Label.parse("¬b"), 9);
 		PY.mergeLabeledValue(Label.parse("b"), -10);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		this.g.addEdge(XP, this.X, this.P);
 		this.g.addEdge(XY, this.X, Y);
 		this.g.addEdge(PY, this.P, Y);
@@ -352,7 +352,7 @@ public class CSTNirTest extends CSTNTest {
 		// System.out.println(XP);
 		// System.out.println(PY);
 
-		LabeledIntEdgePluggable xyOK = this.g.getEdgeFactory().get("XY");
+		CSTNEdge xyOK = this.g.getEdgeFactory().get("XY");
 		// xyOK.mergeLabeledValue(Label.parse("¬A¬B"), 17);
 		// xyOK.mergeLabeledValue(Label.parse("¬b"), 8);if positive value are not admitted.
 		xyOK.mergeLabeledValue(Label.parse("¬ab"), -2);
@@ -361,19 +361,19 @@ public class CSTNirTest extends CSTNTest {
 
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
-		XP.clearLabels();
+		XP.clear();
 		XP.mergeLabeledValue(Label.parse("b"), -1);
 		XP.mergeLabeledValue(Label.parse("¬b"), 1);
 		XY.clear();
 		this.cstn.labelPropagation(this.X, this.P, Y, XP, PY, XY);// Y is Z!!!
 
 		// EqLP+ rule no positive value
-		xyOK.clearLabels();
+		xyOK.clear();
 		// xyOK.mergeLabeledValue(Label.parse("¬b"), 10);if positive value are not admitted.
 		xyOK.mergeLabeledValue(Label.parse("b"), -11);
 		assertEquals("No case: XY labeled values.", xyOK.getLabeledValueMap(), XY.getLabeledValueMap());
 
-		XP.clearLabels();
+		XP.clear();
 		// System.out.println("xp: " +XP);
 		XP.mergeLabeledValue(Label.parse("b"), -1);
 		// System.out.println("xp: " +XP);
@@ -396,7 +396,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -412,17 +412,17 @@ public class CSTNirTest extends CSTNTest {
 
 
 		// Ricostruisco i passi di un caso di errore
-		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
+		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.parse("p"), -2);
 		XZ.mergeLabeledValue(Label.parse("¿p"), -5);
 		XZ.mergeLabeledValue(Label.parse("¬p"), -1);
 		XZ.mergeLabeledValue(Label.parse("¿p"), -5);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
+		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.parse("¬p"), -1);
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
 
@@ -448,7 +448,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for creating a -infty loop
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -461,7 +461,7 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.parse("¿p"), -5);
 		XY.mergeLabeledValue(Label.parse("¬p"), 3);
@@ -469,7 +469,7 @@ public class CSTNirTest extends CSTNTest {
 
 		assertEquals("XY: ", AbstractLabeledIntMap.parse("{(3, ¬p) (-2, p) (-5, ¿p) }"), XY.getLabeledValueMap());
 
-		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
+		CSTNEdge YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("p"), 3);
 		YX.mergeLabeledValue(Label.parse("¬p"), -1);
 
@@ -483,23 +483,23 @@ public class CSTNirTest extends CSTNTest {
 			e.printStackTrace();
 		}
 
-		LabeledIntEdgePluggable XX = this.g.getEdgeFactory().get("XX");
+		CSTNEdge XX = this.g.getEdgeFactory().get("XX");
 		this.g.addEdge(XX, this.X, this.X);
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
 
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
 
 	}
 
 	/**
 	 * Test method for checking that all propagations are done
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -522,7 +522,7 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addVertex(X5);
 		this.g.addVertex(X6);
 
-		LabeledIntEdgePluggable e = this.g.getEdgeFactory().get("X2X4");
+		CSTNEdge e = this.g.getEdgeFactory().get("X2X4");
 		e.mergeLabeledValue(Label.parse("p"), -2);
 		this.g.addEdge(e, X2, X4);
 
@@ -571,7 +571,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#makeAlphaBetaGammaPrime(LabeledIntGraph, LabeledNode, LabeledNode, LabeledNode, LabeledNode, char, Label, Label)
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#makeAlphaBetaGammaPrime(TNGraph, LabeledNode, LabeledNode, LabeledNode, LabeledNode, char, Label, Label)
 	 * 
 	 * <pre>
 	 * P? &lt;--- X &lt;---- Y
@@ -598,17 +598,17 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addVertex(Y);
 
 
-		LabeledIntEdgePluggable XP = this.g.getEdgeFactory().get("XP");
+		CSTNEdge XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
 		XP.mergeLabeledValue(Label.parse("¬ap"), 8);
 		XP.mergeLabeledValue(Label.parse("¬b"), -1);
 		XP.mergeLabeledValue(Label.parse("bap"), 9);
 
-		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
+		CSTNEdge YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("¬b"), 9);
 		YX.mergeLabeledValue(Label.parse("b"), -10);
 
-		LabeledIntEdgePluggable AP = this.g.getEdgeFactory().get("AP");
+		CSTNEdge AP = this.g.getEdgeFactory().get("AP");
 		AP.mergeLabeledValue(Label.parse("p"), -1);
 
 		this.g.addEdge(XP, this.X, this.P);
@@ -649,7 +649,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -669,12 +669,12 @@ public class CSTNirTest extends CSTNTest {
 		nodeSet.add(Y.getName());
 
 		// Ricostruisco i passi di un caso di errore
-		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
+		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
+		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 		XY.mergeLabeledValue(Label.parse("¬p"), -1);
 		XY.mergeLabeledValue(Label.emptyLabel, 0);
@@ -690,7 +690,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -705,19 +705,19 @@ public class CSTNirTest extends CSTNTest {
 
 
 
-		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
+		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
+		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 
-		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
+		CSTNEdge YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("¬p"), -2);
 
-		LabeledIntEdgePluggable XX = this.g.getEdgeFactory().get("XX");
-		LabeledIntEdgePluggable YY = this.g.getEdgeFactory().get("YY");
+		CSTNEdge XX = this.g.getEdgeFactory().get("XX");
+		CSTNEdge YY = this.g.getEdgeFactory().get("YY");
 
 		this.g.addEdge(XY, this.X, Y);
 		this.g.addEdge(YX, Y, this.X);
@@ -731,20 +731,20 @@ public class CSTNirTest extends CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", this.X.getPotential().toString());
+		assertEquals("XX", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
 
 		this.cstn.labelPropagation(this.X, this.X, Y, XX, XY, XY);
 		// 2018-11-28: infinity forward propagation is useless
 		// assertEquals("XY", "{(-2, p) }", XY.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", Y.getPotential().toString());
+		assertEquals("", "{(-∞, ¿p) }", Y.getLabeledPotential().toString());
 
 	}
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -759,19 +759,19 @@ public class CSTNirTest extends CSTNTest {
 
 
 
-		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
+		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
+		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("¿p"), -2);
 
-		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
+		CSTNEdge YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("¬p"), -2);
 
-		LabeledIntEdgePluggable XX = this.g.getEdgeFactory().get("XX");
-		LabeledIntEdgePluggable YY = this.g.getEdgeFactory().get("YY");
+		CSTNEdge XX = this.g.getEdgeFactory().get("XX");
+		CSTNEdge YY = this.g.getEdgeFactory().get("YY");
 
 		this.g.addEdge(XY, this.X, Y);
 		this.g.addEdge(YX, Y, this.X);
@@ -794,7 +794,7 @@ public class CSTNirTest extends CSTNTest {
 		// 2018-11-28: infinity forward propagation is useless
 		// assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
 		this.cstn.labelPropagation(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", Y.getPotential().toString());// 2017-10-10: qLabels are not more generated.
+		assertEquals("", "{(-∞, ¿p) }", Y.getLabeledPotential().toString());// 2017-10-10: qLabels are not more generated.
 
 		this.cstn.labelPropagation(Y, Y, this.X, YY, YX, YX);
 		// 2018-11-28: infinity forward propagation is useless
@@ -803,7 +803,7 @@ public class CSTNirTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, LabeledIntEdgePluggable, LabeledIntEdgePluggable, LabeledIntEdge)}
+	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
@@ -818,18 +818,18 @@ public class CSTNirTest extends CSTNTest {
 
 
 
-		LabeledIntEdgePluggable YZ = this.g.getEdgeFactory().get("YZ");
+		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
-		LabeledIntEdgePluggable XZ = this.g.getEdgeFactory().get("XZ");
+		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
 		XZ.mergeLabeledValue(Label.emptyLabel, 0);
 
-		LabeledIntEdgePluggable XY = this.g.getEdgeFactory().get("XY");
+		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
 		XY.mergeLabeledValue(Label.parse("p"), -2);
 
-		LabeledIntEdgePluggable YX = this.g.getEdgeFactory().get("YX");
+		CSTNEdge YX = this.g.getEdgeFactory().get("YX");
 		YX.mergeLabeledValue(Label.parse("¬p"), -2);
 
-		LabeledIntEdgePluggable XX = this.g.getEdgeFactory().get("XX");
+		CSTNEdge XX = this.g.getEdgeFactory().get("XX");
 
 		this.g.addEdge(XY, this.X, Y);
 		this.g.addEdge(YX, Y, this.X);
@@ -841,7 +841,7 @@ public class CSTNirTest extends CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", this.X.getPotential().toString());// 2017-10-10: qLabels are not more generated.
+		assertEquals("XX", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());// 2017-10-10: qLabels are not more generated.
 
 
 		this.cstn.labelPropagation(Y, this.X, this.X, YX, XX, YX);
@@ -849,7 +849,7 @@ public class CSTNirTest extends CSTNTest {
 	}
 
 	/**
-	 * Test method to check if a graph requiring only R0-R3 application is checked well. .
+	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 
 	 * @throws WellDefinitionException
 	 */
@@ -866,13 +866,13 @@ public class CSTNirTest extends CSTNTest {
 
 
 		// Ricostruisco i passi di un caso di errore
-		LabeledIntEdgePluggable RZ = this.g.getEdgeFactory().get("RZ");
+		CSTNEdge RZ = this.g.getEdgeFactory().get("RZ");
 		RZ.mergeLabeledValue(Label.parse("p¬q"), -16);
 
-		LabeledIntEdgePluggable QZ = this.g.getEdgeFactory().get("QZ");
+		CSTNEdge QZ = this.g.getEdgeFactory().get("QZ");
 		QZ.mergeLabeledValue(Label.parse("p¬r"), -14);
 
-		LabeledIntEdgePluggable PZ = this.g.getEdgeFactory().get("PZ");
+		CSTNEdge PZ = this.g.getEdgeFactory().get("PZ");
 		PZ.mergeLabeledValue(Label.parse("¬q¬r"), -12);
 
 		this.g.addEdge(RZ, R, this.Z);
@@ -881,7 +881,7 @@ public class CSTNirTest extends CSTNTest {
 
 		this.cstn.dynamicConsistencyCheck();
 
-		LabeledIntEdgePluggable RZnew = (LabeledIntEdgePluggable) this.g.findEdge(R.getName(), this.Z.getName());
+		CSTNEdge RZnew = this.g.findEdge(R.getName(), this.Z.getName());
 		// Std semantics
 		this.ok.clear();
 		this.ok.mergeLabeledValue("⊡", -12);
@@ -891,13 +891,13 @@ public class CSTNirTest extends CSTNTest {
 		// assertEquals("Qstar check"okRZ; normal; {(⊡, -13) (p, -15) (p¬q -16) }; ❯", RZnew.toString()); epsilon semantics
 		assertEquals("Qstar check", this.ok.getLabeledValueMap(), RZnew.getLabeledValueMap());
 
-		LabeledIntEdgePluggable QZnew = (LabeledIntEdgePluggable) this.g.findEdge(Q.getName(), this.Z.getName());
+		CSTNEdge QZnew = this.g.findEdge(Q.getName(), this.Z.getName());
 		this.ok.clear();
 		this.ok.mergeLabeledValue("⊡", -12);
 		this.ok.mergeLabeledValue("p", -14);
 		assertEquals("Qstar check", this.ok.getLabeledValueMap(), QZnew.getLabeledValueMap());
 
-		LabeledIntEdgePluggable PZnew = (LabeledIntEdgePluggable) this.g.findEdge(this.P.getName(), this.Z.getName());
+		CSTNEdge PZnew = this.g.findEdge(this.P.getName(), this.Z.getName());
 		this.ok.clear();
 		this.ok.mergeLabeledValue("⊡", -12);
 		assertEquals("Qstar check", this.ok.getLabeledValueMap(), PZnew.getLabeledValueMap());

@@ -28,7 +28,7 @@ public class ObjectArrayFifoSetQueueTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.queue = new ObjectArrayFIFOSetQueue<String>();
+		this.queue = new ObjectArrayFIFOSetQueue<>();
 		this.queue.enqueue("A");
 		this.queue.enqueue("B");
 		this.queue.enqueue("C");

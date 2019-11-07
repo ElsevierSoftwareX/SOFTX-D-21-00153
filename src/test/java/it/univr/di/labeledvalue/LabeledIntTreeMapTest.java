@@ -142,12 +142,12 @@ public class LabeledIntTreeMapTest {
 		}
 
 		@Override
-		public LabeledIntMap createLabeledIntMap() {
+		public LabeledIntMap newInstance() {
 			return null;
 		}
 
 		@Override
-		public LabeledIntMap createLabeledIntMap(LabeledIntMap lim) {
+		public LabeledIntMap newInstance(LabeledIntMap lim) {
 			return null;
 		}
 
@@ -190,7 +190,7 @@ public class LabeledIntTreeMapTest {
 	/**
 	 * 
 	 */
-	LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
+	LabeledIntMapSupplier<LabeledIntTreeMap> factory = new LabeledIntMapSupplier<>(LabeledIntTreeMap.class);
 
 	/**
 	 * 

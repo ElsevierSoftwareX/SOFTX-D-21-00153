@@ -13,24 +13,29 @@ import java.util.Observable;
 public abstract class AbstractComponent extends Observable implements Component  {
 
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
 	 * To provide a unique id for the default creation of component.
 	 */
 	static protected int idSeq = 0;
 
 	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+
+	/**
 	 * Possible name
 	 */
-	String name;
+	protected String name;
+
+	/**
+	 * Possible color
+	 */
+	Color color;
 
 	/**
 	 * Minimal constructor. the name will be 'c&lt;id&gt;'.
 	 */
-	AbstractComponent() {
+	protected AbstractComponent() {
 		this("");
 	}
 
@@ -39,12 +44,13 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 *
 	 * @param c the component to clone.
 	 */
-	AbstractComponent(final Component c) {
+	protected AbstractComponent(final Component c) {
 		if (c == null) {
 			this.name = "";
 			return;
 		}
 		this.name = c.getName();
+		this.color = c.getColor();
 	}
 
 	/**
@@ -52,8 +58,9 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 *
 	 * @param n
 	 */
-	AbstractComponent(final String n) {
+	protected AbstractComponent(final String n) {
 		this.name = ((n == null) || (n.length() == 0)) ? "c" + AbstractComponent.idSeq++ : n;
+		this.color = null;
 	}
 
 	/**
@@ -75,8 +82,6 @@ public abstract class AbstractComponent extends Observable implements Component 
 	@Deprecated
 	public boolean equals(final Object o) {
 		return super.equals(o);
-		// if (o == null || (o.getClass() != this.getClass())) return false;
-		// return name.equals(((AbstractComponent) o).name);
 	}
 
 	/**
@@ -107,6 +112,23 @@ public abstract class AbstractComponent extends Observable implements Component 
 	}
 
 	/**
+	 * Set the name of the edge. Cannot be null or empty.
+	 *
+	 * @param inputName the not-null not-empty new name
+	 * @return the old name
+	 */
+	@Override
+	public String setName(final String inputName) {
+		final String old = this.name;
+		if ((inputName != null) && (inputName.length() > 0)) {
+			this.name = inputName;
+			this.setChanged();
+			notifyObservers("Name:" + old);
+		}
+		return old;
+	}
+
+	/**
 	 * {@inheritDoc}
 	 *
 	 * Return a string representation of labeled values.
@@ -116,4 +138,18 @@ public abstract class AbstractComponent extends Observable implements Component 
 		return "〖" + (this.name.length() == 0 ? "<empty>" : this.name) + "〗";
 	}
 
+	@Override
+	public void setColor(Color c) {
+		this.color = c;
+	}
+
+	@Override
+	public Color getColor() {
+		return this.color;
+	}
+
+	@Override
+	public void clear() {
+		this.color = null;
+	}
 }

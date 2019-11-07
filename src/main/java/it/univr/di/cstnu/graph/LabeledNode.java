@@ -2,15 +2,15 @@ package it.univr.di.cstnu.graph;
 
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.base.Function;
 
-import it.unimi.dsi.fastutil.objects.Object2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapFactory;
+import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -47,7 +47,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * 
 	 */
-	static final Logger LOG = Logger.getLogger(LabeledNode.class.getName());
+	static final Logger LOG = Logger.getLogger("LabeledNode");
 
 	/**
 	 *
@@ -55,9 +55,10 @@ public class LabeledNode extends AbstractComponent {
 	private static final long serialVersionUID = 2L;
 
 	/**
-	 * First counter of labeled value updating
+	 * First counter of labeled value updating.
+	 * 20191031 I haven't found a case in which it can help.
+	 * Object2IntMap<Label> labeledPotentialCount;
 	 */
-	Object2IntMap<Label> potentialCount;
 
 	/**
 	 * Possible proposition observed.
@@ -77,9 +78,14 @@ public class LabeledNode extends AbstractComponent {
 	private Label label;
 
 	/**
-	 * Potential labeled values.
+	 * Labeled potential values.
 	 */
-	private LabeledIntMap potential;
+	private LabeledIntMap labeledPotential;
+
+	/**
+	 * Potential value.
+	 */
+	private int potential;
 
 	/**
 	 * Position Coordinates. It must be double even if it is not necessary for Jung library compatibility.
@@ -91,23 +97,34 @@ public class LabeledNode extends AbstractComponent {
 	 */
 	private double y;
 
-
 	/**
 	 * Constructor for cloning.
 	 *
 	 * @param n the node to copy.
 	 * @param labeledIntMapImplementation
 	 */
-	<C extends LabeledIntMap> LabeledNode(final LabeledNode n, Class<C> labeledIntMapImplementation) {
+	LabeledNode(final LabeledNode n, Class<? extends LabeledIntMap> labeledIntMapImplementation) {
 		super(n);
 		this.label = n.label;
 		this.propositionObserved = n.getPropositionObserved();
 		this.x = n.x;
 		this.y = n.y;
 		this.alabel = n.alabel;
-		this.potential = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
-		this.potentialCount = new Object2IntLinkedOpenHashMap<>(n.potentialCount);
-		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
+		this.potential = n.potential;
+
+		this.labeledPotential = (new LabeledIntMapSupplier<>(labeledIntMapImplementation)).get();
+		// this.labeledPotentialCount = new Object2IntLinkedOpenHashMap<>(n.labeledPotentialCount);
+		// this.labeledPotentialCount.defaultReturnValue(Constants.INT_NULL);
+	}
+
+	/**
+	 * Helper method
+	 * 
+	 * @param n the node to copy.
+	 * @see #LabeledNode(LabeledNode, Class)
+	 */
+	LabeledNode(final LabeledNode n) {
+		this(n, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 	}
 
 	/**
@@ -116,16 +133,20 @@ public class LabeledNode extends AbstractComponent {
 	 * @param string a {@link java.lang.String} object.
 	 * @param labeledIntMapImplementation
 	 */
-	<C extends LabeledIntMap> LabeledNode(final String string, Class<C> labeledIntMapImplementation) {
+	LabeledNode(final String string, Class<? extends LabeledIntMap> labeledIntMapImplementation) {
 		super(string);
 		this.label = Label.emptyLabel;
 		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
+		this.potential = Constants.INT_NULL;
 		this.alabel = null;
-		this.potential = (new LabeledIntMapFactory<>(labeledIntMapImplementation)).get();
-		this.potentialCount = new Object2IntLinkedOpenHashMap<>();
-		this.potentialCount.defaultReturnValue(Constants.INT_NULL);
+		this.labeledPotential = (new LabeledIntMapSupplier<>(labeledIntMapImplementation)).get();
+		// this.labeledPotentialCount = new Object2IntLinkedOpenHashMap<>();
+		// this.labeledPotentialCount.defaultReturnValue(Constants.INT_NULL);
+	}
 
+	LabeledNode(final String string) {
+		this(string, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 	}
 
 	/**
@@ -138,18 +159,22 @@ public class LabeledNode extends AbstractComponent {
 	<C extends LabeledIntMap> LabeledNode(final String n, final char proposition, Class<C> labeledIntMapImplementation) {
 		this(n, labeledIntMapImplementation);
 		this.propositionObserved = (Literal.check(proposition)) ? proposition : Constants.UNKNOWN;
+		this.potential = Constants.INT_NULL;
 	}
 
 	/**
 	 * Clears all fields but name of <code>this</code>.
 	 */
+	@Override
 	public void clear() {
+		super.clear();
 		this.label = Label.emptyLabel;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.x = this.y = 0;
 		this.alabel = null;
-		this.potential.clear();
-		this.potentialCount.clear();
+		this.potential = Constants.INT_NULL;
+		this.labeledPotential.clear();
+		// this.labeledPotentialCount.clear();
 	}
 
 	/**
@@ -172,33 +197,34 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * @param l a not null label
 	 * @return the counter value associate to label l. If the value does not exists, returns 0;
+	 *         public int getPotentialCount(Label l) {
+	 *         int i = this.labeledPotentialCount.getInt(l);
+	 *         return (i == Constants.INT_NULL) ? 0 : i;
+	 *         }
+	 *         //
 	 */
-	public int getPotentialCount(Label l) {
-		int i = this.potentialCount.getInt(l);
-		return (i == Constants.INT_NULL) ? 0 : i;
-	}
 
 	/**
 	 * @return an unmodifiable view of the labeled potential values
 	 */
-	public LabeledIntMap getPotential() {
-		return this.potential.unmodifiable();
+	public LabeledIntMap getLabeledPotential() {
+		return this.labeledPotential.unmodifiable();
 	}
 
 	/**
 	 * @param l the label to remove
 	 * @return the old value
 	 */
-	public int removePotential(Label l) {
-		return this.potential.remove(l);
+	public int removeLabeledPotential(Label l) {
+		return this.labeledPotential.remove(l);
 	}
 
 	/**
 	 * @param l
 	 * @return the labeled value getPotential(ALabel.emptyLabel, Label).
 	 */
-	public int getPotential(Label l) {
-		return this.potential.get(l);
+	public int getLabeledPotential(Label l) {
+		return this.labeledPotential.get(l);
 	}
 
 	/**
@@ -246,7 +272,7 @@ public class LabeledNode extends AbstractComponent {
 	 * @return true if node potential is equal to inputPotential
 	 */
 	public boolean isPotentialEqual(LabeledIntMap inputPotential) {
-		return this.potential.equals(inputPotential);
+		return this.labeledPotential.equals(inputPotential);
 	}
 
 	/**
@@ -256,41 +282,41 @@ public class LabeledNode extends AbstractComponent {
 	 * @param value
 	 * @return true if the pair has been merged.
 	 */
-	final public boolean putPotential(Label l, int value) {
-		return this.potential.put(l, value);
+	final public boolean putLabeledPotential(Label l, int value) {
+		return this.labeledPotential.put(l, value);
 	}
 
 	/**
 	 * @param l a not null label
-	 * @param reset true if the count has to be reset
-	 * @return the old value associate to to label l. If the old value does not exists, returns 0.
+	 * @param reset true if the count has to be reset and, therefore, this becomes the first update.
+	 * @return the old value associate to to label l. If the label does not exists, returns {@link Constants#INT_NULL}. In case of reset, returns 0.
+	 *         public int updatePotentialCount(Label l, boolean reset) {
+	 *         if (l == null)
+	 *         return Constants.INT_NULL;
+	 *         int i = this.labeledPotentialCount.getInt(l);
+	 *         i = (i == Constants.INT_NULL || reset) ? 1 : i + 1;
+	 *         this.labeledPotentialCount.put(l, i);
+	 *         return i - 1;
+	 *         }
 	 */
-	public int updatePotentialCount(Label l, boolean reset) {
-		if (l == null)
-			return Constants.INT_NULL;
-		int i = this.potentialCount.getInt(l);
-		i = (i == Constants.INT_NULL || reset) ? 1 : i + 1;
-		this.potentialCount.put(l, i);
-		return i - 1;
-	}
 
 	/**
 	 * It is responsibility of programmer to maintain the correspondence between name and alabel.
 	 * 
-	 * @param alabel the alabel to set
+	 * @param inputAlabel the alabel to set
 	 */
-	public void setAlabel(ALabel alabel) {
-		this.alabel = alabel;
+	public void setAlabel(ALabel inputAlabel) {
+		this.alabel = inputAlabel;
 	}
 
 	/**
 	 * Setter for the field <code>label</code>.
 	 *
-	 * @param label the label to set
+	 * @param inputLabel the label to set. If it is null, this.label is set to {@value Label#emptyLabel}.
 	 */
-	public void setLabel(final Label label) {
+	public void setLabel(@Nullable final Label inputLabel) {
 		String old = this.label.toString();
-		this.label = (label == null || label.isEmpty()) ? Label.emptyLabel : label;
+		this.label = (inputLabel == null || inputLabel.isEmpty()) ? Label.emptyLabel : inputLabel;
 		this.setChanged();
 		notifyObservers("Label:" + old);
 	}
@@ -307,14 +333,14 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Set the name of the node. Cannot be null or empty.
 	 *
-	 * @param name the not-null not-empty new name
+	 * @param nodeName the not-null not-empty new name
 	 * @return the old name
 	 */
 	@Override
-	public String setName(final String name) {
+	public String setName(final String nodeName) {
 		final String old = this.name;
-		if ((name != null) && (name.length() > 0)) {
-			this.name = name;
+		if ((nodeName != null) && (nodeName.length() > 0)) {
+			this.name = nodeName;
 			this.setChanged();
 			notifyObservers("Name:" + old);
 		}
@@ -338,30 +364,30 @@ public class LabeledNode extends AbstractComponent {
 	 * If potential is not null, it is used (not copied) as new potential of the node.
 	 * If potential is null, it does nothing.
 	 * 
-	 * @param potential
+	 * @param potentialMap
 	 */
-	public void setPotential(LabeledIntMap potential) {
-		if (potential == null)
+	public void setLabeledPotential(LabeledIntMap potentialMap) {
+		if (potentialMap == null)
 			return;
-		this.potential = potential;
+		this.labeledPotential = potentialMap;
 	}
 
 	/**
 	 * Setter for the field <code>x</code>.
 	 *
-	 * @param x the x to set
+	 * @param x1 the x to set
 	 */
-	public void setX(final double x) {
-		this.x = x;
+	public void setX(final double x1) {
+		this.x = x1;
 	}
 
 	/**
 	 * Setter for the field <code>y</code>.
 	 *
-	 * @param y the y to set
+	 * @param y1 the y to set
 	 */
-	public void setY(final double y) {
-		this.y = y;
+	public void setY(final double y1) {
+		this.y = y1;
 	}
 
 	/** {@inheritDoc} */
@@ -375,11 +401,30 @@ public class LabeledNode extends AbstractComponent {
 			sb.append("; Obs: ");
 			sb.append(this.propositionObserved);
 		}
-		if (!this.potential.isEmpty()) {
-			sb.append("; Potential: ");
-			sb.append(this.potential.toString());
+		if (!this.labeledPotential.isEmpty()) {
+			sb.append("; Labeled Potential: ");
+			sb.append(this.labeledPotential.toString());
 		}
+		if (this.potential != Constants.INT_NULL) {
+			sb.append("; Potential: ");
+			sb.append(this.potential);
+		}
+
 		sb.append(Constants.CLOSE_TUPLE);
 		return sb.toString();
+	}
+
+	/**
+	 * @return the potential. If {@link Constants#INT_NULL}, it means that it was not determined.
+	 */
+	public int getPotential() {
+		return this.potential;
+	}
+
+	/**
+	 * @param potential1 the potential to set
+	 */
+	public void setPotential(int potential1) {
+		this.potential = potential1;
 	}
 }

@@ -102,7 +102,7 @@ public class ALabelAlphabet {
 	 */
 	public static final byte MAX_ALABELALPHABET_SIZE = ALabel.MAX_ALABELALPHABET_SIZE;
 
-	@SuppressWarnings({ "unused", "javadoc" })
+	@SuppressWarnings({ "unused" })
 	private static final long serialVersionUID = 1L;
 
 	/**
