@@ -42,9 +42,7 @@ public abstract class AbstractLabeledIntEdge extends AbstractComponent implement
 	 */
 	final static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
 
-		@SuppressWarnings("javadoc")
 		ALabel aLabel;
-		@SuppressWarnings("javadoc")
 		Label label;
 
 		/**

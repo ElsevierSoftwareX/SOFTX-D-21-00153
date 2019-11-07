@@ -55,7 +55,6 @@ import net.openhft.affinity.AffinityThreadFactory;
  * @version $Id: $Id
  */
 public class Checker {
-	@SuppressWarnings("javadoc")
 
 	/**
 	 * Utility internal class
@@ -67,10 +66,10 @@ public class Checker {
 		protected int propositions;
 		protected int contingents;
 
-		public GlobalStatisticKey(final int nodes, final int propositions, final int contingents) {
-			this.nodes = nodes;
-			this.propositions = propositions;
-			this.contingents = contingents;
+		public GlobalStatisticKey(final int nodes1, final int propositions1, final int contingents1) {
+			this.nodes = nodes1;
+			this.propositions = propositions1;
+			this.contingents = contingents1;
 		}
 
 		@Override
@@ -123,14 +122,14 @@ public class Checker {
 		long total;
 
 		/**
-		 * @param startTime in milliseconds
-		 * @param total number of time to show
-		 * @param current number of time to show
+		 * @param startTime1 in milliseconds
+		 * @param total1 number of time to show
+		 * @param current1 number of time to show
 		 */
-		public RunMeter(long startTime, long total, long current) {
-			this.current = current;
-			this.total = total;
-			this.startTime = startTime;
+		public RunMeter(long startTime1, long total1, long current1) {
+			this.current = current1;
+			this.total = total1;
+			this.startTime = startTime1;
 		}
 
 		void printProgress() {
@@ -175,7 +174,6 @@ public class Checker {
 	 * 
 	 * @author posenato
 	 */
-	@SuppressWarnings("javadoc")
 	private static enum CstnType {
 		cstn, cstnu
 	}
@@ -563,7 +561,6 @@ public class Checker {
 		return true;
 	}
 
-	@SuppressWarnings("javadoc")
 	private static String getNow() {
 		return dateFormatter.format(new Date());
 	}
@@ -721,7 +718,6 @@ public class Checker {
 		}
 	}
 
-	@SuppressWarnings({ "javadoc" })
 	private static CSTN makeCSTNInstance(Checker tester, LabeledIntGraph g) {
 		if (tester.cstnType == CstnType.cstnu) {
 			if (tester.potential)

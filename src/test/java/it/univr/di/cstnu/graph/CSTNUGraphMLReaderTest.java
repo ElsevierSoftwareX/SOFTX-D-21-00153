@@ -29,9 +29,12 @@ public class CSTNUGraphMLReaderTest {
 	 * 
 	 */
 	File file = new File("src/test/resources/testGraphML.cstnu");
+
 	/**
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
 	 */
-	@SuppressWarnings({ "javadoc" })
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
 		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
@@ -40,7 +43,11 @@ public class CSTNUGraphMLReaderTest {
 		Assert.assertEquals(2, g.getEdge("XY").getLowerCaseValue().getValue());
 	}
 
-	@SuppressWarnings({ "javadoc" })
+	/**
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	@Test
 	public void testCSTN() throws IOException, ParserConfigurationException, SAXException {
 		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
