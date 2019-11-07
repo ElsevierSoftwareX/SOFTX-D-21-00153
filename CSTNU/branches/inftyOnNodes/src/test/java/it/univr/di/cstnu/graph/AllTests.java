@@ -9,8 +9,8 @@ import org.junit.runners.Suite.SuiteClasses;
  *
  */
 @RunWith(Suite.class)
-@SuiteClasses({ LabeledIntEdgeSimpleTest.class, LabeledIntGraphTest.class, LabeledNodeTest.class, CSTNUGraphMLWriterTest.class,
-		AbstractLabeledIntEdgeTest.class })
+@SuiteClasses({ CSTNEdgeTest.class, CSTNGraphTest.class, CSTNUEdgeTest.class, CSTNUGraphMLReaderTest.class, CSTNUGraphMLWriterTest.class,
+		EdgeSupplierTest.class, LabeledNodeTest.class, })
 public class AllTests {
 	//annotations is sufficient!
 }

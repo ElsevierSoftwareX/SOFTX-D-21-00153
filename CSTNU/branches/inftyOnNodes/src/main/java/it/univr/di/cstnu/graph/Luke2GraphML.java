@@ -24,26 +24,24 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.univr.di.cstnu.algorithms.Checker;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 
 /**
+ * Utility class for converting CSTN file in Luke format to GraphML format.
+ * 
  * @author posenato
  */
 public class Luke2GraphML {
 	/**
 	 * class logger
 	 */
-	static final Logger LOG = Logger.getLogger("it.univr.di.cstnu.graph.Luke2GraphML");
+	static final Logger LOG = Logger.getLogger("Luke2GraphML");
 
 	/**
 	 * Version
 	 */
 	static final String VERSIONandDATE = "1.1, March, 11 2016";
 
-	/**
-	 * 
-	 */
-	static final Class<? extends LabeledIntMap> labeledIntMapImpl = LabeledIntTreeMap.class;
 
 	/**
 	 * @param args
@@ -74,7 +72,7 @@ public class Luke2GraphML {
 		}
 
 
-		LabeledIntGraph g = new LabeledIntGraph(labeledIntMapImpl);
+		TNGraph<CSTNEdge> g = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 
 		Int2ObjectMap<LabeledNode> int2Node = new Int2ObjectOpenHashMap<>();
 		int2Node.defaultReturnValue(null);
@@ -99,16 +97,16 @@ public class Luke2GraphML {
 			}
 		}
 
-		System.out.println("Graph parsing ended.");
+		System.out.println("TNGraph parsing ended.");
 
-		SpringLayout2<LabeledNode, LabeledIntEdge> layout = new SpringLayout2<>(g);
+		SpringLayout2<LabeledNode, CSTNEdge> layout = new SpringLayout2<>(g);
 		layout.setSize(new Dimension(1024, 800));
 		layout.initialize();
-		CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(layout);
+		TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
 
 		try (PrintWriter writer = new PrintWriter(converter.output)) {
 			graphWriter.save(g, writer);
-			System.out.println("Graph saved into file " + converter.fOutput);
+			System.out.println("TNGraph saved into file " + converter.fOutput);
 		}
 	}
 
@@ -119,7 +117,7 @@ public class Luke2GraphML {
 	 * @param int2Node
 	 * @throws IOException
 	 */
-	private static void addEdge(BufferedReader reader, String line, LabeledIntGraph g,
+	private static void addEdge(BufferedReader reader, String line, TNGraph<CSTNEdge> g,
 			Int2ObjectMap<LabeledNode> int2Node) throws IOException {
 		final String patternEdge = new String("EDGE \\(|,|\\):");
 		String[] nodeParts = line.split(patternEdge);
@@ -129,7 +127,7 @@ public class Luke2GraphML {
 		int dI = Integer.valueOf(nodeParts[2]);
 		LabeledNode sourceNode = int2Node.get(sI);
 		LabeledNode destNode = int2Node.get(dI);
-		LabeledIntEdge edge = g.getEdgeFactory().get(sourceNode.name + "-" + destNode.name);
+		CSTNEdge edge = g.getEdgeFactory().get(sourceNode.name + "-" + destNode.name);
 		Label label = null;
 		String[] labelParts = null;
 		while (reader.ready()) {
@@ -162,14 +160,14 @@ public class Luke2GraphML {
 	 * @param int2Node
 	 * @throws Exception
 	 */
-	private static <C extends LabeledIntMap> void addNode(BufferedReader reader, String line, LabeledIntGraph g,
+	private static <C extends LabeledIntMap> void addNode(BufferedReader reader, String line, TNGraph<CSTNEdge> g,
 			Int2ObjectMap<LabeledNode> int2Node) throws Exception {
 		final String patternNode = new String("TP\\(|\\):[\\s\u00A0]+|,\\s+\\[|\\],\\s+|\\]");
 		String[] nodeParts = line.split(patternNode);
 		// nodeParts[0] is empty!
 		LOG.info("NodeParts:" + Arrays.toString(nodeParts) + ". Lenght:" + nodeParts.length);
 		LOG.info("nodeParts[2]: '" + nodeParts[2] + "'");// . Leading char code: "+ Character.codePointAt(nodeParts[2], 0));
-		LabeledNode node = new LabeledNode(nodeParts[2], labeledIntMapImpl);
+		LabeledNode node = new LabeledNode(nodeParts[2], LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 		boolean added = g.addVertex(node);
 		if (!added)
 			throw new Exception("Node " + node + " cannot be insert.");
@@ -202,10 +200,10 @@ public class Luke2GraphML {
 	Class<LabeledIntMap> internalMapImplementationClass;
 
 	/**
-	 * The input file names. Each file has to contain a CSTN graph in GraphML
+	 * The input file names. Each file has to contain a CSTN tNGraph in GraphML
 	 * format.
 	 */
-	@Argument(required = true, index = 0, usage = "Input file. It has to be a CSTN graph in Luke's format.", metaVar = "CSTN_file_name")
+	@Argument(required = true, index = 0, usage = "Input file. It has to be a CSTN tNGraph in Luke's format.", metaVar = "CSTN_file_name")
 	private String fileNameInput;
 
 	/**

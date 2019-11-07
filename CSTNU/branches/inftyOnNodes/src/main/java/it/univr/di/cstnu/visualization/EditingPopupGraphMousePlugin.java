@@ -23,7 +23,7 @@ import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.picking.PickedState;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
@@ -33,14 +33,15 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @param <V>
  * @param <E>
  */
-public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends LabeledIntEdge> extends edu.uci.ics.jung.visualization.control.EditingPopupGraphMousePlugin<V,E> {
+public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
+		extends edu.uci.ics.jung.visualization.control.EditingPopupGraphMousePlugin<V, E> {
 
 	/**
-	 * @param vertexFactory
-	 * @param edgeFactory
+	 * @param vertexFactory1
+	 * @param edgeFactory1
 	 */
-	public EditingPopupGraphMousePlugin(Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
-		super(vertexFactory,edgeFactory);
+	public EditingPopupGraphMousePlugin(Supplier<V> vertexFactory1, Supplier<E> edgeFactory1) {
+		super(vertexFactory1, edgeFactory1);
 	}
 
 	@Override
@@ -122,7 +123,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 					public void actionPerformed(ActionEvent a) {
 						ExportDialog export = new ExportDialog("Roberto Posenato");
 						VisualizationImageServer<V, E> vis = new VisualizationImageServer<>(vv.getGraphLayout(), vv.getGraphLayout().getSize());
-						CSTNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, LabeledIntEdge>) vis, false);
+						CSTNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, Edge>) vis, false);
 						export.showExportDialog(vv.getParent(), "Export view as ...", vis, "cstnExported.pdf");
 					}
 				});

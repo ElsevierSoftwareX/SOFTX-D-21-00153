@@ -66,7 +66,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			throw new IllegalArgumentException("Initial capacity (" + capacity + ") is negative");
 		this.backingArray = (K[]) new Object[Math.max(1, capacity)]; // Never build a queue with zero-sized backing array.
 		this.length = this.backingArray.length;
-		this.present = new ObjectOpenHashSet<K>();
+		this.present = new ObjectOpenHashSet<>();
 	}
 
 	/**

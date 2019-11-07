@@ -6,7 +6,7 @@
 ############################
 # START parameter configuration
 DIR="$( dirname "${BASH_SOURCE[0]}" )"
-CSTNU="$DIR/$( cd $DIR  && echo `ls CSTNU-*.jar`)"
+CSTNU="$DIR/$( cd $DIR  && echo `ls CSTNU-*-SNAPSHOT.jar`)"
 # END parameter configuration
 
 #############################

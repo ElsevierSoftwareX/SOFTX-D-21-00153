@@ -13,13 +13,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * Simple class to represent and check Conditional Simple Temporal Network assuming epsilon semantics and reducing an instance to an appropriate CSTN where DC
@@ -30,17 +28,11 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * @version $Id: $Id
  */
 public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
-
-	/**
-	 * Default labeledIntValueMap
-	 */
-	static final Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
-
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTN2CSTN0.class.getName());
+	static Logger LOG = Logger.getLogger("CSTN2CSTN0");
 
 	/**
 	 * Version of the class
@@ -66,20 +58,20 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	}
 
 	/**
-	 * @param reactionTime
-	 * @param g
+	 * @param givenReactionTime
+	 * @param graph
 	 */
-	public CSTN2CSTN0(int reactionTime, LabeledIntGraph g) {
-		super(reactionTime, g);
+	public CSTN2CSTN0(int givenReactionTime, TNGraph<CSTNEdge> graph) {
+		super(givenReactionTime, graph);
 	}
 
 	/**
-	 * @param reactionTime
-	 * @param g
-	 * @param timeOut
+	 * @param givenReactionTime
+	 * @param graph
+	 * @param givenTimeOut
 	 */
-	public CSTN2CSTN0(int reactionTime, LabeledIntGraph g, int timeOut) {
-		super(reactionTime, g, timeOut);
+	public CSTN2CSTN0(int givenReactionTime, TNGraph<CSTNEdge> graph, int givenTimeOut) {
+		super(givenReactionTime, graph, givenTimeOut);
 	}
 
 	/**
@@ -97,14 +89,14 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 
 		initAndCheck();
 
-		LabeledIntGraph nextGraph = new LabeledIntGraph(this.g, labeledIntValueMap);
-		nextGraph.setName("Next graph");
+		TNGraph<CSTNEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+		nextGraph.setName("Next tNGraph");
 		CSTNCheckStatus status = new CSTNCheckStatus();
 
 		Instant startInstant = Instant.now();
 
 		LOG.info("Conversion to the corresponding CSTN instance...");
-		LabeledIntGraph cstnGraph = transform();
+		TNGraph<CSTNEdge>  cstnGraph  = transform();
 		LOG.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG.info("CSTN DC-checking...");
@@ -137,8 +129,8 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 				LOG.log(Level.INFO, "The CSTNU instance is DC controllable.\nStatus: " + status);
 			}
 		}
-		// Put all data structures of currentGraph in g
-		// g.copyCleaningRedundantLabels(cstnGraph);
+		// Put all data structures of currentGraph<CSTNEdge>  in g
+		// g.copyCleaningRedundantLabels(cstnGraph<CSTNEdge> );
 		// g.setName(originalName);
 		return status;
 	}
@@ -151,8 +143,8 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	 * @return g represented as a CSTN0.
 	 *         In order to minimize name conflicts, the new name associated to P? is P?^0.
 	 */
-	LabeledIntGraph transform() {
-		LabeledIntGraph cstn = new LabeledIntGraph(this.g, labeledIntValueMap);
+	TNGraph<CSTNEdge> transform() {
+		TNGraph<CSTNEdge> cstn = new TNGraph<>(this.g, this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
 
 		int nOfObservers = this.g.getObserverCount();
 		if (nOfObservers == 0) {
@@ -161,10 +153,10 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Input graph: " + this.g);
+				LOG.finest("Input tNGraph: " + this.g);
 			}
 		}
-		Collection<LabeledNode> observers = new ArrayList<LabeledNode>(this.g.getObservers());// this.g.getObservers() will change at each
+		Collection<LabeledNode> observers = new ArrayList<>(this.g.getObservers());// this.g.getObservers() will change at each
 																								// oldObs.setObservable(Constants.UNKNOWN);
 
 		for (final LabeledNode oldObs : observers) {
@@ -178,7 +170,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 			}
 			// add the two constraints for fixing the distance between the two nodes at epsilon.
 			// To oldObs
-			LabeledIntEdge newE = cstn.getEdgeFactory().get(newObs.getName() + "_" + oldObs.getName());
+			CSTNEdge newE = cstn.getEdgeFactory().get(newObs.getName() + "_" + oldObs.getName());
 			newE.mergeLabeledValue(Label.emptyLabel, -this.getReactionTime());
 			cstn.addEdge(newE, newObs, oldObs);
 			// To newObs
@@ -188,7 +180,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST)) {
-				LOG.finest("Transformed graph: " + cstn);
+				LOG.finest("Transformed tNGraph: " + cstn);
 			}
 		}
 		return cstn;

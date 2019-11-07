@@ -21,7 +21,7 @@ public class LabeledNodeSupplier<C extends LabeledIntMap> implements Supplier<La
 	 * class logger
 	 */
 	@SuppressWarnings("unused")
-	static private Logger LOG = Logger.getLogger(LabeledNodeSupplier.class.getName());
+	static private Logger LOG = Logger.getLogger("LabeledNodeSupplier");
 
 	/**
 	 * 

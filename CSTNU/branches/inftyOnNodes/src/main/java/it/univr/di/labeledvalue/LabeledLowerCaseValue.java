@@ -27,7 +27,7 @@ public class LabeledLowerCaseValue {
 	/**
 	 * Logger.
 	 */
-	private static final Logger LOG = Logger.getLogger(LabeledLowerCaseValue.class.getName());
+	private static final Logger LOG = Logger.getLogger("LabeledLowerCaseValue");
 
 	/**
 	 * A constant empty label to represent an empty label that cannot be modified.

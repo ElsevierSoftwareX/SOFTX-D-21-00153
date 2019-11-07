@@ -174,4 +174,10 @@ public final class Constants implements Serializable {
 			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
 		return (int) sum;
 	}
+
+	/**
+	 * Prevents instantiation
+	 */
+	private Constants() {
+	}
 }

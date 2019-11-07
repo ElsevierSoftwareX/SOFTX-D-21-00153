@@ -1,5 +1,5 @@
 /**
- * // * Translator to the Time Game Automata (TIGA) model.
+ * Translator to the Time Game Automata (TIGA) model.
  */
 package it.univr.di.cstnu.algorithms;
 
@@ -37,21 +37,19 @@ import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
-import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * <p>
- * CSTNU2UppaalTiga class.
- * </p>
- *
+ * Allows one to translate a CSTNU instance into a UppaalTiga Time Game Automa schema.
+ * 
  * @author posenato
  * @version $Id: $Id
  */
@@ -61,12 +59,12 @@ public class CSTNU2UppaalTiga {
 	 */
 	// static final String VERSIONandDATE = "1.6.1, April, 30 2014";
 	// static final String VERSIONandDATE = "1.6.2, April, 30 2015";
-	static final String VERSIONandDATE = "1.6.3, December, 30 2015";
+	// static final String VERSIONandDATE = "1.6.3, December, 30 2015";
+	static final String VERSIONandDATE = "1.64, June, 09 2019";// Edge refactoring
 
 	/**
 	 * Utility class to represent a contingent link parameters.
 	 */
-	@SuppressWarnings("javadoc")
 	private static class Contingent implements Comparable<Contingent> {
 		int lower, upper;
 		LabeledNode source, dest;
@@ -122,9 +120,8 @@ public class CSTNU2UppaalTiga {
 	}
 
 	/**
-	 * Utility class to represent a contingent link parameters.
+	 * Utility class to represent a constraint.
 	 */
-	@SuppressWarnings("javadoc")
 	private static class Constraint implements Comparable<Constraint> {
 		int value;
 		LabeledNode source, dest;
@@ -180,7 +177,7 @@ public class CSTNU2UppaalTiga {
 	/**
 	 * class logger
 	 */
-	static Logger LOG = Logger.getLogger(CSTNU2UppaalTiga.class.getName());
+	static Logger LOG = Logger.getLogger("CSTNU2UppaalTiga");
 
 	/**
 	 * Token to represent logic AND in Tiga expression.
@@ -272,12 +269,12 @@ public class CSTNU2UppaalTiga {
 	// }
 
 	/**
-	 * Return an id for the template id using the name of the graph.
+	 * Return an id for the template id using the name of the tNGraph.
 	 * 
-	 * @param g the graph
+	 * @param g the tNGraph
 	 * @return a cleaned Tga name
 	 */
-	private static String getTgaName(LabeledIntGraph g) {
+	private static String getTgaName(TNGraph<CSTNUEdge> g) {
 		String name = removeCharNotAllowed(g.getName());
 		if (name.matches("[0-9]+.+")) {
 			name = "g" + name;
@@ -301,19 +298,19 @@ public class CSTNU2UppaalTiga {
 			return;
 		LOG.finest("Parameters ok!");
 		if (translator.versionReq) {
-			System.out.print(CSTNU2UppaalTiga.class.getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
+			System.out.print("CSTNU2UppaalTiga " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
 					+ "Copyright © 2014, Roberto Posenato");
 			return;
 		}
 
-		LOG.finest("Loading graph...");
+		LOG.finest("Loading tNGraph...");
 		if (!translator.loadCSTNU(translator.fInput))
 			return;
-		LOG.finest("LabeledIntGraph loaded!");
+		LOG.finest("TNGraph loaded!");
 
-		LOG.finest("Translating graph...");
+		LOG.finest("Translating tNGraph...");
 		translator.translate();
-		LOG.finest("LabeledIntGraph translated and saved!");
+		LOG.finest("TNGraph translated and saved!");
 	}
 
 	/**
@@ -332,7 +329,6 @@ public class CSTNU2UppaalTiga {
 	@Option(required = false, name = "--controller", usage = "Name of controller node", metaVar = "agnes")
 	private String AGNES = "agnes";
 
-	@SuppressWarnings("javadoc")
 	private SortedSet<Contingent> contingentEdge = null;
 
 	/**
@@ -341,9 +337,9 @@ public class CSTNU2UppaalTiga {
 	private SortedSet<LabeledNode> contingentNode = null;
 
 	/**
-	 * CSTNU graph to translate
+	 * CSTNU tNGraph to translate
 	 */
-	private LabeledIntGraph cstnu = null;
+	private TNGraph<CSTNUEdge> cstnu = null;
 
 	/**
 	 * Document representing DOM of TIGA
@@ -351,9 +347,9 @@ public class CSTNU2UppaalTiga {
 	private Document doc = null;
 
 	/**
-	 * The input file containing the CSTNU graph in GraphML format.
+	 * The input file containing the CSTNU tNGraph in GraphML format.
 	 */
-	@Argument(required = true, index = 0, usage = "input file. Input file has to be a CSTNU graph in GraphML format.", metaVar = "CSTNU_file_name")
+	@Argument(required = true, index = 0, usage = "input file. Input file has to be a CSTNU tNGraph in GraphML format.", metaVar = "CSTNU_file_name")
 	private File fInput;
 
 	/**
@@ -823,10 +819,10 @@ public class CSTNU2UppaalTiga {
 	/**
 	 * Constructor for CSTNU2UppaalTiga.
 	 *
-	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param g a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 * @param o a {@link java.io.PrintStream} object.
 	 */
-	public CSTNU2UppaalTiga(LabeledIntGraph g, PrintStream o) {
+	public CSTNU2UppaalTiga(TNGraph<CSTNUEdge> g, PrintStream o) {
 		this();
 		if (o == null || g == null)
 			throw new IllegalArgumentException("One parameter is null!");
@@ -837,16 +833,17 @@ public class CSTNU2UppaalTiga {
 	}
 
 	/**
-	 * Load CSTNU file and create a graph g.
+	 * Load CSTNU file and create a tNGraph g.
 	 * 
 	 * @param fileName
-	 * @return graph if the file was load successfully; null otherwise.
+	 * @return tNGraph if the file was load successfully; null otherwise.
 	 * @throws SAXException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
 	private boolean loadCSTNU(File fileName) throws IOException, ParserConfigurationException, SAXException {
-		CSTNUGraphMLReader<? extends LabeledIntMap> graphMLReader = new CSTNUGraphMLReader<>(fileName, LabeledIntTreeMap.class);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(fileName, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 		this.cstnu = graphMLReader.readGraph();
 		return checkCSTNUSyntax();
 	}
@@ -855,7 +852,7 @@ public class CSTNU2UppaalTiga {
 	 * @return true if the CSTNU is well written, false otherwise.
 	 */
 	private boolean checkCSTNUSyntax() {
-		LOG.finest("Checking graph...");
+		LOG.finest("Checking tNGraph...");
 		try {
 			this.cstnuCheck.initAndCheck();
 		} catch (IllegalArgumentException | WellDefinitionException e) {
@@ -863,7 +860,7 @@ public class CSTNU2UppaalTiga {
 			return false;
 		}
 		prepareAxuliaryCSTNUData();
-		LOG.finest("LabeledIntGraph checked!");
+		LOG.finest("TNGraph checked!");
 		return true;
 	}
 
@@ -918,7 +915,7 @@ public class CSTNU2UppaalTiga {
 	}
 
 	/**
-	 * Classifies nodes of the cstnu graph
+	 * Classifies nodes of the cstnu tNGraph
 	 */
 	private void prepareAxuliaryCSTNUData() {
 
@@ -932,8 +929,8 @@ public class CSTNU2UppaalTiga {
 		this.allConstraintsByLabel.put(Label.emptyLabel, constr);
 
 		// This cycle is redundant, but to avoid to consider an already considered node is more expensive that consider it more times
-		SortedSet<LabeledIntEdge> edges = new ObjectRBTreeSet<>(this.cstnu.getEdges());
-		for (LabeledIntEdge e : edges) {
+		SortedSet<CSTNUEdge> edges = new ObjectRBTreeSet<>(this.cstnu.getEdges());
+		for (CSTNUEdge e : edges) {
 			LabeledNode s = this.cstnu.getSource(e);
 			LabeledNode d = this.cstnu.getDest(e);
 			if (e.isContingentEdge()) {
@@ -983,7 +980,7 @@ public class CSTNU2UppaalTiga {
 	}
 
 	/**
-	 * Convert a CSTNU graph g into a Timed Game Automata in the UPPAAL TIGA format.
+	 * Convert a CSTNU tNGraph g into a Timed Game Automata in the UPPAAL TIGA format.
 	 *
 	 * @return true if the translation has been done and saved.
 	 */

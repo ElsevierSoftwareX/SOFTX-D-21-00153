@@ -125,7 +125,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * @author posenato
 	 */
 	public static final class EmptyLabel extends ALabel {
-		@SuppressWarnings({ "synthetic-access", "javadoc" })
+		@SuppressWarnings({ "synthetic-access" })
 		public EmptyLabel() {
 			super();
 		}
@@ -253,7 +253,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * logger
 	 */
-	private static final Logger LOG = Logger.getLogger(ALabel.class.getName());
+	private static final Logger LOG = Logger.getLogger("ALabel");
 
 	/**
 	 * In order to have a correct copy of a a-label.

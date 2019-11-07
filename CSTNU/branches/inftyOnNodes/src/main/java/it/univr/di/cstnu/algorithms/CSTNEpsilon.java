@@ -8,8 +8,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.kohsuke.args4j.Option;
 import org.xml.sax.SAXException;
 
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -32,7 +33,7 @@ public class CSTNEpsilon extends CSTN {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNEpsilon.class.getName());
+	static Logger LOG = Logger.getLogger("CSTNEpsilon");
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -55,27 +56,27 @@ public class CSTNEpsilon extends CSTN {
 	/**
 	 * Constructor for CSTN.
 	 * 
-	 * @param reactionTime reaction time. It must be strictly positive.
-	 * @param g graph to check
+	 * @param reactionTime1 reaction time. It must be strictly positive.
+	 * @param g1 tNGraph to check
 	 */
-	public CSTNEpsilon(int reactionTime, LabeledIntGraph g) {
-		super(g);
-		if (reactionTime <= 0)
+	public CSTNEpsilon(int reactionTime1, TNGraph<CSTNEdge> g1) {
+		super(g1);
+		if (reactionTime1 <= 0)
 			throw new IllegalArgumentException("Reaction time must be > 0.");
-		this.epsilon = reactionTime;
-		this.reactionTime = reactionTime;
+		this.epsilon = reactionTime1;
+		this.reactionTime = reactionTime1;
 	}
 
 	/**
 	 * Constructor for CSTN.
 	 * 
-	 * @param reactionTime reaction time. It must be strictly positive.
-	 * @param g graph to check
-	 * @param timeOut timeout for the check
+	 * @param reactionTime1 reaction time. It must be strictly positive.
+	 * @param g1 tNGraph to check
+	 * @param timeOut1 timeout for the check
 	 */
-	public CSTNEpsilon(int reactionTime, LabeledIntGraph g, int timeOut) {
-		this(reactionTime, g);
-		this.timeOut = timeOut;
+	public CSTNEpsilon(int reactionTime1, TNGraph<CSTNEdge> g1, int timeOut1) {
+		this(reactionTime1, g1);
+		this.timeOut = timeOut1;
 	}
 
 	/**

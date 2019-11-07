@@ -44,7 +44,7 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 	 * logger
 	 */
 	@SuppressWarnings("unused")
-	static private Logger LOG = Logger.getLogger(LabeledIntSimpleMap.class.getName());
+	static private Logger LOG = Logger.getLogger("LabeledIntSimpleMap");
 
 	/**
 	 *
@@ -115,12 +115,12 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 	}
 
 	@Override
-	public LabeledIntSimpleMap createLabeledIntMap() {
+	public LabeledIntSimpleMap newInstance() {
 		return new LabeledIntSimpleMap();
 	}
 
 	@Override
-	public LabeledIntSimpleMap createLabeledIntMap(LabeledIntMap lim) {
+	public LabeledIntSimpleMap newInstance(LabeledIntMap lim) {
 		return new LabeledIntSimpleMap(lim);
 	}
 

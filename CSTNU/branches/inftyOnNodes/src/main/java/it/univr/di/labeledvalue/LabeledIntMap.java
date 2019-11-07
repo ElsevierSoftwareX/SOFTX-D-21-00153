@@ -89,19 +89,19 @@ public interface LabeledIntMap {
 	public void clear();
 
 	/**
-	 * Public method to enable a Factory class.
+	 * Factory
 	 * 
 	 * @return an object of type LabeledIntMap.
 	 */
-	public LabeledIntMap createLabeledIntMap();
+	public LabeledIntMap newInstance();
 
 	/**
-	 * Public method to enable a Factory class. *
+	 * Factory
 	 * 
 	 * @param lim an object to clone.
 	 * @return an object of type LabeledIntMap.
 	 */
-	public LabeledIntMap createLabeledIntMap(LabeledIntMap lim);
+	public LabeledIntMap newInstance(LabeledIntMap lim);
 
 	/**
 	 * The set of all entries of the map. The set can be a view of the map,

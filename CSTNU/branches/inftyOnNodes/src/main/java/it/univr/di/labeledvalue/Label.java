@@ -3,6 +3,7 @@ package it.univr.di.labeledvalue;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.Nullable;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
@@ -196,7 +197,7 @@ public class Label implements Comparable<Label> {
 	 * logger
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(Label.class.getName());
+	private static final Logger LOG = Logger.getLogger("Label");
 
 	/**
 	 * Maximal number of possible proposition in a network.<br>
@@ -275,9 +276,9 @@ public class Label implements Comparable<Label> {
 	 * The regular expression syntax for a label is specified in {@link #LABEL_RE}.
 	 *
 	 * @param s a {@link java.lang.String} object.
-	 * @return a Label object corresponding to the label string representation.
+	 * @return a Label object corresponding to the label string representation, null if the input string does not represent a label or is null.
 	 */
-	public static final Label parse(String s) {
+	public static final Label parse(@Nullable String s) {
 		if (s == null)
 			return null;
 
@@ -433,7 +434,6 @@ public class Label implements Comparable<Label> {
 	 * unknown              1   1
 	 * </pre>
 	 */
-	@SuppressWarnings("javadoc")
 	private final int bit1, bit0;
 
 	/**

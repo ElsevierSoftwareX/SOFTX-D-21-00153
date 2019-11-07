@@ -7,7 +7,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.TNGraph;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -23,7 +24,7 @@ public class CSTNIR3R extends CSTNIR {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNIR3R.class.getName());
+	static Logger LOG = Logger.getLogger("CSTNIR3R");
 
 	/**
 	 * Version of the class
@@ -57,19 +58,19 @@ public class CSTNIR3R extends CSTNIR {
 	}
 
 	/**
-	 * @param g
+	 * @param g1
 	 */
-	public CSTNIR3R(LabeledIntGraph g) {
-		super(g);
+	public CSTNIR3R(TNGraph<CSTNEdge> g1) {
+		super(g1);
 		this.propagationOnlyToZ = true;
 	}
 
 	/**
-	 * @param g
-	 * @param timeOut
+	 * @param g1
+	 * @param timeOut1
 	 */
-	public CSTNIR3R(LabeledIntGraph g, int timeOut) {
-		super(g, timeOut);
+	public CSTNIR3R(TNGraph<CSTNEdge> g1, int timeOut1) {
+		super(g1, timeOut1);
 		this.propagationOnlyToZ = true;
 	}
 }

@@ -8,10 +8,18 @@ import org.junit.runners.Suite.SuiteClasses;
  * @author posenato
  */
 @RunWith(Suite.class)
-@SuiteClasses({ CSTNepsilonTest.class, CSTNirTest.class, CSTNirR3Test.class, CSTNTest.class, CSTNUTest.class, CSTNwoNodeLabelTest.class,
-		CSTNirwoNodeLabelTest.class,
+@SuiteClasses(
+{
+		CSTNepsilonTest.class,
+		CSTNepsilonwoNodeLabelTest.class,
 		CSTNir3RwoNodeLabelTest.class,
-		CSTNepsilonwoNodeLabelTest.class
+		CSTNirR3Test.class,
+		CSTNirTest.class,
+		CSTNirwoNodeLabelTest.class,
+		CSTNTest.class,
+		CSTNUTest.class,
+		CSTNwoNodeLabelTest.class,
+		ObjectArrayFifoSetQueueTest.class
 })
 public class AllTests {
 	// annotation is sufficient!

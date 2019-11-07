@@ -226,7 +226,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * logger
 	 */
-	static private Logger LOG = Logger.getLogger(LabeledIntHierarchyMap.class.getName());
+	static private Logger LOG = Logger.getLogger("LabeledIntHierarchyMap");
 
 	/**
 	 *
@@ -521,12 +521,12 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	}
 
 	@Override
-	public LabeledIntHierarchyMap createLabeledIntMap() {
+	public LabeledIntHierarchyMap newInstance() {
 		return new LabeledIntHierarchyMap();
 	}
 
 	@Override
-	public LabeledIntHierarchyMap createLabeledIntMap(LabeledIntMap lim) {
+	public LabeledIntHierarchyMap newInstance(LabeledIntMap lim) {
 		return new LabeledIntHierarchyMap(lim);
 	}
 
