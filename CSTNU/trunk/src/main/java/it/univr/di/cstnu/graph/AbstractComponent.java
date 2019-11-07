@@ -25,12 +25,12 @@ public abstract class AbstractComponent extends Observable implements Component 
 	/**
 	 * Possible name
 	 */
-	String name;
+	protected String name;
 
 	/**
 	 * Minimal constructor. the name will be 'c&lt;id&gt;'.
 	 */
-	AbstractComponent() {
+	protected AbstractComponent() {
 		this("");
 	}
 
@@ -39,7 +39,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 *
 	 * @param c the component to clone.
 	 */
-	AbstractComponent(final Component c) {
+	protected AbstractComponent(final Component c) {
 		if (c == null) {
 			this.name = "";
 			return;
@@ -52,7 +52,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 *
 	 * @param n
 	 */
-	AbstractComponent(final String n) {
+	protected AbstractComponent(final String n) {
 		this.name = ((n == null) || (n.length() == 0)) ? "c" + AbstractComponent.idSeq++ : n;
 	}
 

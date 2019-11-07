@@ -46,6 +46,7 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
+ * Moreover, this class implements the label propagation rules that propagates also -∞ value, rule presented at ICAPS2019.<br>
  * This class is the base class for some other specialized in which DC semantics is defined in a different way.
  * 
  * @author Roberto Posenato
@@ -67,7 +68,6 @@ public class CSTN {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
-		@SuppressWarnings("javadoc")
 		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationCalls = 0;// , qAllNegLoop = 0, qSemiNegLoop = 0;
 		// r1calls = 0, r2calls = 0,
 		/**
@@ -93,7 +93,7 @@ public class CSTN {
 		/**
 		 * True if all data structured have been initialized.
 		 */
-		boolean initialized = false;
+		public boolean initialized = false;
 
 		/**
 		 * Reset all indexes.
@@ -498,27 +498,29 @@ public class CSTN {
 	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
 	boolean versionReq = false;
 
+	private int numberOfNodes;
+
 	/**
 	 * Default constructor.
 	 */
-	CSTN() {
+	protected CSTN() {
 	}
 
 	/**
-	 * @param g graph to check
+	 * @param g1 graph to check
 	 */
-	public CSTN(LabeledIntGraph g) {
+	public CSTN(LabeledIntGraph g1) {
 		this();
-		this.setG(g);// sets also checkStatus!
+		this.setG(g1);// sets also checkStatus!
 	}
 
 	/**
-	 * @param g graph to check
-	 * @param timeOut timeout for the check
+	 * @param g1 graph to check
+	 * @param timeOut1 timeout for the check
 	 */
-	public CSTN(LabeledIntGraph g, int timeOut) {
-		this(g);
-		this.timeOut = timeOut;
+	public CSTN(LabeledIntGraph g1, int timeOut1) {
+		this(g1);
+		this.timeOut = timeOut1;
 	}
 
 	/**
@@ -528,7 +530,7 @@ public class CSTN {
 	 * @return true if the g is a CSTN well defined.
 	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	boolean checkWellDefinitionProperties() throws WellDefinitionException {
+	protected boolean checkWellDefinitionProperties() throws WellDefinitionException {
 		boolean flag = false;
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
@@ -691,7 +693,7 @@ public class CSTN {
 	 * @return false if the check fails, true otherwise
 	 * @throws WellDefinitionException
 	 */
-	boolean checkWellDefinitionProperty2(final LabeledNode node, boolean hasToBeFixed) throws WellDefinitionException {
+	protected boolean checkWellDefinitionProperty2(final LabeledNode node, boolean hasToBeFixed) throws WellDefinitionException {
 		final Label nodeLabel = node.getLabel();
 		if (nodeLabel.isEmpty())
 			return true;
@@ -801,7 +803,7 @@ public class CSTN {
 	 * 
 	 * @return the final status of the checking with some statistics.
 	 */
-	CSTNCheckStatus dynamicConsistencyCheckWOInit() {
+	protected CSTNCheckStatus dynamicConsistencyCheckWOInit() {
 		if (!this.checkStatus.initialized) {
 			throw new IllegalStateException("Graph has not been initialized! Please, consider dynamicConsistencyCheck() method!");
 		}
@@ -930,7 +932,7 @@ public class CSTN {
 	 * @param nX the given node.
 	 * @return the set of edges P?-->nX, an empty set if nX is empty or there is no observer or there is no such edges.
 	 */
-	final ObjectList<LabeledIntEdge> getEdgeFromObserversToNode(final LabeledNode nX) {
+	protected final ObjectList<LabeledIntEdge> getEdgeFromObserversToNode(final LabeledNode nX) {
 
 		if (nX == this.Z) {
 			return this.g.getObserver2ZEdges();
@@ -2275,7 +2277,7 @@ public class CSTN {
 	 * 
 	 * @param w
 	 * @param v
-	 * @return true if the rule has to not apply
+	 * @return the max between w and v
 	 */
 	@SuppressWarnings("static-method")
 	int R3qR3NewValue(final int v, final int w) {
@@ -2301,15 +2303,15 @@ public class CSTN {
 	 * Considers the given graph as the graph to check (graph will be modified).
 	 * Clear all {@link #maxWeight}, {@link #horizon} and {@link #checkStatus}.
 	 * 
-	 * @param g set internal graph to g. It cannot be null.
+	 * @param g1 set internal graph to g. It cannot be null.
 	 */
-	public void setG(LabeledIntGraph g) {
+	public void setG(LabeledIntGraph g1) {
 		// CSTNU overrides this.
-		if (g == null)
+		if (g1 == null)
 			throw new IllegalArgumentException("Input graph is null!");
 		reset();
-		this.g = g;
-		this.Z = g.getZ();// Don't remove this assignment!
+		this.g = g1;
+		this.Z = g1.getZ();// Don't remove this assignment!
 	}
 
 	/**
@@ -2395,4 +2397,90 @@ public class CSTN {
 		this.horizon = 0;
 		this.checkStatus.reset();
 	}
+
+	/**
+	 * Completes the graph adding only new negative edges for n round. In this way it finds negative q-loops.
+	 * Once possibly negative q-loops have been found (and store as (-∞, <qLabel>) in node potentials), the added edges are removed from the graph.
+	 * 
+	 * @return if during the computation, it founds a negative loop, it updates this.checkStatus and return false, true otherwise.
+	 */
+	private boolean qLoopFinder() {
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINE)) {
+				LOG.log(Level.FINE, "Starting completition of graph with edges having negative weights...");
+			}
+		}
+
+		this.numberOfNodes = this.g.getVertexCount();
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.log(Level.INFO, "Number of nodes: " + this.numberOfNodes);
+			}
+		}
+
+		ObjectArrayList<LabeledIntEdge> edgesToCheck = new ObjectArrayList<>(this.g.getEdges());
+		ObjectArrayList<LabeledIntEdge> newEdgesToCheck = new ObjectArrayList<>();
+
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.log(Level.INFO, "Number of edges: " + edgesToCheck.size());
+			}
+		}
+
+		boolean noFirstRound = false;
+		int negInftyPotentialCount = 0;
+		int n = this.numberOfNodes;
+		while (edgesToCheck.size() > 0 && n-- > 0) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER)) {
+					LOG.log(Level.FINER, "***Cycle countdown: " + n);
+				}
+			}
+			for (LabeledIntEdge edgeAB : edgesToCheck) {
+				LabeledNode A = this.g.getSource(edgeAB);
+				LabeledNode B = this.g.getDest(edgeAB);
+				for (LabeledIntEdge edgeBC : this.g.getOutEdges(B)) {
+					LabeledNode C = this.g.getDest(edgeBC);
+					LabeledIntEdge edgeAC = this.g.findEdge(A, C);
+
+					// Propagate only to new edges.
+					// At first round, even an already defined edge has to be considered new.
+					if (edgeAC == null) {
+						edgeAC = makeNewEdge(A.getName() + C.getName() + "∞", LabeledIntEdge.ConstraintType.derived);
+					} else {
+						if (noFirstRound)
+							continue;
+					}
+
+					if (labeledPropagationqLP(A, B, C, edgeAB, edgeBC, edgeAC)) {
+						if (!this.checkStatus.consistency) {
+							this.checkStatus.initialized = true;
+							this.checkStatus.finished = true;
+							return false;
+						}
+
+						if (A != C && !edgeAC.isEmpty()) {
+							newEdgesToCheck.add(edgeAC);
+						}
+						if (Debug.ON) {
+							if (A == C) {
+								negInftyPotentialCount++;
+							}
+						}
+					}
+				}
+			}
+			edgesToCheck = newEdgesToCheck;
+			newEdgesToCheck = new ObjectArrayList<>();
+			noFirstRound = true;
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.INFO)) {
+				LOG.log(Level.INFO, "All possible -∞ potentials found. They are " + negInftyPotentialCount + "."
+						+ "\nTo be sure, number of edges: " + this.g.getEdgeCount());
+			}
+		}
+		return true;
+	}
+
 }

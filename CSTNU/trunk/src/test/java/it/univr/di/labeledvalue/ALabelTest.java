@@ -17,11 +17,10 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 /**
  * @author posenato
  */
+@SuppressWarnings("javadoc")
 public class ALabelTest {
 
-	@SuppressWarnings("javadoc")
 	ALabel a, b, c, e;
-	@SuppressWarnings("javadoc")
 	ALabelAlphabet alpha;
 
 	/**
@@ -36,7 +35,6 @@ public class ALabelTest {
 		this.e = ALabel.emptyLabel;
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public void creation() {
 		assertEquals("A", this.a.toString());
@@ -45,7 +43,6 @@ public class ALabelTest {
 		assertEquals("◇", this.e.toString());
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public void conjunction() {
 		this.a = this.a.conjunction(this.b);
@@ -59,7 +56,6 @@ public class ALabelTest {
 		assertEquals("A∙b∙C", this.a.toString());
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public void conjunct() {
 		this.a.conjunct(new ALetter("x"));
@@ -69,7 +65,6 @@ public class ALabelTest {
 		assertEquals("A∙x∙y", this.a.toString());
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public void remove() {
 		this.a = this.a.conjunction(this.b).conjunction(this.c);
@@ -79,7 +74,6 @@ public class ALabelTest {
 		assertEquals("◇", this.e.toString());
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public void contains() {
 		this.a = this.a.conjunction(this.b);
@@ -93,7 +87,7 @@ public class ALabelTest {
 
 	}
 
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public void compare() {
 		assertTrue(this.a.compareTo(this.c) < 0);
@@ -101,7 +95,7 @@ public class ALabelTest {
 		assertTrue(this.c.compareTo(this.a) > 0);
 	}
 
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public void array() {
 		this.a = this.a.conjunction(this.c);
@@ -114,7 +108,7 @@ public class ALabelTest {
 		assertEquals("C", a1[1].toString());
 	}
 
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public void intersect() {
 		this.a = this.a.conjunction(this.c);
