@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,22 +20,22 @@ import org.kohsuke.args4j.OptionHandlerFilter;
 
 import com.google.common.io.Files;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import it.unimi.dsi.fastutil.chars.CharArrayList;
 import it.unimi.dsi.fastutil.chars.CharList;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
-import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.cstnu.graph.TNGraphMLWriter;
+import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
+import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -57,15 +60,261 @@ import it.univr.di.labeledvalue.Literal;
 public class CSTNRandomGenerator {
 
 	/**
+	 * An implementation of <code>Collection</code> that stores exactly
+	 * 2 objects and is not mutable. They respect <code>equals</code>
+	 * and may be used as indices or map keys.
+	 * 
+	 * @param <T>
+	 */
+	private static class Pair<T> implements Collection<T>, Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * @author posenato
+		 */
+		private class PairIterator implements Iterator<T> {
+			/**
+			 * 
+			 */
+			int position;
+
+			/**
+			 * 
+			 */
+			PairIterator() {
+				this.position = 0;
+			}
+
+			@Override
+			public boolean hasNext() {
+				return this.position < 2;
+			}
+
+			@SuppressWarnings("synthetic-access")
+			@Override
+			public T next() {
+				this.position++;
+				if (this.position == 1)
+					return Pair.this.first;
+				else if (this.position == 2)
+					return Pair.this.second;
+				else
+					return null;
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException("Pairs cannot be mutated");
+			}
+		}
+
+		/**
+		 * 
+		 */
+		private T first;
+
+		/**
+		 * 
+		 */
+		private T second;
+
+		/**
+		 * Creates a Pair from the passed Collection.
+		 * The size of the Collection must be 2.
+		 * 
+		 * @param values the elements of the new <code>Pair</code>
+		 */
+		@SuppressWarnings("unused")
+		public Pair(Collection<? extends T> values) {
+			if (values.size() == 2) {
+				Iterator<? extends T> iter = values.iterator();
+				this.first = iter.next();
+				this.second = iter.next();
+			} else
+				throw new IllegalArgumentException("Pair may only be created from a Collection of exactly 2 elements");
+
+		}
+
+		/**
+		 * Creates a <code>Pair</code> from the specified elements.
+		 * 
+		 * @param value1 the first value in the new <code>Pair</code>
+		 * @param value2 the second value in the new <code>Pair</code>
+		 */
+		public Pair(T value1, T value2) {
+			this.first = value1;
+			this.second = value2;
+		}
+
+		/**
+		 * Creates a <code>Pair</code> from the passed array.
+		 * The size of the array must be 2.
+		 * 
+		 * @param values the values to be used to construct this Pair
+		 * @throws IllegalArgumentException if the input array is null,
+		 *             contains null values, or has != 2 elements.
+		 */
+		@SuppressWarnings("unused")
+		public Pair(T[] values) {
+			if (values.length == 2) {
+				this.first = values[0];
+				this.second = values[1];
+			} else
+				throw new IllegalArgumentException("Pair may only be created from an " +
+						"array of 2 elements");
+		}
+
+		@Override
+		public boolean add(T o) {
+			throw new UnsupportedOperationException("Pairs cannot be mutated");
+		}
+
+		@Override
+		public boolean addAll(Collection<? extends T> c) {
+			throw new UnsupportedOperationException("Pairs cannot be mutated");
+		}
+
+		@Override
+		public void clear() {
+			throw new UnsupportedOperationException("Pairs cannot be mutated");
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			return (this.first == o || this.first.equals(o) || this.second == o || this.second.equals(o));
+		}
+
+		@Override
+		public boolean containsAll(Collection<?> c) {
+			if (c.size() > 2)
+				return false;
+			Iterator<?> iter = c.iterator();
+			Object c_first = iter.next();
+			Object c_second = iter.next();
+			return this.contains(c_first) && this.contains(c_second);
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o == this)
+				return true;
+
+			if (o instanceof Pair) {
+				Pair<?> otherPair = (Pair<?>) o;
+				Object otherFirst = otherPair.getFirst();
+				Object otherSecond = otherPair.getSecond();
+				return (this.first == otherFirst ||
+						(this.first != null && this.first.equals(otherFirst)))
+						&&
+						(this.second == otherSecond ||
+								(this.second != null && this.second.equals(otherSecond)));
+			}
+			return false;
+		}
+
+		/**
+		 * @return the first element.
+		 */
+		public T getFirst() {
+			return this.first;
+		}
+
+		/**
+		 * @return the second element.
+		 */
+		public T getSecond() {
+			return this.second;
+		}
+
+		@Override
+		public int hashCode() {
+			int hashCode = 1;
+			hashCode = 31 * hashCode + (this.first == null ? 0 : this.first.hashCode());
+			hashCode = 31 * hashCode + (this.second == null ? 0 : this.second.hashCode());
+			return hashCode;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return false;
+		}
+
+		@Override
+		public Iterator<T> iterator() {
+			return new PairIterator();
+		}
+
+		@Override
+		public boolean remove(Object o) {
+			throw new UnsupportedOperationException("Pairs cannot be mutated");
+		}
+
+		@Override
+		public boolean removeAll(Collection<?> c) {
+			throw new UnsupportedOperationException("Pairs cannot be mutated");
+		}
+
+		@Override
+		public boolean retainAll(Collection<?> c) {
+			throw new UnsupportedOperationException("Pairs cannot be mutated");
+		}
+
+		@Override
+		public int size() {
+			return 2;
+		}
+
+		@Override
+		public Object[] toArray() {
+			Object[] to_return = new Object[2];
+			to_return[0] = this.first;
+			to_return[1] = this.second;
+			return to_return;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public <S> S[] toArray(S[] a) {
+			S[] to_return = a;
+			Class<?> type = a.getClass().getComponentType();
+			if (a.length < 2)
+				to_return = (S[]) java.lang.reflect.Array.newInstance(type, 2);
+			to_return[0] = (S) this.first;
+			to_return[1] = (S) this.second;
+
+			if (to_return.length > 2)
+				to_return[2] = null;
+			return to_return;
+		}
+
+		@Override
+		public String toString() {
+			return "<" + this.first.toString() + ", " + this.second.toString() + ">";
+		}
+	}
+
+	/**
 	 * Version of the class
 	 */
 	// static public final String VERSIONandDATE = "Version 0 - November, 23 2018";
-	static public final String VERSIONandDATE = "Version 0.5 - November, 28 2018";
+	// static public final String VERSIONandDATE = "Version 0.5 - November, 28 2018";
+	// static public final String VERSIONandDATE = "Version 0.6 - March, 29 2019";
+	// static public final String VERSIONandDATE = "Version 0.7 - April, 24 2019";
+	// static public final String VERSIONandDATE = "Version 0.8 - May, 08 2019";
+	static public final String VERSIONandDATE = "Version 0.9 - Jume, 09 2019";// edge re-factoring
 
 	/**
 	 * Base name for generated files
 	 */
 	static final String BASE_NAME = "cstn";
+
+	/**
+	 * Checker
+	 */
+	static final Class<CSTNSPFA> CSTN_CLASS = it.univr.di.cstnu.algorithms.CSTNSPFA.class;
 
 	/**
 	 * Name of sub dir containing DC instances
@@ -80,7 +329,12 @@ public class CSTNRandomGenerator {
 	/**
 	 * logger
 	 */
-	static final Logger LOG = Logger.getLogger(CSTNRandomGenerator.class.getName());
+	static final Logger LOG = Logger.getLogger("CSTNRandomGenerator");
+
+	/**
+	 * Maximum checks for a network
+	 */
+	static final int MAX_CHECKS = 10;
 
 	/**
 	 * Min max weight value
@@ -144,18 +398,17 @@ public class CSTNRandomGenerator {
 		String fileNamePrefix = createFolders(generator);
 		createReadmeFiles(generator);
 
-		int nDigits = (int) Math.floor(Math.log10(generator.dcInstances)) + 1;
-		if (nDigits < 3)
-			nDigits = 3;
-		final String numberFormat = "%0" + nDigits + "d";
+		final String numberFormat = makeNumberFormat(generator.dcInstances);
 
-		CSTNUGraphMLWriter cstnWriter = new CSTNUGraphMLWriter(null);
-		Pair<LabeledIntGraph> instances = null;
+		TNGraphMLWriter cstnWriter = new TNGraphMLWriter(null);
+		Pair<TNGraph<CSTNEdge>> instances = null;
 		int notDCinstancesDone = 0;
 
 		for (int dcInstancesDone = 0; dcInstancesDone < generator.dcInstances; dcInstancesDone++) {
 
-			instances = generator.buildAPairRndCSTNInstances(notDCinstancesDone < generator.notDCInstances);
+			do {
+				instances = generator.buildAPairRndCSTNInstances(notDCinstancesDone < generator.notDCInstances);
+			} while (instances.getFirst() == null);
 
 			// save the dc instance
 			String fileName = "dc" + fileNamePrefix + "_" + String.format(numberFormat, dcInstancesDone) + ".cstn";
@@ -178,6 +431,37 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * @param s1
+	 * @param s2
+	 * @return an array that is the s1 / s2. s1 and s2 are not modified.
+	 */
+	static char[] setDifference(char[] s1, char[] s2) {
+		char[] result = s1.clone();
+
+		if (s2 == null || s2.length == 0)
+			return result;
+		int k = 0;
+		for (int i = s1.length; i-- != 0;) {
+			for (int j = s2.length; j-- != 0;) {
+				if (s1[i] == s2[j]) {
+					result[i] = 0;
+					k++;
+				}
+			}
+		}
+		if (k == 0)
+			return result;
+		char[] result1 = new char[result.length - k];
+		int j = 0;
+		for (int i = 0; i < result.length; i++) {
+			if (result[i] == 0)
+				continue;
+			result1[j++] = result[i];
+		}
+		return result1;
+	}
+
+	/**
 	 * Creates the main directory and the two sub dirs that will contain the random instances.
 	 * 
 	 * @param generator instance of this class containing all parameter values for building the prefix.
@@ -190,7 +474,7 @@ public class CSTNRandomGenerator {
 		if (!baseDir.exists()) {
 			baseDir.mkdirs();
 		}
-		String suffix = "_" + generator.nNodes + "nodes_" + generator.nPropositions + "props_"
+		String suffix = "_" + String.format(makeNumberFormat(generator.nNodes), generator.nNodes) + "nodes_" + generator.nPropositions + "props_"
 				+ generator.nQLoops + "qLoops_" + generator.nNodesQLoop + "nodeInQLoop_"
 				+ generator.nPropsQLoop + "propInQLoop_" + generator.nObsQLoop + "obsInQLoop";
 
@@ -262,6 +546,17 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * @param n
+	 * @return a string format "%0&lt;i&gt;d" where <code>i</code> is the max between 3 and the digit number of <code>n</code>.
+	 */
+	private static String makeNumberFormat(int n) {
+		int nDigits = (int) Math.floor(Math.log10(n)) + 1;
+		if (nDigits < 3)
+			nDigits = 3;
+		return "%0" + nDigits + "d";
+	}
+
+	/**
 	 * Simple method to manage command line parameters using args4j library.
 	 *
 	 * @param args the arguments from the command line.
@@ -290,35 +585,15 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
-	 * @param s1
-	 * @param s2
-	 * @return an array that is the s1 / s2. s1 and s2 are not modified.
+	 * Timeout in seconds for the check.
 	 */
-	static char[] setDifference(char[] s1, char[] s2) {
-		char[] result = s1.clone();
+	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
+	int timeOut = 60 * 15;
 
-		if (s2 == null || s2.length == 0)
-			return result;
-		int k = 0;
-		for (int i = s1.length; i-- != 0;) {
-			for (int j = s2.length; j-- != 0;) {
-				if (s1[i] == s2[j]) {
-					result[i] = 0;
-					k++;
-				}
-			}
-		}
-		if (k == 0)
-			return result;
-		char[] result1 = new char[result.length - k];
-		int j = 0;
-		for (int i = 0; i < result.length; i++) {
-			if (result[i] == 0)
-				continue;
-			result1[j++] = result[i];
-		}
-		return result1;
-	}
+	/**
+	 * weight adjustment. This value is determined in the constructor.
+	 */
+	int weightAdjustment;
 
 	/**
 	 * Number of wanted DC random CSTN instances.
@@ -405,14 +680,8 @@ public class CSTNRandomGenerator {
 	/**
 	 * Weight sum of each qLoop.
 	 */
-	@Option(required = false, name = "--qLoopValue", usage = "Weight sum of each qLoop.")
+	@Option(required = false, name = "--qLoopValue", usage = "Weight sum of each qLoop. One edge of each qLoop will have value qLoopValue - sum(other edge values).")
 	private int qLoopValue = QLOOP_VALUE;
-
-	/**
-	 * Timeout in seconds for the check.
-	 */
-	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
-	int timeOut = 60 * 15;
 
 	/**
 	 * Random generator used in the building of labels.
@@ -420,29 +689,30 @@ public class CSTNRandomGenerator {
 	private Random rnd = new Random(System.currentTimeMillis());
 
 	/**
-	 * @param dcInstances
-	 * @param notDCInstances
+	 * @param givenDcInstances
+	 * @param givenNotDCInstances
 	 * @param nodes
 	 * @param propositions
 	 * @param qLoops
 	 * @param nodesInQloop
 	 * @param obsInQLoop
-	 * @param edgeProb
-	 * @param maxWeight
+	 * @param edgeProbability
+	 * @param givenMaxWeight
 	 * @throws IllegalArgumentException if one or more parameters has/have not valid value/s.
 	 */
-	public CSTNRandomGenerator(int dcInstances, int notDCInstances, int nodes, int propositions, int qLoops, int nodesInQloop, int obsInQLoop, double edgeProb,
-			int maxWeight) throws IllegalArgumentException {
-		this.dcInstances = dcInstances;
-		this.notDCInstances = notDCInstances;
+	public CSTNRandomGenerator(int givenDcInstances, int givenNotDCInstances, int nodes, int propositions, int qLoops, int nodesInQloop, int obsInQLoop,
+			double edgeProbability,
+			int givenMaxWeight) throws IllegalArgumentException {
+		this.dcInstances = givenDcInstances;
+		this.notDCInstances = givenNotDCInstances;
 		this.nNodes = nodes;
 		this.nPropositions = propositions;
 		this.nQLoops = qLoops;
 		this.nNodesQLoop = nodesInQloop;
 		this.nObsQLoop = obsInQLoop;
-		this.edgeProb = edgeProb;
-		this.maxWeight = maxWeight;
-		this.checkParameters();
+		this.edgeProb = edgeProbability;
+		this.maxWeight = givenMaxWeight;
+		this.checkParameters();// it is necessary!
 	}
 
 	/**
@@ -455,23 +725,30 @@ public class CSTNRandomGenerator {
 	 * Builds a pair of DC and not DC of CSTN instances using the building parameters.
 	 * The not DC instance is build adding one or more constraints to the previous generated DC instance.
 	 * 
-	 * @param alsoNotDcInstance false if the not DC instances is required. If false, the returned not DC instance is an empty graph.
-	 * @return a pair of DC and not DC of CSTN instances. if alsoNotDcInstance is false, the returned not DC instance is an empty graph.
+	 * @param alsoNotDcInstance false if the not DC instances is required. If false, the returned not DC instance is an empty tNGraph.
+	 * @return a pair of DC and not DC of CSTN instances. If the first member is null, it means that a generic error in the building
+	 *         has occurred. If alsoNotDcInstance is false, the returned not DC instance is null.
 	 */
-	public Pair<LabeledIntGraph> buildAPairRndCSTNInstances(boolean alsoNotDcInstance) {
+	public Pair<TNGraph<CSTNEdge>> buildAPairRndCSTNInstances(boolean alsoNotDcInstance) {
 
-		LabeledIntGraph randomGraph = new LabeledIntGraph(LabeledIntTreeMap.class),
-				notDCGraph = new LabeledIntGraph(LabeledIntTreeMap.class);
+		LOG.info("Start building a new random instance");
+		TNGraph<CSTNEdge> randomGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS),
+				notDCGraph = null;
 
 		// Add all node but Z (Z is not considered)
 		double shift = 200, x = 0, y = 0;
 		int nodesInQloops = this.nNodesQLoop * this.nQLoops;
-		int divisore;
+		LOG.info("Nodes: " + this.nNodes
+				+ "\nq-loops: " + this.nQLoops
+				+ "\nNodes in a q-loop: " + this.nNodesQLoop
+				+ "\nNodes in q-loops: " + nodesInQloops);
+		int divisor;
 		for (int i = 0; i < this.nNodes; i++) {
-			LabeledNode node = new LabeledNode("n" + i);
+			LabeledNode node = randomGraph.getNodeFactory().get("n" + i);
 			if (i != 0) {
-				divisore = (i > nodesInQloops) ? 2 * this.nNodesQLoop : this.nNodesQLoop;
-				if (i % divisore == 0) {
+				divisor = (i > nodesInQloops) ? 2 * this.nNodesQLoop : this.nNodesQLoop;
+				if (i % divisor == 0) {
 					x = 0;
 					y += shift;
 				}
@@ -481,7 +758,7 @@ public class CSTNRandomGenerator {
 			node.setY((i % 2 == 0) ? y + 20 : y - 20);
 
 			randomGraph.addVertex(node);
-			LOG.finer("Node added: " + node);
+			LOG.finest("Node added: " + node);
 		}
 
 		// qLoops contains, for each qLoop, the index of first and last node in the qLoop
@@ -490,49 +767,58 @@ public class CSTNRandomGenerator {
 			qLoopIndexes[i][0] = i * this.nNodesQLoop;
 			qLoopIndexes[i][1] = (i + 1) * this.nNodesQLoop - 1;
 		}
-		LOG.finer("qLoopIndexes: " + Arrays.deepToString(qLoopIndexes));
+		LOG.info("First and last node index of each q-loop: " + Arrays.deepToString(qLoopIndexes));
 
 		// Propositions
 		char[] proposition = new char[this.nPropositions];
 		for (char i = 'a'; i < 'a' + this.nPropositions; i++) {
 			proposition[i - 'a'] = i;
 		}
-		LOG.finer("proposition: " + Arrays.toString(proposition));
+		LOG.info("Proposition: " + Arrays.toString(proposition));
 
-		// Propositions used in each qLoop
-		char[][] qLoopPropositions = new char[this.nQLoops][this.nPropsQLoop];
+		// Propositions used 4 making qLoop. For each q-loop, we mark the proposition used for creating the q-loop.
+		char[][] qLoopPropositionsMap = new char[this.nQLoops][this.nPropsQLoop];
 		int k = 0;
 		for (int i = 0; i < this.nQLoops; i++) {
 			for (int j = 0; j < this.nPropsQLoop; j++) {
-				qLoopPropositions[i][j] = proposition[k++];
+				qLoopPropositionsMap[i][j] = proposition[k++];
 			}
 		}
-		LOG.finer("qLoopPropositions: " + Arrays.deepToString(qLoopPropositions));
+		LOG.info("Propositions used for making q-loops: " + Arrays.deepToString(qLoopPropositionsMap));
 
 		// Observation t.p. in qLoop
-		CharList leftProposition = new CharArrayList(proposition);
+		CharList propNotUsed4MakingQLoop = new CharArrayList(proposition);
 		CharList qLoopProps = null;
 		for (int i = 0; i < this.nQLoops; i++) {
 			int indexNodeInQLoop = qLoopIndexes[i][0];
-			qLoopProps = new CharArrayList(qLoopPropositions[i]);
+			qLoopProps = new CharArrayList(qLoopPropositionsMap[i]);
 			for (int j = 0; j < this.nObsQLoop; j++) {
 				// choose a proposition not belonging to the one associated to qLoop
 				char p = ' ';
 				boolean search = true;
+				int trial = 0;
 				while (search) {
-					k = this.rnd.nextInt(leftProposition.size());
-					p = leftProposition.getChar(k);
+					// first we use propInQloops, the the others
+					k = this.rnd.nextInt(propNotUsed4MakingQLoop.size());
+					p = propNotUsed4MakingQLoop.getChar(k);
 					search = qLoopProps.contains(p);
+					trial++;
+					if (trial > 10) {
+						search = false;// this is for unlock the occurrence in which rnd choices determine that for a q-loop only local proposition can be
+										// choosen.
+						LOG.info("Unfortunately, proposition " + p + " will be associate to node n" + (indexNodeInQLoop + j)
+								+ " in a q-loop defined using also " + p);
+					}
 				}
 				LabeledNode obs = randomGraph.getNode("n" + (indexNodeInQLoop + j));
-				LOG.finer("Node in qLoop " + i + " transformed in obs: " + obs + "\tProposition: " + p);
+				LOG.info("Node in qLoop " + i + " transformed in obs: " + obs + "\tProposition: " + p);
 				obs.setObservable(p);
-				leftProposition.rem(p);
+				propNotUsed4MakingQLoop.rem(p);
 			}
 		}
 
 		// Remaining observation t.p.
-		k = leftProposition.size();
+		k = propNotUsed4MakingQLoop.size();
 		if (k > 0) {
 			int firstIndexNodeNotInQLoop = qLoopIndexes[this.nQLoops - 1][1] + 1;
 			if ((firstIndexNodeNotInQLoop + k) >= this.nNodes) {
@@ -542,7 +828,7 @@ public class CSTNRandomGenerator {
 					+ "\nThe following nodes are transformed in obs ones and they stay outside qLoops.");
 			for (; k > 0; k--) {
 				LabeledNode obs = randomGraph.getNode("n" + firstIndexNodeNotInQLoop++);
-				char p = leftProposition.get(k - 1);
+				char p = propNotUsed4MakingQLoop.getChar(k - 1);
 				LOG.finer("Node transformed in obs: " + obs + "\tProposition: " + p);
 				obs.setObservable(p);
 			}
@@ -551,21 +837,21 @@ public class CSTNRandomGenerator {
 		// Add all qLoops
 		for (int i = 0; i < this.nQLoops; i++) {
 			LOG.finer("Random generation of qLoop " + i);
-			buildQLoop(randomGraph, qLoopIndexes[i][0], qLoopIndexes[i][1], qLoopPropositions[i]);
+			buildQLoop(randomGraph, qLoopIndexes[i][0], qLoopIndexes[i][1], qLoopPropositionsMap[i]);
 		}
 
 		// For any pair of nodes, add an edge with probability this.edgeProb.
 		// The edge value is a random positive value between 0 and this.maxValue
 		// The label is a random label composed by propositions that are not in qLoop associate to nodes (if any).
 		char[] propsWithout1Qloop, propsToUse = new char[0];
-		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = randomGraph.getEdgeFactory();
-		ObjectList<LabeledIntEdge> addedEdges = new ObjectArrayList<>();
+		EdgeSupplier<CSTNEdge> edgeFactory = randomGraph.getEdgeFactory();
+		ObjectList<CSTNEdge> addedEdges = new ObjectArrayList<>();
 		LOG.finer("Starting adding edges among qLoops and free nodes");
 		for (int i = 0; i < nodesInQloops; i++) {
 			// one node in a qLoop, the other in other qLoop or free. I exploit the order of nodes!
-			propsWithout1Qloop = setDifference(proposition, qLoopPropositions[i / this.nNodesQLoop]);
+			propsWithout1Qloop = setDifference(proposition, qLoopPropositionsMap[i / this.nNodesQLoop]);
 			for (int j = i + this.nNodesQLoop; j < this.nNodes; j++) {
-				propsToUse = (j < nodesInQloops) ? setDifference(propsWithout1Qloop, qLoopPropositions[j / this.nNodesQLoop]) : propsWithout1Qloop;
+				propsToUse = (j < nodesInQloops) ? setDifference(propsWithout1Qloop, qLoopPropositionsMap[j / this.nNodesQLoop]) : propsWithout1Qloop;
 				LOG.finest("propsToUse: " + Arrays.toString(propsToUse));
 				addRndEdge(i, j, propsToUse, randomGraph, edgeFactory, addedEdges);
 				addRndEdge(j, i, propsToUse, randomGraph, edgeFactory, addedEdges);
@@ -586,71 +872,91 @@ public class CSTNRandomGenerator {
 			}
 		}
 
-		LabeledIntGraph lastDC = randomGraph;
+		TNGraph<CSTNEdge> lastDC = randomGraph;
 
-		CSTNUGraphMLWriter cstnWriter = new CSTNUGraphMLWriter(null);
+		TNGraphMLWriter cstnWriter = new TNGraphMLWriter(null);
 
-		int checkN = 0;
-		boolean notDCfound = false;
-		CSTN cstn = new CSTN(randomGraph, this.timeOut);
+		int checkN = 0;// number of checks
+		boolean nonDCfound = false, DCfound = false;
+		CSTN cstn;
+		try {
+			cstn = CSTN_CLASS.getDeclaredConstructor(new Class[] { TNGraph.class, int.class }).newInstance(randomGraph, this.timeOut);
+		} catch (Exception e2) {
+			throw new RuntimeException("The class " + CSTN_CLASS + " for the checker is not available: " + e2.getMessage());
+		}
 		cstn.withNodeLabels = false;
 		while (true) {
+			cstn.reset();
+			cstn.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS));
+			if (LOG.isLoggable(Level.FINER)) {
+				try (PrintWriter writer = new PrintWriter(new File(this.dcSubDir.getParent(), "current.cstn"))) {
+					cstnWriter.save(cstn.getG(), writer);
+					LOG.finer("Current cstn saved as 'current.cstn' before checking.");
+				} catch (IOException e) {
+					LOG.finer("Problem to save 'current.cstn' " + e.getMessage() + ".\nProgram continues anyway.");
+				}
+			}
+			CSTNCheckStatus status = new CSTNCheckStatus();
 			try {
-				cstn.setG(new LabeledIntGraph(randomGraph, randomGraph.getInternalLabeledValueMapImplementationClass()));
+				LOG.fine("DC Check started.");
+				status = cstn.dynamicConsistencyCheck();
 				checkN++;
-				if (LOG.isLoggable(Level.FINER)) {
-					try (PrintWriter writer = new PrintWriter(new File(this.dcSubDir.getParent(), "current.cstn"))) {
-						cstnWriter.save(cstn.getG(), writer);
-						LOG.finer("Current cstn saved as 'current.cstn' before checking.");
-					} catch (IOException e) {
-						LOG.finer("Problem to save 'current.cstn' " + e.getMessage() + "\n Program continues.");
-					}
+				LOG.fine("DC Check finished.");
+			} catch (Exception e) {
+				String fileName = "error" + System.currentTimeMillis() + ".cstn";
+				LOG.finer("DC Check interrupted for the following reason: " + e.getMessage() + ". Instance is saved as " + fileName + ".");
+				File s = new File(this.dcSubDir.getParent(), "current.cstn");
+				File d = new File(this.dcSubDir.getParent(), fileName);
+				try {
+					Files.move(s, d);
+				} catch (IOException e1) {
+					LOG.finer("Problem to save 'current.cstn' as non valid instance for logging. Program continues anyway.");
 				}
-				CSTNCheckStatus status = cstn.dynamicConsistencyCheck();
-				if (LOG.isLoggable(Level.FINER)) {
-					if (status.timeout) {
-						File s = new File(this.dcSubDir.getParent(), "current.cstn");
-						File d = new File(this.dcSubDir.getParent(), "timeOut" + System.currentTimeMillis() + ".cstn");
-						try {
-							Files.move(s, d);
-						} catch (IOException e) {
-							LOG.finer("Problem to save 'current.cstn' as time out instance.\n Program continues.");
-						}
-					}
+				return new Pair<>(null, null);
+			}
+			if (status.timeout) {
+				String fileName = "timeOut" + System.currentTimeMillis() + ".cstn";
+				LOG.finer("DC Check finished for timeout. Instance is saved as " + fileName + ".");
+				File s = new File(this.dcSubDir.getParent(), "current.cstn");
+				File d = new File(this.dcSubDir.getParent(), fileName);
+				try {
+					Files.move(s, d);
+				} catch (IOException e) {
+					LOG.finer("Problem to save 'current.cstn' as time out instance. Program continues anyway.");
 				}
-				if (!status.consistency) {
-					if (checkN == 1) {
-						LOG.finer("Original random instance is stored as the not DC instance that will be returned.");
-						notDCGraph = new LabeledIntGraph(randomGraph, randomGraph.getInternalLabeledValueMapImplementationClass());
-						notDCfound = true;
-						LOG.finer("Original random instance is NOT DC. Weights will be increased!");
-						for (LabeledIntEdge e : addedEdges) {
-							Entry<Label> entry = e.getMinLabeledValue();
-							e.removeLabeledValue(entry.getKey());
-							e.mergeLabeledValue(entry.getKey(), (int) (entry.getIntValue() + this.maxWeight * WEIGHT_MODIFICATION_FACTOR));
-						}
-						checkN = 0;
-					} else {
-						LOG.finer("Found a not DC instance. The pair has been found after " + checkN + " iterations.");
-						notDCGraph = new LabeledIntGraph(randomGraph, randomGraph.getInternalLabeledValueMapImplementationClass());
-						return new Pair<>(lastDC, notDCGraph);
-					}
+				return new Pair<>(null, null);
+			}
+			if (status.consistency) {
+				LOG.finer("Random instance is DC.");
+				lastDC = new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				DCfound = true;
+				if (!nonDCfound && alsoNotDcInstance) {
+					LOG.finer("Now, a not DC instance must be generated. Tentative #" + checkN);
+					// we lower the edge value
+					adjustEdgeWeights(addedEdges, false);
 				} else {
-					lastDC = new LabeledIntGraph(randomGraph, randomGraph.getInternalLabeledValueMapImplementationClass());
-					if (!notDCfound && alsoNotDcInstance) {
-						LOG.finer("Original random instance is DC. I start to find a not DC!");
-						// we lower the edge values
-						for (LabeledIntEdge e : addedEdges) {
-							Entry<Label> entry = e.getMinLabeledValue();
-							e.mergeLabeledValue(entry.getKey(), (int) (entry.getIntValue() - this.maxWeight * WEIGHT_MODIFICATION_FACTOR));
-						}
-					} else {
-						LOG.finer("The pair has been found after " + checkN + " iterations.");
-						return new Pair<>(lastDC, notDCGraph);
-					}
+					LOG.finer("The pair has been found after " + checkN + " iterations.");
+					return new Pair<>(lastDC, notDCGraph);
 				}
-			} catch (WellDefinitionException e1) {
-				e1.printStackTrace();
+			} else {
+				LOG.finer("Random instance is not DC.");
+				notDCGraph = new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				nonDCfound = true;
+				if (!DCfound) {
+					LOG.finer("Now, a DC instance must be generated. Tentative #" + checkN);
+					adjustEdgeWeights(addedEdges, true);
+				} else {
+					LOG.finer("The pair has been found after " + checkN + " iterations.");
+					return new Pair<>(lastDC, notDCGraph);
+				}
+			}
+			if (checkN > MAX_CHECKS) {
+				LOG.finer("This network was checked more than " + MAX_CHECKS
+						+ " times without finding the wanted pair. Program continues witho another network.");
+				return new Pair<>(null, null);
 			}
 		}
 	}
@@ -743,8 +1049,8 @@ public class CSTNRandomGenerator {
 	 * @param addedEdges
 	 * @return the added edge, if added; null otherwise.
 	 */
-	private LabeledIntEdge addRndEdge(int firstNodeIndex, int secondNodeIndex, char[] propsToUse, LabeledIntGraph g,
-			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory, ObjectList<LabeledIntEdge> addedEdges) {
+	private CSTNEdge addRndEdge(int firstNodeIndex, int secondNodeIndex, char[] propsToUse, TNGraph<CSTNEdge> g,
+			EdgeSupplier<CSTNEdge> edgeFactory, ObjectList<CSTNEdge> addedEdges) {
 		boolean isEdgeToAdd = this.rnd.nextDouble() <= this.edgeProb;
 		if (!isEdgeToAdd) {
 			return null;
@@ -757,12 +1063,35 @@ public class CSTNRandomGenerator {
 
 		Label label = rndLabel(propsToUse, null, null);
 		int weight = this.rnd.nextInt(this.maxWeight);
-		LabeledIntEdge e = edgeFactory.get("n" + firstNodeIndex + "-n" + (secondNodeIndex));
+		CSTNEdge e = edgeFactory.get("n" + firstNodeIndex + "-n" + (secondNodeIndex));
 		e.mergeLabeledValue(label, weight);
 		g.addEdge(e, firstNode, secondNode);
 		addedEdges.add(e);
 		LOG.finer("Added edge: " + e);
 		return e;
+	}
+
+	/**
+	 * @param addedEdges
+	 * @param increase
+	 */
+	private void adjustEdgeWeights(ObjectList<CSTNEdge> addedEdges, boolean increase) {
+		int sign = (increase) ? +1 : -1;
+		for (CSTNEdge e : addedEdges) {
+			Entry<Label> entry = e.getMinLabeledValue();
+			if (increase)
+				e.removeLabeledValue(entry.getKey());
+			int v = (entry.getIntValue() + sign * this.weightAdjustment) % this.maxWeight;
+			if (increase) {
+				if (v < entry.getIntValue())
+					v = this.maxWeight - 1;
+			} else {
+				if (v > entry.getIntValue())
+					v = -(this.maxWeight - 1);
+			}
+
+			e.mergeLabeledValue(entry.getKey(), v);
+		}
 	}
 
 	/**
@@ -774,16 +1103,16 @@ public class CSTNRandomGenerator {
 	 * @param lastIndex
 	 * @param qLoopPropositions
 	 */
-	private void buildQLoop(LabeledIntGraph g, int firstIndex, int lastIndex, char[] qLoopPropositions) {
-		// add an edge with a noraml distributed value and random label inconsistent with the last one.
+	private void buildQLoop(TNGraph<CSTNEdge> g, int firstIndex, int lastIndex, char[] qLoopPropositions) {
+		// add an edge with a normal distributed value and random label inconsistent with the last one.
 		// for last edge, label must be inconsistent also with the following.
-		NormalDistribution normalRnd = new NormalDistribution(0, 1.5);
-		LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = g.getEdgeFactory();
+		NormalDistribution normalRnd = new NormalDistribution(0, 5);
+		EdgeSupplier<CSTNEdge> edgeFactory = g.getEdgeFactory();
 		int sum = 0;
 		int weight;
 		Label label, firstLabel = Label.emptyLabel;
 		Label previousLabel = Label.emptyLabel;
-		LabeledIntEdge e;
+		CSTNEdge e;
 		for (int i = firstIndex; i < lastIndex; i++) {
 			weight = ((int) Math.round(normalRnd.sample() * this.maxWeight)) % this.maxWeight;
 			sum += weight;
@@ -805,6 +1134,33 @@ public class CSTNRandomGenerator {
 
 		// last edge
 		weight = this.qLoopValue - sum;
+		if (Math.abs(weight) > this.maxWeight) {
+			do {
+				LOG.finer("Last weight is big: " + weight);
+				// weight is greater than the allowed value.
+				// all other edge values in the qLoop must be adjusted.
+				int adjustment = Math.round((Math.abs(weight) - this.maxWeight) / (lastIndex - firstIndex)) + 1;// +1 is for a safety margin
+				LOG.finer("Edge values will be adjusted by " + adjustment);
+
+				sum = 0;
+				for (int i = firstIndex; i < lastIndex; i++) {
+					CSTNEdge edge = g.findEdge(g.getNode("n" + i), g.getNode("n" + (i + 1)));
+					ObjectSet<Entry<Label>> entrySet = edge.getLabeledValueSet();
+					for (Entry<Label> entry : entrySet) {
+						Label l = entry.getKey();
+						int v = entry.getIntValue();
+						v = (v < 0) ? v + adjustment : v - adjustment;
+						edge.removeLabeledValue(l);
+						edge.mergeLabeledValue(l, v);
+						sum += v;
+						LOG.finer("Value on edge: " + edge.getName() + " adjusted to " + v);
+					}
+
+				}
+				weight = this.qLoopValue - sum;
+			} while (Math.abs(weight) > this.maxWeight);
+			LOG.finer("Last weight is now: " + weight);
+		}
 		e = edgeFactory.get("n" + lastIndex + "-n" + (firstIndex));
 		label = rndLabel(qLoopPropositions, previousLabel, firstLabel);
 		e.mergeLabeledValue(label, weight);
@@ -858,6 +1214,10 @@ public class CSTNRandomGenerator {
 			throw new IllegalArgumentException(
 					"The maximum edge weight value is not valid. Valid range = [" + MIN_MAX_WEIGHT + ", " + Integer.MAX_VALUE + "].");
 
+		if (this.maxWeight * (this.nNodes - 1) >= Constants.INT_POS_INFINITE)
+			throw new IllegalArgumentException(
+					"The maximum edge weight value combined with the number of nodes is not valid. maxWeight * #nodes must be < " + Constants.INT_POS_INFINITE);
+
 		if (this.edgeProb < 0 || this.edgeProb > 1.0)
 			throw new IllegalArgumentException(
 					"The edge probability is not valid. Valid range = [0.0, 1.0].");
@@ -869,7 +1229,7 @@ public class CSTNRandomGenerator {
 		if (this.notDCInstances < 0 || this.dcInstances < this.notDCInstances)
 			throw new IllegalArgumentException(
 					"The number of wanted not DC instances is not valid. It must positive and at mosta as dcInstances value.");
-
+		this.weightAdjustment = (int) (this.maxWeight * WEIGHT_MODIFICATION_FACTOR);
 	}
 
 	/**
@@ -947,5 +1307,4 @@ public class CSTNRandomGenerator {
 		}
 		return label;
 	}
-
 }

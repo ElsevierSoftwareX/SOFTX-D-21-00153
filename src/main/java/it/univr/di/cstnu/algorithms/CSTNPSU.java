@@ -12,16 +12,18 @@ import org.xml.sax.SAXException;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
-import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.cstnu.graph.TNGraphMLReader;
+import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
+import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
@@ -41,7 +43,7 @@ public class CSTNPSU extends CSTNU {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNPSU.class.getName());
+	static Logger LOG = Logger.getLogger("CSTNPSU");
 
 	/**
 	 * Version of the class
@@ -73,7 +75,7 @@ public class CSTNPSU extends CSTNU {
 				LOG.log(Level.FINER, "Parameters ok!");
 		}
 		if (cstnpsu.versionReq) {
-			System.out.println(CSTNU.class.getName() + " " + CSTNU.VERSIONandDATE + ". Academic and non-commercial use only.\n"
+			System.out.println("CSTNPSU " + CSTNPSU.VERSIONandDATE + ". Academic and non-commercial use only.\n"
 					+ "Copyright © 2017,2018, Roberto Posenato");
 			return;
 		}
@@ -82,13 +84,14 @@ public class CSTNPSU extends CSTNU {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Loading graph...");
 		}
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnpsu.fInput, LabeledIntTreeMap.class);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnpsu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
+				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 		cstnpsu.setG(graphMLReader.readGraph());
-		cstnpsu.g.setFileName(cstnpsu.fInput);
+		cstnpsu.g.setInputFile(cstnpsu.fInput);
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
-				LOG.log(Level.FINER, "LabeledIntGraph loaded!\nDC Checking...");
+				LOG.log(Level.FINER, "TNGraph loaded!\nDC Checking...");
 			}
 		}
 		System.out.println("Checking started...");
@@ -101,7 +104,7 @@ public class CSTNPSU extends CSTNU {
 		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
-				LOG.log(Level.FINER, "LabeledIntGraph minimized!");
+				LOG.log(Level.FINER, "TNGraph minimized!");
 		}
 		if (status.finished) {
 			System.out.println("Checking finished!");
@@ -119,7 +122,7 @@ public class CSTNPSU extends CSTNU {
 		}
 
 		if (cstnpsu.fOutput != null) {
-			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(new StaticLayout<>(cstnpsu.g));
+			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new StaticLayout<>(cstnpsu.g));
 			try {
 				graphWriter.save(cstnpsu.g, new PrintWriter(cstnpsu.output));
 			} catch (final IOException e) {
@@ -139,32 +142,32 @@ public class CSTNPSU extends CSTNU {
 	/**
 	 * Constructor for CSTNPSU
 	 * 
-	 * @param g graph to check
+	 * @param graph TNGraph to check
 	 */
-	public CSTNPSU(LabeledIntGraph g) {
-		super(g);// Remember that super(g) calls CSTNU.setG(g)!
+	public CSTNPSU(TNGraph<CSTNUEdge> graph) {
+		super(graph);// Remember that super(g) calls CSTNU.setG(g)!
 	}
 
 	/**
 	 * Constructor for CSTNPSU
 	 * 
-	 * @param g graph to check
-	 * @param timeOut timeout for the check in seconds
+	 * @param graph TNGraph to check
+	 * @param givenTimeOut timeout for the check in seconds
 	 */
-	public CSTNPSU(LabeledIntGraph g, int timeOut) {
-		super(g, timeOut);
+	public CSTNPSU(TNGraph<CSTNUEdge> graph, int givenTimeOut) {
+		super(graph, givenTimeOut);
 	}
 
 	/**
 	 * CSTNPSU
 	 * Constructor for CSTNU
 	 * 
-	 * @param g graph to check
-	 * @param timeOut timeout for the check in seconds
-	 * @param propagationOnlyToZ
+	 * @param graph TNGraph to check
+	 * @param givenTimeOut timeout for the check in seconds
+	 * @param givenPropagationOnlyToZ
 	 */
-	public CSTNPSU(LabeledIntGraph g, int timeOut, boolean propagationOnlyToZ) {
-		super(g, timeOut, propagationOnlyToZ);
+	public CSTNPSU(TNGraph<CSTNUEdge> graph, int givenTimeOut, boolean givenPropagationOnlyToZ) {
+		super(graph, givenTimeOut, givenPropagationOnlyToZ);
 	}
 
 	/**
@@ -193,12 +196,12 @@ public class CSTNPSU extends CSTNU {
 		}
 
 		// check underneath CSTN
-		((CSTN) this).initAndCheck();
+		coreCSTNInitAndCheck();
 		this.checkStatus.initialized = false;
 
 		// Contingent link have to be checked AFTER WD1 and WD3 have been checked and fixed!
 		int maxWeightContingent = Constants.INT_POS_INFINITE;
-		for (final LabeledIntEdge e : this.g.getEdges()) {
+		for (final CSTNUEdge e : this.g.getEdges()) {
 			if (!e.isContingentEdge()) {
 				continue;
 			}
@@ -228,7 +231,7 @@ public class CSTNPSU extends CSTNU {
 				}
 			}
 
-			LabeledIntEdge eInverted = this.g.findEdge(d, s);
+			CSTNUEdge eInverted = this.g.findEdge(d, s);
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER))
 					LOG.log(Level.FINER, "Edge " + e + " is contingent. Found its companion: " + eInverted);
@@ -420,7 +423,7 @@ public class CSTNPSU extends CSTNU {
 			for (LabeledNode node : this.g.getVertices()) {
 				if (node == this.Z)
 					continue;
-				LabeledIntEdge e = this.g.findEdge(this.Z, node);
+				CSTNUEdge e = this.g.findEdge(this.Z, node);
 				if (e.getValue(node.getLabel()) == oldHorizon) {
 					e.removeLabeledValue(node.getLabel());
 					e.mergeLabeledValue(node.getLabel(), this.horizon);
@@ -446,7 +449,7 @@ public class CSTNPSU extends CSTNU {
 
 	/**
 	 * Labeled Letter Removal (zLr).<br>
-	 * Overrides {@link CSTNU#labeledLetterRemovalRule(LabeledNode, LabeledNode, LabeledIntEdge)}
+	 * Overrides {@link CSTNU#labeledLetterRemovalRule(LabeledNode, LabeledNode, CSTNUEdge)}
 	 * considering guarded links instead of contingent ones.<br>
 	 * 
 	 * <pre>
@@ -467,7 +470,7 @@ public class CSTNPSU extends CSTNU {
 	 * @return true if the reduction has been applied.
 	 */
 	@Override
-	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final LabeledIntEdge eXA) {
+	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final CSTNUEdge eXA) {
 
 		if (!this.isActivationNode(nA))
 			return false;
@@ -478,13 +481,13 @@ public class CSTNPSU extends CSTNU {
 				LOG.log(Level.FINER, "zLr: start.");
 		}
 
-		for (LabeledIntEdge eAC : this.g.getOutEdges(nA)) {
+		for (CSTNUEdge eAC : this.g.getOutEdges(nA)) {
 			if (eAC.getLowerCaseValue().isEmpty()) {
 				continue;
 			}
 			// found a contingent link A===>C
 			LabeledNode nC = this.g.getDest(eAC);
-			LabeledIntEdge eCA = this.g.findEdge(nC, nA);
+			CSTNUEdge eCA = this.g.findEdge(nC, nA);
 
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER))
@@ -496,10 +499,10 @@ public class CSTNPSU extends CSTNU {
 				LabeledIntTreeMap valuesMap = eXA.getUpperCaseValueMap().get(aleph);
 				if (valuesMap == null)// a previous cycle could have removed it
 					continue;
-				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfXA : valuesMap.entrySet()) {
-					final Label beta = upperCaseEntryOfXA.getKey();
-					int v = upperCaseEntryOfXA.getIntValue();
-
+				for (Label beta : valuesMap.keySet()) {
+					int v = eXA.getUpperCaseValue(beta, aleph);
+					if (v == Constants.INT_NULL)
+						continue;
 					LabeledLowerCaseValue ACLowerCaseValueObj = eAC.getLowerCaseValue();
 					final Label alpha = ACLowerCaseValueObj.getLabel();
 					int x = eCA.getValue(alpha); // in the guarded, the lower bound is considered, no the guard ACLowerCaseValueObj.getValue();
@@ -538,7 +541,7 @@ public class CSTNPSU extends CSTNU {
 
 	/**
 	 * Labeled LetterRemoval* (zLr)<br>
-	 * Overrides {@link CSTNU#zLabeledLetterRemovalRule(LabeledNode, LabeledIntEdge)}
+	 * Overrides {@link CSTNU#zLabeledLetterRemovalRule(LabeledNode, CSTNUEdge)}
 	 * considering guarded links instead of contingent ones.<br>
 	 * 
 	 * <pre>
@@ -556,7 +559,7 @@ public class CSTNPSU extends CSTNU {
 	 * @return true if the reduction has been applied.
 	 */
 	@Override
-	boolean zLabeledLetterRemovalRule(final LabeledNode nY, final LabeledIntEdge eYZ) {
+	boolean zLabeledLetterRemovalRule(final LabeledNode nY, final CSTNUEdge eYZ) {
 		boolean ruleApplied = false;
 
 		if (Debug.ON) {
@@ -568,10 +571,10 @@ public class CSTNPSU extends CSTNU {
 			LabeledIntTreeMap YZvaluesMap = eYZ.getUpperCaseValueMap().get(aleph);
 			if (YZvaluesMap == null)
 				continue;
-			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> upperCaseEntryOfYA : YZvaluesMap.entrySet()) {
-				final Label beta = upperCaseEntryOfYA.getKey();
-				int v = upperCaseEntryOfYA.getIntValue();
-
+			for (Label beta : YZvaluesMap.keySet()) {
+				int v = eYZ.getUpperCaseValue(beta, aleph);
+				if (v == Constants.INT_NULL)
+					continue;
 				for (ALetter nodeLetter : aleph) {
 					LabeledNode nC = this.g.getNode(nodeLetter.name);
 					if (nY == nC) // Z is the activation time point!
@@ -579,17 +582,17 @@ public class CSTNPSU extends CSTNU {
 					LabeledNode nA = this.getActivationNode(nC);
 					if (nA == this.Z)
 						continue;
-					LabeledIntEdge AC = this.getLowerContingentLink(nC);
+					CSTNUEdge AC = this.getLowerContingentLink(nC);
 
 					LabeledLowerCaseValue lowerCaseEntry = AC.getLowerCaseValue();
 					if (lowerCaseEntry.isEmpty())
 						continue;
 					Label l = lowerCaseEntry.getLabel();
-					LabeledIntEdge CA = this.g.findEdge(nC, nA);
+					CSTNUEdge CA = this.g.findEdge(nC, nA);
 					int x = CA.getValue(l);// guarded link, x must be the lower bound, not the lower guard lowerCaseEntry.getValue();
 					if (x == Constants.INT_NULL)
 						continue;
-					LabeledIntEdge AZ = this.g.findEdge(nA, this.Z);
+					CSTNUEdge AZ = this.g.findEdge(nA, this.Z);
 
 					for (ALabel aleph1 : AZ.getAllUpperCaseAndLabeledValuesMaps().keySet()) {
 						if (aleph1.contains(nodeLetter))

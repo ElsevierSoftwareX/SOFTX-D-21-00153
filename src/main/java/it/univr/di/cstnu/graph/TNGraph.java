@@ -7,6 +7,7 @@ package it.univr.di.cstnu.graph;
 
 import java.io.File;
 import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Observable;
@@ -39,29 +40,57 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * This class tries to represent dense graphs where nodes {@link LabeledNode} and edges are {@link LabeledIntEdge} implementing the interface
- * {@link DirectedGraph} in order to allow the representation of graph by Jung library.
+ * Represents (dense) temporal network graphs where nodes are {@link LabeledNode} and edges are (an extension of) {@link Edge}.
+ * This class implements the interface {@link DirectedGraph} in order to allow the representation of Graph by Jung library.
  *
  * @author posenato
  * @version $Id: $Id
+ * @param <E> type of edge
  */
-public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntEdge> implements DirectedGraph<LabeledNode, LabeledIntEdge>, Observer {
+
+public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> implements DirectedGraph<LabeledNode, E>, Observer {
+
+	/**
+	 * Types of network that can be represented by this class.
+	 * The type is determined in the constructor checking the implemented interface by the given edge class.<br>
+	 * On 2019-06-13 the considered interfaces are:
+	 * 
+	 * <pre>
+	 * Edge Interface      Network Type
+	 * STNEdge             STN
+	 * CSTNEdge            CSTN
+	 * CSTNUEdge           CSTNU
+	 * </pre>
+	 * 
+	 * <b>This is not a correct design-choice but it allows the written of classes that can use TNGraph<Edge> objects and make only different operations
+	 * according with the type of the network.</b>
+	 * 
+	 * @author posenato
+	 */
+	public enum NetworkType {
+		STN,
+
+		STNU,
+
+		CSTN,
+
+		CSTNU
+	}
 
 	/**
 	 * Represents the association of an edge with its position in the adjacency matrix of the graph.
 	 * index with its corresponding node.
+	 * 
 	 * @author posenato
 	 */
 	private class EdgeIndex {
-		 /**
+		/**
 		 * It is not possible to use the technique used for Node (extending LabeledIntNode class) because if I extended
-		 * AbstractLabeledIntEdge, then edges are viewed as AbstractLabeledIntEdge and parameterized type T cannot be used as base class for extending.
+		 * E, then edges are viewed as E and parameterized type T cannot be used as base class for extending.
 		 */
 
 		/**
@@ -71,7 +100,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		/**
 		 * 
 		 */
-		LabeledIntEdge edge = null;
+		E edge = null;
 		/**
 		 * 
 		 */
@@ -82,7 +111,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		 * @param row
 		 * @param col
 		 */
-		EdgeIndex(LabeledIntEdge e, int row, int col) {
+		EdgeIndex(E e, int row, int col) {
 			this.edge = e;
 			this.rowAdj = row;
 			this.colAdj = col;
@@ -95,9 +124,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
+	 * Adjacency grow factor; It represents the multiplication factor to use for increasing the dimension of adjacency matrix. It has to be at least 1.5.
+	 */
+	static final float growFactor = 1.8f;
+
+	/**
 	 *
 	 */
-	private static Logger LOG = Logger.getLogger(LabeledIntGraph.class.getName());
+	private static Logger LOG = Logger.getLogger("TNGraph");
 
 	/**
 	 * 
@@ -107,7 +141,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return an instance for childrenOfObserver field.
 	 */
-	private static final Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
+	private final static Object2ObjectMap<LabeledNode, Label> newChildrenObserverInstance() {
 		return new Object2ObjectArrayMap<>();// in Label I showed that for small map, ArrayMap is faster than Object2ObjectRBTreeMap and
 												// Object2ObjectAVLTreeMap.
 	}
@@ -115,14 +149,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return an instance for propositionToNode field.
 	 */
-	private static final Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
+	private final static Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
 		return new Char2ObjectArrayMap<>();// I verified that Char2ObjectArrayMap is faster than Openhash when proposition are limited, as in this application.
 	}
 
 	/**
 	 * The graph is represented by its adjacency matrix.
 	 */
-	private LabeledIntEdge[][] adjacency;
+	private E[][] adjacency;
+
+	/**
+	 * Alphabet for A-Label
+	 */
+	private ALabelAlphabet aLabelAlphabet;
 
 	/**
 	 * Children of observation nodes
@@ -135,14 +174,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private Object2ObjectMap<String, EdgeIndex> edge2index;
 
 	/**
-	 * Factory
+	 * Edge factory
 	 */
-	private LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory;
-
-	/**
-	 * Adjacency grow factor; It represents the multiplication factor to use for increasing the dimension of adjacency matrix. It has to be at least 1.5.
-	 */
-	float growFactor = 1.8f;
+	private EdgeSupplier<E> edgeFactory;
 
 	/**
 	 * In order to guarantee a fast mapping adjacency position-->node, a map is maintained.
@@ -150,19 +184,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private Int2ObjectMap<LabeledNode> index2node;
 
 	/**
-	 * Class to use for managing labeled values of edges.
+	 * A possible input file containing this graph.
 	 */
-	Class<? extends LabeledIntMap> internalMapImplementationClass;
-
-	/**
-	 * Alphabet for A-Label
-	 */
-	private ALabelAlphabet aLabelAlphabet;
+	private File inputFile;
 
 	/**
 	 * List of edges with lower case label set not empty
 	 */
-	private ObjectList<LabeledIntEdge> lowerCaseEdges;
+	private ObjectList<CSTNUEdge> lowerCaseEdges;
 
 	/**
 	 * Name
@@ -170,14 +199,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private String name;
 
 	/**
-	 * A possible file name containing this graph.
+	 * Node factory
 	 */
-	private File fileName;
+	private LabeledNodeSupplier<? extends LabeledIntMap> nodeFactory;
 
 	/**
 	 * In order to guarantee a fast mapping node-->adjacency position, a map is maintained.
 	 */
 	private Object2IntMap<String> nodeName2index;
+
+	/**
+	 * List of edges from observers to Z
+	 */
+	private ObjectList<E> observer2Z;
 
 	/**
 	 * Current number of nodes;
@@ -190,9 +224,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private Char2ObjectMap<LabeledNode> proposition2Observer;
 
 	/**
-	 * List of edges from observers to Z
+	 * Type of network
 	 */
-	private ObjectList<LabeledIntEdge> observer2Z;
+	private NetworkType type;
 
 	/**
 	 * Zero node. In temporal constraint network such node is the first node to execute.
@@ -200,15 +234,21 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	private LabeledNode Z;
 
 	/**
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
+	 * @param inputEdgeImplClass
+	 * @param inputLabeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. .<br>
 	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
-	public <C extends LabeledIntMap> LabeledIntGraph(Class<C> internalMapImplementationClass) {
+	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(Class<E1> inputEdgeImplClass, Class<M1> inputLabeledValueMapImplClass) {
 		super(EdgeType.DIRECTED);
-		if (internalMapImplementationClass.isInterface())
-			throw new IllegalArgumentException("Parameter cannot be an interface. It must be a name of implementation class.");
-		this.internalMapImplementationClass = internalMapImplementationClass;
-		this.edgeFactory = new LabeledIntEdgeSupplier<>(internalMapImplementationClass);
+		if (CSTNUEdge.class.isAssignableFrom(inputEdgeImplClass))
+			this.type = NetworkType.CSTNU;
+		else if (CSTNEdge.class.isAssignableFrom(inputEdgeImplClass))
+			this.type = NetworkType.CSTN;
+		else if (STNEdge.class.isAssignableFrom(inputEdgeImplClass))
+			this.type = NetworkType.STN;
+
+		this.edgeFactory = new EdgeSupplier<>(inputEdgeImplClass, inputLabeledValueMapImplClass);
+		this.nodeFactory = new LabeledNodeSupplier<>(inputLabeledValueMapImplClass);
 		this.order = 0;
 		this.adjacency = createAdjacency(10);
 		this.nodeName2index = new Object2IntOpenHashMap<>();
@@ -217,17 +257,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.edge2index = new Object2ObjectAVLTreeMap<>(); // From fastutil javadoc:
 		// In general, AVL trees have slightly slower updates but faster searches; however, on very large collections the smaller height may lead in fact to
 		// faster updates, too.
-		this.aLabelAlphabet = new ALabelAlphabet();
+		if (this.type == NetworkType.CSTNU)
+			this.aLabelAlphabet = new ALabelAlphabet();
 	}
 
 	/**
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
+	 * @param edgeImplClass
+	 * @param labeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. .<br>
 	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 * @param alphabet Alphabet to use for naming Upper Case label
 	 */
-	public <C extends LabeledIntMap> LabeledIntGraph(Class<C> internalMapImplementationClass, ALabelAlphabet alphabet) {
-		this(internalMapImplementationClass);
-		if (alphabet != null)
+	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(Class<E1> edgeImplClass, Class<M1> labeledValueMapImplClass, ALabelAlphabet alphabet) {
+		this(edgeImplClass, labeledValueMapImplClass);
+		if (alphabet != null && this.type == NetworkType.CSTNU)
 			this.aLabelAlphabet = alphabet;
 	}
 
@@ -235,21 +277,19 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * A constructor that copy a given graph g using copy constructor even for internal structures. If g is null, this new graph will be empty.
 	 *
 	 * @param g the graph to be cloned
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!).<br>
+	 * @param edgeImplClass
+	 * @param labeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. .<br>
 	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
-	public <C extends LabeledIntMap> LabeledIntGraph(final LabeledIntGraph g, Class<C> internalMapImplementationClass) {
-		this(internalMapImplementationClass);
-		if (g == null)
-			return;
+	public TNGraph(final TNGraph<? extends E> g, Class<? extends E> edgeImplClass, Class<? extends LabeledIntMap> labeledValueMapImplClass) {
+		this(edgeImplClass, labeledValueMapImplClass);
 		this.name = g.name;
 		this.aLabelAlphabet = g.aLabelAlphabet;
-		this.fileName = g.fileName;
-
+		this.inputFile = g.inputFile;
 		// clone all nodes
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
-			vNew = new LabeledNode(v);
+			vNew = this.nodeFactory.get(v);
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
@@ -261,36 +301,39 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 
 		// clone all edges giving the right new endpoints corresponding the old ones.
-		AbstractLabeledIntEdge eNew;
-		for (final LabeledIntEdge e : g.getEdges()) {
+		E eNew;
+		for (final E e : g.getEdges()) {
 			eNew = this.edgeFactory.get(e);
-			addEdge(eNew, g.getSource(e).name, g.getDest(e).name);
+			addEdge(eNew, g.getSource(e.getName()).name, g.getDest(e.getName()).name);
 		}
 	}
 
 	/**
-	 * Constructor for LabeledIntGraph.
+	 * Constructor for TNGraph.
 	 *
-	 * @param name a name for the graph
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
+	 * @param graphName a name for the graph
+	 * @param inputEdgeImplClass type of edges
+	 * @param inputLabeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. A general and safe
 	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
-	public <C extends LabeledIntMap> LabeledIntGraph(final String name, Class<C> internalMapImplementationClass) {
-		this(internalMapImplementationClass);
-		this.name = name;
+	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, Class<M1> inputLabeledValueMapImplClass) {
+		this(inputEdgeImplClass, inputLabeledValueMapImplClass);
+		this.name = graphName;
 	}
 
 	/**
-	 * Constructor for LabeledIntGraph.
+	 * Constructor for TNGraph.
 	 *
-	 * @param name a name for the graph
-	 * @param internalMapImplementationClass it is necessary for creating the right factory (reflection doesn't work due to reification!) A general and safe
+	 * @param graphName a name for the graph
+	 * @param inputEdgeImplClass type of edges
+	 * @param inputLabeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. A general and safe
 	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
-	 * @param alphabet alfabet for upper case letter used to label values in the edges.
+	 * @param alphabet alphabet for upper case letter used to label values in the edges.
 	 */
-	public <C extends LabeledIntMap> LabeledIntGraph(final String name, Class<C> internalMapImplementationClass, ALabelAlphabet alphabet) {
-		this(internalMapImplementationClass);
-		this.name = name;
+	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, Class<M1> inputLabeledValueMapImplClass,
+			ALabelAlphabet alphabet) {
+		this(inputEdgeImplClass, inputLabeledValueMapImplClass);
+		this.name = graphName;
 		this.aLabelAlphabet = alphabet;
 	}
 
@@ -313,6 +356,43 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		this.childrenOfObserver.put(obs, children);
 	}
 
+	/*
+	 * It is necessary to copy the general method here because of generics T
+	 */
+	/** {@inheritDoc} */
+	@Override
+	public boolean addEdge(E e, final LabeledNode v1, final LabeledNode v2) {
+		if (e == null || v1 == null || v2 == null)
+			return false;
+		if (!this.nodeName2index.containsKey(v1.getName())) {
+			addVertex(v1);
+		}
+		if (!this.nodeName2index.containsKey(v2.getName())) {
+			addVertex(v2);
+		}
+		return addEdge(e, v1.name, v2.name);
+	}
+
+	/*
+	 * It is necessary to copy the general method here because otherwise it calls the general addEdge(e, new Pair<LabeledNode>(v1, v2), edge_type)!!!
+	 * @see edu.uci.ics.jung.graph.AbstractGraph#addEdge(java.lang.Object, java.lang.Object, java.lang.Object, edu.uci.ics.jung.graph.util.EdgeType)
+	 */
+	/** {@inheritDoc} */
+	@Override
+	public boolean addEdge(E e, final LabeledNode v1, final LabeledNode v2, final EdgeType edge_type1) {
+		if (e == null || v1 == null || v2 == null)
+			return false;
+
+		return addEdge(e, v1.name, v2.name);
+	}
+
+	@Override
+	public boolean addEdge(E edge, Pair<? extends LabeledNode> endpoints, EdgeType edgeType) {
+		if (edge == null || endpoints == null)
+			return false;
+		return this.addEdge(edge, endpoints.getFirst(), endpoints.getSecond());
+	}
+
 	/**
 	 * Optimized method for adding edge. It exploits internal structure of the class.
 	 * 
@@ -321,7 +401,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param v2Name
 	 * @return true if edge has been added.
 	 */
-	public boolean addEdge(AbstractLabeledIntEdge e, final String v1Name, final String v2Name) {
+	public boolean addEdge(E e, final String v1Name, final String v2Name) {
 		if (e == null || v1Name == null || v2Name == null)
 			return false;
 
@@ -343,7 +423,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return false;
 		}
 
-		int destIndex = this.nodeName2index.get(v2Name);
+		int destIndex = this.nodeName2index.getInt(v2Name);
 		if (destIndex == Constants.INT_NULL) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO)) {
@@ -353,53 +433,16 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			return false;
 		}
 
-		LabeledIntEdge old = this.adjacency[sourceIndex][destIndex];
-		if (old != null) {
-			this.edge2index.remove(old.getName());
-		}
+		E old = this.adjacency[sourceIndex][destIndex];
+		removeEdgeFromIndex(old);
 		this.adjacency[sourceIndex][destIndex] = e;
 
 		this.edge2index.put(e.getName(), new EdgeIndex(e, sourceIndex, destIndex));
 		this.lowerCaseEdges = null;
-		e.addObserver(this);
+		if (e instanceof AbstractEdge) {
+			((AbstractEdge) e).addObserver(this);
+		}
 		return true;
-	}
-
-	/*
-	 * It is necessary to copy the general method here because of generics T
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public boolean addEdge(LabeledIntEdge e, final LabeledNode v1, final LabeledNode v2) {
-		if (e == null || v1 == null || v2 == null)
-			return false;
-		if (!this.nodeName2index.containsKey(v1.getName())) {
-			addVertex(v1);
-		}
-		if (!this.nodeName2index.containsKey(v2.getName())) {
-			addVertex(v2);
-		}
-		return addEdge((AbstractLabeledIntEdge) e, v1.name, v2.name);
-	}
-
-	/*
-	 * It is necessary to copy the general method here because otherwise it calls the general addEdge(e, new Pair<LabeledNode>(v1, v2), edge_type)!!!
-	 * @see edu.uci.ics.jung.graph.AbstractGraph#addEdge(java.lang.Object, java.lang.Object, java.lang.Object, edu.uci.ics.jung.graph.util.EdgeType)
-	 */
-	/** {@inheritDoc} */
-	@Override
-	public boolean addEdge(LabeledIntEdge e, final LabeledNode v1, final LabeledNode v2, final EdgeType edge_type1) {
-		if (e == null || v1 == null || v2 == null)
-			return false;
-
-		return addEdge((AbstractLabeledIntEdge) e, v1.name, v2.name);
-	}
-
-	@Override
-	public boolean addEdge(LabeledIntEdge edge, Pair<? extends LabeledNode> endpoints, EdgeType edgeType) {
-		if (edge == null || endpoints == null)
-			return false;
-		return this.addEdge(edge, endpoints.getFirst(), endpoints.getSecond());
 	}
 
 	@Override
@@ -415,8 +458,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 		int currentSize = this.adjacency.length;
 		if (currentSize == this.order) {
-			int newSize = (int) (currentSize * this.growFactor);
-			LabeledIntEdge[][] newAdjancency = createAdjacency(newSize);
+			int newSize = (int) (currentSize * growFactor);
+			E[][] newAdjancency = createAdjacency(newSize);
 			for (int i = currentSize; i-- != 0;) {
 				for (int j = currentSize; j-- != 0;)
 					newAdjancency[i][j] = this.adjacency[i][j];
@@ -435,21 +478,6 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		clearCache();
 		vertex.addObserver(this);
 		return true;
-	}
-
-	/**
-	 * builds this.observer2Z;
-	 */
-	private void buildObserver2ZEdgesSet() {
-		this.observer2Z = new ObjectArrayList<>();
-		if (this.Z == null)
-			return;
-		Char2ObjectMap<LabeledNode> observers = getObservedAndObserver();
-		for (final LabeledNode node : observers.values()) {
-			LabeledIntEdge e = this.findEdge(node, this.Z);
-			if (e != null)
-				this.observer2Z.add(e);
-		}
 	}
 
 	/**
@@ -488,7 +516,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public boolean containsEdge(LabeledIntEdge edge) {
+	public boolean containsEdge(E edge) {
 		if (edge == null || edge.getName() == null)
 			return false;
 		return this.edge2index.containsKey(edge.getName());
@@ -507,10 +535,9 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 *
 	 * @param g the graph to copy.
 	 */
-	public void copy(final LabeledIntGraph g) {
+	public void copy(final TNGraph<E> g) {
 		this.name = g.name;
 		this.order = 0;// addVertex adjusts the value
-		this.growFactor = g.growFactor;
 		this.adjacency = createAdjacency(g.getVertexCount());
 		this.nodeName2index.clear();
 		this.index2node.clear();
@@ -519,7 +546,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// Clone all nodes
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
-			vNew = new LabeledNode(v);
+			vNew = this.nodeFactory.get(v);
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
@@ -527,17 +554,17 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 
 		// Clone all edges giving the right new endpoints corresponding the old ones.
-		for (final LabeledIntEdge e : g.getEdges()) {
+		for (final E e : g.getEdges()) {
 			addEdge(this.edgeFactory.get(e), g.getSource(e).name, g.getDest(e).name);
 		}
 	}
 
 	/**
-	 * Makes a copy as {@link #copy(LabeledIntGraph)} removing all possible redundant labeled values in the given graph.
+	 * Makes a copy as {@link #copy(TNGraph)} removing all labeled values having unknown literal(s) or -∞ value.
 	 *
-	 * @param g a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param g a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 */
-	public void copyCleaningRedundantLabels(LabeledIntGraph g) {
+	public void copyCleaningRedundantLabels(TNGraph<E> g) {
 		this.name = g.name;
 		this.order = 0;// addVertex adjusts the value
 		this.adjacency = createAdjacency(g.getVertexCount());
@@ -548,7 +575,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		// clone all nodes
 		LabeledNode vNew;
 		for (final LabeledNode v : g.getVertices()) {
-			vNew = new LabeledNode(v);
+			vNew = this.nodeFactory.get(v);
+			for (Label label : vNew.getLabeledPotential().keySet()) {
+				if (label.containsUnknown())
+					vNew.removeLabeledPotential(label);
+			}
 			this.addVertex(vNew);
 			if (v.equalsByName(g.Z)) {
 				this.Z = vNew;
@@ -556,41 +587,49 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 
 		// clone all edges giving the right new endpoints corresponding the old ones.
-		LabeledIntEdge eNew;
+		E eNew;
 		int value;
 		Label label;
-		for (final LabeledIntEdge e : g.getEdges()) {
-			eNew = this.edgeFactory.get();
-			eNew.setName(e.getName());
+		for (final E e : g.getEdges()) {
+			if (e.isEmpty())
+				continue;
+			eNew = this.edgeFactory.get(e.getName());// I don't copy values!
 			eNew.setConstraintType(e.getConstraintType());
-			for (Object2IntMap.Entry<Label> entry : e.getLabeledValueSet()) {
-				value = entry.getIntValue();
-				if (value == Constants.INT_NEG_INFINITE)
-					continue;
-				label = entry.getKey();
-				if (label.containsUnknown())
-					continue;
-				eNew.mergeLabeledValue(entry.getKey(), value);
+			if (e.isSTNEdge()) {
+				((STNEdge) eNew).setValue(((STNEdge) e).getValue());
+				addEdge(eNew, g.getSource(e).getName(), g.getDest(e).getName());
+				continue;
 			}
-			for (ALabel alabel : e.getUpperCaseValueMap().keySet()) {
-				LabeledIntTreeMap labeledValues = e.getUpperCaseValueMap().get(alabel);
-				for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
-					eNew.mergeUpperCaseValue(entry1.getKey(), alabel, entry1.getIntValue());
+			if (e.isCSTNEdge()) {
+				for (Object2IntMap.Entry<Label> entry : ((CSTNEdge) e).getLabeledValueSet()) {
+					value = entry.getIntValue();
+					if (value == Constants.INT_NEG_INFINITE)
+						continue;
+					label = entry.getKey();
+					if (label.containsUnknown())
+						continue;
+					((CSTNEdge) eNew).mergeLabeledValue(entry.getKey(), value);
 				}
 			}
-			// lower case value
-			eNew.setLowerCaseValue(e.getLowerCaseValue());
-
-			addEdge((AbstractLabeledIntEdge) eNew, g.getSource(e).getName(), g.getDest(e).getName());
+			if (e.isCSTNUEdge()) {
+				for (ALabel alabel : ((CSTNUEdge) e).getUpperCaseValueMap().keySet()) {
+					for (Object2IntMap.Entry<Label> entry1 : ((CSTNUEdge) e).getUpperCaseValueMap().get(alabel).entrySet()) {// entrySet read-only
+						value = entry1.getIntValue();
+						if (value == Constants.INT_NEG_INFINITE)
+							continue;
+						label = entry1.getKey();
+						if (label.containsUnknown())
+							continue;
+						((CSTNUEdge) eNew).mergeUpperCaseValue(entry1.getKey(), alabel, entry1.getIntValue());
+					}
+				}
+				// lower case value
+				((CSTNUEdge) eNew).setLowerCaseValue(((CSTNUEdge) e).getLowerCaseValue());
+			}
+			if (eNew.isEmpty())
+				continue;
+			addEdge(eNew, g.getSource(e).getName(), g.getDest(e).getName());
 		}
-	}
-
-	/**
-	 * @param size
-	 * @return a bi-dimensional size x size vector for containing T elements.
-	 */
-	private LabeledIntEdge[][] createAdjacency(int size) {
-		return (LabeledIntEdge[][]) Array.newInstance(this.edgeFactory.get().getClass(), size, size);
 	}
 
 	/**
@@ -600,14 +639,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	public boolean equals(final Object o) {
 		if (this == o)
 			return true;
-		if (!(o instanceof LabeledIntGraph))
+		if (!(o instanceof TNGraph))
 			return false;
-		final LabeledIntGraph g1 = (LabeledIntGraph) o;
+		final TNGraph<?> g1 = (TNGraph<?>) o;
 		return g1.getEdges().equals(this.getEdges()) && g1.getVertices().equals(this.getVertices());
 	}
 
 	@Override
-	public LabeledIntEdge findEdge(LabeledNode s, LabeledNode d) {
+	public E findEdge(LabeledNode s, LabeledNode d) {
 		if (s == null || s.getName() == null || d == null || d.getName() == null)
 			return null;
 		return findEdge(s.getName(), d.getName());
@@ -620,13 +659,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param d
 	 * @return null if any parameter is null or there not exists at least one of two nodes or the edge does not exist.
 	 */
-	public LabeledIntEdge findEdge(String s, String d) {
+	public E findEdge(String s, String d) {
 		if (s == null || d == null)
 			return null;
 		int sourceNI = this.nodeName2index.getInt(s);
 		if (sourceNI == Constants.INT_NULL)
 			return null;
-		int destNI = this.nodeName2index.get(d);
+		int destNI = this.nodeName2index.getInt(d);
 		if (destNI == Constants.INT_NULL)
 			return null;
 		return this.adjacency[sourceNI][destNI];
@@ -681,7 +720,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 */
 	public int getContingentCount() {
 		int c = 0;
-		for (LabeledIntEdge e : this.getEdges()) {
+		for (E e : this.getEdges()) {
 			if (e.isContingentEdge())
 				c++;
 		}
@@ -689,8 +728,23 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public LabeledNode getDest(LabeledIntEdge directedEdge) {
+	public LabeledNode getDest(E directedEdge) {
 		EdgeIndex ei = this.edge2index.get(directedEdge.getName());
+		if (ei == null)
+			return null;
+
+		return this.index2node.get(ei.colAdj);
+	}
+
+	/**
+	 * Wrapper {@link #getDest(Edge)}
+	 */
+	@SuppressWarnings("javadoc")
+	public LabeledNode getDest(String edgeName) {
+		if (edgeName == null)
+			return null;
+
+		EdgeIndex ei = this.edge2index.get(edgeName);
 		if (ei == null)
 			return null;
 
@@ -703,7 +757,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param s a {@link java.lang.String} object.
 	 * @return the edge associated to the name.
 	 */
-	public LabeledIntEdge getEdge(final String s) {
+	public E getEdge(final String s) {
 		if ((s == null) || s.isEmpty())
 			return null;
 		EdgeIndex ei = this.edge2index.get(s);
@@ -720,7 +774,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return the edgeFactory
 	 */
-	public LabeledIntEdgeSupplier<? extends LabeledIntMap> getEdgeFactory() {
+	public EdgeSupplier<E> getEdgeFactory() {
 		return this.edgeFactory;
 	}
 
@@ -728,8 +782,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Collection<LabeledIntEdge> getEdges() {
-		ObjectArrayList<LabeledIntEdge> coll = new ObjectArrayList<>();
+	public Collection<E> getEdges() {
+		ObjectArrayList<E> coll = new ObjectArrayList<>();
 		for (EdgeIndex ei : this.edge2index.values()) {
 			coll.add(ei.edge);
 		}
@@ -742,22 +796,14 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * getEdgesArray.
 	 *
 	 * @return the set of edges as an array.
-	 */
-	public LabeledIntEdge[] getEdgesArray() {
-		final LabeledIntEdge[] edgesA = this.getEdges().toArray(this.edgeFactory.get(this.getEdgeCount()));
-		return edgesA;
-	}
-
-	/**
-	 * getEdgesArray.
-	 * NON FUNZIONA... è come scrivere LabeledIntEdge[] getEdgesArray() {
-	 *
-	 * @return the set of edges as an array ordered w.r.t the name of edge in ascending order. @SuppressWarnings("unchecked") public <E extends LabeledIntEdge>
-	 *         E[] getEdgesArray() { final E[] edgesA = (E[]) this.getEdges().toArray(edgeFactory.getLabeledIntEdge(this.getEdgeCount())); return edgesA; }
+	 *         public E[] getEdgesArray() {
+	 *         final E[] edgesA = this.getEdges().toArray(EdgeSupplier.get(this.edgeFactory.getEdgeImplClass(), this.getEdgeCount()));
+	 *         return edgesA;
+	 *         }
 	 */
 
 	@Override
-	public Pair<LabeledNode> getEndpoints(LabeledIntEdge edge) {
+	public Pair<LabeledNode> getEndpoints(E edge) {
 		if (edge == null)
 			return null;
 		EdgeIndex ei = this.edge2index.get(edge.getName());
@@ -771,17 +817,17 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the name of the file that contains this graph.
 	 */
 	public File getFileName() {
-		return this.fileName;
+		return this.inputFile;
 	}
 
 	@Override
-	public Collection<LabeledIntEdge> getIncidentEdges(LabeledNode vertex) {
+	public ObjectList<E> getIncidentEdges(LabeledNode vertex) {
 		int index;
-		ObjectArrayList<LabeledIntEdge> coll = new ObjectArrayList<>();
+		ObjectArrayList<E> coll = new ObjectArrayList<>();
 		if (vertex == null || (index = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
 			return coll;
 
-		LabeledIntEdge e;
+		E e;
 		for (int i = 0; i < this.order; i++) {
 			e = this.adjacency[index][i];
 			if (e != null)
@@ -797,12 +843,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public Collection<LabeledIntEdge> getInEdges(LabeledNode vertex) {
+	public Collection<E> getInEdges(LabeledNode vertex) {
 		int nodeIndex;
-		ObjectArrayList<LabeledIntEdge> inEdges = new ObjectArrayList<>();
+		ObjectArrayList<E> inEdges = new ObjectArrayList<>();
 		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
 			return inEdges;
-		LabeledIntEdge e;
+		E e;
 		for (int i = 0; i < this.order; i++) {
 			e = this.adjacency[i][nodeIndex];
 			if (e != null)
@@ -814,23 +860,30 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * @return the edgeImplementationClass
 	 */
-	public Class<? extends LabeledIntMap> getInternalLabeledValueMapImplementationClass() {
-		return this.internalMapImplementationClass;
+	public Class<? extends LabeledIntMap> getLabeledValueMapImplClass() {
+		return this.edgeFactory.getLabeledIntValueMapImplClass();
 	}
 
 	/**
-	 * getLowerLabeledEdges.
-	 *
-	 * @return the set of edges containing Lower Case Labels!
+	 * @return the edgeImplementationClass
 	 */
-	public ObjectList<LabeledIntEdge> getLowerLabeledEdges() {
+	public Class<? extends E> getEdgeImplClass() {
+		return this.edgeFactory.getEdgeImplClass();
+	}
+
+	/**
+	 * @return the set of edges containing Lower Case Labels (when type of network is CSTNU). If there is no such edges, it returns an empty list.
+	 */
+	public ObjectList<CSTNUEdge> getLowerLabeledEdges() {
 		if (this.lowerCaseEdges == null) {
 			this.lowerCaseEdges = new ObjectArrayList<>();
-			LabeledIntEdge edge;
-			for (int i = 0; i < this.order; i++) {
-				for (int j = 0; j < this.order; j++) {
-					if ((edge = this.adjacency[i][j]) != null && !edge.getLowerCaseValue().isEmpty()) {
-						this.lowerCaseEdges.add(edge);
+			if (getType() == NetworkType.CSTNU) {
+				CSTNUEdge edge;
+				for (int i = 0; i < this.order; i++) {
+					for (int j = 0; j < this.order; j++) {
+						if ((edge = (CSTNUEdge) this.adjacency[i][j]) != null && !edge.getLowerCaseValue().isEmpty()) {
+							this.lowerCaseEdges.add(edge);
+						}
 					}
 				}
 			}
@@ -875,6 +928,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
+	 * @return the nodeFactory
+	 */
+	public LabeledNodeSupplier<? extends LabeledIntMap> getNodeFactory() {
+		return this.nodeFactory;
+	}
+
+	/**
 	 * getNodes.
 	 *
 	 * @return return the set of node ordered w.r.t. the lexicographical order of their names.
@@ -910,7 +970,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINEST))
-				LabeledIntGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
+				TNGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
 		}
 		return observer.get(c);
 	}
@@ -920,7 +980,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * 
 	 * @return the set of edges from observers to Z if Z is defined, empty set otherwise.
 	 */
-	public ObjectList<LabeledIntEdge> getObserver2ZEdges() {
+	public ObjectList<E> getObserver2ZEdges() {
 		if (this.observer2Z == null) {
 			this.buildObserver2ZEdgesSet();
 		}
@@ -945,12 +1005,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public Collection<LabeledIntEdge> getOutEdges(LabeledNode vertex) {
+	public ObjectList<E> getOutEdges(LabeledNode vertex) {
 		int nodeIndex;
-		ObjectArrayList<LabeledIntEdge> outEdges = new ObjectArrayList<>();
+		ObjectArrayList<E> outEdges = new ObjectArrayList<>();
 		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
 			return outEdges;
-		LabeledIntEdge e;
+		E e;
 		// for (int i = 0; i < order; i++) {
 		for (int i = this.order; --i >= 0;) {
 			e = this.adjacency[nodeIndex][i];
@@ -962,7 +1022,11 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 	@Override
 	public Collection<LabeledNode> getPredecessors(LabeledNode vertex) {
-		throw new UnsupportedOperationException("The Javadoc is not clear!");
+		ObjectArrayList<LabeledNode> predecessor = new ObjectArrayList<>();
+		for (E e : this.getInEdges(vertex)) {
+			predecessor.add(this.getSource(e));
+		}
+		return predecessor;
 	}
 
 	/**
@@ -978,11 +1042,23 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public LabeledNode getSource(LabeledIntEdge edge) {
+	public LabeledNode getSource(E edge) {
 		if (edge == null)
 			return null;
+		return getSource(edge.getName());
+	}
 
-		EdgeIndex ei = this.edge2index.get(edge.getName());
+	/**
+	 * Wrapper of {@link #getSource(Edge)}
+	 * 
+	 * @param edgeName
+	 */
+	@SuppressWarnings("javadoc")
+	public LabeledNode getSource(String edgeName) {
+		if (edgeName == null)
+			return null;
+
+		EdgeIndex ei = this.edge2index.get(edgeName);
 		if (ei == null)
 			return null;
 
@@ -992,21 +1068,30 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	@Override
 	public Collection<LabeledNode> getSuccessors(LabeledNode vertex) {
 		ObjectArrayList<LabeledNode> successors = new ObjectArrayList<>();
-		for (LabeledIntEdge e : this.getOutEdges(vertex)) {
+		for (E e : this.getOutEdges(vertex)) {
 			successors.add(this.getDest(e));
 		}
 		return successors;
 	}
 
 	/**
+	 * @return the type of network
+	 */
+	public NetworkType getType() {
+		return this.type;
+	}
+
+	/**
 	 * @return the set of edges containing Upper Case Label.
 	 */
-	public Set<LabeledIntEdge> getUpperLabeledEdges() {
-		final ObjectArraySet<LabeledIntEdge> es1 = new ObjectArraySet<>();
-		for (final LabeledIntEdge e : this.getEdges())
-			if (e.upperCaseValueSize() > 0) {
-				es1.add(e);
+	public Set<CSTNUEdge> getUpperLabeledEdges() {
+		final ObjectArraySet<CSTNUEdge> es1 = new ObjectArraySet<>();
+		for (final E e : this.getEdges()) {
+			CSTNUEdge e1 = ((CSTNUEdge) e);
+			if (e1.upperCaseValueSize() > 0) {
+				es1.add(e1);
 			}
+		}
 		return es1;
 	}
 
@@ -1029,7 +1114,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @return the set of vertices as an array ordered w.r.t the name of node in ascending order.
 	 */
 	public LabeledNode[] getVerticesArray() {
-		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[0]); //At pag. 248 of Effective Java, author shows that it is better to not pre-allocate.
+		final LabeledNode[] nodes = this.getVertices().toArray(new LabeledNode[0]);
+		Arrays.sort(nodes);
 		return nodes;
 	}
 
@@ -1051,10 +1137,10 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	/**
 	 * hasSameEdgesOf.
 	 *
-	 * @param g1 a {@link it.univr.di.cstnu.graph.LabeledIntGraph} object.
+	 * @param g1 a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 * @return true if this graph contains edges equal to g1 edges. Equals is checked using method {@link #equals(Object)}. False otherwise.
 	 */
-	public boolean hasSameEdgesOf(final LabeledIntGraph g1) {
+	public boolean hasSameEdgesOf(final TNGraph<E> g1) {
 		if (g1 == null)
 			return false;
 		final StringBuffer sb = new StringBuffer("Different edges:");
@@ -1062,13 +1148,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		final String g1name = g1.name;
 
 		boolean sameEdges = true;
-		ObjectSet<LabeledIntEdge> allEdges = new ObjectAVLTreeSet<>(getEdges());
+		ObjectSet<E> allEdges = new ObjectAVLTreeSet<>(getEdges());
 		allEdges.addAll(g1.getEdges());
-		LabeledIntEdge eg, eg1;
-		for (LabeledIntEdge e : allEdges) {
+		E eg, eg1;
+		for (E e : allEdges) {
 			eg = getEdge(e.getName());
 			eg1 = g1.getEdge(e.getName());
-			if (eg == null || eg1 == null || !eg.equalsAllLabeledValues(eg1)) {
+			if (eg == null || eg1 == null || !eg.hasSameValues(eg1)) {
 				sb.append('\n').append(currentName).append(":\t").append(eg).append("\n").append(g1name).append(":\t").append(eg1);
 				sameEdges = false;// i want to log all differences!!!
 			}
@@ -1076,13 +1162,13 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE))
-				LabeledIntGraph.LOG.log(Level.FINE, sb.toString());
+				TNGraph.LOG.log(Level.FINE, sb.toString());
 		}
 		return sameEdges;
 	}
 
 	@Override
-	public boolean isDest(LabeledNode vertex, LabeledIntEdge edge) {
+	public boolean isDest(LabeledNode vertex, E edge) {
 		if (vertex == null || edge == null)
 			return false;
 		int nodeIndex = this.nodeName2index.getInt(vertex.name);
@@ -1097,7 +1183,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public boolean isSource(LabeledNode vertex, LabeledIntEdge edge) {
+	public boolean isSource(LabeledNode vertex, E edge) {
 		if (vertex == null || edge == null)
 			return false;
 		int nodeIndex = this.nodeName2index.getInt(vertex.name);
@@ -1112,46 +1198,37 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	@Override
-	public boolean removeEdge(LabeledIntEdge edge) {
+	public boolean removeEdge(E edge) {
+		if (edge == null)
+			return false;
+		return removeEdge(edge.getName());
+	}
+
+	public boolean removeEdge(String edgeName) {
 		EdgeIndex ei;
-		if (edge == null || (ei = this.edge2index.get(edge.getName())) == null)
+		if (edgeName == null || (ei = this.edge2index.get(edgeName)) == null)
 			return false;
 
 		this.adjacency[ei.rowAdj][ei.colAdj] = null;
-		this.edge2index.remove(ei.edge.getName());
+		removeEdgeFromIndex(this.getEdge(edgeName));
 		this.lowerCaseEdges = null;
 		return true;
 	}
 
 	/**
-	 * Reverse (transpose) the current graph.
+	 * Removes all empty edges in the graph.
 	 * 
-	 * @return true if the operation was successful.
+	 * @return true if at least one edge was removed.
 	 */
-	public boolean reverse() {
-		int n = this.getVertexCount();
-		LabeledIntEdge swap;
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < i; j++) {
-				swap = this.adjacency[i][j];
-				this.adjacency[i][j] = this.adjacency[j][i];
-				this.adjacency[j][i] = swap;
-				if (swap != null)
-					this.edge2index.put(swap.getName(), new EdgeIndex(swap, j, i));
-				if ((swap = this.adjacency[i][j]) != null)
-					this.edge2index.put(swap.getName(), new EdgeIndex(swap, i, j));
+	public boolean removeEmptyEdges() {
+		boolean removed = false;
+		for (final E e : this.getEdges()) {
+			if (e.isEmpty()) {
+				this.removeEdge(e);
+				removed = true;
 			}
 		}
-		return true;
-	}
-
-	/**
-	 * @param e
-	 */
-	private void removeEdgeFromIndex(LabeledIntEdge e) {
-		if (e == null || e.getName() == null)
-			return;
-		this.edge2index.remove(e.getName());
+		return removed;
 	}
 
 	@Override
@@ -1200,7 +1277,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 		}
 		// End to move node to remove at the end of adjacency matrix and to remove all its edges.
 		this.index2node.remove(removingNodeIndex);
-		this.nodeName2index.remove(removingNode.name);
+		this.nodeName2index.removeInt(removingNode.name);
 		if (removingNodeIndex != last) {
 			LabeledNode nodeMovedToRemovedNodePosition = this.index2node.get(last);
 			this.index2node.remove(last);
@@ -1214,19 +1291,41 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	}
 
 	/**
-	 * @param fileName
+	 * Reverse (transpose) the current graph.
+	 * 
+	 * @return true if the operation was successful.
 	 */
-	public void setFileName(File fileName) {
-		this.fileName = fileName;
+	public boolean reverse() {
+		int n = this.getVertexCount();
+		E swap;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < i; j++) {
+				swap = this.adjacency[i][j];
+				this.adjacency[i][j] = this.adjacency[j][i];
+				this.adjacency[j][i] = swap;
+				if (swap != null)
+					this.edge2index.put(swap.getName(), new EdgeIndex(swap, j, i));
+				if ((swap = this.adjacency[i][j]) != null)
+					this.edge2index.put(swap.getName(), new EdgeIndex(swap, i, j));
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * @param file
+	 */
+	public void setInputFile(File file) {
+		this.inputFile = file;
 	}
 
 	/**
 	 * Setter for the field <code>name</code>.
 	 *
-	 * @param name the name to set
+	 * @param graphName the name to set
 	 */
-	public void setName(final String name) {
-		this.name = name;
+	public void setName(final String graphName) {
+		this.name = graphName;
 	}
 
 	/**
@@ -1245,51 +1344,65 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 *
 	 * @param g the graph to copy.
 	 */
-	public void takeIn(final LabeledIntGraph g) {
+	@SuppressWarnings("unchecked")
+	public void takeIn(final TNGraph<? extends E> g) {
 		this.adjacency = g.adjacency;
 		this.aLabelAlphabet = g.aLabelAlphabet;
 		this.childrenOfObserver = g.childrenOfObserver;
-		this.edge2index = g.edge2index;
-		this.fileName = g.fileName;
-		this.growFactor = g.growFactor;
+		this.edge2index = ((TNGraph<E>) g).edge2index;
+		this.edgeFactory = ((TNGraph<E>) g).edgeFactory;
 		this.index2node = g.index2node;
-		this.internalMapImplementationClass = g.internalMapImplementationClass;
+		this.inputFile = g.inputFile;
 		this.lowerCaseEdges = g.lowerCaseEdges;
 		this.name = g.name;
 		this.nodeName2index = g.nodeName2index;
-		this.observer2Z = g.observer2Z;
+		this.observer2Z = ((TNGraph<E>) g).observer2Z;
 		this.order = g.order;
 		this.proposition2Observer = g.proposition2Observer;
 		this.Z = g.Z;
+		this.type = g.type;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer(
-				"%LabeledIntGraph: "
-						+ ((this.name != null) ? this.name : (this.fileName != null) ? this.fileName.toString() : "no name")
-						+ "\n%LabeledIntGraph Syntax\n"
-						+ "%LabeledNode: <name, label, proposition observed>\n"
-						+ "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>\n");
-		sb.append("Nodes:\n");
+				"%TNGraph: "
+						+ ((this.name != null) ? this.name : (this.inputFile != null) ? this.inputFile.toString() : "no name")
+						// + "\n%TNGraph<E> Syntax\n"
+						// + "%LabeledNode: <name, label, [observed proposition], [>\n"
+						// + "%T: <name, type, source node, dest. node, L:{labeled values}, LL:{labeled lower-case values}, UL:{labeled upper-case values}>"
+						+ "\n");
+		sb.append("%Nodes:\n");
 
 		for (final LabeledNode n : this.getVertices()) {
-			sb.append("<" + n.name + ",\t" + n.getLabel() + ",\t" + n.getPropositionObserved());
-			LabeledALabelIntTreeMap potential = n.getPotential();
-			if (potential != null && !potential.isEmpty()) {
-				sb.append(",\tPotential: " + potential.toString());
-			}
-			sb.append(">\n");
+			sb.append(n.toString());
+			sb.append("\n");
 		}
-		sb.append("Edges:\n");
-		for (final LabeledIntEdge e : this.getEdges()) {
-			sb.append("<" + e.getName() + ",\t" + e.getConstraintType() + ",\t" + this.getSource(e).getName() + ",\t"
-					+ this.getDest(e).getName() + ",\tL:" + e.getLabeledValueMap().toString() + ", LL:"
-					+ e.lowerCaseValueAsString()
-					+ ", UL:" + e.upperCaseValuesAsString() + ">\n");
+		sb.append("%Edges:\n");
+		for (final E e : this.getEdges()) {
+			sb.append(e.toString());
+			sb.append("\n");
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Transposes <code>this</code> inverting only the souce/destination of each edge.
+	 * All other attributes of an edge are not modified.
+	 */
+	public void transpose() {
+		int n = this.getVertexCount();
+		for (int i = 1; i < n; i++) {
+			for (int j = 0; j < i; j++) {
+				E eIJ = this.adjacency[i][j];
+				E eJI = this.adjacency[j][i];
+				this.adjacency[i][j] = eJI;
+				this.adjacency[j][i] = eIJ;
+				updateEdgeInIndex(eIJ, j, i);
+				updateEdgeInIndex(eJI, i, j);
+			}
+		}
 	}
 
 	@Override
@@ -1318,7 +1431,7 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 					node.name = oldValue;
 					return;
 				}
-				this.nodeName2index.remove(oldValue);
+				this.nodeName2index.removeInt(oldValue);
 				this.nodeName2index.put(node.getName(), oldI);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
@@ -1370,8 +1483,8 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 			}
 		} // LabeledNode
 
-		if (o instanceof LabeledIntEdge) {
-			AbstractLabeledIntEdge edge = (AbstractLabeledIntEdge) o;
+		if (o instanceof AbstractEdge) {
+			AbstractEdge edge = (AbstractEdge) o;
 			if (obj.equals("Name")) {
 				EdgeIndex oldI = this.edge2index.get(oldValue);
 				EdgeIndex newI = this.edge2index.get(edge.getName());
@@ -1397,9 +1510,43 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 				return;
 			}
 			if (obj.equals("LowerLabel")) {
-				this.lowerCaseEdges.remove(edge);
+				CSTNUEdge e1 = (CSTNUEdge) edge;
+				this.lowerCaseEdges.remove(e1);
 			}
 		}
+	}
+
+	/**
+	 * builds this.observer2Z;
+	 */
+	private void buildObserver2ZEdgesSet() {
+		this.observer2Z = new ObjectArrayList<>();
+		if (this.Z == null)
+			return;
+		Char2ObjectMap<LabeledNode> observers = getObservedAndObserver();
+		for (final LabeledNode node : observers.values()) {
+			E e = this.findEdge(node, this.Z);
+			if (e != null)
+				this.observer2Z.add(e);
+		}
+	}
+
+	/**
+	 * @param size
+	 * @return a bi-dimensional size x size vector for containing T elements.
+	 */
+	@SuppressWarnings("unchecked")
+	private E[][] createAdjacency(int size) {
+		return (E[][]) Array.newInstance(this.edgeFactory.getEdgeImplClass(), size, size);
+	}
+
+	/**
+	 * @param e
+	 */
+	private void removeEdgeFromIndex(E e) {
+		if (e == null || e.getName() == null)
+			return;
+		this.edge2index.remove(e.getName());
 	}
 
 	/**
@@ -1407,11 +1554,12 @@ public class LabeledIntGraph extends AbstractTypedGraph<LabeledNode, LabeledIntE
 	 * @param row
 	 * @param col
 	 */
-	private void updateEdgeInIndex(LabeledIntEdge e, int row, int col) {
+	private void updateEdgeInIndex(E e, int row, int col) {
 		if (e == null || e.getName() == null)
 			return;
 		EdgeIndex ei = this.edge2index.get(e.getName());
 		ei.rowAdj = row;
 		ei.colAdj = col;
 	}
+
 }

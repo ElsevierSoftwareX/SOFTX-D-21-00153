@@ -4,6 +4,7 @@
 package it.univr.di.labeledvalue;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
@@ -141,52 +142,55 @@ public class LabeledIntTreeMapTest {
 		}
 
 		@Override
-		public LabeledIntMap createLabeledIntMap() {
-			// TODO Auto-generated method stub
+		public LabeledIntMap newInstance() {
 			return null;
 		}
 
 		@Override
-		public LabeledIntMap createLabeledIntMap(LabeledIntMap lim) {
-			// TODO Auto-generated method stub
+		public LabeledIntMap newInstance(LabeledIntMap lim) {
 			return null;
 		}
 
 		@Override
 		public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public int getMinValueSubsumedBy(Label l) {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public int getMaxValue() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public boolean alreadyRepresents(Label newLabel, int newValue) {
-			// TODO Auto-generated method stub
 			return false;
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return false;
+		}
+
+		@Override
+		public LabeledIntMapView unmodifiable() {
+			return null;
 		}
 	}
 
 	/**
 	 * 
 	 */
-	LabeledIntMapFactory<LabeledIntTreeMap> factory = new LabeledIntMapFactory<>(LabeledIntTreeMap.class);
+	LabeledIntMapSupplier<LabeledIntTreeMap> factory = new LabeledIntMapSupplier<>(LabeledIntTreeMap.class);
 
 	/**
 	 * 
@@ -223,6 +227,23 @@ public class LabeledIntTreeMapTest {
 	}
 
 	/**
+	 * 
+	 */
+	@Test
+	public void testEntrySet1() {
+		this.actual.put(Label.emptyLabel, 0);
+		this.actual.put(Label.parse("a"), -1);
+		this.actual.put(Label.parse("¬c"), -1);
+		this.actual.put(Label.parse("b"), -1);
+
+		assertEquals("{(0, ⊡) (-1, a) (-1, b) (-1, ¬c) }", this.actual.toString());
+		ObjectSet<Entry<Label>> entrySet = this.actual.entrySet();
+		assertEquals("{⊡->0, a->-1, ¬c->-1, b->-1}", entrySet.toString());
+
+		this.actual.remove(Label.parse("¬c"));
+		assertEquals("{⊡->0, a->-1, ¬c->-1, b->-1}", entrySet.toString());
+	}
+	/**
 	 * Check if the management of the base is correct.
 	 */
 	@Test
@@ -237,6 +258,23 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("¬a"), 21);
 
 		assertEquals("Test inserimento due label di pari valore con un letterale opposto:\n", this.expected, this.actual);
+	}
+
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
+	public final void semplificazione0Test() {
+		Label b = Label.parse("¬b");
+		this.actual.clear();
+		this.actual.put(Label.parse("a"), -1);
+		this.actual.put(Label.parse("b"), -1);
+		this.actual.put(b, -1);
+
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, -1);
+
+		assertEquals(this.expected, this.actual);
 	}
 
 	/**
@@ -294,8 +332,11 @@ public class LabeledIntTreeMapTest {
 
 		LabeledIntTreeMap copy = new LabeledIntTreeMap(this.actual);
 
+		assertEquals("{(21, ⊡) (15, a) (12, b) (10, ab) }", copy.toString());
+
 		ObjectSet<Label> keys = copy.keySet();
-		assertEquals("[a, ¬b, ab, a¬b, ¬ab]", Arrays.toString(keys.toArray()));
+		// assertEquals("[a, ¬b, ab, a¬b, ¬ab]", Arrays.toString(keys.toArray()));
+		assertEquals("[a, b, ab, ⊡]", Arrays.toString(keys.toArray()));
 
 		for (Label l : copy.keySet()) {
 			if (l.toString().equals("¬b") || l.toString().equals("ab")) {
@@ -303,8 +344,10 @@ public class LabeledIntTreeMapTest {
 				continue;
 			}
 		}
-		assertEquals("[a, ¬b, ab, a¬b, ¬ab]", Arrays.toString(keys.toArray()));
-		assertEquals("{(20, a) (15, a¬b) (12, ¬ab) }", copy.toString());
+		// assertEquals("[a, ¬b, ab, a¬b, ¬ab]", Arrays.toString(keys.toArray()));
+		assertEquals("[a, b, ab, ⊡]", Arrays.toString(keys.toArray()));
+		// assertEquals("{(20, a) (15, a¬b) (12, ¬ab) }", copy.toString());
+		assertEquals("{(21, ⊡) (15, a) (12, b) }", copy.toString());
 
 		copy = new LabeledIntTreeMap(this.actual);
 
@@ -317,8 +360,10 @@ public class LabeledIntTreeMapTest {
 				sb.append(e.getIntValue() + ", ");
 			}
 		}
-		assertEquals("21, 10, ", sb.toString());
-		assertEquals("{(20, a) (15, ¬b) (10, ab) (12, ¬ab) }", copy.toString());
+		// assertEquals("21, 10, ", sb.toString());
+		assertEquals("10, ", sb.toString());
+		// assertEquals("{(20, a) (15, ¬b) (10, ab) (12, ¬ab) }", copy.toString());
+		assertEquals("{(21, ⊡) (15, a) (12, b) (10, ab) }", copy.toString());
 	}
 
 	/**
@@ -388,8 +433,22 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.emptyLabel, 10);
 
 		assertEquals("Test su creazione e gestione semplificazioni:\n", this.expected, this.actual);
-
 	}
+
+	/**
+	 */
+	@Test
+	public final void alreadyRepresents() {
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, 23);
+		this.expected.put(Label.parse("ab"), 20);
+
+		assertTrue(this.expected.alreadyRepresents(Label.emptyLabel, 24));
+		assertTrue(this.expected.alreadyRepresents(Label.parse("abc"), 20));
+		assertFalse(this.expected.alreadyRepresents(Label.emptyLabel, 21));
+		assertFalse(this.expected.alreadyRepresents(Label.parse("a"), 20));
+	}
+
 
 	/**
 	 * Check if the management of the base is correct.
@@ -534,9 +593,8 @@ public class LabeledIntTreeMapTest {
 		this.expected.put(Label.parse("b"), 24);
 		// expected.put(Label.parse("¬ab"), 24);
 
-		assertEquals("Base con valori differenti:\n", "{(30, a) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
-		// assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual,
-		// expected.equals(actual));
+		// assertEquals("Base con valori differenti: ", "{(30, a) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
+		assertEquals("Base con valori differenti: ", "{(30, ⊡) (25, ¬a) (24, b) (23, ab) }", this.actual.toString());
 	}
 
 	/**
@@ -554,9 +612,8 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("a"), 24);
 		this.actual.put(Label.emptyLabel, 31);
 
-		assertEquals("Base con valori differenti:\n", "{(24, a) (25, ¬a) (23, ab) (24, ¬ab) (21, ¿a¬b) }", this.actual.toString());
-		// assertTrue("Test di equals con un'altra classe che implementa l'interfaccia:\nexpected: " + expected + "\nactual: " + actual,
-		// expected.equals(actual));
+		// assertEquals("Base con valori differenti:\n", "{(24, a) (25, ¬a) (23, ab) (24, ¬ab) (21, ¿a¬b) }", this.actual.toString());
+		assertEquals("Base con valori differenti:\n", "{(25, ⊡) (24, a) (24, b) (23, ab) (21, ¿a¬b) }", this.actual.toString());
 	}
 
 	/**
@@ -573,7 +630,25 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("c"), 32);
 		this.actual.put(Label.emptyLabel, 31);
 
-		assertEquals("{(30, a) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
+		assertEquals("{(30, ⊡) (25, ¬a) (24, b) (23, ab) }", this.actual.toString());
+		// assertEquals("{(30, ⊡) (25, ¬a) (23, ab) (24, ¬ab) }", this.actual.toString());
+	}
+
+	/**
+	 */
+	@Test
+	public void testKeySet() {
+		this.actual.put(Label.emptyLabel, 0);
+		this.actual.put(Label.parse("a"), -1);
+		this.actual.put(Label.parse("¬c"), -1);
+		this.actual.put(Label.parse("b"), -1);
+
+		assertEquals("{(0, ⊡) (-1, a) (-1, b) (-1, ¬c) }", this.actual.toString());
+		ObjectSet<Label> entrySet = this.actual.keySet();
+		assertEquals("{⊡, a, ¬c, b}", entrySet.toString());
+
+		this.actual.remove(Label.parse("¬c"));
+		assertEquals("{⊡, a, ¬c, b}", entrySet.toString());
 	}
 
 	/**
@@ -590,7 +665,7 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("¿ac"), 4);
 		this.actual.put(Label.parse("d"), 31);
 
-		assertEquals("{(30, a) (25, ¬a) (2, b) (25, c) (4, ¬ae) (4, ¿ac) }", this.actual.toString());
+		assertEquals("{(30, ⊡) (25, ¬a) (2, b) (25, c) (4, ¬ae) (4, ¿ac) }", this.actual.toString());
 	}
 
 	/**
@@ -817,8 +892,8 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("¿b"), -11);
 
 		this.expected.clear();
-		// assertEquals("{(8, ⊡) (-2, ¬ab) (-1, b) (-11, ¿b) }", actual.toString());
-		assertEquals("{(-1, b) (8, ¬b) (-11, ¿b) (-2, ¬ab) }", this.actual.toString());
+		assertEquals("{(8, ⊡) (-1, b) (-11, ¿b) (-2, ¬ab) }", this.actual.toString());
+		// assertEquals("{(-1, b) (8, ¬b) (-11, ¿b) (-2, ¬ab) }", this.actual.toString());
 	}
 
 	/**
@@ -847,31 +922,47 @@ public class LabeledIntTreeMapTest {
 		this.actual.put(Label.parse("¬ec"), 11);
 		this.actual.put(Label.parse("abd¿f"), 11);
 		this.actual.put(Label.parse("a¿d¬f"), 11);
-		assertEquals("{(109, ⊡) (22, ce) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
+		// assertEquals("{(109, ⊡) (22, ce) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
+		// this.actual.toString());
+		assertEquals("{(109, ⊡) (22, c) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
 				this.actual.toString());
+
 
 		this.actual.put(Label.parse("¬b¿d¿f"), 24);// non inserito perché c'è (23, ¬b¬d¬f)
 		this.actual.put(Label.parse("b¬df¿e"), 22);
 		this.actual.put(Label.parse("e¬c"), 23);
+		// assertEquals(
+		// "{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
+		// this.actual.toString());
 		assertEquals(
-				"{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
+				"{(109, ⊡) (22, c) (11, c¬e) (23, ¬ce) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("ab¿d¿f"), 20);// non iserito perché c'è (11, abd¿f)
 		this.actual.put(Label.parse("ad¬f"), 23);
 		this.actual.put(Label.parse("b¿d¿f"), 23);
+		// assertEquals(
+		// "{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef)
+		// (20, abcdef) }",
+		// this.actual.toString());
 		assertEquals(
-				"{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
+				"{(109, ⊡) (22, c) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("¬b¬d¿ef"), 23);
+		// assertEquals(
+		// "{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef)
+		// (23, ¬b¬d¿ef) (20, abcdef) }",
+		// this.actual.toString());
 		assertEquals(
-				"{(109, ⊡) (22, ce) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (23, ¬b¬d¿ef) (20, abcdef) }",
+				"{(109, ⊡) (22, c) (11, c¬e) (23, ¬ce) (23, ad¬f) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (23, b¿d¿f) (23, ¬b¬d¬f) (23, ¬d¿ef) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
 				this.actual.toString());
 
 		this.actual.put(Label.parse("¬e¬c"), 19);
 
-		assertEquals("{(22, ce) (11, c¬e) (23, ¬ce) (19, ¬c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
+		// assertEquals("{(22, ce) (11, c¬e) (23, ¬ce) (19, ¬c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (22, b¬d¿ef) (20, abcdef) }",
+		// this.actual.toString());
+		assertEquals("{(23, ⊡) (22, c) (19, ¬e) (11, c¬e) (11, a¿d¬f) (20, ae¬f) (20, ¬a¿bf) (10, abc¬f) (11, abd¿f) (20, abcdef) }",
 				this.actual.toString());
 	}
 

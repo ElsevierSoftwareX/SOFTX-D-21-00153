@@ -3,6 +3,7 @@ package it.univr.di.labeledvalue;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import org.jetbrains.annotations.Nullable;
 import org.netbeans.validation.api.Problems;
 import org.netbeans.validation.api.Validator;
 
@@ -139,6 +140,7 @@ public class Label implements Comparable<Label> {
 
 	/**
 	 * Label object cache
+	 * This declaration must stay here, before any other!
 	 */
 	private static final Long2ObjectMap<Label> CREATED_LABEL = new Long2ObjectOpenHashMap<>();
 
@@ -152,9 +154,9 @@ public class Label implements Comparable<Label> {
 	 * The re checks only that label chars are allowed.
 	 */
 	public static final String LABEL_RE = "(("
-			+ Constants.NOTstring + "[" + Literal.PROPOSITION_RANGE + "]|"
-			+ Constants.UNKNOWN + "[" + Literal.PROPOSITION_RANGE + "]|"
-			+ "[" + Literal.PROPOSITION_RANGE + "])+|"
+			+ "(" + Constants.NOTstring + "|" + Constants.UNKNOWN + "|)"
+			+ Literal.PROPOSITION_RANGE
+			+ ")+|"
 			+ Constants.EMPTY_LABELstring + ")";
 
 	/**
@@ -195,7 +197,7 @@ public class Label implements Comparable<Label> {
 	 * logger
 	 */
 	@SuppressWarnings("unused")
-	private static final Logger LOG = Logger.getLogger(Label.class.getName());
+	private static final Logger LOG = Logger.getLogger("Label");
 
 	/**
 	 * Maximal number of possible proposition in a network.<br>
@@ -274,9 +276,9 @@ public class Label implements Comparable<Label> {
 	 * The regular expression syntax for a label is specified in {@link #LABEL_RE}.
 	 *
 	 * @param s a {@link java.lang.String} object.
-	 * @return a Label object corresponding to the label string representation.
+	 * @return a Label object corresponding to the label string representation, null if the input string does not represent a label or is null.
 	 */
-	public static final Label parse(String s) {
+	public static final Label parse(@Nullable String s) {
 		if (s == null)
 			return null;
 
@@ -432,7 +434,6 @@ public class Label implements Comparable<Label> {
 	 * unknown              1   1
 	 * </pre>
 	 */
-	@SuppressWarnings("javadoc")
 	private final int bit1, bit0;
 
 	/**
@@ -446,7 +447,7 @@ public class Label implements Comparable<Label> {
 	 * Number of literals in the label
 	 * Value -1 means that the size has to be calculated!
 	 */
-	private final byte sizeCached;
+	private final byte count;
 
 	/**
 	 * Create a label from state integers b1 and b0.
@@ -457,7 +458,7 @@ public class Label implements Comparable<Label> {
 	private Label(final int b1, final int b0) {
 		this.bit0 = b0;
 		this.bit1 = b1;
-		this.sizeCached = (byte) Long.bitCount(b0 | b1);
+		this.count = (byte) Long.bitCount(b0 | b1);
 		int mask = 1 << 31;
 		byte mi = -1;
 		for (byte i = 32; ((--i) >= 0);) {
@@ -511,9 +512,10 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * It returns the conjunction of <code>proposition</code> to this if <code>this</code> is consistent with <code>proposition</code> and its
+	 * It returns a new label conjunction of <code>proposition</code> and <code>this</code> if <code>this</code> is consistent with <code>proposition</code> and
+	 * its
 	 * <code>propositionState</code>.
-	 * If propositionState is {@link Literal#ABSENT}, the effect is reset the proposition in the label.
+	 * If propositionState is {@link Literal#ABSENT}, the effect is reset the <code>proposition</code> in the new label.
 	 * 
 	 * @param proposition the proposition to conjunct.
 	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED} or {@link Literal#ABSENT}.
@@ -534,7 +536,7 @@ public class Label implements Comparable<Label> {
 
 
 	/**
-	 * Conjuncts <code>label</code> to this if <code>this</code> is consistent with <code>label</code> and returns the result without modifying
+	 * Conjuncts <code>label</code> to <code>this</code> if <code>this</code> is consistent with <code>label</code> and returns the result without modifying
 	 * <code>this</code>.
 	 *
 	 * @param label the label to conjunct
@@ -971,21 +973,21 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * It removes proposition if it is present, otherwise it does nothing.
+	 * Returns a new label that is a copy of <code>this</code> without <code>proposition</code> if it is present.
 	 * Removing a proposition means to remove all literal of the given proposition.
 	 *
 	 * @param proposition the proposition to remove.
-	 * @return return reference a this for allowing concatenation
+	 * @return the new label.
 	 */
 	public Label remove(final char proposition) {
 		return this.conjunction(proposition, Literal.ABSENT);
 	}
 
 	/**
-	 * It removes all literals with names in <b>inputLabel</b> from the current label.
+	 * Returns a new label copy of <code>this</code> where all literals with names in <b>inputLabel</b> are removed.
 	 *
 	 * @param inputLabel names of literals to remove.
-	 * @return this as reference
+	 * @return the new label.
 	 */
 	public Label remove(Label inputLabel) {
 		if (inputLabel == null)
@@ -998,11 +1000,11 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * It removes literal (proposition with a Literal.char) if it is present, otherwise it does nothing.
-	 * If label contains '¬p' and input literal is 'p', then the method does nothing.
+	 * Returns a new label that is a copy of <code>this</code> where <code>literal</code> is removed if it is present.
+	 * If label contains '¬p' and input literal is 'p', then the method returns a copy of <code>this</code>.
 	 *
 	 * @param literal the literal to remove
-	 * @return true if the literal is removed.
+	 * @return the new label.
 	 */
 	public Label remove(final Literal literal) {
 		byte index = Literal.index(literal.getName());
@@ -1016,7 +1018,7 @@ public class Label implements Comparable<Label> {
 	 * @return the number of literals of the label.
 	 */
 	public int size() {
-		return this.sizeCached;
+		return this.count;
 	}
 
 	/**

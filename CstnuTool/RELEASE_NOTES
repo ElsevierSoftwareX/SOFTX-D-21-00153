@@ -1,6 +1,23 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v2.00
+------------
+	date: 2019-11-07
+	
+	CSTN class implements 9Rule DC algorithm. Such algorithm consists in 3 rules (LP, R0, and R3*) for generating also -∞ value and 6 rules for
+	managing -∞ values that are stored as potential values in nodes.
+	Added CSTNSPFA class that implements the DC checking algorithm as single-sink BellmanFord one. Therefore, only node potential values are generated.
+	This class uses only 3 rules.    	
+	
+v1.26.vassar
+------------
+	date: 2019-10-21
+
+	Rewritten many classes for representing efficiently edges and graphs for STN networks. 
+	Removed class CSTNPotential (last svn version 296).
+	Added class STN & companions for some STN specific algorithms.
+	
 v1.26.0
 -------
 	date:	2019-03-23

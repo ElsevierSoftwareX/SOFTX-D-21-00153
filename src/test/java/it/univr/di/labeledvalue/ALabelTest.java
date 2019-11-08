@@ -17,7 +17,6 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 /**
  * @author posenato
  */
-@SuppressWarnings("javadoc")
 public class ALabelTest {
 
 	ALabel a, b, c, e;
@@ -87,14 +86,12 @@ public class ALabelTest {
 
 	}
 
-
 	@Test
 	public void compare() {
 		assertTrue(this.a.compareTo(this.c) < 0);
 		assertTrue(this.a.compareTo(this.a) == 0);
 		assertTrue(this.c.compareTo(this.a) > 0);
 	}
-
 
 	@Test
 	public void array() {
@@ -107,7 +104,6 @@ public class ALabelTest {
 		}
 		assertEquals("C", a1[1].toString());
 	}
-
 
 	@Test
 	public void intersect() {

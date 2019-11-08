@@ -8,7 +8,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.TNGraph;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -22,17 +23,17 @@ public class CSTNIR extends CSTN {
 
 
 	/**
-	 * logger
-	 */
-	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNIR.class.getName());
-
-	/**
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
 	// static public final String VERSIONandDATE = "Version 1.0 - April, 03 2017";// first release i.r.
 	static public final String VERSIONandDATE = "Version  1.1 - October, 10 2017";// removed qLables
+
+	/**
+	 * logger
+	 */
+	@SuppressWarnings("hiding")
+	static Logger LOG = Logger.getLogger("CSTNIR");
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -48,6 +49,25 @@ public class CSTNIR extends CSTN {
 	}
 
 	/**
+	 * Constructor for CSTN.
+	 * 
+	 * @param g1 the labeled int valued tNGraph to check
+	 */
+	public CSTNIR(TNGraph<CSTNEdge> g1) {
+		super(g1);
+		this.reactionTime = 0;
+	}
+
+	/**
+	 * @param g1
+	 * @param timeOut1
+	 */
+	public CSTNIR(TNGraph<CSTNEdge> g1, int timeOut1) {
+		super(g1, timeOut1);
+		this.reactionTime = 0;
+	}
+
+	/**
 	 * Default constructor.
 	 */
 	CSTNIR() {
@@ -56,30 +76,12 @@ public class CSTNIR extends CSTN {
 	}
 
 	/**
-	 * Constructor for CSTN.
-	 * 
-	 * @param g the labeled int valued graph to check
-	 */
-	public CSTNIR(LabeledIntGraph g) {
-		super(g);
-		this.reactionTime = 0;
-	}
-
-	/**
-	 * @param g
-	 * @param timeOut
-	 */
-	public CSTNIR(LabeledIntGraph g, int timeOut) {
-		super(g, timeOut);
-		this.reactionTime = 0;
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean LPMainConditionForSkipping(final int u, final int v) {
+	boolean mainConditionForRestrictedLP(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
+		// u must be < 0
 		return u >= 0;
 	}
 
@@ -87,8 +89,9 @@ public class CSTNIR extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	final boolean R0qR0MainConditionForSkipping(final int w) {
+	final boolean mainConditionForSkippingInR0qR0(final int w) {
 		// Table 1 ICAPS2016 paper for IR semantics
+		// w must be < 0.
 		return w >= 0;
 	}
 
