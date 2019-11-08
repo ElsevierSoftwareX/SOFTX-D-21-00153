@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="nContingent" for="graph">
+<desc>Number of contingents in the graph</desc>
+<default>0</default>
+</key>
+<key id="nObservedProposition" for="graph">
+<desc>Number of observed propositions in the graph</desc>
+<default>0</default>
+</key>
+<key id="nEdges" for="graph">
+<desc>Number of edges in the graph</desc>
+<default>0</default>
+</key>
+<key id="nVertices" for="graph">
+<desc>Number of vertices in the graph</desc>
+<default>0</default>
+</key>
+<key id="Name" for="graph">
+<desc>Graph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Value specification: [a-zA-F]</desc>
+<default></default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-zA-F]|[a-zA-F]]+|⊡</desc>
+<default>⊡</default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: normal|contingent|constraint.</desc>
+<default>normal</default>
+</key>
+<key id="LowerCaseLabeledValues" for="edge">
+<desc>Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>
+<default></default>
+</key>
+<key id="UpperCaseLabeledValues" for="edge">
+<desc>Labeled Upper-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>
+<default></default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values. Format: {[('integer', 'label') ]+}|{}</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="nContingent">1</data>
+<data key="nObservedProposition">1</data>
+<data key="nEdges">8</data>
+<data key="nVertices">4</data>
+<node id="Z">
+<data key="x">0.0</data>
+<data key="Label">⊡</data>
+<data key="y">0.0</data>
+</node>
+<node id="X">
+<data key="x">0.0</data>
+<data key="Label">⊡</data>
+<data key="y">0.0</data>
+</node>
+<node id="Ω">
+<data key="x">0.0</data>
+<data key="Label">⊡</data>
+<data key="y">0.0</data>
+</node>
+<node id="Y">
+<data key="Obs">p</data>
+<data key="x">0.0</data>
+<data key="Label">⊡</data>
+<data key="y">0.0</data>
+</node>
+<edge id="XY" source="X" target="Y">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{(X, 2, ¬p) }</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="X_Z" source="X" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ⊡) }</data>
+</edge>
+<edge id="YX" source="Y" target="X">
+<data key="Type">contingent</data>
+<data key="UpperCaseLabeledValues">{(X, -5, ¬p) }</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="Y_Z" source="Y" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ⊡) }</data>
+</edge>
+<edge id="Z_X" source="Z" target="X">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(15, ⊡) }</data>
+</edge>
+<edge id="Z_Y" source="Z" target="Y">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(15, ⊡) }</data>
+</edge>
+<edge id="Z_Ω" source="Z" target="Ω">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(15, ⊡) }</data>
+</edge>
+<edge id="Ω_Z" source="Ω" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ⊡) }</data>
+</edge>
+</graph>
+</graphml>
