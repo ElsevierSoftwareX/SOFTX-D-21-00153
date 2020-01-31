@@ -32,7 +32,6 @@ public class Literal implements Comparable<Literal> {
 	 * So, don't change them without revising all the class.<br>
 	 * {@link #ABSENT} is useful only for internal methods. It is not admitted for defining a literal.
 	 */
-	@SuppressWarnings("javadoc")
 	public static final char ABSENT = '\u0000',
 			STRAIGHT = '\u0001',
 			NEGATED = Constants.NOT,
@@ -115,13 +114,11 @@ public class Literal implements Comparable<Literal> {
 	 *
 	 * @param v the proposition letter
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
-	 * @return a literal with name {@code v} and state {@code state}
+	 * @return a literal with name {@code v} and state {@code state}, null if the char is not valid or state if {@link #ABSENT}.
 	 */
 	public static Literal valueOf(final char v, char state) {
-		if (!Literal.check(v))
-			throw new IllegalArgumentException("The char is not a letter!");
-		if (state == ABSENT)
-			throw new IllegalArgumentException("The state is not valid!");
+		if (!Literal.check(v) || state == ABSENT)
+			return null;
 		int hc = hashCode(v, state);
 		Literal l = CREATED_LITERAL[hc];
 		if (l == null) {

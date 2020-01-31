@@ -8,8 +8,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import com.google.common.base.Supplier;
 
-import it.univr.di.labeledvalue.LabeledIntMap;
-
 /**
  * This supplier <b>requires</b> as E a class that implements {@link Edge} interface and that contains the following 3 constructors:
  * 
@@ -30,7 +28,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	/**
 	 * 
 	 */
-	private Class<? extends LabeledIntMap> labeledIntValueMapImpl;
+	// private Class<? extends LabeledIntMap> labeledIntValueMapImpl;
 	/**
 	 * 
 	 */
@@ -42,20 +40,19 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	private Class<? extends E> generatorClass;
 
 	/**
-	 * @param edgeImplClass
-	 * @param labeledIntMapImplClass
+	 * @param defaultStnEdgeClass
 	 */
-	public EdgeSupplier(Class<? extends E> edgeImplClass, Class<? extends LabeledIntMap> labeledIntMapImplClass) {
+	public EdgeSupplier(Class<? extends E> defaultStnEdgeClass) {// , Class<? extends LabeledIntMap> labeledIntMapImplClass
 		super();
-		this.generatorClass = edgeImplClass;
-		this.labeledIntValueMapImpl = labeledIntMapImplClass;
+		this.generatorClass = defaultStnEdgeClass;
+//		this.labeledIntValueMapImpl = labeledIntMapImplClass;
 		try {
-			if (labeledIntMapImplClass != null) {
-				this.generator = edgeImplClass.getDeclaredConstructor(new Class[] { this.labeledIntValueMapImpl.getClass() })
-						.newInstance(new Object[] { this.labeledIntValueMapImpl });
-			} else {
-				this.generator = edgeImplClass.getDeclaredConstructor((Class<?>[]) null).newInstance((Object[]) null);
-			}
+			// if (labeledIntMapImplClass != null) {
+			// this.generator = edgeImplClass.getDeclaredConstructor(new Class[] { this.labeledIntValueMapImpl.getClass() })
+			// .newInstance(new Object[] { this.labeledIntValueMapImpl });
+			// } else {
+			this.generator = defaultStnEdgeClass.getDeclaredConstructor((Class<?>[]) null).newInstance((Object[]) null);
+			// }
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
 			throw new RuntimeException("Problem construccting an edge supplier: " + e.getMessage());
@@ -67,7 +64,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	 */
 	@Override
 	public E get() {
-		return this.generatorClass.cast(this.generator.newInstance(this.labeledIntValueMapImpl));
+		return this.generatorClass.cast(this.generator.newInstance());// this.labeledIntValueMapImpl
 	}
 
 	/**
@@ -75,7 +72,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	 * @return a new edge
 	 */
 	public E get(Edge edge) {
-		return this.generatorClass.cast(this.generator.newInstance(edge, this.labeledIntValueMapImpl));
+		return this.generatorClass.cast(this.generator.newInstance(edge));// , this.labeledIntValueMapImpl
 	}
 
 	/**
@@ -83,7 +80,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	 * @return a new edge
 	 */
 	public E get(String name) {
-		return this.generatorClass.cast(this.generator.newInstance(name, this.labeledIntValueMapImpl));
+		return this.generatorClass.cast(this.generator.newInstance(name));// , this.labeledIntValueMapImpl
 	}
 
 	/**
@@ -98,10 +95,10 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 
 	/**
 	 * @return the class chosen for creating new labeled value map.
+	 *         public Class<? extends LabeledIntMap> getLabeledIntValueMapImplClass() {
+	 *         return this.labeledIntValueMapImpl;
+	 *         }
 	 */
-	public Class<? extends LabeledIntMap> getLabeledIntValueMapImplClass() {
-		return this.labeledIntValueMapImpl;
-	}
 
 	/**
 	 * @return the class chosen for creating new edge.
@@ -112,7 +109,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 
 	@Override
 	public String toString() {
-		return "Edge type: " + this.generatorClass.toString() + ". Labeled Value Set type: " + this.labeledIntValueMapImpl.toString();
+		return "Edge type: " + this.generatorClass.toString();// + ". Labeled Value Set type: " + this.labeledIntValueMapImpl.toString();
 	}
 
 }

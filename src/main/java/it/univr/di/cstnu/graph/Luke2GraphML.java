@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.univr.di.cstnu.algorithms.Checker;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 
 /**
  * Utility class for converting CSTN file in Luke format to GraphML format.
@@ -72,7 +71,7 @@ public class Luke2GraphML {
 		}
 
 
-		TNGraph<CSTNEdge> g = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		TNGraph<CSTNEdge> g = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS);
 
 		Int2ObjectMap<LabeledNode> int2Node = new Int2ObjectOpenHashMap<>();
 		int2Node.defaultReturnValue(null);
@@ -167,7 +166,7 @@ public class Luke2GraphML {
 		// nodeParts[0] is empty!
 		LOG.info("NodeParts:" + Arrays.toString(nodeParts) + ". Lenght:" + nodeParts.length);
 		LOG.info("nodeParts[2]: '" + nodeParts[2] + "'");// . Leading char code: "+ Character.codePointAt(nodeParts[2], 0));
-		LabeledNode node = new LabeledNode(nodeParts[2], LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		LabeledNode node = new LabeledNode(nodeParts[2]);
 		boolean added = g.addVertex(node);
 		if (!added)
 			throw new Exception("Node " + node + " cannot be insert.");

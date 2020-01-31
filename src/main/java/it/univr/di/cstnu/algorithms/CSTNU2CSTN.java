@@ -23,7 +23,6 @@ import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 import it.univr.di.labeledvalue.Literal;
 
@@ -38,7 +37,7 @@ public class CSTNU2CSTN extends CSTNU {
 	/**
 	 * logger
 	 */
-	static Logger LOG1 = Logger.getLogger("CSTNU2CSTN");
+	static Logger LOG1 = Logger.getLogger(CSTNU2CSTN.class.getName());
 	/**
 	 * Version of the class
 	 */
@@ -65,8 +64,7 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG.finest("Parameters ok!");
 
 		LOG.finest("Loading tNGraph...");
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 		cstnu2cstn.setG(graphMLReader.readGraph());
 		LOG.finest("TNGraph loaded!");
 
@@ -140,7 +138,7 @@ public class CSTNU2CSTN extends CSTNU {
 
 		initAndCheck();
 
-		TNGraph<CSTNUEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+		TNGraph<CSTNUEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass());
 		nextGraph.setName("Next tNGraph");
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 
@@ -196,7 +194,7 @@ public class CSTNU2CSTN extends CSTNU {
 	 * @return g represented as a CSTN
 	 */
 	TNGraph<CSTNEdge> transform() {
-		TNGraph<CSTNEdge> cstnGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS, this.g.getLabeledValueMapImplClass());
+		TNGraph<CSTNEdge> cstnGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS);
 		cstnGraph.copy(cstnGraph.getClass().cast(this.g));
 
 		int nOfContingents = this.g.getContingentCount();
@@ -281,7 +279,7 @@ public class CSTNU2CSTN extends CSTNU {
 			}
 
 			int lowerCaseValue = lowerCaseValueTuple.getValue();
-			int upperCaseValue = -eInverted.getMinUpperCaseValue();
+			int upperCaseValue = -eInverted.getMinUpperCaseValue().getValue().getIntValue();
 
 			if (lowerCaseValue == Constants.INT_NULL || upperCaseValue == Constants.INT_NULL) {
 				throw new IllegalStateException("Something is wrong with the two contingent edges " + e + " and " + eInverted);

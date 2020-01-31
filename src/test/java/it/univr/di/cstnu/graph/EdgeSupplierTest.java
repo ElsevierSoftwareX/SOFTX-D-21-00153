@@ -12,23 +12,20 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
-
 /**
  * @author posenato
  */
 public class EdgeSupplierTest {
 
-	static EdgeSupplier<STNEdge> stnEdgeFactory = new EdgeSupplier<>(STNEdgeInt.class, LabeledIntTreeMap.class);
-	static EdgeSupplier<CSTNEdge> cstnEdgeFactory = new EdgeSupplier<>(CSTNEdgePluggable.class, LabeledIntTreeMap.class);
-	static EdgeSupplier<CSTNUEdge> cstnuEdgeFactory = new EdgeSupplier<>(CSTNUEdgePluggable.class, LabeledIntTreeMap.class);
+	static EdgeSupplier<STNEdge> stnEdgeFactory = new EdgeSupplier<>(STNEdgeInt.class);
+	static EdgeSupplier<CSTNEdge> cstnEdgeFactory = new EdgeSupplier<>(CSTNEdgePluggable.class);
+	static EdgeSupplier<CSTNUEdge> cstnuEdgeFactory = new EdgeSupplier<>(CSTNUEdgePluggable.class);
 
 	STNEdge stnEdge;
 	CSTNEdge cstnEdge;
 	CSTNUEdge cstnuEdge;
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.EdgeSupplier#EdgeSupplier(java.lang.Class, java.lang.Class)}.
 	 */
 	@SuppressWarnings("static-method")
 	@Test

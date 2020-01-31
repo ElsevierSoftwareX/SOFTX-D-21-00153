@@ -12,14 +12,13 @@ import org.junit.Test;
 
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
  */
 public class LabeledNodeTest {
 
-	static LabeledNodeSupplier<LabeledIntTreeMap> nodeFactory = new LabeledNodeSupplier<>(LabeledIntTreeMap.class);
+	static LabeledNodeSupplier nodeFactory = new LabeledNodeSupplier();
 
 	/**
 	 * 

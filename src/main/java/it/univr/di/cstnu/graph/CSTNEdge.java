@@ -121,4 +121,9 @@ public interface CSTNEdge extends Edge {
 	 * @return the number of labeled values associated to this edge.
 	 */
 	public int size();
+
+	/**
+	 * @return the implementing class to represent labeled values
+	 */
+	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass();
 }

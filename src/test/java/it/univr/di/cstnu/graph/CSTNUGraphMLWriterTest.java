@@ -15,7 +15,6 @@ import it.univr.di.cstnu.graph.Edge.ConstraintType;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
 public class CSTNUGraphMLWriterTest {
@@ -26,17 +25,17 @@ public class CSTNUGraphMLWriterTest {
 	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws IOException {
 		Label p = Label.valueOf('p', Literal.NEGATED);
 
-		TNGraph<CSTNUEdge> g = new TNGraph<>(CSTNUEdgePluggable.class, LabeledIntTreeMap.class);
+		TNGraph<CSTNUEdge> g = new TNGraph<>(CSTNUEdgePluggable.class);
 		LabeledNode Z = g.getNodeFactory().get("Z");
 		LabeledNode Ω = g.getNodeFactory().get("Ω");
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Y = g.getNodeFactory().get("Y");
 		Y.setObservable('p');
 		X.setLabel(p);
-		CSTNUEdge xy = new CSTNUEdgePluggable("XY", LabeledIntTreeMap.class);
+		CSTNUEdge xy = new CSTNUEdgePluggable("XY");
 		xy.setLowerCaseValue(p, new ALabel("X", g.getALabelAlphabet()), 2);
 		xy.setConstraintType(ConstraintType.contingent);
-		CSTNUEdge yx = new CSTNUEdgePluggable("YX", LabeledIntTreeMap.class);
+		CSTNUEdge yx = new CSTNUEdgePluggable("YX");
 		LabeledALabelIntTreeMap uc = new LabeledALabelIntTreeMap();
 		uc.mergeTriple(p, new ALabel("X", g.getALabelAlphabet()), -5);
 		yx.setUpperCaseValueMap(uc);

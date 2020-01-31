@@ -13,7 +13,6 @@ import javax.swing.JComboBox;
 import com.google.common.base.Supplier;
 
 import edu.uci.ics.jung.visualization.RenderContext;
-import edu.uci.ics.jung.visualization.annotations.AnnotatingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.AnimatedPickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
 import edu.uci.ics.jung.visualization.control.EditingGraphMousePlugin;
@@ -39,9 +38,9 @@ import it.univr.di.cstnu.graph.LabeledNode;
 public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> extends edu.uci.ics.jung.visualization.control.EditingModalGraphMouse<V, E> {
 
 	/**
-	 * logger della classe
+	 * logger
 	 */
-	static Logger LOG = Logger.getLogger("EditingModalGraphMouse");
+	static Logger LOG = Logger.getLogger(EditingModalGraphMouse.class.getName());
 
 	/**
 	 * Internal utility class to set the mode by keyboard.
@@ -191,7 +190,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 */
 	@Override
 	protected void loadPlugins() {
-		this.annotatingPlugin = new AnnotatingGraphMousePlugin<>(this.rc);
+		// this.annotatingPlugin = new AnnotatingGraphMousePlugin<>(this.rc);
 		this.pickingPlugin = new PickingGraphMousePlugin<V, E>();
 		this.animatedPickingPlugin = new AnimatedPickingGraphMousePlugin<V, E>();
 		this.translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_MASK);
@@ -210,5 +209,48 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	public void setEdgeEditingPlugin(Supplier<E> edgeF) {
 		this.edgeFactory = edgeF;
 		this.loadPlugins();
+	}
+
+	@Override
+	protected void setPickingMode() {
+		remove(this.translatingPlugin);
+		remove(this.rotatingPlugin);
+		remove(this.shearingPlugin);
+		remove(this.annotatingPlugin);
+		remove(this.editingPlugin);
+		add(this.pickingPlugin);
+		add(this.animatedPickingPlugin);
+		add(this.labelEditingPlugin);
+		add(this.popupEditingPlugin);
+	}
+
+	@Override
+	protected void setTransformingMode() {
+		remove(this.pickingPlugin);
+		remove(this.animatedPickingPlugin);
+		remove(this.annotatingPlugin);
+		remove(this.labelEditingPlugin);
+		remove(this.popupEditingPlugin);
+		remove(this.editingPlugin);
+		add(this.translatingPlugin);
+		add(this.rotatingPlugin);
+		add(this.shearingPlugin);
+		// add(this.labelEditingPlugin);
+		// add(this.popupEditingPlugin);
+	}
+
+	@Override
+	protected void setEditingMode() {
+		remove(this.pickingPlugin);
+		remove(this.animatedPickingPlugin);
+		remove(this.translatingPlugin);
+		remove(this.rotatingPlugin);
+		remove(this.shearingPlugin);
+		remove(this.annotatingPlugin);
+		remove(this.labelEditingPlugin);
+		remove(this.popupEditingPlugin);
+		add(this.editingPlugin);
+		// add(this.popupEditingPlugin);
+		// add(this.labelEditingPlugin);
 	}
 }

@@ -50,7 +50,6 @@ import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import net.openhft.affinity.AffinityStrategies;
 import net.openhft.affinity.AffinityThreadFactory;
 
@@ -220,7 +219,7 @@ public class Checker {
 	/**
 	 * class logger
 	 */
-	static final Logger LOG = Logger.getLogger("it.univr.di.cstnu.CSTNRunningTime");
+	static final Logger LOG = Logger.getLogger(Checker.class.getName());
 
 	/**
 	 * Output file header
@@ -239,11 +238,7 @@ public class Checker {
 			+ CSVSep + "#R0"
 			+ CSVSep + "#R3"
 			+ CSVSep + "#LP"
-			+ CSVSep + "#PotentialR1-2"
-			+ CSVSep + "#PotentialR3"
-			+ CSVSep + "#PotentialR4"
-			+ CSVSep + "#PotentialR5"
-			+ CSVSep + "#PotentialR6"
+			+ CSVSep + "#PotentialUpdate"
 			+ CSVSep;
 
 	/**
@@ -284,11 +279,7 @@ public class Checker {
 			+ "%d"// r0
 			+ CSVSep + "%d"// r3
 			+ CSVSep + "%d"// LNC
-			+ CSVSep + "%d"// "#PotentialR1-2"
-			+ CSVSep + "%d"// "#PotentialR3"
-			+ CSVSep + "%d"// "#PotentialR4"
-			+ CSVSep + "%d"// "#PotentialR5"
-			+ CSVSep + "%d"// "#PotentialR6"
+			+ CSVSep + "%d"// PotentialUpdate
 			+ CSVSep;
 
 	/**
@@ -315,7 +306,8 @@ public class Checker {
 	// static final String VERSIONandDATE = "2.24, December, 04 2017";// Added CSTNEpsilon3R
 	// static final String VERSIONandDATE = "2.25, January, 17 2018";// Improved print of statistics.
 	// static final String VERSIONandDATE = "2.26, December, 18 2018";// Improved print of statistics adding the total number of applied rules
-	static final String VERSIONandDATE = "2.27, June, 9 2019";// Refactoring Edge
+	// static final String VERSIONandDATE = "2.27, June, 9 2019";// Refactoring Edge
+	static final String VERSIONandDATE = "2.5, November, 09 2019";// Removed all potential counters
 
 	/**
 	 * Allows to check the execution time of DC checking algorithm giving a set of instances.
@@ -629,7 +621,7 @@ public class Checker {
 			LOG.info("Test " + (j + 1) + "/" + this.nDCRepetition + " for CSTN(U) " + graphToCheck.getFileName().getName());
 
 			// It is necessary to reset the graph!
-			g = new TNGraph(graphToCheck, this.currentEdgeImplClass, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+			g = new TNGraph(graphToCheck, this.currentEdgeImplClass);
 			if (isCSTNU()) {
 				cstnu.setG(g);
 			} else {
@@ -679,9 +671,7 @@ public class Checker {
 	 * @return the number of executed rules.
 	 */
 	private int getNumberExecutedRules(CSTNCheckStatus status) {
-		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
-		for (int i = status.potentialCalls.length; i-- != 0;)
-			nRules += status.potentialCalls[i];
+		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls + status.potentialUpdate;
 
 		if (isCSTNU())
 			nRules += ((CSTNUCheckStatus) status).zEsclamationRuleCalls +
@@ -728,7 +718,7 @@ public class Checker {
 			return new CSTN2CSTN0(this.reactionTime, g, this.timeOut);
 		}
 		if (this.potential)// the implicit semantics is IR
-			return new CSTNSPFA(g, this.timeOut);
+			return new CSTNPotential(g, this.timeOut);
 		CSTN cstn = null;
 		switch (this.dcSemantics) {
 		case ε:
@@ -836,7 +826,7 @@ public class Checker {
 				}
 			}
 		}
-		this.currentEdgeFactory = new EdgeSupplier<>(this.currentEdgeImplClass, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		this.currentEdgeFactory = new EdgeSupplier<>(this.currentEdgeImplClass);
 
 		// LOG.finest("File number: " + this.fileNameInput.length);
 		// LOG.finest("File names: " + Arrays.deepToString(this.fileNameInput));
@@ -878,7 +868,7 @@ public class Checker {
 		LOG.finer("Loading " + file.getName() + "...");
 		TNGraphMLReader<E1> graphMLReader;
 		try {
-			graphMLReader = new TNGraphMLReader<>(file, (Class<E1>) this.currentEdgeImplClass, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+			graphMLReader = new TNGraphMLReader<>(file, (Class<E1>) this.currentEdgeImplClass);
 		} catch (FileNotFoundException e2) {
 			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
 			LOG.warning(msg);
@@ -947,7 +937,7 @@ public class Checker {
 
 		// In order to start with well-defined cstn, we preliminary make a check.
 		// Use g because next instructions change the structure of graph.
-		TNGraph<E1> g = new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		TNGraph<E1> g = new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
 
 		// Statistics about min, max values and #edges have to be done before init!
 		int min = 0;
@@ -982,13 +972,11 @@ public class Checker {
 		TNGraph<CSTNUEdge> gCSTNU;
 		
 		if (this.isCSTN()) {
-			gCSTN = (TNGraph<CSTNEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+			gCSTN = (TNGraph<CSTNEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
 			cstn = makeCSTNInstance(gCSTN);
 		} else {
 			if (this.isCSTNU()) {
-				gCSTNU = (TNGraph<CSTNUEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				gCSTNU = (TNGraph<CSTNUEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
 				cstnu = makeCSTNUInstance(gCSTNU);
 			}
 		}
@@ -1081,11 +1069,7 @@ public class Checker {
 				status.r0calls,
 				status.r3calls,
 				status.labeledValuePropagationCalls,
-				status.potentialCalls[0] + status.potentialCalls[1],
-				status.potentialCalls[2],
-				status.potentialCalls[3],
-				status.potentialCalls[4],
-				status.potentialCalls[5]);
+				status.potentialUpdate);
 		if (isCSTNU()) {
 			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
 					((CSTNUCheckStatus) status).zEsclamationRuleCalls,

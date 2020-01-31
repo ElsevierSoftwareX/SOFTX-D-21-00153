@@ -16,7 +16,6 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
 /**
@@ -108,12 +107,14 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 	Object2IntMap<Entry<Label, ALabel>> consideredUpperCaseValue;
 
 	/**
-	 * Morris Lower case value augmented by a propositional label. The name of node has to be equal to the original name. No case modifications are necessary!
+	 * Morris Lower case value augmented by a propositional label.Br>
+	 * The name of node has to be equal to the original name. No case modifications are necessary!
 	 */
 	LabeledLowerCaseValue lowerCaseValue;
 
 	/**
-	 * Morris Upper case value augmented by a propositional label. The name of node has to be equal to the original name. No case modifications are necessary!
+	 * Morris Upper case value augmented by a propositional label.<br>
+	 * The name of node has to be equal to the original name. No case modifications are necessary!
 	 */
 	LabeledALabelIntTreeMap upperCaseValue;
 
@@ -124,24 +125,25 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 		/**
 		 * logger
 		 */
-		LOG = Logger.getLogger("CSTNUEdgePluggable");
+		LOG = Logger.getLogger(CSTNUEdgePluggable.class.getName());
 	}
 
 	/**
-	 * @param labeledIntMapImpl
+	 * <C extends LabeledIntMap> CSTNUEdgePluggable(Class<C> labeledIntMapImpl) {
+	 * this((String) null, labeledIntMapImpl);
+	 * }
 	 */
-	<C extends LabeledIntMap> CSTNUEdgePluggable(Class<C> labeledIntMapImpl) {
-		this((String) null, labeledIntMapImpl);
+	<C extends LabeledIntMap> CSTNUEdgePluggable() {
+		this((String) null);
 	}
 
 	/**
 	 * Constructor to clone the component.
 	 *
 	 * @param e the edge to clone.
-	 * @param labeledIntMapImplementation
 	 */
-	<C extends LabeledIntMap> CSTNUEdgePluggable(Edge e, Class<C> labeledIntMapImplementation) {
-		super(e, labeledIntMapImplementation);
+	<C extends LabeledIntMap> CSTNUEdgePluggable(Edge e) {
+		super(e);
 		if (e != null && CSTNUEdge.class.isAssignableFrom(e.getClass())) {
 			CSTNUEdge e1 = (CSTNUEdge) e;
 			this.upperCaseValue = new LabeledALabelIntTreeMap(e1.getUpperCaseValueMap());
@@ -158,10 +160,9 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 
 	/**
 	 * @param n
-	 * @param labeledIntMapImplementation
 	 */
-	<C extends LabeledIntMap> CSTNUEdgePluggable(final String n, Class<C> labeledIntMapImplementation) {
-		super(n, labeledIntMapImplementation);
+	<C extends LabeledIntMap> CSTNUEdgePluggable(final String n) {
+		super(n);
 		this.upperCaseValue = new LabeledALabelIntTreeMap();
 		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 		this.consideredUpperCaseValue = new Object2IntArrayMap<>();
@@ -203,7 +204,7 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 	}
 
 	@Override
-	public final int getMinUpperCaseValue() {
+	public final Object2ObjectMap.Entry<Label, Object2IntMap.Entry<ALabel>> getMinUpperCaseValue() {
 		return this.upperCaseValue.getMinValue();
 	}
 
@@ -342,11 +343,12 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 	public final int removeLowerCaseValue() {
 		if (this.lowerCaseValue.isEmpty())
 			return Constants.INT_NULL;
-		this.setChanged();
-		notifyObservers("LowerLabel");
+
 		int i = this.lowerCaseValue.getValue();
 		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 		this.setConstraintType(ConstraintType.normal);
+		this.setChanged();
+		notifyObservers("LowerLabel:remove");
 		return i;
 	}
 
@@ -364,9 +366,11 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 	@Override
 	public final void setLowerCaseValue(final LabeledLowerCaseValue inputLabeledValue) {
 		this.lowerCaseValue = inputLabeledValue;
-		if (!this.lowerCaseValue.isEmpty())
+		if (!this.lowerCaseValue.isEmpty()) {
 			this.setConstraintType(ConstraintType.contingent);
-
+			this.setChanged();
+			notifyObservers("LowerLabel:add");
+		}
 	}
 
 	@Override
@@ -431,32 +435,17 @@ public class CSTNUEdgePluggable extends CSTNEdgePluggable implements CSTNUEdge {
 
 	@Override
 	public CSTNUEdgePluggable newInstance() {
-		return newInstance(LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-	}
-
-	@Override
-	public CSTNUEdgePluggable newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new CSTNUEdgePluggable(labeledIntMapImpl);
+		return new CSTNUEdgePluggable();
 	}
 
 	@Override
 	public CSTNUEdgePluggable newInstance(Edge edge) {
-		return new CSTNUEdgePluggable(edge, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-	}
-
-	@Override
-	public CSTNUEdgePluggable newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new CSTNUEdgePluggable(edge, labeledIntMapImpl);
+		return new CSTNUEdgePluggable(edge);
 	}
 
 	@Override
 	public CSTNUEdgePluggable newInstance(String name1) {
-		return new CSTNUEdgePluggable(name1, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-	}
-
-	@Override
-	public CSTNUEdgePluggable newInstance(String name1, Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new CSTNUEdgePluggable(name1, labeledIntMapImpl);
+		return new CSTNUEdgePluggable(name1);
 	}
 
 	@Override

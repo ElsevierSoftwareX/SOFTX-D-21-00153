@@ -298,6 +298,25 @@ public class LabeledIntTreeMapTest {
 	 * Check if the management of the base is correct.
 	 */
 	@Test
+	public final void semplificazione3Test() {
+		Label b = Label.parse("¬b");
+		this.actual.clear();
+		this.actual.put(Label.parse("b"), -1);
+		this.actual.put(b, -2);
+		this.actual.put(Label.parse("¿b"), -3);
+
+		this.expected.clear();
+		this.expected.put(Label.emptyLabel, -1);
+		this.expected.put(b, -2);
+		this.expected.put(Label.parse("¿b"), -3);
+
+		assertEquals(this.expected, this.actual);
+	}
+
+	/**
+	 * Check if the management of the base is correct.
+	 */
+	@Test
 	public final void semplificazioneBase1Test() {
 		this.actual.clear();
 		this.actual.put(Label.emptyLabel, 109);

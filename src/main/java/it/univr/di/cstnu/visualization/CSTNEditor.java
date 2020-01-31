@@ -75,7 +75,7 @@ import it.univr.di.cstnu.algorithms.CSTNEpsilon3R;
 import it.univr.di.cstnu.algorithms.CSTNIR;
 import it.univr.di.cstnu.algorithms.CSTNIR3R;
 import it.univr.di.cstnu.algorithms.CSTNPSU;
-import it.univr.di.cstnu.algorithms.CSTNSPFA;
+import it.univr.di.cstnu.algorithms.CSTNPotential;
 import it.univr.di.cstnu.algorithms.CSTNU;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNU2CSTN;
@@ -94,7 +94,6 @@ import it.univr.di.cstnu.graph.TNGraph.NetworkType;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 
 /**
  * A simple graphical application for creating/loading/modifying/saving/checking CSTNs.
@@ -183,8 +182,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
@@ -235,8 +233,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 
 			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -251,7 +248,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cstn = new CSTN((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 				break;
 			}
-			CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
 			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
 			jl.setBackground(Color.orange);
@@ -304,8 +300,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 
 			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
 			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -360,8 +355,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 
 			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
 			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -458,8 +452,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -520,8 +513,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
 			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -576,8 +568,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				return;
 			if (CSTNEditor.this.cycle == 0) {
 				TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-						(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+						(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 				((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 				CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -592,7 +583,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					CSTNEditor.this.cstn = new CSTN((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 					break;
 				}
-				CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
 				CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
 				try {
@@ -604,13 +594,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					return;
 				}
 				CSTNEditor.this.oneStepBackGraph = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph,
-						(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+						(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 				CSTNEditor.this.cstnStatus = new CSTNCheckStatus();
 			} else {
 				TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph,
-						(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+						(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 				((TNGraph<CSTNEdge>) CSTNEditor.this.oneStepBackGraph).takeIn(g1);
 				// CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
 
@@ -682,8 +670,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.cstnu = new CSTNPSU((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
@@ -735,8 +722,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
@@ -755,7 +741,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cycle = 0;
 				return;
 			}
-			CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
 			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
 			try {
@@ -806,14 +791,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 
 			jl.setBackground(Color.orange);
-			CSTNEditor.this.cstn = new CSTNSPFA((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
-			CSTNEditor.this.cstn.setWithUnknown(CSTNEditor.this.withUknown);
+			CSTNEditor.this.cstn = new CSTNPotential((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
 			try {
@@ -891,8 +874,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.cstnu2cstn = new CSTNU2CSTN((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60);
@@ -945,8 +927,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
 			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.cstnu = new CSTNU((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
@@ -998,8 +979,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
 			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 			CSTNEditor.this.cstnu = new CSTNU((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
@@ -1051,8 +1031,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				return;
 			if (CSTNEditor.this.cycle == 0) {
 				TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) CSTNEditor.this.inputGraph,
-						(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+						(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 				((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
 				CSTNEditor.this.cstnu = new CSTNU((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
@@ -1183,7 +1162,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				+ "<ul>"
 				+ "<li>Right-click an empty area to create a new Vertex"
 				+ "<li>Left double-click on a vertex allows you to edit the label"
-				+ "<li>Shift+Left-click on a Vertex and drag to another Vertex to create a Directed Edge"
+				+ "<li>Click on a vertex; then, Shift+Left-click on the same Vertex and drag to another Vertex to create a Directed Edge"
 				+ "</ul>"
 				+ "</ul>"
 				+ "<h3>Transforming Mode:</h3>"
@@ -1417,12 +1396,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	static final URL INFO_ICON_FILE = Class.class.getResource("/images/metal-info.png");
 
-	// EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS
+	// EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
 
 	/**
 	 * class logger
 	 */
-	static final Logger LOG = Logger.getLogger("CSTNEditor");
+	static final Logger LOG = Logger.getLogger(CSTNEditor.class.getName());
 
 	/**
 	 * the preferred sizes for the two views
@@ -1687,8 +1666,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		// Using a null input TNGraph for setting all graphical aspects.
 		// When the graph will be load, inputGraph will be updated copying all the graph inside it (takeIn method).
-		this.inputGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-		this.checkedGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		this.inputGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
+		this.checkedGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 		this.layoutEditor = new StaticLayout<>(this.inputGraph, CSTNEditor.preferred_size);
 		this.layoutViewer = new StaticLayout<>(this.checkedGraph, CSTNEditor.preferred_size);
 		this.vvEditor = new VisualizationViewer<>(this.layoutEditor, CSTNEditor.preferred_size);
@@ -1881,8 +1860,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new CSTNInitListener());
 		rowForCSTNButtons.add(buttonCheck);
 
-		buttonCheck = new JButton("CSTN 9-Rule Check");
+		buttonCheck = new JButton("DC Check HP_18 (only with IR or ε)");
+		buttonCheck.addActionListener(new CSTNRestrictedCheckListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTN Check HP_19");
 		buttonCheck.addActionListener(new CSTNCheckListener());
+		rowForCSTNButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("CSTN Check HP_20");
+		buttonCheck.addActionListener(new CSTNPotentialCheckListener());
 		rowForCSTNButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("One Step CSTN Check");
@@ -1893,14 +1880,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		this.saveCSTNResultButton.setEnabled(false);
 		this.saveCSTNResultButton.addActionListener(new CSTNSaveListener());
 		rowForCSTNButtons.add(this.saveCSTNResultButton);
-
-		buttonCheck = new JButton("CSTN 3-Rule Check (only 4 IR or ε)");
-		buttonCheck.addActionListener(new CSTNRestrictedCheckListener());
-		rowForCSTNButtons.add(buttonCheck);
-
-		buttonCheck = new JButton("CSTN Check using SPFA");
-		buttonCheck.addActionListener(new CSTNPotentialCheckListener());
-		rowForCSTNButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("CSTN All-Pair Shortest Paths");
 		buttonCheck.addActionListener(new CSTNAPSPListener());
@@ -2004,7 +1983,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		// mouse action
 		EditingModalGraphMouse<LabeledNode, E> graphMouse = new EditingModalGraphMouse<>(
 				viewer.getRenderContext(),
-				new LabeledNodeSupplier<>(LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS),
+				new LabeledNodeSupplier(),
 				null, // only after graph load it is possible to set edge supplier.
 				CSTNEditor.this,
 				firstViewer);
@@ -2031,16 +2010,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		EdgeSupplier<E> edgeSupp = null;
 
 		if (this.currentTNGraphType == NetworkType.STN) {
-			edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_STN_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+			edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
 		} else {
 			if (this.currentTNGraphType == NetworkType.CSTN) {
-
-				edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			} else {
-				edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			}
 		}
 		//
@@ -2073,23 +2048,27 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		if (name.endsWith(".stn")) {
 			this.currentTNGraphType = NetworkType.STN;
 			this.currentEdgeImpl = EdgeSupplier.DEFAULT_STN_EDGE_CLASS;
-			graphReader = new TNGraphMLReader<STNEdge>(fileName, (Class<? extends STNEdge>) this.currentEdgeImpl,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+			graphReader = new TNGraphMLReader<STNEdge>(fileName, (Class<? extends STNEdge>) this.currentEdgeImpl);
 			showCommandRow("STN");
 		} else {
 			if (name.endsWith(".cstn")) {
 				this.currentTNGraphType = NetworkType.CSTN;
 				this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
-				graphReader = new TNGraphMLReader<CSTNEdge>(fileName, (Class<? extends CSTNEdge>) this.currentEdgeImpl,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				graphReader = new TNGraphMLReader<CSTNEdge>(fileName, (Class<? extends CSTNEdge>) this.currentEdgeImpl);
 				showCommandRow("CSTN");
 			} else {
 				if (name.endsWith(".cstnu")) {
 					this.currentTNGraphType = NetworkType.CSTNU;
 					this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
-					graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl,
-							LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+					graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
 					showCommandRow("CSTNU");
+				} else {
+					if (name.endsWith(".cstnpsu")) {
+						this.currentTNGraphType = NetworkType.CSTNPSU;
+						this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
+						graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
+						showCommandRow("CSTNU");
+					}
 				}
 			}
 		}

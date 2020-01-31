@@ -14,8 +14,6 @@ import org.junit.Test;
 
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
@@ -27,8 +25,7 @@ public class CSTNGraphTest {
 	 */
 	static Class<? extends CSTNEdge> edgeImplClass = CSTNEdgePluggable.class;
 
-	static EdgeSupplier<CSTNEdge> edgeFactory = new EdgeSupplier<>(edgeImplClass, LabeledIntTreeMap.class);
-	static Class<? extends LabeledIntMap> labeledValueMapImplClass = edgeFactory.getLabeledIntValueMapImplClass();
+	static EdgeSupplier<CSTNEdge> edgeFactory = new EdgeSupplier<>(edgeImplClass);
 
 	@SuppressWarnings({ "static-method" })
 	@Test
@@ -81,7 +78,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void create() {
-		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass);
 
 		g.addVertex(g.getNodeFactory().get("Z"));
 		g.addVertex(g.getNodeFactory().get("X"));
@@ -96,7 +93,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void removeNode() {
-		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
@@ -115,7 +112,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void addManyNodes() {
-		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
@@ -184,7 +181,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings("static-method")
 	@Test
 	public final void testGetChildrenOf() {
-		TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass);
 		LabeledNode P = g.getNodeFactory().get("P?", 'p');
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Y = g.getNodeFactory().get("Y");
@@ -219,7 +216,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void cloneTest() {
-		TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass);
 		LabeledNode Z = g.getNodeFactory().get("Z");
 		LabeledNode U = g.getNodeFactory().get("U");
 		g.addVertex(Z);
@@ -241,7 +238,7 @@ public class CSTNGraphTest {
 
 		// System.out.println(g);
 
-		TNGraph<CSTNEdge> g1 = new TNGraph<>(edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g1 = new TNGraph<>(edgeImplClass);
 		g1.copy(g);
 
 		// System.out.println(g1);
@@ -255,7 +252,7 @@ public class CSTNGraphTest {
 		// System.out.println(g);
 		assertFalse(g1.hasSameEdgesOf(g));
 
-		g1 = new TNGraph<>(g, edgeImplClass, labeledValueMapImplClass);
+		g1 = new TNGraph<>(g, edgeImplClass);
 		assertEquals(g.toString(), g1.toString());
 		assertTrue(g1.hasSameEdgesOf(g));
 	}
@@ -263,7 +260,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void managinDifferentEdges() {
-		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");
@@ -333,7 +330,7 @@ public class CSTNGraphTest {
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void reverse() {
-		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass, labeledValueMapImplClass);
+		TNGraph<CSTNEdge> g = new TNGraph<>("prova", edgeImplClass);
 
 		LabeledNode X = g.getNodeFactory().get("X");
 		LabeledNode Z = g.getNodeFactory().get("Z");

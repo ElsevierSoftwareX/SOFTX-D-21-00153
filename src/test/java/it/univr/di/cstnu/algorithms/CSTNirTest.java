@@ -487,13 +487,13 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addEdge(XX, this.X, this.X);
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 	}
 
@@ -731,14 +731,14 @@ public class CSTNirTest extends CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, this.X, Y, XX, XY, XY);
 		// 2018-11-28: infinity forward propagation is useless
 		// assertEquals("XY", "{(-2, p) }", XY.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", Y.getLabeledPotential().toString());
+		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
 
 	}
 
@@ -794,11 +794,11 @@ public class CSTNirTest extends CSTNTest {
 		// 2018-11-28: infinity forward propagation is useless
 		// assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
 		this.cstn.labelPropagation(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", Y.getLabeledPotential().toString());// 2017-10-10: qLabels are not more generated.
+		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 
 		this.cstn.labelPropagation(Y, Y, this.X, YY, YX, YX);
 		// 2018-11-28: infinity forward propagation is useless
-		// assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
+		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 	}
 
 	/**
@@ -841,11 +841,11 @@ public class CSTNirTest extends CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());// 2017-10-10: qLabels are not more generated.
+		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 
 
 		this.cstn.labelPropagation(Y, this.X, this.X, YX, XX, YX);
-		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());
+		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());
 	}
 
 	/**

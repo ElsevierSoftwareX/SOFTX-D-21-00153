@@ -35,7 +35,6 @@ import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -70,7 +69,7 @@ public class CSTNRandomGenerator {
 		/**
 		 * 
 		 */
-		private static final long serialVersionUID = 1L;
+		private static final long serialVersionUID = 2L;
 
 		/**
 		 * @author posenato
@@ -304,8 +303,8 @@ public class CSTNRandomGenerator {
 	// static public final String VERSIONandDATE = "Version 0.6 - March, 29 2019";
 	// static public final String VERSIONandDATE = "Version 0.7 - April, 24 2019";
 	// static public final String VERSIONandDATE = "Version 0.8 - May, 08 2019";
-	static public final String VERSIONandDATE = "Version 0.9 - Jume, 09 2019";// edge re-factoring
-
+	// static public final String VERSIONandDATE = "Version 0.9 - June, 09 2019";// edge re-factoring
+	static public final String VERSIONandDATE = "Version 1.0 - November, 13 2019";// obs nodes can be set far from Z
 	/**
 	 * Base name for generated files
 	 */
@@ -314,7 +313,7 @@ public class CSTNRandomGenerator {
 	/**
 	 * Checker
 	 */
-	static final Class<CSTNSPFA> CSTN_CLASS = it.univr.di.cstnu.algorithms.CSTNSPFA.class;
+	static final Class<CSTNPotential> CSTN_CLASS = it.univr.di.cstnu.algorithms.CSTNPotential.class;
 
 	/**
 	 * Name of sub dir containing DC instances
@@ -339,7 +338,7 @@ public class CSTNRandomGenerator {
 	/**
 	 * Min max weight value
 	 */
-	static final int MIN_MAX_WEIGHT = 50;
+	static final int MIN_MAX_WEIGHT = 150;
 
 	/**
 	 * Min number of nodes
@@ -622,7 +621,7 @@ public class CSTNRandomGenerator {
 	 * Max edge weight value (If x is the max weight value, the range for each CSTN link may be [-x, x])
 	 */
 	@Option(required = false, name = "--maxWeightValue", usage = "Max edge weight value (If x is the max weight value, the range for each CSTN link may be [-x, x]).")
-	private int maxWeight = MIN_MAX_WEIGHT * 3;
+	private int maxWeight = MIN_MAX_WEIGHT;
 
 	/**
 	 * Number of nodes in each random CSTN instance.
@@ -670,6 +669,12 @@ public class CSTNRandomGenerator {
 	 */
 	@Option(required = true, name = "--qLoops", usage = "Number of negative qLoops in each CSTN instance.")
 	private int nQLoops = MIN_PROPOSITIONS;
+
+	/**
+	 * Should obs nodes to be set far away?
+	 */
+	@Option(required = false, name = "--obsFar", usage = "Should obs nodes to be set far away? if yes, its minimum distance is 2 times the maxWeightValue.")
+	private boolean obsFarAway = false;
 
 	/**
 	 * The node out-degree
@@ -732,8 +737,7 @@ public class CSTNRandomGenerator {
 	public Pair<TNGraph<CSTNEdge>> buildAPairRndCSTNInstances(boolean alsoNotDcInstance) {
 
 		LOG.info("Start building a new random instance");
-		TNGraph<CSTNEdge> randomGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS),
+		TNGraph<CSTNEdge> randomGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS),
 				notDCGraph = null;
 
 		// Add all node but Z (Z is not considered)
@@ -760,6 +764,12 @@ public class CSTNRandomGenerator {
 			randomGraph.addVertex(node);
 			LOG.finest("Node added: " + node);
 		}
+
+		// Z must be added at the end because obs can be set far away from it
+		LabeledNode Z = randomGraph.getNodeFactory().get("Z");
+		Z.setX(0);
+		Z.setY(0);
+		randomGraph.addVertex(Z);
 
 		// qLoops contains, for each qLoop, the index of first and last node in the qLoop
 		int[][] qLoopIndexes = new int[this.nQLoops][2];
@@ -864,11 +874,19 @@ public class CSTNRandomGenerator {
 			}
 		}
 
-		// Rename all obs nodes
+		// Rename all obs nodes adn set away if obsFarAway is true
 		for (LabeledNode node : randomGraph.getVertices()) {
 			if (node.isObserver()) {
 				char p = node.getPropositionObserved();
 				node.setName(String.valueOf(p).toUpperCase() + "?");
+				if (this.obsFarAway) {
+					// obs must be far away
+					CSTNEdge e = edgeFactory.get(node.getName() + "-" + Z.getName());
+					int weight = -(this.maxWeight + this.rnd.nextInt(this.maxWeight));
+					e.mergeLabeledValue(Label.emptyLabel, weight);
+					randomGraph.addEdge(e, node, Z);
+					addedEdges.add(e);
+				}
 			}
 		}
 
@@ -887,8 +905,7 @@ public class CSTNRandomGenerator {
 		cstn.withNodeLabels = false;
 		while (true) {
 			cstn.reset();
-			cstn.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-					LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS));
+			cstn.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
 			if (LOG.isLoggable(Level.FINER)) {
 				try (PrintWriter writer = new PrintWriter(new File(this.dcSubDir.getParent(), "current.cstn"))) {
 					cstnWriter.save(cstn.getG(), writer);
@@ -929,8 +946,7 @@ public class CSTNRandomGenerator {
 			}
 			if (status.consistency) {
 				LOG.finer("Random instance is DC.");
-				lastDC = new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				lastDC = new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 				DCfound = true;
 				if (!nonDCfound && alsoNotDcInstance) {
 					LOG.finer("Now, a not DC instance must be generated. Tentative #" + checkN);
@@ -942,8 +958,7 @@ public class CSTNRandomGenerator {
 				}
 			} else {
 				LOG.finer("Random instance is not DC.");
-				notDCGraph = new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-						LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+				notDCGraph = new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 				nonDCfound = true;
 				if (!DCfound) {
 					LOG.finer("Now, a DC instance must be generated. Tentative #" + checkN);
