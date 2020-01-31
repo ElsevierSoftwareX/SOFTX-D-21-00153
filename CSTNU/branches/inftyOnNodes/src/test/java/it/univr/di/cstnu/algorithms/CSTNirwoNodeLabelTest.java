@@ -356,12 +356,12 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 	}
 
 	/**

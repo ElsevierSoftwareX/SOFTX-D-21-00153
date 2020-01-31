@@ -38,7 +38,6 @@ import it.univr.di.cstnu.visualization.StaticLayout;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.Literal;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -66,7 +65,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
-		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationCalls = 0;
+		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationCalls = 0, potentialUpdate;
 
 		/**
 		 * Execution time in nanoseconds.
@@ -77,11 +76,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		 * True if no rule can be applied anymore.
 		 */
 		public boolean finished = false;
-
-		/**
-		 * The statistics of 6 rules about potential are grouped into an array for efficiency reasons.
-		 */
-		public int[] potentialCalls = new int[6];
 
 		/**
 		 * Standard Deviation of Execution time if this last one is a mean. In nanoseconds.
@@ -107,9 +101,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			this.r0calls = 0;
 			this.r3calls = 0;
 			this.labeledValuePropagationCalls = 0;
-			for (int i = this.potentialCalls.length; i-- != 0;) {
-				this.potentialCalls[i] = 0;
-			}
+			this.potentialUpdate = 0;
 			this.executionTimeNS = this.stdDevExecutionTimeNS = Constants.INT_NULL;
 			this.finished = this.timeout = false;
 			this.initialized = false;
@@ -131,16 +123,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			sb.append("Some statistics:\nR0 has been applied ").append(this.r0calls).append(" times.\n");
 			sb.append("R3 has been applied ").append(this.r3calls).append(" times.\n");
 			sb.append("Labeled Propagation has been applied ").append(this.labeledValuePropagationCalls).append(" times.\n");
-			for (int i = 0; i < this.potentialCalls.length; i++) {
-				if (i == 1)
-					continue;
-				sb.append("Potential rule ");
-				if (i == 0)
-					sb.append("1-2").append(" has been applied ").append(this.potentialCalls[i] + this.potentialCalls[i + 1]);
-				else
-					sb.append(i + 1).append(" has been applied ").append(this.potentialCalls[i]);
-				sb.append(" times.\n");
-			}
+			sb.append("Potentials updated ").append(this.potentialUpdate).append(" times.\n");
 			if (this.timeout)
 				sb.append("Checking has been interrupted because execution time exceeds the given time limit.\n");
 
@@ -444,6 +427,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 	}
 
+
 	/**
 	 * Suffix for file name
 	 */
@@ -457,7 +441,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * logger
 	 */
-	static Logger LOG = Logger.getLogger("AbstractCSTN");
+	static Logger LOG = Logger.getLogger(AbstractCSTN.class.getName());
 	/**
 	 * Version of the class
 	 */
@@ -536,32 +520,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		return consistent;
 	}
 
-	/**
-	 * Says if a new labeled value like (-14, α¿p) is an edge going to obs t.p. P?. in this case, the new value must not be store.<br>
-	 * Example Q ---(-14, α¿p)⟶ P? is useless, so it must not be stored.
-	 * 
-	 * @param obs the node having the incoming edge.
-	 * @param newLabel
-	 * @param value
-	 * @param log
-	 * @return true if the value does not be stored, false otherwise
-	 */
-	static boolean checkAndApplyUnknownAfterObs(LabeledNode obs, Label newLabel, int value, String log) {
-		if (!obs.isObserver())
-			return false;
-		char p = obs.getPropositionObserved();
-		if (newLabel.contains(Literal.valueOf(p, Literal.UNKNONW))) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINER)) {
-					log += "\n dot not store value " + pairAsString(newLabel, value) + " because " + obs.getName() + " is the observation t.p. of proposition '"
-							+ p + "'.";
-					LOG.log(Level.FINER, log);
-				}
-			}
-			return true;
-		}
-		return false;
-	}
 
 	/**
 	 * Stops a computation if current instant is after the <code>timeoutInstant</code>
@@ -673,20 +631,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	boolean versionReq = false;
 
 	/**
-	 * DC checking can be done also assuming that all node labels are empty.
-	 * This assumption usually make the checking slower in medium size network, but faster in small ones.<br>
-	 * During the {@link #initAndCheck()}, if no node has a label, this variable is set to false.
-	 * If before {@link #initAndCheck()} the variable is already set false, {@link #initAndCheck()} does not change its value
-	 * even if any node has label.
+	 * If false, node labels are ignored during the check.
 	 */
-	@Option(required = false, name = "-woNodeLabels", usage = "Ignore labels on nodes")
 	boolean withNodeLabels = true;
-
-	/**
-	 * DCChecking requires to use unknown literals to be complete.
-	 * This flag can disable unknown literals if one want to verify if they are necessary for a specific check.
-	 */
-	boolean withUnknown = true;
 
 	/**
 	 * Z node of the graph.
@@ -801,7 +748,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * @throws WellDefinitionException if the initial graph is not well defined.
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
-		return coreCSTNInitAndCheck();
+		boolean status = coreCSTNInitAndCheck();
+		if (status)
+			addUpperBounds();
+		return status;
 	}
 
 	/**
@@ -816,13 +766,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 */
 	public final boolean isWithNodeLabels() {
 		return this.withNodeLabels;
-	}
-
-	/**
-	 * @return the withUnknown
-	 */
-	public final boolean isWithUnknown() {
-		return this.withUnknown;
 	}
 
 	/**
@@ -904,7 +847,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * @param withNodeLabels1 the withNodeLabels to set
+	 * @param withNodeLabels1
 	 */
 	public void setWithNodeLabels(boolean withNodeLabels1) {
 		this.withNodeLabels = withNodeLabels1;
@@ -912,10 +855,12 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * @param withUnknown1 the withUnknown to set
+	 * If true, the propagations are made for edges ending to Z.
+	 * 
+	 * @param propagationOnlyToZ1
 	 */
-	public void setWithUnknown(boolean withUnknown1) {
-		this.withUnknown = withUnknown1;
+	public void setPropagationOnlyToZ(boolean propagationOnlyToZ1) {
+		this.propagationOnlyToZ = propagationOnlyToZ1;
 		this.setG(this.g);// reset all
 	}
 
@@ -990,7 +935,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 				continue;
 			}
 			if (!currentLabel.isConsistentWith(conjunctedLabel)) {
-				String msg = "Found a labeled value in " + eSN + " that does not subsume the conjunction of node labels, "
+				String msg = "Found a labeled value in " + eSN + " that is not consistent with the conjunction of node labels, "
 						+ conjunctedLabel + ".";
 				if (hasToBeFixed) {
 					eSN.removeLabeledValue(currentLabel);
@@ -1230,12 +1175,12 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			// check if at least one node has label
 			boolean foundLabel = false;
 			for (LabeledNode node : this.g.getVertices()) {
-				if (!node.getLabel().equals(Label.emptyLabel)) {
+				if (!node.getLabel().isEmpty()) {
 					foundLabel = true;
 					break;
 				}
 			}
-			this.withNodeLabels = !foundLabel;
+			this.withNodeLabels = foundLabel;
 		}
 		// Checks well definiteness of edges and determine maxWeight
 		int minNegWeight = 0;
@@ -1370,28 +1315,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 						}
 					}
 				}
-				// UPPER BOUND FROM Z
-				edge = this.g.findEdge(this.Z, node);
-				if (edge == null) {
-					edge = makeNewEdge(this.Z.getName() + "_" + node.getName(), ConstraintType.internal);
-					this.g.addEdge(edge, this.Z, node);
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.WARNING)) {
-							LOG.log(Level.WARNING,
-									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs before the horizon (if it occurs).");
-						}
-					}
-				}
-				added = edge.mergeLabeledValue(nodeLabel, this.horizon);
-				if (Debug.ON) {
-					if (added) {
-						if (LOG.isLoggable(Level.FINER)) {
-							LOG.log(Level.FINER,
-									"Added " + edge.getName() + ": " + this.Z.getName() + "--" + pairAsString(nodeLabel, this.horizon) + "-->"
-											+ node.getName());
-						}
-					}
-				}
 			}
 		}
 
@@ -1445,6 +1368,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		return fromObs;
 	}
+
+
+
 
 	/**
 	 * Applies rule R0/qR0: label containing a proposition that can be decided only in the future is simplified removing such proposition.
@@ -1506,13 +1432,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			}
 
 			final int w = eObsX.getValue(alpha);
-			if (w == Constants.INT_NULL || mainConditionForSkippingInR0qR0(w)) {
-				// the value has been removed in a previous merge! Verified that it is necessary on Nov, 26 2015
-				continue;
-			}
+			final Label alphaPrime = labelModificationR0qR0Core(nObs, nX, alpha, w);
 
-			final Label alphaPrime = makeAlphaPrime(nX, nObs, p, alpha);
-			if (alphaPrime == null) {
+			if (alphaPrime == alpha) {
 				continue;
 			}
 			// Prepare the log message now with old values of the edge. If R0 modifies, then we can log it correctly.
@@ -1545,6 +1467,40 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * Execute the core of {@link #labelModificationR0qR0(LabeledNode, LabeledNode, CSTNEdge)}.<br>
+	 * It can be used for applying the rule to a specific pair (w, alpha).<br>
+	 * Returns the label to use for storing the new value considering rule R0qR0.
+	 * 
+	 * @param nP the observation node. Per efficiency reason, there is no a security check!
+	 * @param nX the other node
+	 * @param alpha
+	 * @param w
+	 * @return the newLabel adjusted if the rule has been applied, original label otherwise.
+	 */
+	Label labelModificationR0qR0Core(final LabeledNode nP, final LabeledNode nX, final Label alpha, int w) {
+		final char p = nP.getPropositionObserved();
+		if (this.withNodeLabels) {
+			if (nX.getLabel().contains(p)) {
+				// It is a strange case because only with IR it is possible to manage such case.
+				// In all other case is the premise of a negative loop.
+				// We let this possibility
+				return alpha;
+			}
+		}
+
+		if (w == Constants.INT_NULL || mainConditionForSkippingInR0qR0(w)) {
+			return alpha;
+		}
+
+		final Label alphaPrime = makeAlphaPrime(nX, nP, p, alpha);
+		if (alphaPrime == null || alphaPrime.equals(alpha)) {
+			return alpha;
+		}
+		this.checkStatus.r0calls++;
+		return alphaPrime;
+	}
+
+	/**
 	 * Returns true if {@link CSTN#labelModificationR0qR0} method has to not apply.<br>
 	 * Overriding this method it is possible implement the different semantics in the {@link CSTN#labelModificationR0qR0} method.
 	 * 
@@ -1572,6 +1528,91 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		// because nD==Z). Then, the max == 0, and the resulting constraint is already represented by the fact that any nodes is after or at Z in any scenario.
 		return w > 0 || (w == 0 && nD == this.Z);
 	}
+
+	/**
+	 * Simple method to determine the label αβγ' for rule {@link CSTN#labelModificationR3qR3(LabeledNode, LabeledNode, CSTNEdge)}.<br>
+	 * See Table 1 and Table 2 ICAPS 2016 paper.
+	 * 
+	 * @param nS
+	 * @param nD
+	 * @param nObs
+	 * @param observed the proposition observed by observer (since this value usually is already determined before calling this method, this parameter is just
+	 *            for speeding up).
+	 * @param labelFromObs label of the edge from observer
+	 * @param labelToClean
+	 * @return alphaBetaGamma' if all conditions are satisfied. null otherwise.
+	 */
+	// Visibility is package because there is Junit Class test that checks this method.
+	Label makeAlphaBetaGammaPrime4R3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nObs, final char observed,
+			final Label labelFromObs, Label labelToClean) {
+		StringBuilder slog;
+		if (Debug.ON) {
+			slog = new StringBuilder();
+			if (LOG.isLoggable(Level.FINEST))
+				slog.append("labelEdgeFromObs = " + labelFromObs);
+		}
+		if (this.withNodeLabels) {
+			if (labelFromObs.contains(observed) || nS.getLabel().contains(observed) || nD.getLabel().contains(observed)) {
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST,
+								slog.toString() + " αβγ' cannot be calculated because labelFromObs or lables of nodes contain the prop " + observed
+										+ " that has to be removed.");
+					}
+				}
+				return null;
+			}
+		}
+		Label labelToCleanWOp = labelToClean.remove(observed);
+		final Label alpha = labelFromObs.getSubLabelIn(labelToCleanWOp, false);
+		if (alpha.containsUnknown()) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST, slog.toString() + " α contains unknow: " + alpha);
+				}
+			}
+			return null;
+		}
+		final Label beta = labelFromObs.getSubLabelIn(labelToCleanWOp, true);
+		if (beta.containsUnknown()) {
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINEST)) {
+					LOG.log(Level.FINEST, slog.toString() + " β contains unknow " + beta);
+				}
+			}
+			return null;
+		}
+		Label gamma = labelToCleanWOp.getSubLabelIn(labelFromObs, false);
+
+		if (this.withNodeLabels) {
+			gamma = gamma.remove(this.g.getChildrenOf(nObs));
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST)) {
+				LOG.log(Level.FINEST, slog.toString() + " γ: " + gamma + "\n.");
+			}
+		}
+		Label alphaBetaGamma = alpha.conjunction(beta).conjunction(gamma);
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINEST))
+				slog.append(", αβγ'=" + alphaBetaGamma);
+		}
+
+		if (this.withNodeLabels) {
+			if (alphaBetaGamma == null)
+				return null;
+			if (!alphaBetaGamma.subsumes(nD.getLabel().conjunction(nS.getLabel()))) {
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST, slog.toString() + " αβγ' does not subsume labels from nodes:" + nD.getLabel().conjunction(nS.getLabel()));
+					}
+				}
+				return null;
+			}
+		}
+		return alphaBetaGamma;
+	}
+
 
 	/**
 	 * Simple method to determine the α' to use in rules R0 and in rule qR0.
@@ -1635,7 +1676,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 				beta = beta.remove(childrenOfP);
 			}
 		}
-		Label betaGamma = (this.withUnknown) ? labelFromObs.conjunctionExtended(beta) : labelFromObs.conjunction(beta);
+		Label betaGamma = labelFromObs.conjunctionExtended(beta);
 		if (this.withNodeLabels) {
 			// remove all children of unknowns.
 			betaGamma = removeChildrenOfUnknown(betaGamma);
@@ -1731,7 +1772,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		return (v >= w) ? v : w;
 	}
 
-
 	/**
 	 * Returns a new label removing all children of possibly present unknown literals in <code>l</code>.
 	 * <code>l</code> is unchanged!
@@ -1745,7 +1785,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		return l;
 	}
-
 	/**
 	 * Resets all internal structures
 	 */
@@ -1755,5 +1794,43 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		this.maxWeight = 0;
 		this.horizon = 0;
 		this.checkStatus.reset();
+	}
+
+	/**
+	 * The upper bounds from Z to each node have to be set after the horizon is determined.
+	 * Since, the horizon depends on edge values and CSTNs, CSTNUs, CSTNPSUs have different type of edges, it is better that
+	 * each class adds such edges after the determination of horizon.
+	 * Therefore, such edges cannot be determine in {@link #coreCSTNInitAndCheck}
+	 */
+	void addUpperBounds() {
+		final Collection<LabeledNode> nodeSet = this.g.getVertices();
+		for (final LabeledNode node : nodeSet) {
+			// Checks that each node has an edge from Z with bound = horizon.
+			if (node != this.Z) {
+				// UPPER BOUND FROM Z
+				E edge = this.g.findEdge(this.Z, node);
+				if (edge == null) {
+					edge = makeNewEdge(this.Z.getName() + "_" + node.getName(), ConstraintType.internal);
+					this.g.addEdge(edge, this.Z, node);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.WARNING)) {
+							LOG.log(Level.WARNING,
+									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs before the horizon (if it occurs).");
+						}
+					}
+				}
+				boolean added = edge.mergeLabeledValue(node.getLabel(), this.horizon);
+				if (Debug.ON) {
+					if (added) {
+						if (LOG.isLoggable(Level.FINER)) {
+							LOG.log(Level.FINER,
+									"Added " + edge.getName() + ": " + this.Z.getName() + "--" + pairAsString(node.getLabel(), this.horizon) + "-->"
+											+ node.getName() + ". Results: " + edge);
+						}
+					}
+				}
+			}
+		}
+
 	}
 }

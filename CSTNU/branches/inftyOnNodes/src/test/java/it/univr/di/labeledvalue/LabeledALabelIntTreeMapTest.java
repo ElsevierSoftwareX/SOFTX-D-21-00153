@@ -402,10 +402,10 @@ public class LabeledALabelIntTreeMapTest {
 		this.map.clear();
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
 
-		assertTrue(this.map.getMinValue() == -14);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == -14);
 		this.map.clear();
 
-		assertTrue(this.map.getMinValue() == Constants.INT_NULL);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == Constants.INT_NULL);
 	}
 
 	/**
@@ -416,9 +416,9 @@ public class LabeledALabelIntTreeMapTest {
 		this.map.clear();
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
 //		System.out.println(this.map);
-		assertTrue(this.map.getMinValue() == -14);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == -14);
 		this.map.clear();
-		assertTrue(this.map.getMinValue() == Constants.INT_NULL);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == Constants.INT_NULL);
 
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}",this.alpha);
 		// System.out.println(map.getMinValueConsistentWith(Label.parse("¬a"), new ALabel("N9", alpha)) );
@@ -622,7 +622,7 @@ public class LabeledALabelIntTreeMapTest {
 		startTime = System.nanoTime();
 		int min = 1000;
 		for (int i = 0; i < nTest; i++) {
-			min = map.getMinValue();
+			min = map.getMinValue().getValue().getIntValue();
 		}
 		endTime = System.nanoTime();
 		// System.out.println("Execution time for determining the min value (" + min + ") (mean over " + nTest + " tests). (ms): "

@@ -6,8 +6,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap.BasicEntry;
+import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -441,19 +444,25 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/**
 	 * @return the minimal value of this map not considering upper/lower case label (node label), {@link Constants#INT_NULL} if the map is empty.
 	 */
-	public int getMinValue() {
+	public Object2ObjectMap.Entry<Label, Entry<ALabel>> getMinValue() {
 		if (this.size() == 0)
-			return Constants.INT_NULL;
-		int min = Integer.MAX_VALUE, v = Constants.INT_NULL;
+			return new AbstractObject2ObjectMap.BasicEntry<>(Label.emptyLabel, new BasicEntry<>(ALabel.emptyLabel, Constants.INT_NULL));
+		int min = Integer.MAX_VALUE;
+		int v = min;
+		Entry<Label> vEntry = null;
+		ALabel aMin = ALabel.emptyLabel;
+		Label lMin = Label.emptyLabel;
 		for (final ALabel alabel : this.keySet()) {
 			final LabeledIntTreeMap map1 = this.get(alabel);
-			if ((map1 != null) && ((v = map1.getMinValue()) != Constants.INT_NULL)) {
+			if ((map1 != null) && ((v = (vEntry = map1.getMinLabeledValue()).getIntValue()) != Constants.INT_NULL)) {
 				if (min > v) {
 					min = v;
+					aMin = alabel;
+					lMin = vEntry.getKey();
 				}
 			}
 		}
-		return min;
+		return new AbstractObject2ObjectMap.BasicEntry<>(lMin, new BasicEntry<>(aMin, min));
 	}
 
 	/**

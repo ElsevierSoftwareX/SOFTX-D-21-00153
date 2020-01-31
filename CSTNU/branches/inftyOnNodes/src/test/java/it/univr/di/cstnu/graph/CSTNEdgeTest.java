@@ -12,16 +12,13 @@ import org.junit.Test;
 
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
  */
 public class CSTNEdgeTest {
 
-	static EdgeSupplier<CSTNEdgePluggable> edgeFactory = new EdgeSupplier<>(CSTNEdgePluggable.class, LabeledIntTreeMap.class);
-	static Class<? extends LabeledIntMap> labeledValueClass = edgeFactory.getLabeledIntValueMapImplClass();
+	static EdgeSupplier<CSTNEdgePluggable> edgeFactory = new EdgeSupplier<>(CSTNEdgePluggable.class);
 
 	/**
 	 * Simple edge

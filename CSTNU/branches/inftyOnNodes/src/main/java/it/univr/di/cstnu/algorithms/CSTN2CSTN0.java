@@ -32,7 +32,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger("CSTN2CSTN0");
+	static Logger LOG = Logger.getLogger(CSTN2CSTN0.class.getName());
 
 	/**
 	 * Version of the class
@@ -89,7 +89,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 
 		initAndCheck();
 
-		TNGraph<CSTNEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+		TNGraph<CSTNEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass());
 		nextGraph.setName("Next tNGraph");
 		CSTNCheckStatus status = new CSTNCheckStatus();
 
@@ -144,7 +144,7 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	 *         In order to minimize name conflicts, the new name associated to P? is P?^0.
 	 */
 	TNGraph<CSTNEdge> transform() {
-		TNGraph<CSTNEdge> cstn = new TNGraph<>(this.g, this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+		TNGraph<CSTNEdge> cstn = new TNGraph<>(this.g, this.g.getEdgeImplClass());
 
 		int nOfObservers = this.g.getObserverCount();
 		if (nOfObservers == 0) {

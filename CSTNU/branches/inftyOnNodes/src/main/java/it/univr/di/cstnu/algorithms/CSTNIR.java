@@ -33,7 +33,7 @@ public class CSTNIR extends CSTN {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger("CSTNIR");
+	static Logger LOG = Logger.getLogger(CSTNIR.class.getName());
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -79,7 +79,7 @@ public class CSTNIR extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean mainConditionForRestrictedLP(final int u, final int v) {
+	boolean lpMustRestricted2ConsistentLabel(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
 		// u must be < 0
 		return u >= 0;

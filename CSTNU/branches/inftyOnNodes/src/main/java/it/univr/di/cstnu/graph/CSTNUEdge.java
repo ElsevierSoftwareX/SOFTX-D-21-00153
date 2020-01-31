@@ -3,6 +3,8 @@
  */
 package it.univr.di.cstnu.graph;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
@@ -37,9 +39,10 @@ public interface CSTNUEdge extends CSTNEdge {
 	public LabeledLowerCaseValue getLowerCaseValue();
 
 	/**
-	 * @return the minimal value among all Upper Case Label if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
+	 * @return the minimal value (with the ALabel) among all Upper Case Label if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL}
+	 *         otherwise.
 	 */
-	public int getMinUpperCaseValue();
+	public Object2ObjectMap.Entry<Label, Entry<ALabel>> getMinUpperCaseValue();
 
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.

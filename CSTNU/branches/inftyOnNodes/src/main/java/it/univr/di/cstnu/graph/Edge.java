@@ -3,8 +3,6 @@
  */
 package it.univr.di.cstnu.graph;
 
-import it.univr.di.labeledvalue.LabeledIntMap;
-
 /**
  * Root class for representing edges in it.univr.di.cstnu package.
  *
@@ -41,7 +39,11 @@ public interface Edge extends Component {
 		/**
 		 * The edge represents an execution precedence between two nodes one.
 		 */
-		normal
+		normal,
+		/**
+		 * The edge represents an internal one used by qloop finder
+		 */
+		qloopFinder
 	}
 
 	/**
@@ -107,8 +109,8 @@ public interface Edge extends Component {
 	 * 
 	 * @param labeledIntMapImpl implementation for labeled value map. This is necessary for CSTN & c. edges.
 	 * @return an object of type Edge.
+	 *         public Edge newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl);
 	 */
-	public Edge newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl);
 
 	/**
 	 * Any super-interfaces/implementing classes should assure that such method has Edge edge as argument!
@@ -124,8 +126,8 @@ public interface Edge extends Component {
 	 * @param edge an object to clone.
 	 * @param labeledIntMapImpl implementation for labeled value map. This is necessary for CSTN & c. edges.
 	 * @return an object of type Edge.
+	 *         public Edge newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl);
 	 */
-	public Edge newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl);
 
 	/**
 	 * Factory
@@ -141,8 +143,8 @@ public interface Edge extends Component {
 	 * @param name of the edge
 	 * @param labeledIntMapImpl implementation for labeled value map. This is necessary for CSTN & c. edges.
 	 * @return an object of type Edge.
+	 *         public Edge newInstance(String name, Class<? extends LabeledIntMap> labeledIntMapImpl);
 	 */
-	public Edge newInstance(String name, Class<? extends LabeledIntMap> labeledIntMapImpl);
 
 	/**
 	 * Setter for the field <code>type</code>.

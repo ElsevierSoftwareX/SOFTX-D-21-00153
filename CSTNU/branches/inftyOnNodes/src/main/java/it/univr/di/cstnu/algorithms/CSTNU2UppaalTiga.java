@@ -44,7 +44,6 @@ import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -842,8 +841,7 @@ public class CSTNU2UppaalTiga {
 	 * @throws IOException
 	 */
 	private boolean loadCSTNU(File fileName) throws IOException, ParserConfigurationException, SAXException {
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(fileName, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(fileName, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 		this.cstnu = graphMLReader.readGraph();
 		return checkCSTNUSyntax();
 	}
@@ -939,7 +937,7 @@ public class CSTNU2UppaalTiga {
 				if (lower != Constants.INT_NULL) {
 					LOG.fine("Add contingent node: " + d);
 					this.contingentNode.add(d);
-					upper = -this.cstnu.findEdge(d, s).getMinUpperCaseValue();
+					upper = -this.cstnu.findEdge(d, s).getMinUpperCaseValue().getValue().getIntValue();
 					if (upper == Constants.INT_NULL)
 						throw new IllegalArgumentException("There is no a companion upper case value in edge " + this.cstnu.findEdge(d, s) + " w.r.t. the edge" + e);
 					LOG.fine("Add contingent edge: (" + s.getName() + ", " + lower + ", " + upper + ", " + d.getName() + ").");

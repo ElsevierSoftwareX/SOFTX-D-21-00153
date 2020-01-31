@@ -18,25 +18,25 @@ import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.Edge.ConstraintType;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
+import it.univr.di.labeledvalue.Literal;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming standard IR semantics (cf. ICAPS 2016 paper, table 1).
  * and that the instance is streamlined (cf TIME 2018 paper).
- * In this class the DC checking is solved using an extended Shortest Paths Faster Algorithm (SPFA)*, and R0-R3 rules.<br>
- * *Moore, Edward F. (1959).
- * "The shortest path through a maze".
- * Proceedings of the International Symposium on the Theory of Switching. Harvard University Press. pp. 285–292
+ * In this class the DC checking is solved using the Single-Sink Shortest-Paths algorithm (SSSP), and R0-R3 rules.<br>
  * 
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class CSTNSPFA extends CSTNIR {
+public class CSTNPotential extends CSTNIR {
 
 	/**
 	 * Version of the class
@@ -48,13 +48,14 @@ public class CSTNSPFA extends CSTNIR {
 	// will be identified by putting -∞ in their potential.
 	// static final public String VERSIONandDATE = "Version 3.0 - May, 01 2019";// It apply SPFA approach directly on instance adjusting the SPFA.
 	// static final public String VERSIONandDATE = "Version 3.1 - June, 09 2019";// Edge refactoring
-	static final public String VERSIONandDATE = "Version 3.5 - November, 07 2019";// Version working with CSTN 9R v. 6.5 (SVN 363)
-
+//	static final public String VERSIONandDATE = "Version 3.5 - November, 07 2019";// Version working with CSTN 9R v. 6.5 (SVN 363)
+	// static final public String VERSIONandDATE = "Version 3.6 - November, 25 2019";// Renamed
+	static final public String VERSIONandDATE = "Version 4.0 - January, 31 2020";// Implements HP_20 algorithm presented at ICAPS 2020
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNSPFA.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNPotential.class.getName());
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -65,7 +66,7 @@ public class CSTNSPFA extends CSTNIR {
 	 * @throws IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		defaultMain(args, new CSTNSPFA(), "Potential DC");
+		defaultMain(args, new CSTNPotential(), "Potential DC");
 	}
 
 	/**
@@ -76,7 +77,7 @@ public class CSTNSPFA extends CSTNIR {
 	/**
 	 * @param graph TNGraph to check
 	 */
-	public CSTNSPFA(TNGraph<CSTNEdge> graph) {
+	public CSTNPotential(TNGraph<CSTNEdge> graph) {
 		super(graph);
 		// this.withNodeLabels = false;
 	}
@@ -85,7 +86,7 @@ public class CSTNSPFA extends CSTNIR {
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check
 	 */
-	public CSTNSPFA(TNGraph<CSTNEdge> graph, int givenTimeOut) {
+	public CSTNPotential(TNGraph<CSTNEdge> graph, int givenTimeOut) {
 		super(graph, givenTimeOut);
 		// this.withNodeLabels = false;
 	}
@@ -93,7 +94,7 @@ public class CSTNSPFA extends CSTNIR {
 	/**
 	 * Default constructor.
 	 */
-	CSTNSPFA() {
+	CSTNPotential() {
 		super();
 		// this.withNodeLabels = false;
 	}
@@ -113,7 +114,6 @@ public class CSTNSPFA extends CSTNIR {
 		}
 		if (!super.initAndCheck())
 			return false;
-
 
 		if (!qLoopFinder())
 			return false;
@@ -142,7 +142,7 @@ public class CSTNSPFA extends CSTNIR {
 	}
 
 	/**
-	 * Executes one step of the BellmanFord algorithm.
+	 * Executes one step of the single-sink BellmanFord algorithm.
 	 * 
 	 * <pre>
 	 * A[u,α]<---(v,β)---B
@@ -160,7 +160,7 @@ public class CSTNSPFA extends CSTNIR {
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (it is for convenience. It is not necessary because return the same parameter status).
 	 */
-	CSTNCheckStatus SPFA(final NodesToCheck nodesToCheck, final NodesToCheck obsNodesToCheck, Instant timeoutInstant) {
+	CSTNCheckStatus singleSinkShortestPathStep(final NodesToCheck nodesToCheck, final NodesToCheck obsNodesToCheck, Instant timeoutInstant) {
 		LabeledNode B;
 		/**
 		 * When a new labeled value is added in a potential, then it has to checked w.r.t. all observation potentials for verifying whether
@@ -184,8 +184,8 @@ public class CSTNSPFA extends CSTNIR {
 				B = this.g.getSource(AB);
 				ObjectSet<Entry<Label>> ABEntrySet = AB.getLabeledValueSet();
 				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "*** Considering " + A.getName() + " <--" + ABEntrySet + "-- " + B.getName());
+					if (LOG.isLoggable(Level.FINEST)) {
+						LOG.log(Level.FINEST, "*** Considering " + A.getName() + " <--" + ABEntrySet + "-- " + B.getName());
 					}
 				}
 				boolean isBModified = false;
@@ -201,7 +201,7 @@ public class CSTNSPFA extends CSTNIR {
 							// So, it is necessary to check if the value is still present
 						}
 						int newValue = Constants.sumWithOverflowCheck(u, v);
-						if (newValue > 0 || (newValue == Constants.INT_NEG_INFINITE && v > 0))
+						if (newValue >= 0 || (newValue == Constants.INT_NEG_INFINITE && v > 0))
 							continue;// only non-positive values are interesting and -∞ through positive edges cannot be propagated
 						Label newLabel = (v < 0) ? alpha.conjunctionExtended(beta) : alpha.conjunction(beta);// IR assumed.
 						// Label newLabel = alpha.conjunction(beta);// FIXME maybe unknown literals must not to be propagated
@@ -266,7 +266,7 @@ public class CSTNSPFA extends CSTNIR {
 				}
 			}
 			this.checkStatus.cycles++;
-			SPFA(nodesToCheck, obsNodesToCheck, timeoutInstant);
+			singleSinkShortestPathStep(nodesToCheck, obsNodesToCheck, timeoutInstant);
 			// ASSERTIONS
 			// nodesToCheck is empty
 			// obsNodesToCheck may be not empty
@@ -325,7 +325,7 @@ public class CSTNSPFA extends CSTNIR {
 			}
 		}
 		this.g.reverse();
-		this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+		this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass());
 		this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
 		this.saveGraphToFile();
 		return this.checkStatus;
@@ -340,8 +340,6 @@ public class CSTNSPFA extends CSTNIR {
 	/**
 	 * This version is a restrict version of
 	 * {@link CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, CSTNEdge)}.
-	 * Here no call to {@link CSTN#potentialR6(LabeledNode, LabeledNode, Label, int, CSTNEdge, String)} and to CSTN#checkAndApplyUnknownAfterObs(nC,
-	 * newLabelAC, sum, log) is made.<br>
 	 * This method is used by {@link #initAndCheck()} for determining all negative qloops!
 	 */
 	@Override
@@ -360,6 +358,8 @@ public class CSTNSPFA extends CSTNIR {
 
 		boolean nAisAnObserver = nA.isObserver();
 		char proposition = nA.getPropositionObserved();
+		boolean nCisAnObserver = nC.isObserver();
+		Literal unkPropositionC = Literal.valueOf(nC.getPropositionObserved(), Literal.UNKNONW);
 
 		ObjectSet<Object2IntMap.Entry<Label>> setToReuse = new ObjectArraySet<>();
 		String firstLog = "Labeled Propagation Rule considers edges " + eAB.getName() + ", " + eBC.getName() + " for " + eAC.getName();
@@ -370,25 +370,20 @@ public class CSTNSPFA extends CSTNIR {
 				final int v = BCEntry.getIntValue();
 				int sum = Constants.sumWithOverflowCheck(u, v);
 				if (sum > 0) {
-					// // It is not necessary to propagate positive values.
-					// // Less propagations, less useless labeled values.
-					// 2018-01-25: I verified that for some negative instances, avoiding the positive propagations can increase the execution time.
-					// For positive instances, surely avoiding the positive propagations shorten the execution time.
 					continue;
 				}
 				final Label labelBC = BCEntry.getKey();
 				boolean qLabel = false;
 				Label newLabelAC = null;
-				if (mainConditionForRestrictedLP(u, v)) {// Even if we published that when nC == Z, the label must be consistent, we
+				if (lpMustRestricted2ConsistentLabel(u, v)) {
+					// Even if we published that when nC == Z, the label must be consistent, we
 					// also showed (but not published that if u<0, then label can contains unknown even when nC==Z.
 					newLabelAC = labelAB.conjunction(labelBC);
 					if (newLabelAC == null) {
 						continue;
 					}
 				} else {
-					newLabelAC = (this.withUnknown) ? labelAB.conjunctionExtended(labelBC) : labelAB.conjunction(labelBC);
-					if (newLabelAC == null)
-						continue;
+					newLabelAC = labelAB.conjunctionExtended(labelBC);
 					qLabel = newLabelAC.containsUnknown();
 					if (qLabel && this.withNodeLabels) {
 						newLabelAC = removeChildrenOfUnknown(newLabelAC);
@@ -405,6 +400,9 @@ public class CSTNSPFA extends CSTNIR {
 				}
 
 				int oldValue = eAC.getValue(newLabelAC);
+				if (oldValue != Constants.INT_NULL && sum >= oldValue) {
+					continue;
+				}
 
 				// Prepare the log in advance in order to avoid repetition
 				String log = null;
@@ -416,7 +414,11 @@ public class CSTNSPFA extends CSTNIR {
 					}
 				}
 				if (nA == nC) {
-					if (sum < 0 && potentialR1_2(nA, newLabelAC, log)) {// sum can be 0!
+					if (sum == 0) {
+						continue;
+					}
+					sum = Constants.INT_NEG_INFINITE;
+					if (updatePotential(nA, newLabelAC, sum, false, log)) {
 						// The labeled value is negative and label is in Q*.
 						// The -∞ value is now stored on node A (==C) as potential value if label is in Q*/P*, otherwise, a negative loop has been found!
 						ruleApplied = true;
@@ -427,21 +429,24 @@ public class CSTNSPFA extends CSTNIR {
 					continue;
 				} // end if nA==nC
 
-				// in the case of A != C
-				if (oldValue != Constants.INT_NULL && sum >= oldValue) {
-					// a value is stored only if it is more negative than the current one.
-					continue;
-				}
-
 				// here sum has to be add!
 				if (eAC.mergeLabeledValue(newLabelAC, sum)) {
 					ruleApplied = true;
 					this.checkStatus.labeledValuePropagationCalls++;
 					// // R0qR0 rule
 					if (nAisAnObserver && newLabelAC.contains(proposition)) {
-						Label newLabelAC1 = labelModificationR0qR0Light(nA, nC, newLabelAC, sum);
+						Label newLabelAC1 = labelModificationR0qR0Core(nA, nC, newLabelAC, sum);
 						if (!newLabelAC1.equals(newLabelAC)) {
 							newLabelAC = newLabelAC1;
+							eAC.mergeLabeledValue(newLabelAC, sum);
+						}
+					}
+					// The following is equivalent to R3qR33 when nD==Obs and newLabel contains the unknown literal of obs prop.
+					if (nCisAnObserver && newLabelAC.contains(unkPropositionC)) {
+						Label newLabelAC1 = newLabelAC.remove(unkPropositionC);
+						if (!newLabelAC1.equals(newLabelAC)) {
+							newLabelAC = newLabelAC1;
+							sum = 0;
 							eAC.mergeLabeledValue(newLabelAC, sum);
 						}
 					}
@@ -462,20 +467,14 @@ public class CSTNSPFA extends CSTNIR {
 
 	@Override
 	@Deprecated
-	CSTNCheckStatus oneStepDynamicConsistencyByEdges(final EdgesToCheck<CSTNEdge> edgesToCheck, final NodesToCheck nodesToCheck, Instant timeoutInstant) {
+	CSTNCheckStatus oneStepDynamicConsistencyByEdges(final EdgesToCheck<CSTNEdge> edgesToCheck, Instant timeoutInstant) {
 		throw new UnsupportedOperationException("oneStepDynamicConsistencyByEdges");
 	}
 
 	@Override
 	@Deprecated
-	CSTNCheckStatus oneStepDynamicConsistencyByEdgesLimitedToZ(EdgesToCheck<CSTNEdge> edgesToCheck, NodesToCheck nodesToCheck, Instant timeoutInstant) {
+	CSTNCheckStatus oneStepDynamicConsistencyByEdgesLimitedToZ(EdgesToCheck<CSTNEdge> edgesToCheck, Instant timeoutInstant) {
 		throw new UnsupportedOperationException("oneStepDynamicConsistencyByEdgesLimitedToZ");
-	}
-
-	@Override
-	@Deprecated
-	boolean potentialR3(LabeledNode nS, LabeledNode nD, CSTNEdge eSD, ObjectSet<Label> nDPotentialLabel) {
-		throw new RuntimeException("Not applicable.");
 	}
 
 	/**
@@ -509,26 +508,6 @@ public class CSTNSPFA extends CSTNIR {
 		ruleApplied |= potentialR3internalCycle(nodesToCheck, obsNodesToCheck, newNodesToCheck, false, timeoutInstant);
 
 		return ruleApplied;
-	}
-
-	/**
-	 * {@link #potentialR3(LabeledNode[], NodesToCheck, NodesToCheck, Instant)} applied only to one node.
-	 * 
-	 * @see #potentialR3(LabeledNode[], NodesToCheck, NodesToCheck, Instant)
-	 *      boolean potentialR3(LabeledNode node, final NodesToCheck obsNodesToCheck, Instant timeoutInstant) {
-	 *      return potentialR3(new LabeledNode[] { node }, obsNodesToCheck, obsNodesToCheck, timeoutInstant);
-	 *      }
-	 */
-	@Override
-	@Deprecated
-	boolean potentialR3_4_5_6(LabeledNode nY, boolean limitToZ, NodesToCheck newNodesToCheck, EdgesToCheck<CSTNEdge> newEdgesToCheck) {
-		throw new RuntimeException("Not applicable.");
-	}
-
-	@Override
-	@Deprecated
-	boolean potentialR6(LabeledNode nS, LabeledNode nD, Label alpha, int value, CSTNEdge eSD, String preLog) {
-		throw new RuntimeException("Not applicable.");
 	}
 
 	/**
@@ -568,7 +547,7 @@ public class CSTNSPFA extends CSTNIR {
 						int u = obsEntry.getIntValue();
 						if (u >= minNodeValue)
 							continue;
-						int max = Math.max(u, v);
+						int max = newValueInR3qR3(u, v);
 						Label alphaBeta = alpha.conjunctionExtended(beta);
 
 						// if (this.withNodeLabels) {
@@ -583,7 +562,7 @@ public class CSTNSPFA extends CSTNIR {
 						}
 						if (updatePotential(node, alphaBeta, max, true, log)) {
 							ruleApplied = true;
-							this.checkStatus.potentialCalls[2]++;
+							this.checkStatus.r3calls++;
 							if (obsAlignment)
 								obsNodes.enqueue(node);
 							newNodesToCheck.enqueue(node);// in any case a modified obsNode has to be rechecked using bellmanFord method.
@@ -623,6 +602,7 @@ public class CSTNSPFA extends CSTNIR {
 
 		ObjectArrayList<CSTNEdge> edgesToCheck = new ObjectArrayList<>(this.g.getEdges());
 		ObjectArrayList<CSTNEdge> newEdgesToCheck = new ObjectArrayList<>();
+		ObjectArrayList<CSTNEdge> edgesToRemove = new ObjectArrayList<>();
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
@@ -633,6 +613,7 @@ public class CSTNSPFA extends CSTNIR {
 		boolean noFirstRound = false;
 		int negInftyPotentialCount = 0;
 		int n = this.numberOfNodes;
+
 		while (edgesToCheck.size() > 0 && n-- > 0) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -642,6 +623,7 @@ public class CSTNSPFA extends CSTNIR {
 			for (CSTNEdge edgeAB : edgesToCheck) {
 				LabeledNode A = this.g.getSource(edgeAB);
 				LabeledNode B = this.g.getDest(edgeAB);
+
 				for (CSTNEdge edgeBC : this.g.getOutEdges(B)) {
 					LabeledNode C = this.g.getDest(edgeBC);
 					CSTNEdge edgeAC = this.g.findEdge(A, C);
@@ -649,7 +631,7 @@ public class CSTNSPFA extends CSTNIR {
 					// Propagate only to new edges.
 					// At first round, even an already defined edge has to be considered new.
 					if (edgeAC == null) {
-						edgeAC = makeNewEdge(A.getName() + C.getName() + "∞", CSTNEdge.ConstraintType.derived);
+						edgeAC = makeNewEdge(A.getName() + C.getName() + "∞", CSTNEdge.ConstraintType.qloopFinder);
 					} else {
 						if (noFirstRound)
 							continue;
@@ -664,6 +646,10 @@ public class CSTNSPFA extends CSTNIR {
 
 						if (A != C && !edgeAC.isEmpty()) {
 							newEdgesToCheck.add(edgeAC);
+							if (edgeAC.getConstraintType() == ConstraintType.qloopFinder) {
+								this.g.addEdge(edgeAC, A, C);
+								edgesToRemove.add(edgeAC);
+							}
 						}
 						if (Debug.ON) {
 							if (A == C) {
@@ -677,6 +663,9 @@ public class CSTNSPFA extends CSTNIR {
 			newEdgesToCheck = new ObjectArrayList<>();
 			noFirstRound = true;
 		}
+		for (CSTNEdge e : edgesToRemove) {
+			this.g.removeEdge(e);
+		}
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
 				LOG.log(Level.INFO, "All possible -∞ potentials found. They are " + negInftyPotentialCount + "."
@@ -688,24 +677,32 @@ public class CSTNSPFA extends CSTNIR {
 
 	/**
 	 * Updates the labeled value <code>(value, label)</code> in the potential of <code>node</code>.<br>
-	 * Rule potential R0: If <code>node</code> is an observation t.p., then <code>label</code> is cleaned removing a possible observed literal.<br>
-	 * If <code>(value, label)</code> is -∞ (or <0 and node is Z) and label does not contain unknown literals,
+	 * It is assumed that newValue < 0!
+	 * If <code>node</code> is an observation t.p., then <code>label</code> is cleaned removing a possible observed literal.<br>
+	 * If <code>(value, label)</code> is <0 and label does not contain unknown literals,
 	 * a negative circuit is present and this method sets #status#consistency to false and #status#finished to true.
 	 * 
 	 * @param node
 	 * @param newLabel
 	 * @param newValue it is assumed that it is != {@link Constants#INT_NULL}
-	 * @param fromR3 true if the count has to be reset.
+	 * @param fromR3 true if the value comes from R3 rule
 	 * @param log
 	 * @return true if the value was added.
 	 */
 	private boolean updatePotential(LabeledNode node, Label newLabel, int newValue, boolean fromR3, String log) {
-		// R0
+
+		if (newValue >= 0)
+			throw new IllegalArgumentException(
+					"Potential value cannot be non-negative: " + node + ", new potential to add " + AbstractLabeledIntMap.entryAsString(newLabel, newValue));
+
 		if (node.isObserver()) {
 			newLabel = newLabel.remove(node.getPropositionObserved());
 		}
 
-		int currentValue = node.getLabeledPotential(newLabel);
+		int currentValue;
+		if (Debug.ON) {
+			currentValue = node.getLabeledPotential(newLabel);
+		}
 		if (node.putLabeledPotential(newLabel, newValue)) {
 			// the value was added
 			// It seems that it is useless because it is not used on test cases
@@ -731,19 +728,20 @@ public class CSTNSPFA extends CSTNIR {
 			 * following the update of each obs node and each obs node is update by 1 at each cycle.
 			 */
 			if (Debug.ON) {
+
 				if (fromR3) {
 					log += "R3 ";
 				}
 				log += "Update potential on " + node.getName()
-						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue);// + ". Update #" + count;
+						+ ": " + pairAsString(newLabel, currentValue) + " replaced by " + pairAsString(newLabel, newValue) + "\n";// + ". Update #" + count;
 				if (!this.checkStatus.consistency) {
-					log += "\n***\nFound a negative loop in node " + node + "\n***";
+					log += "***\nFound a negative loop in node " + node + "\n***\n\n";
 				}
 				if (LOG.isLoggable(Level.FINER)) {
 					LOG.log(Level.FINER, log);
 				}
 			}
-			this.checkStatus.potentialCalls[0]++;
+			this.checkStatus.potentialUpdate++;
 			return true;
 		}
 		return false;

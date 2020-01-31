@@ -19,7 +19,6 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
@@ -30,8 +29,7 @@ public class CSTNUEdgeTest {
 	 */
 	static Class<? extends CSTNUEdge> edgeClass = CSTNUEdgePluggable.class;
 
-	static EdgeSupplier<CSTNUEdge> edgeFactory = new EdgeSupplier<>(edgeClass, LabeledIntTreeMap.class);
-	static Class<? extends LabeledIntMap> labeledValueMapClass = edgeFactory.getLabeledIntValueMapImplClass();
+	static EdgeSupplier<CSTNUEdge> edgeFactory = new EdgeSupplier<>(edgeClass);
 	/**
 	 * 
 	 */

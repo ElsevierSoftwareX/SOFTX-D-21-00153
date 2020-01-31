@@ -11,6 +11,7 @@ import org.xml.sax.SAXException;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.labeledvalue.Constants;
 
 /**
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
@@ -33,7 +34,7 @@ public class CSTNEpsilon extends CSTN {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger("CSTNEpsilon");
+	static Logger LOG = Logger.getLogger(CSTNEpsilon.class.getName());
 
 	/**
 	 * Just for using this class also from a terminal.
@@ -97,7 +98,7 @@ public class CSTNEpsilon extends CSTN {
 	 * {@inheritDoc}
 	 */
 	@Override
-	boolean mainConditionForRestrictedLP(final int u, final int v) {
+	boolean lpMustRestricted2ConsistentLabel(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
 		return u >= this.epsilon && v < 0;
 	}
@@ -124,7 +125,7 @@ public class CSTNEpsilon extends CSTN {
 	@Override
 	final int newValueInR3qR3(final int v, final int w) {
 		// Table 2 ICAPS2016.
-		final int w1 = w - this.epsilon;
+		final int w1 = (w == Constants.INT_NEG_INFINITE || w == Constants.INT_POS_INFINITE) ? w : w - this.epsilon;
 		return (v > w1) ? v : w1;
 	}
 

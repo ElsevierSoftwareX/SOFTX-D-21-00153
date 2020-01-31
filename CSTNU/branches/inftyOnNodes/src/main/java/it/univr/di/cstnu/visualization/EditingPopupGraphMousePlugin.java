@@ -3,10 +3,8 @@ package it.univr.di.cstnu.visualization;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import org.freehep.graphicsbase.util.export.ExportDialog;
@@ -15,10 +13,7 @@ import com.google.common.base.Supplier;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
@@ -62,35 +57,6 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 
 			JPopupMenu popup = new JPopupMenu();
 			if (vertex != null) {
-				Set<V> picked = pickedVertexState.getPicked();
-				if (picked.size() > 0) {
-					if (graph instanceof UndirectedGraph == false) {
-						JMenu directedMenu = new JMenu("Create Directed Edge");
-						popup.add(directedMenu);
-						for (final V other : picked) {
-							directedMenu.add(new AbstractAction("[" + other + "," + vertex + "]") {
-								@Override
-								public void actionPerformed(ActionEvent a) {
-									graph.addEdge(EditingPopupGraphMousePlugin.this.edgeFactory.get(), other, vertex, EdgeType.DIRECTED);
-									vv.repaint();
-								}
-							});
-						}
-					}
-					if (graph instanceof DirectedGraph == false) {
-						JMenu undirectedMenu = new JMenu("Create Undirected Edge");
-						popup.add(undirectedMenu);
-						for (final V other : picked) {
-							undirectedMenu.add(new AbstractAction("[" + other + "," + vertex + "]") {
-								@Override
-								public void actionPerformed(ActionEvent a) {
-									graph.addEdge(EditingPopupGraphMousePlugin.this.edgeFactory.get(), other, vertex);
-									vv.repaint();
-								}
-							});
-						}
-					}
-				}
 				popup.add(new AbstractAction("Delete Vertex") {
 					@Override
 					public void actionPerformed(ActionEvent a) {

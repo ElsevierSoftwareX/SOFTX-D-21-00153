@@ -102,9 +102,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		group.add(name, StringValidators.REQUIRE_NON_EMPTY_STRING);
 
 		// Endpoints
+		LabeledNode sourceNode = g.getSource(e), destNode = g.getDest(e);
+
 		jp.add(new JLabel("Endpoints:"));
-		jp.add(new JLabel(g.getSource(e) + "→"));
-		jp.add(new JLabel("→" + g.getDest(e)));
+		jp.add(new JLabel(sourceNode + "→"));
+		jp.add(new JLabel("→" + destNode));
 
 		// Default Value
 		Integer v = null;
@@ -255,7 +257,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			}
 		}
 
-		int nUpperLabels = -1;
+		int nUpperLabels = ((CSTNUEdge)e).upperCaseValueSize();
 		JTextField[] labelUpperInputs = null;
 		JTextField[] newUpperValueInputs = null;
 
@@ -264,12 +266,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		JTextField[] labelLowerInputs = null;
 		JTextField[] newLowerValueInputs = null;
 
-		if (e.isContingentEdge()) {
+		if (e.isContingentEdge() || nUpperLabels > 0) {
 			// Show all upper and lower case values allowing also the possibility of insertion.
 			CSTNUEdge e1 = (CSTNUEdge) e;
-			nUpperLabels = e1.upperCaseValueSize();
-			labelUpperInputs = new JTextField[nUpperLabels + 1];
-			newUpperValueInputs = new JTextField[nUpperLabels + 1];
+			labelUpperInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
+			newUpperValueInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
 
 			lowerValue = e1.getLowerCaseValue();
 			nLowerLabels = (lowerValue.isEmpty()) ? 0 : 1;
@@ -292,7 +293,6 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					LabeledIntTreeMap labeledValues = e1.getUpperCaseValueMap().get(alabel);
 					for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
 						// It should be only one! I put a cycle in order to verify
-
 						jp.add(new JLabel("Upper Label"));
 						jtLabel = new JTextField(entry1.getKey().toString());
 						labelUpperInputs[i] = jtLabel;
@@ -300,22 +300,24 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						jp.add(jtLabel);
 						jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
 						newUpperValueInputs[i] = jtLabel;
-						setConditionToEnable(jtLabel, viewerName, editorPanel);
+						setConditionToEnable(jtLabel, viewerName, (nUpperLabels > 1) ? true : false);
 						jp.add(jtLabel);
+						group.add(jtLabel, StringValidators.regexp("^" + sourceNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+						i++;
 					}
 				}
 			} else {
-				if (editorPanel) {
-					jp.add(new JLabel("Upper Label"));
-					jtLabel = new JTextField("");
-					labelUpperInputs[i] = jtLabel;
-					setConditionToEnable(jtLabel, viewerName, true);
-					jp.add(jtLabel);
-					jtLabel = new JTextField("");
-					newUpperValueInputs[i] = jtLabel;
-					setConditionToEnable(jtLabel, viewerName, editorPanel);
-					jp.add(jtLabel);
-				}
+				jp.add(new JLabel("Upper Label"));
+				jtLabel = new JTextField("");
+				labelUpperInputs[i] = jtLabel;
+				setConditionToEnable(jtLabel, viewerName, true);
+				jp.add(jtLabel);
+				jtLabel = new JTextField("");
+				newUpperValueInputs[i] = jtLabel;
+				setConditionToEnable(jtLabel, viewerName, !editorPanel);
+				jp.add(jtLabel);
+				group.add(jtLabel, StringValidators.regexp("^" + sourceNode.getName() + ":.*" + "|",
+						"Contingent name is wrong or it is not followed by : without spaces!", false));
 			}
 			i = 0;
 			if (nLowerLabels == 1) {
@@ -463,7 +465,6 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				CSTNUEdge e1 = (CSTNUEdge) e;
 
 				// UPPER CASE VALUE
-				e1.clearUpperCaseValues();
 				// we consider only the first row
 				// We don't use label because it has to be only one s = (labelUpperInputs[0] != null) ? labelUpperInputs[0].getText() : "";
 				caseValue = newUpperValueInputs[0].getText();
@@ -475,6 +476,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					} else {
 						// nodeName = splitted[0].toUpperCase();
 						nodeName = splitted[0];
+						v = Integer.valueOf(splitted[1]);
 						if (nodeName != null && nodeName.isEmpty())
 							nodeName = null;
 						else {
@@ -488,7 +490,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 								nodeName = null;
 							}
 						}
-						v = Integer.valueOf(splitted[1]);
+
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINEST)) {
 								LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
@@ -500,6 +502,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					v = null;
 				}
 				if (nodeName != null && v != null) {
+					e1.clearUpperCaseValues();
 					final LabeledNode source = g.getSource(e);
 					final LabeledNode dest = g.getDest(e);
 					final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
@@ -518,7 +521,6 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				// lower case
 				// we consider only the first row
 				// s = (labelLowerInputs[0] != null) ? labelLowerInputs[0].getText() : "";
-				e1.clearLowerCaseValue();
 				caseValue = newLowerValueInputs[0].getText();
 				if (caseValue.length() != 0) {
 					// the value is in the form "<node name>: <int>"
@@ -530,6 +532,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						} else {
 							// nodeName = splitted[0].toLowerCase();
 							nodeName = splitted[0];
+							v = Integer.valueOf(splitted[1]);
 							if (nodeName != null && nodeName.isEmpty())
 								nodeName = null;
 							else {
@@ -542,20 +545,19 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 									nodeName = null;
 								}
 							}
-							v = Integer.valueOf(splitted[1]);
 						}
 					} else {
 						nodeName = null;
 						v = null;
 					}
 					if ((nodeName != null) && (v != null)) {
+						e1.clearLowerCaseValue();
 						final LabeledNode source = g.getSource(e);
 						final LabeledNode dest = g.getDest(e);
 						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
 
 						if (dest.getName().equals(nodeName)) {
-							e1.clearLowerCaseValue();
-							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel()) : new ALabel(dest.getName(), null);
+							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel()) : new ALabel(dest.getName(), g.getALabelAlphabet());
 							dest.setAlabel(destALabel);
 							e1.setLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower case
 							// value of a contingent must have the label of its endpoints.

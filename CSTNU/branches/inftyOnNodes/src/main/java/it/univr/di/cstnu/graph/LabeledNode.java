@@ -50,6 +50,11 @@ public class LabeledNode extends AbstractComponent {
 	static final Logger LOG = Logger.getLogger("LabeledNode");
 
 	/**
+	 * Labeled value class used in the class.
+	 */
+	public static final Class<? extends LabeledIntMap> labeledValueMapImpl = LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS;
+
+	/**
 	 *
 	 */
 	private static final long serialVersionUID = 2L;
@@ -101,9 +106,8 @@ public class LabeledNode extends AbstractComponent {
 	 * Constructor for cloning.
 	 *
 	 * @param n the node to copy.
-	 * @param labeledIntMapImplementation
 	 */
-	LabeledNode(final LabeledNode n, Class<? extends LabeledIntMap> labeledIntMapImplementation) {
+	LabeledNode(final LabeledNode n) {// , Class<? extends LabeledIntMap> labeledIntMapImplementation
 		super(n);
 		this.label = n.label;
 		this.propositionObserved = n.getPropositionObserved();
@@ -112,41 +116,26 @@ public class LabeledNode extends AbstractComponent {
 		this.alabel = n.alabel;
 		this.potential = n.potential;
 
-		this.labeledPotential = (new LabeledIntMapSupplier<>(labeledIntMapImplementation)).get();
+		this.labeledPotential = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get();
 		// this.labeledPotentialCount = new Object2IntLinkedOpenHashMap<>(n.labeledPotentialCount);
 		// this.labeledPotentialCount.defaultReturnValue(Constants.INT_NULL);
-	}
-
-	/**
-	 * Helper method
-	 * 
-	 * @param n the node to copy.
-	 * @see #LabeledNode(LabeledNode, Class)
-	 */
-	LabeledNode(final LabeledNode n) {
-		this(n, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 	}
 
 	/**
 	 * Constructor for LabeledNode.
 	 *
 	 * @param string a {@link java.lang.String} object.
-	 * @param labeledIntMapImplementation
 	 */
-	LabeledNode(final String string, Class<? extends LabeledIntMap> labeledIntMapImplementation) {
+	LabeledNode(final String string) {// , Class<? extends LabeledIntMap> labeledIntMapImplementation
 		super(string);
 		this.label = Label.emptyLabel;
 		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.potential = Constants.INT_NULL;
 		this.alabel = null;
-		this.labeledPotential = (new LabeledIntMapSupplier<>(labeledIntMapImplementation)).get();
+		this.labeledPotential = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get();
 		// this.labeledPotentialCount = new Object2IntLinkedOpenHashMap<>();
 		// this.labeledPotentialCount.defaultReturnValue(Constants.INT_NULL);
-	}
-
-	LabeledNode(final String string) {
-		this(string, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 	}
 
 	/**
@@ -154,10 +143,9 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @param n name of the node.
 	 * @param proposition proposition observed by this node.
-	 * @param labeledIntMapImplementation
 	 */
-	<C extends LabeledIntMap> LabeledNode(final String n, final char proposition, Class<C> labeledIntMapImplementation) {
-		this(n, labeledIntMapImplementation);
+	<C extends LabeledIntMap> LabeledNode(final String n, final char proposition) {// , Class<C> labeledIntMapImplementation
+		this(n);
 		this.propositionObserved = (Literal.check(proposition)) ? proposition : Constants.UNKNOWN;
 		this.potential = Constants.INT_NULL;
 	}

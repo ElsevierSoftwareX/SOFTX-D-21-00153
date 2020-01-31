@@ -40,7 +40,6 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.Literal;
 
 /**
@@ -63,7 +62,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * Edge Interface      Network Type
 	 * STNEdge             STN
 	 * CSTNEdge            CSTN
-	 * CSTNUEdge           CSTNU
+	 * CSTNUEdge           CSTNU/CSTPSU
 	 * </pre>
 	 * 
 	 * <b>This is not a correct design-choice but it allows the written of classes that can use TNGraph<Edge> objects and make only different operations
@@ -78,7 +77,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 		CSTN,
 
-		CSTNU
+		CSTNU,
+
+		CSTNPSU
 	}
 
 	/**
@@ -201,7 +202,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 * Node factory
 	 */
-	private LabeledNodeSupplier<? extends LabeledIntMap> nodeFactory;
+	private LabeledNodeSupplier nodeFactory;
 
 	/**
 	 * In order to guarantee a fast mapping node-->adjacency position, a map is maintained.
@@ -235,10 +236,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * @param inputEdgeImplClass
-	 * @param inputLabeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. .<br>
-	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
-	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(Class<E1> inputEdgeImplClass, Class<M1> inputLabeledValueMapImplClass) {
+	public <E1 extends E> TNGraph(Class<E1> inputEdgeImplClass) {// , Class<M1> inputLabeledValueMapImplClass
 		super(EdgeType.DIRECTED);
 		if (CSTNUEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.type = NetworkType.CSTNU;
@@ -247,8 +246,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		else if (STNEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.type = NetworkType.STN;
 
-		this.edgeFactory = new EdgeSupplier<>(inputEdgeImplClass, inputLabeledValueMapImplClass);
-		this.nodeFactory = new LabeledNodeSupplier<>(inputLabeledValueMapImplClass);
+		this.edgeFactory = new EdgeSupplier<>(inputEdgeImplClass);// , inputLabeledValueMapImplClass
+		this.nodeFactory = new LabeledNodeSupplier();// inputLabeledValueMapImplClass
 		this.order = 0;
 		this.adjacency = createAdjacency(10);
 		this.nodeName2index = new Object2IntOpenHashMap<>();
@@ -263,12 +262,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * @param edgeImplClass
-	 * @param labeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. .<br>
-	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 * @param alphabet Alphabet to use for naming Upper Case label
 	 */
-	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(Class<E1> edgeImplClass, Class<M1> labeledValueMapImplClass, ALabelAlphabet alphabet) {
-		this(edgeImplClass, labeledValueMapImplClass);
+	public <E1 extends E> TNGraph(Class<E1> edgeImplClass, ALabelAlphabet alphabet) {
+		this(edgeImplClass);
 		if (alphabet != null && this.type == NetworkType.CSTNU)
 			this.aLabelAlphabet = alphabet;
 	}
@@ -278,11 +275,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 *
 	 * @param g the graph to be cloned
 	 * @param edgeImplClass
-	 * @param labeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. .<br>
-	 *            A general and safe value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
-	public TNGraph(final TNGraph<? extends E> g, Class<? extends E> edgeImplClass, Class<? extends LabeledIntMap> labeledValueMapImplClass) {
-		this(edgeImplClass, labeledValueMapImplClass);
+	public <E1 extends E> TNGraph(final TNGraph<E> g, Class<E1> edgeImplClass) {
+		this(edgeImplClass);
 		this.name = g.name;
 		this.aLabelAlphabet = g.aLabelAlphabet;
 		this.inputFile = g.inputFile;
@@ -313,11 +308,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 *
 	 * @param graphName a name for the graph
 	 * @param inputEdgeImplClass type of edges
-	 * @param inputLabeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. A general and safe
-	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 */
-	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, Class<M1> inputLabeledValueMapImplClass) {
-		this(inputEdgeImplClass, inputLabeledValueMapImplClass);
+	public <E1 extends E> TNGraph(final String graphName, Class<E1> inputEdgeImplClass) {
+		this(inputEdgeImplClass);
 		this.name = graphName;
 	}
 
@@ -326,13 +319,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 *
 	 * @param graphName a name for the graph
 	 * @param inputEdgeImplClass type of edges
-	 * @param inputLabeledValueMapImplClass it is necessary for creating a factory of labeledValueMap object. A general and safe
-	 *            value is LabeledIntTreeMap. See {@linkplain LabeledIntMap} and its implementing classes.
 	 * @param alphabet alphabet for upper case letter used to label values in the edges.
 	 */
-	public <E1 extends E, M1 extends LabeledIntMap> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, Class<M1> inputLabeledValueMapImplClass,
-			ALabelAlphabet alphabet) {
-		this(inputEdgeImplClass, inputLabeledValueMapImplClass);
+	public <E1 extends E> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, ALabelAlphabet alphabet) {
+		this(inputEdgeImplClass);
 		this.name = graphName;
 		this.aLabelAlphabet = alphabet;
 	}
@@ -859,10 +849,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * @return the edgeImplementationClass
+	 *         public Class<? extends LabeledIntMap> getLabeledValueMapImplClass() {
+	 *         return this.edgeFactory.getLabeledIntValueMapImplClass();
+	 *         }
 	 */
-	public Class<? extends LabeledIntMap> getLabeledValueMapImplClass() {
-		return this.edgeFactory.getLabeledIntValueMapImplClass();
-	}
 
 	/**
 	 * @return the edgeImplementationClass
@@ -930,7 +920,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 * @return the nodeFactory
 	 */
-	public LabeledNodeSupplier<? extends LabeledIntMap> getNodeFactory() {
+	public LabeledNodeSupplier getNodeFactory() {
 		return this.nodeFactory;
 	}
 
@@ -1511,7 +1501,14 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			}
 			if (obj.equals("LowerLabel")) {
 				CSTNUEdge e1 = (CSTNUEdge) edge;
-				this.lowerCaseEdges.remove(e1);
+				if (oldValue.equals("remove")) {
+					this.lowerCaseEdges.remove(e1);
+				} else {
+					if (this.lowerCaseEdges == null) {
+						this.lowerCaseEdges = new ObjectArrayList<>();
+					}
+					this.lowerCaseEdges.add(e1);
+				}
 			}
 		}
 	}

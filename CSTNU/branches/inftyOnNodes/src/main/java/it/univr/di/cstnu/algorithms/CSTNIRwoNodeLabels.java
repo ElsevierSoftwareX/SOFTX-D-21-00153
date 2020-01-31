@@ -25,7 +25,7 @@ public class CSTNIRwoNodeLabels extends CSTNIR {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger("CSTNIRwoNodeLabels");
+	static Logger LOG = Logger.getLogger(CSTNIRwoNodeLabels.class.getName());
 
 	/**
 	 * Version of the class

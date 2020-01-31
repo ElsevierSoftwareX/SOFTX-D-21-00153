@@ -83,30 +83,30 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 		return new STNEdgeInt();
 	}
 
-	@Override
-	public STNEdgeInt newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return newInstance();
-	}
+	// @Override
+	// public STNEdgeInt newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl) {
+	// return newInstance();
+	// }
 
 	@Override
 	public STNEdgeInt newInstance(Edge edge) {
 		return new STNEdgeInt(edge);
 	}
 
-	@Override
-	public STNEdgeInt newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new STNEdgeInt(edge);
-	}
+	// @Override
+	// public STNEdgeInt newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl) {
+	// return new STNEdgeInt(edge);
+	// }
 
 	@Override
 	public STNEdgeInt newInstance(String name1) {
 		return new STNEdgeInt(name1);
 	}
 
-	@Override
-	public STNEdgeInt newInstance(String name1, Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new STNEdgeInt(name1);
-	}
+	// @Override
+	// public STNEdgeInt newInstance(String name1, Class<? extends LabeledIntMap> labeledIntMapImpl) {
+	// return new STNEdgeInt(name1);
+	// }
 
 	@Override
 	public int setValue(int w) {

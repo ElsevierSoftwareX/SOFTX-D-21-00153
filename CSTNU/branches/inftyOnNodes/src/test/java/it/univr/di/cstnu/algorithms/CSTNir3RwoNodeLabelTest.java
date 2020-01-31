@@ -772,8 +772,8 @@ public class CSTNir3RwoNodeLabelTest extends CSTNTest {
 		// assertEquals("XZ", "{(-2, ¬p) (-3, ¿p) }", XZ.getLabeledValueMap().toString());// Propagations to Z does not generate unknown values.
 		// Z contains a negative loop (forced). At first propagation to X (label p), the
 		// method finds the negative loop, stores it, and returns.
-		this.cstn.potentialR3(this.X, this.Z, XZ, null);
-		assertEquals("X", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		// this.cstn.potentialR3(this.X, this.Z, XZ, null);
+		// assertEquals("X", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 		assertEquals("Status", true, this.cstn.checkStatus.consistency);
 	}
 

@@ -12,8 +12,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
-
 /**
  * Allows to read a tNGraph from a file written in GraphML format.<br>
  * GraphML format allows the definition of different attributes for the tNGraph, vertices and edges.<br>
@@ -42,7 +40,7 @@ public class CSTNUGraphMLReaderTest {
 
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
-		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class, LabeledIntTreeMap.class);
+		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class);
 		this.cstnu = this.readerCSTNU.readGraph();
 		Assert.assertEquals(1, this.cstnu.getEdge("YX").getUpperCaseValueMap().size());
 		Assert.assertEquals(2, this.cstnu.getEdge("XY").getLowerCaseValue().getValue());
@@ -50,7 +48,7 @@ public class CSTNUGraphMLReaderTest {
 
 	@Test
 	public void testCSTN() throws IOException, ParserConfigurationException, SAXException {
-		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class, LabeledIntTreeMap.class);
+		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class);
 		this.cstnu = this.readerCSTNU.readGraph();
 		Assert.assertEquals(2, this.cstnu.getEdgeCount());
 	}

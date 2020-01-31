@@ -22,27 +22,18 @@ import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 
 /**
  * @author posenato
  */
 public class CSTNTest {
 
-	static final Class<? extends LabeledIntMap> labeledIntValueMapClass = LabeledIntTreeMap.class;
 	static final Class<? extends CSTNEdge> edgeImplClass = CSTNEdgePluggable.class;
 
 	/**
 	 * 
 	 */
-	final LabeledIntMapSupplier<? extends LabeledIntMap> labeledIntMapSupplier = new LabeledIntMapSupplier<>(labeledIntValueMapClass);
-
-	/**
-	 * 
-	 */
-	TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass, labeledIntValueMapClass);
+	TNGraph<CSTNEdge> g = new TNGraph<>(edgeImplClass);
 	/**
 	 * 
 	 */
@@ -435,12 +426,12 @@ public class CSTNTest {
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
-		assertEquals("X: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("X: ", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 	}
 
 	/**
@@ -728,14 +719,14 @@ public class CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("X", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, this.X, Y, XX, XY, XY);
 		// 2018-11-28: infinity forward propagation is useless
 		// assertEquals("XY", "{(-2, p) }", XY.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", Y.getLabeledPotential().toString());// 2017-10-10: qLabels are not more generated.
+		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 	}
 
 	/**
@@ -790,7 +781,7 @@ public class CSTNTest {
 		// assertEquals("XY", "{(-∞, ¿p) }", XY.getLabeledValueMap().toString());// if negative sum value are q-propagate
 		
 		this.cstn.labelPropagation(Y, this.X, Y, YX, XY, YY);
-		assertEquals("", "{(-∞, ¿p) }", Y.getLabeledPotential().toString());
+		assertEquals("", "{(-∞, ¿p) }", YY.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(Y, Y, this.X, YY, YX, YX);
 		// 2018-11-28: infinity forward propagation is useless
@@ -834,11 +825,11 @@ public class CSTNTest {
 		assertEquals("XZ", "{(0, ⊡) (-2, p) }", XZ.getLabeledValueMap().toString());
 
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
-		assertEquals("XX", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		assertEquals("XX", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
 		// assertEquals("XX", "{}", XX.getLabeledValueMap().toString());//2017-10-10: qLabels are not more generated.
 
 		this.cstn.labelPropagation(Y, this.X, this.X, YX, XX, YX);
-		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());// (-∞, ¿p)
+		assertEquals("", "{(-2, ¬p) (-∞, ¿p) }", YX.getLabeledValueMap().toString());//
 	}
 
 	/**
@@ -875,82 +866,11 @@ public class CSTNTest {
 		assertEquals("XZ", "{(-2, ¬p) (-3, ¿p) }", XZ.getLabeledValueMap().toString());
 		// Z contains a negative loop (forced). At first propagation to X (label p), the
 		// method finds the negative loop, stores it, and returns.
-		this.cstn.potentialR3(this.X, this.Z, XZ, null);
-		assertEquals("X", "{(-∞, ¿p) }", this.X.getLabeledPotential().toString());
+		// this.cstn.potentialR3(this.X, this.Z, XZ, null);
+		// assertEquals("X", "{(-∞, ¿p) }", X.getLabeledPotential().toString());
 		assertEquals("Status", true, this.cstn.checkStatus.consistency);
 	}
 
-	/**
-	 * <pre>
-	 * 2) if Y?[(-∞,β)] and X ---(u,α y')&xrarr; Y
-	 *    then add X ---(u,(α★β)†)&xrarr; Y
-	 * </pre>
-	 */
-	@Test
-	public void labeledPotentialPropagation2() {
-		LabeledNode Y = this.g.getNodeFactory().get("Y");
-		LabeledNode A = this.g.getNodeFactory().get("A");
-		A.setObservable('a');
-
-		LabeledNode Q = this.g.getNodeFactory().get("Q");
-		Q.setObservable('q');
-		Q.putLabeledPotential(Label.parse("¿pa"), Constants.INT_NEG_INFINITE);
-
-		this.g.addVertex(this.X);
-		this.g.addVertex(this.P);
-		this.g.addVertex(Y);
-		this.g.addVertex(Q);
-		this.g.addVertex(A);
-
-		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
-		XY.mergeLabeledValue(Label.parse("¿q¬a"), -1);
-		XY.mergeLabeledValue(Label.parse("¬pq"), -1);
-
-		this.g.addEdge(XY, this.X, Y);
-
-		initAndCheck();
-
-		this.cstn.potentialR3_4_5_6(Q, false, this.nodesToCheck, this.edgesToCheck);
-
-		assertEquals("{(-1, a¿p) (-1, ¬a¿q) (-1, ¬pq) }", XY.getLabeledValueMap().toString());
-	}
-
-	/**
-	 * <pre>
-	 * 3) if P? ---(u,α)&xrarr; A  and  B[(-∞,β p')] and u < 0
-	 *    then A &xlarr;(u,(α★β)†)--- B
-	 * </pre>
-	 */
-	@Test
-	public void labeledPotentialPropagation3() {
-		LabeledNode Y = this.g.getNodeFactory().get("Y");
-		Y.putLabeledPotential(Label.parse("¿pa"), Constants.INT_NEG_INFINITE);
-		Y.putLabeledPotential(Label.parse("¿qpa"), Constants.INT_NEG_INFINITE);
-
-		LabeledNode A = this.g.getNodeFactory().get("A");
-		A.setObservable('a');
-
-		LabeledNode Q = this.g.getNodeFactory().get("Q");
-		Q.setObservable('q');
-
-		this.g.addVertex(this.X);
-		this.g.addVertex(this.P);
-		this.g.addVertex(Y);
-		this.g.addVertex(Q);
-		this.g.addVertex(A);
-
-		CSTNEdge PX = this.g.getEdgeFactory().get("PA");
-		PX.mergeLabeledValue(Label.parse("¿q¬a"), -1);
-		PX.mergeLabeledValue(Label.parse("q"), -1);
-
-		this.g.addEdge(PX, this.P, this.X);
-
-		initAndCheck();
-
-		this.cstn.potentialR3_4_5_6(this.P, false, this.nodesToCheck, this.edgesToCheck);
-		// only 5 and 6 are applied.
-		assertEquals("{(-1, aq) }", this.g.findEdge(Y, this.X).getLabeledValueMap().toString());
-	}
 	/**
 	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 

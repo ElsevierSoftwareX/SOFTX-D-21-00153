@@ -17,7 +17,7 @@ import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 
 /**
- * An implementation of CSTNEdge where the labeled value set can be plugged during the creation.
+ * An implementation of CSTNEdge where the labeled value set can be configured at source level.
  *
  * @author posenato
  * @version $Id: $Id
@@ -28,12 +28,18 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger("CSTNEdgePluggable");
+	static Logger LOG = Logger.getLogger(CSTNEdgePluggable.class.getName());
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 3L;
+	private static final long serialVersionUID = 4L;
+
+
+	/**
+	 * Labeled value class used in the class.
+	 */
+	public static final Class<? extends LabeledIntMap> labeledValueMapImpl = LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS;
 
 	/**
 	 * Maintains log of labeled values that have been already inserted and, therefore, cannot be reinserted.
@@ -47,42 +53,36 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	protected LabeledIntMap labeledValue;
 
 	/**
-	 * @param labeledIntMapImpl
+	 * 
 	 */
-	<C extends LabeledIntMap> CSTNEdgePluggable(Class<C> labeledIntMapImpl) {
-		this((String) null, labeledIntMapImpl);
+	CSTNEdgePluggable() {
+		this((String) null);
 	}
 
 	/**
 	 * A simple constructor cloner.
 	 *
 	 * @param e edge to clone. If null, an empty edge is created with type = normal.
-	 * @param labeledIntMapImpl
 	 */
-	<C extends LabeledIntMap> CSTNEdgePluggable(Edge e, Class<C> labeledIntMapImpl) {
+	CSTNEdgePluggable(Edge e) {
 		super(e);
 		if (e != null && CSTNEdge.class.isAssignableFrom(e.getClass())) {
-			this.labeledValue = (new LabeledIntMapSupplier<>(labeledIntMapImpl)).get(((CSTNEdge) e).getLabeledValueMap());
+			this.labeledValue = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get(((CSTNEdge) e).getLabeledValueMap());
 		} else {
-			this.labeledValue = (new LabeledIntMapSupplier<>(labeledIntMapImpl)).get();
+			this.labeledValue = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get();
 		}
 		this.consideredLabeledValue = new Object2IntArrayMap<>();
 		this.consideredLabeledValue.defaultReturnValue(Constants.INT_NULL);
 	}
 
 	/**
-	 * 
-	 */
-
-	/**
 	 * Constructor for LabeledIntEdge.
 	 *
 	 * @param n a {@link java.lang.String} object.
-	 * @param labeledIntMapImplementation
 	 */
-	<C extends LabeledIntMap> CSTNEdgePluggable(final String n, Class<C> labeledIntMapImplementation) {
+	CSTNEdgePluggable(final String n) {
 		super(n);
-		this.labeledValue = (new LabeledIntMapSupplier<>(labeledIntMapImplementation)).get();
+		this.labeledValue = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get();
 		this.consideredLabeledValue = new Object2IntArrayMap<>();
 		this.consideredLabeledValue.defaultReturnValue(Constants.INT_NULL);
 	}
@@ -241,32 +241,17 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 
 	@Override
 	public CSTNEdgePluggable newInstance() {
-		return newInstance(LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-	}
-
-	@Override
-	public CSTNEdgePluggable newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new CSTNEdgePluggable(labeledIntMapImpl);
+		return new CSTNEdgePluggable();
 	}
 
 	@Override
 	public CSTNEdgePluggable newInstance(Edge edge) {
-		return new CSTNEdgePluggable(edge, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-	}
-
-	@Override
-	public CSTNEdgePluggable newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new CSTNEdgePluggable(edge, labeledIntMapImpl);
+		return new CSTNEdgePluggable(edge);
 	}
 
 	@Override
 	public CSTNEdgePluggable newInstance(String name1) {
-		return new CSTNEdgePluggable(name1, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
-	}
-
-	@Override
-	public CSTNEdgePluggable newInstance(String name1, Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		return new CSTNEdgePluggable(name1, labeledIntMapImpl);
+		return new CSTNEdgePluggable(name1);
 	}
 
 	@Override
@@ -331,5 +316,10 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return Constants.OPEN_TUPLE + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "
 				+ ((this.labeledValue.size() > 0) ? this.labeledValue.toString() + "; " : "")
 				+ Constants.CLOSE_TUPLE;
+	}
+
+	@Override
+	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass() {
+		return labeledValueMapImpl;
 	}
 }

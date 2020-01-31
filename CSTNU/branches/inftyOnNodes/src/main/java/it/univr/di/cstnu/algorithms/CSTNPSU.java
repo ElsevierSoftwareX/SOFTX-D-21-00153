@@ -3,6 +3,7 @@ package it.univr.di.cstnu.algorithms;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,7 +11,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.CSTNUEdge;
 import it.univr.di.cstnu.graph.EdgeSupplier;
@@ -23,7 +27,7 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
+import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
@@ -43,7 +47,7 @@ public class CSTNPSU extends CSTNU {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger("CSTNPSU");
+	static Logger LOG = Logger.getLogger(CSTNPSU.class.getName());
 
 	/**
 	 * Version of the class
@@ -84,8 +88,7 @@ public class CSTNPSU extends CSTNU {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Loading graph...");
 		}
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnpsu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnpsu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 		cstnpsu.setG(graphMLReader.readGraph());
 		cstnpsu.g.setInputFile(cstnpsu.fInput);
 
@@ -131,12 +134,13 @@ public class CSTNPSU extends CSTNU {
 		}
 	}
 
-
 	/**
 	 * Default constructor, package use only!
 	 */
 	CSTNPSU() {
 		super();
+		// this.propagationOnlyToZ = false;
+		this.contingentAlsoAsOrdinary = true;
 	}
 
 	/**
@@ -146,6 +150,8 @@ public class CSTNPSU extends CSTNU {
 	 */
 	public CSTNPSU(TNGraph<CSTNUEdge> graph) {
 		super(graph);// Remember that super(g) calls CSTNU.setG(g)!
+		// this.propagationOnlyToZ = false;
+		this.contingentAlsoAsOrdinary = true;
 	}
 
 	/**
@@ -156,6 +162,8 @@ public class CSTNPSU extends CSTNU {
 	 */
 	public CSTNPSU(TNGraph<CSTNUEdge> graph, int givenTimeOut) {
 		super(graph, givenTimeOut);
+		// this.propagationOnlyToZ = false;
+		this.contingentAlsoAsOrdinary = true;
 	}
 
 	/**
@@ -167,7 +175,9 @@ public class CSTNPSU extends CSTNU {
 	 * @param givenPropagationOnlyToZ
 	 */
 	public CSTNPSU(TNGraph<CSTNUEdge> graph, int givenTimeOut, boolean givenPropagationOnlyToZ) {
-		super(graph, givenTimeOut, givenPropagationOnlyToZ);
+		super(graph, givenTimeOut);
+		this.propagationOnlyToZ = givenPropagationOnlyToZ;
+		this.contingentAlsoAsOrdinary = true;
 	}
 
 	/**
@@ -241,126 +251,151 @@ public class CSTNPSU extends CSTNU {
 						+ " and " + s.getName() + " does not exist. It has to!");
 			}
 			if (!eInverted.isContingentEdge()) {
-				throw new IllegalArgumentException("Edge " + e + " is guarded while the companion edge " + eInverted + " is not guarded!\nIt has be!");
+				throw new IllegalArgumentException("Edge " + e + " is guarded while the companion edge " + eInverted + " is not guarded!\nIt has to be!");
 			}
 			/**
 			 * Memo.
-			 * If current initialValue is negative, current edge is the lower bound C--->A. The lower case labeled value has to be put in the inverted edge.
-			 * If current initialValue is positive, current edge is the upper bound A--->C. The upper case labeled value has to be put in the inverted edge.
-			 * if current initialValue is undefined, then we assume that the contingent link is already set.
+			 * If current initialValue is < 0, current edge is the lower bound A<---C.
+			 * The lower case labeled value has to be put in the inverted edge if it is not already present.
+			 * <br>
+			 * If current initialValue is >=0, current edge is the upper bound A--->C.
+			 * The upper case labeled value has to be put in the inverted edge if it is not already present.
+			 * <br>
+			 * If current initialValue is undefined, then we assume that the contingent link is already set and contains only upper/lower values!
 			 */
 			if (initialValue != Constants.INT_NULL) {
 				int eInvertedInitialValue;
-				int lowerCaseValue = Constants.INT_NULL;
-				int upperCaseValue = Constants.INT_NULL;
+				int lowerCaseValueInEInverted = Constants.INT_NULL;
+				int ucValue = Constants.INT_NULL;
 				eInvertedInitialValue = eInverted.getValue(conjunctedLabel);
 
 				if (initialValue < 0) {
 					// current edge is the lower bound.
-					ALabel sourceALabel = new ALabel(s.getName(), this.g.getALabelAlphabet());
-					lowerCaseValue = eInverted.getLowerCaseValue().getValue();
-					if (lowerCaseValue != Constants.INT_NULL && -initialValue > lowerCaseValue) {
+					ALabel contingentALabel = new ALabel(s.getName(), this.g.getALabelAlphabet());
+					if (!contingentALabel.equals(s.getAlabel()))
+						s.setAlabel(contingentALabel);// to speed up DC checking!
+					lowerCaseValueInEInverted = eInverted.getLowerCaseValue().getValue();
+					if (lowerCaseValueInEInverted != Constants.INT_NULL && -initialValue > lowerCaseValueInEInverted) {
 						throw new IllegalArgumentException(
 								"Edge " + e + " is guarded with a negative value and the inverted " + eInverted + " has a guard that is smaller: "
-										+ lowerCaseValueAsString(sourceALabel, lowerCaseValue, conjunctedLabel) + ".");
+										+ lowerCaseValueAsString(contingentALabel, lowerCaseValueInEInverted, conjunctedLabel) + ".");
 					}
-					if (lowerCaseValue == Constants.INT_NULL && (eInvertedInitialValue == Constants.INT_NULL || eInvertedInitialValue <= 0)) {
+					if (lowerCaseValueInEInverted == Constants.INT_NULL && (eInvertedInitialValue == Constants.INT_NULL || eInvertedInitialValue <= 0)) {
 						throw new IllegalArgumentException("Edge " + e + " is guarded with a negative value but the inverted " + eInverted
 								+ " does not contain a lower case value neither a proper initial value. ");
 					}
 
-					if (lowerCaseValue == Constants.INT_NULL) {
-						lowerCaseValue = -initialValue;
-						eInverted.setLowerCaseValue(conjunctedLabel, sourceALabel, lowerCaseValue);
-
-						/**
-						 * History for lower bound.
-						 * 2017-10-11 initialValue = minLabeledValue.getIntValue() is not necessary for the check, but only for AllMax. AllMax building
-						 * method cares of it.
-						 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right lower bound w.r.t. Z!
-						 * 2018-02-21 initialValue = minLabeledValue.getIntValue() allows the reduction of # propagations.
-						 */
-						// e.removeLabel(conjunctedLabel);
-
+					if (lowerCaseValueInEInverted == Constants.INT_NULL) {
+						lowerCaseValueInEInverted = -initialValue;
+						eInverted.setLowerCaseValue(conjunctedLabel, contingentALabel, lowerCaseValueInEInverted);
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LOG.log(Level.FINER, "Inserted the lower label value: " + lowerCaseValueAsString(sourceALabel, lowerCaseValue, conjunctedLabel)
-										+ " to edge " + eInverted);
-							}
-						}
-						if (eInvertedInitialValue != Constants.INT_NULL) {
-							upperCaseValue = -eInvertedInitialValue;
-							e.mergeUpperCaseValue(conjunctedLabel, sourceALabel, upperCaseValue);
-							/**
-							 * History for upper bound.
-							 * 2017-10-11 such value is not necessary for the check, but only for AllMax. AllMax building method cares of it.
-							 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right upper bound w.r.t. Z!
-							 * 2018-02-21 Upper bound are not necessary for the completeness, we ignore it.
-							 */
-							eInverted.removeLabeledValue(conjunctedLabel);
-
-							if (Debug.ON) {
-								if (LOG.isLoggable(Level.FINER)) {
-									LOG.log(Level.FINER,
-											"Inserted the upper label value: " + upperCaseValueAsString(sourceALabel, upperCaseValue, conjunctedLabel)
-													+ " to edge " + e);
-								}
+								LOG.log(Level.FINER,
+										"Inserted the lower label value: "
+												+ lowerCaseValueAsString(contingentALabel, lowerCaseValueInEInverted, conjunctedLabel)
+												+ " to edge " + eInverted);
 							}
 						}
 					}
+					Object2ObjectMap.Entry<Label, Entry<ALabel>> minUC = e.getMinUpperCaseValue();
+					Label ucLabel = minUC.getKey();
+					ALabel ucALabel = minUC.getValue().getKey();
+					ucValue = minUC.getValue().getIntValue();
+					if (ucValue == Constants.INT_NULL || !ucALabel.equals(contingentALabel)) {
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LOG.log(Level.FINER,
+										"The upper-case value is missing or it has a wrong ALabel: " + minUC + "\n Fixing it!");
+							}
+						}
+					}
+					if (ucValue == Constants.INT_NULL) {
+						if (eInvertedInitialValue != Constants.INT_NULL) {
+							ucValue = -eInvertedInitialValue;
+							e.mergeUpperCaseValue(conjunctedLabel, contingentALabel, ucValue);
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									LOG.log(Level.FINER,
+											"Inserted the upper label value: " + upperCaseValueAsString(contingentALabel, ucValue, conjunctedLabel)
+													+ " to edge " + e);
+								}
+							}
+						} else {
+							throw new IllegalArgumentException("Edge " + e + " is guarded without an upper-case value and the inverted " + eInverted
+									+ " does not contain a initial value. It is not possible to set current edge correctly.");
+						}
+					} else {
+						if (-ucValue > eInvertedInitialValue) {
+							throw new IllegalArgumentException(
+									"Edge " + e + " is guarded with an upper-case value greater that the upper value in the companion edge " + eInverted
+											+ ". It is not possible to set current edge correctly.");
+						}
+						if (!ucALabel.equals(contingentALabel) || !ucLabel.equals(conjunctedLabel)) {
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									LOG.log(Level.FINER,
+											"Edge " + e + " is guarded with an upper-case value " + minUC + " havin a wrong ALabel w.r.t. the correct label "
+													+ contingentALabel + ". Fixing it");
+								}
+							}
+							e.removeUpperCaseValue(ucLabel, contingentALabel);
+							e.mergeUpperCaseValue(conjunctedLabel, contingentALabel, ucValue);
+						}
+					}
 					// In order to speed up the checking, prepare some auxiliary data structure
-					s.setAlabel(sourceALabel);// s is the contingent node.
+					s.setAlabel(contingentALabel);// s is the contingent node.
 					this.activationNode.put(s, d);
 					this.lowerContingentLink.put(s, eInverted);
 
 				} else {
 					// e : A--->C
 					// eInverted : C--->A
-					ALabel destALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
-					if (!destALabel.equals(d.getAlabel()))
-						d.setAlabel(destALabel);// to speed up DC checking!
-					upperCaseValue = eInverted.getUpperCaseValue(conjunctedLabel, destALabel);
-					if (upperCaseValue != Constants.INT_NULL && initialValue < -upperCaseValue) {
-						throw new IllegalArgumentException(
-								"Edge " + e + " is guarded with a positive value and the inverted " + eInverted
-										+ " already contains a upper guard that is smaller: "
-										+ upperCaseValueAsString(destALabel, upperCaseValue, conjunctedLabel) + ".");
+					ALabel contingentALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
+					if (!contingentALabel.equals(d.getAlabel()))
+						d.setAlabel(contingentALabel);// to speed up DC checking!
+					Object2ObjectMap.Entry<Label, Entry<ALabel>> minUC = eInverted.getMinUpperCaseValue();
+					Label ucLabel = minUC.getKey();
+					ALabel ucALabel = minUC.getValue().getKey();
+					ucValue = minUC.getValue().getIntValue();
+
+					if (ucValue != Constants.INT_NULL) {
+						if (initialValue < -ucValue) {
+							throw new IllegalArgumentException(
+									"Edge " + e + " is guarded with a positive value and the inverted " + eInverted
+											+ " already contains a upper guard that is smaller: "
+											+ upperCaseValueAsString(contingentALabel, ucValue, conjunctedLabel) + ".");
+						}
+						if (!ucALabel.equals(contingentALabel) || !ucLabel.equals(conjunctedLabel)) {
+							throw new IllegalArgumentException(
+									"Edge " + e + " is lower guard edge and the inverted " + eInverted
+											+ " has a wrong upper guard because the node name is wrong or the label is wrong. Corrent upper guard: "
+											+ upperCaseValueAsString(ucALabel, ucValue, ucLabel) + ".");
+						}
 					}
-					if (upperCaseValue == Constants.INT_NULL && (eInvertedInitialValue == Constants.INT_NULL || eInvertedInitialValue >= 0)) {
+					if (ucValue == Constants.INT_NULL && (eInvertedInitialValue == Constants.INT_NULL || eInvertedInitialValue >= 0)) {
 						throw new IllegalArgumentException("Edge " + e + " is guarded with a positive value but the inverted " + eInverted
 								+ " does not contain a upper case value neither a proper initial value. ");
 					}
-					if (upperCaseValue == Constants.INT_NULL) {
-						upperCaseValue = -initialValue;
-						eInverted.mergeUpperCaseValue(conjunctedLabel, destALabel, upperCaseValue);
+					if (ucValue == Constants.INT_NULL) {
+						ucValue = -initialValue;
+						eInverted.mergeUpperCaseValue(conjunctedLabel, contingentALabel, ucValue);
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LOG.log(Level.FINER, "Inserted the upper label value: " + upperCaseValueAsString(destALabel, upperCaseValue, conjunctedLabel)
+								LOG.log(Level.FINER, "Inserted the upper label value: " + upperCaseValueAsString(contingentALabel, ucValue, conjunctedLabel)
 										+ " to edge " + eInverted);
 							}
 						}
-
-						/**
-						 * @see comment "History for upper bound." above.
-						 */
-						e.removeLabeledValue(conjunctedLabel);
-
 						if (eInvertedInitialValue != Constants.INT_NULL) {
-							lowerCaseValue = -eInvertedInitialValue;
-							e.setLowerCaseValue(conjunctedLabel, destALabel, lowerCaseValue);
+							lowerCaseValueInEInverted = -eInvertedInitialValue;
+							e.setLowerCaseValue(conjunctedLabel, contingentALabel, lowerCaseValueInEInverted);
 							// In order to speed up the checking, prepare some auxiliary data structure
 							this.activationNode.put(d, s);
 							this.lowerContingentLink.put(d, e);
-
-							/**
-							 * @see comment "History for lower bound." above.
-							 */
-							// eInverted.removeLabel(conjunctedLabel);
-
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
-											"Inserted the lower label value: " + lowerCaseValueAsString(destALabel, lowerCaseValue, conjunctedLabel)
+											"Inserted the lower label value: "
+													+ lowerCaseValueAsString(contingentALabel, lowerCaseValueInEInverted, conjunctedLabel)
 													+ " to edge " + e);
 								}
 							}
@@ -385,11 +420,11 @@ public class CSTNPSU extends CSTNU {
 				}
 			}
 			// it is necessary to check max value
-			int m = e.getMinUpperCaseValue();
+			int m = e.getMinUpperCaseValue().getValue().getIntValue();
 			// LOG.warning("m value: " + m);
 			if (m != Constants.INT_NULL && m < maxWeightContingent)
 				maxWeightContingent = m;
-			m = eInverted.getMinUpperCaseValue();
+			m = eInverted.getMinUpperCaseValue().getValue().getIntValue();
 			if (m != Constants.INT_NULL && m < maxWeightContingent)
 				maxWeightContingent = m;
 		} // end contingent edges cycle
@@ -405,7 +440,7 @@ public class CSTNPSU extends CSTNU {
 		if (maxWeightContingent > this.maxWeight) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.warning("It is necessary to update the horizon of the graph since -" + maxWeightContingent
+					LOG.warning("-" + maxWeightContingent
 							+ " is the new most negative found in contingent "
 							+ "while -" + this.maxWeight + " is the most negative found in normal constraint.");
 				}
@@ -417,25 +452,11 @@ public class CSTNPSU extends CSTNU {
 			if (product >= Constants.INT_POS_INFINITE) {
 				throw new ArithmeticException("Horizon value is not representable by an integer.");
 			}
-			int oldHorizon = this.horizon;
 			this.horizon = (int) product;
-			// replace old horizon with the new one
-			for (LabeledNode node : this.g.getVertices()) {
-				if (node == this.Z)
-					continue;
-				CSTNUEdge e = this.g.findEdge(this.Z, node);
-				if (e.getValue(node.getLabel()) == oldHorizon) {
-					e.removeLabeledValue(node.getLabel());
-					e.mergeLabeledValue(node.getLabel(), this.horizon);
-				}
-			}
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.warning("For each node, a new bound from Z has set to " + this.horizon + " instead of " + oldHorizon);
-				}
-			}
 		}
-		// init CSTNU structures.
+		addUpperBounds();
+
+		// init CSTNPSU structures.
 		this.g.getLowerLabeledEdges();
 		this.checkStatus.initialized = true;
 
@@ -489,6 +510,26 @@ public class CSTNPSU extends CSTNU {
 			LabeledNode nC = this.g.getDest(eAC);
 			CSTNUEdge eCA = this.g.findEdge(nC, nA);
 
+			// // FIXME I fix the lower bound x in A===>C
+			// CSTNUEdge eCZ = this.g.findEdge(nC, this.Z);
+			// final LabeledALabelIntTreeMap CZAllLabeledValueMap = eCZ.getAllUpperCaseAndLabeledValuesMaps();
+			// if (CZAllLabeledValueMap.size() != 0) {
+			// for (ALabel aleph : CZAllLabeledValueMap.keySet()) {
+			// if (aleph.contains(nC.getAlabel()))
+			// continue;// the contingent guard is not considered
+			//
+			// for (Object2IntMap.Entry<Label> entryYW : CZAllLabeledValueMap.get(aleph).entrySet()) {// entrySet read-only
+			// final Label beta = entryYW.getKey();
+			// Label alphaBeta;
+			// alphaBeta = alpha.conjunction(beta);
+			// if (alphaBeta == null)
+			// continue;
+			//
+			// final int v = entryYW.getIntValue();
+			// int sum = Constants.sumWithOverflowCheck(u, v);
+			// }
+			// }
+			// }
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER))
 					LOG.log(Level.FINER, "zLr: found guarded link " + eAC);
@@ -521,7 +562,7 @@ public class CSTNPSU extends CSTNU {
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								if (LOG.isLoggable(Level.FINER))
-									LOG.log(Level.FINER, "zLr applied to edge " + oldXA + ":\n" + "partic: "
+									LOG.log(Level.FINER, "CSTNPSU zLr applied to edge " + oldXA + ":\n" + "partic: "
 											+ nC + " ---" + lowerCaseValueAsString(ALabel.emptyLabel, x, alpha) + "--> " + nA.getName()
 											+ " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
 											+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, v, beta) + "--- " + nX.getName()
@@ -535,6 +576,258 @@ public class CSTNPSU extends CSTNU {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "zLr: end.");
+		}
+		return ruleApplied;
+	}
+
+	/**
+	 * Apply 'labeled no case' and 'labeled upper case' and 'forward labeled upper case' and 'labeled conjuncted upper case' rules.<br>
+	 * 
+	 * <pre>
+	 * 1) CASE zLP/Nc/Uc
+	 *        v,ℵ,β           u,◇,α        
+	 * W &lt;------------ Y &lt;------------ X 
+	 * adds 
+	 *     u+v,ℵ,αβ
+	 * W &lt;------------------------------X
+	 * 
+	 * ℵ can be empty. If |ℵ|>1, then W must be Z.
+	 * 
+	 * 2) CASE z!
+	 * Also known as z!
+	 *     v,ℵ,β           u,C,α        
+	 * Z &lt;------------ Y &lt;------------ C 
+	 * adds 
+	 *     u+v,Cℵ,αβ
+	 * Z &lt;------------------------------C
+	 * 
+	 * ℵ can be empty.
+	 * </pre>
+	 * 
+	 * @param nX
+	 * @param nY
+	 * @param nW
+	 * @param eXY CANNOT BE NULL
+	 * @param eYW CANNOT BE NULL
+	 * @param eXW CANNOT BE NULL
+	 * @return true if a reduction is applied at least
+	 */
+	@Override
+	// Don't rename such method because it has to overwrite the CSTN one!
+	boolean labelPropagation(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final CSTNUEdge eXY, final CSTNUEdge eYW,
+			final CSTNUEdge eXW) {
+
+		boolean ruleApplied = false;
+		boolean nWisNotZ = nW != this.Z;
+		final LabeledALabelIntTreeMap YWAllLabeledValueMap = eYW.getAllUpperCaseAndLabeledValuesMaps();
+		if (YWAllLabeledValueMap.size() == 0)
+			return false;
+
+		final Set<Object2IntMap.Entry<Label>> XYLabeledValueMap = eXY.getLabeledValueSet();
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER))
+				LOG.log(Level.FINER, "zLP/Nc/Uc + z!: start.");
+		}
+
+		// 1) CASE LNC + LUC*
+		for (final Object2IntMap.Entry<Label> entryXY : XYLabeledValueMap) {
+			final Label alpha = entryXY.getKey();
+			final int u = entryXY.getIntValue();
+
+			for (ALabel aleph : YWAllLabeledValueMap.keySet()) {
+				if (nWisNotZ && aleph.size() > 1)
+					continue;// rule condition
+
+				for (Object2IntMap.Entry<Label> entryYW : YWAllLabeledValueMap.get(aleph).entrySet()) {// entrySet read-only
+					final Label beta = entryYW.getKey();
+					Label alphaBeta;
+					alphaBeta = alpha.conjunction(beta);
+					if (alphaBeta == null)
+						continue;
+
+					final int v = entryYW.getIntValue();
+					int sum = Constants.sumWithOverflowCheck(u, v);
+					/**
+					 * 2018-07-18. With the sound-and-complete algorithm, positive values are not necessary any more.
+					 * 2018-01-25. We discovered that it is necessary to propagate positive UPPER CASE values!
+					 * normal positive values may be not propagate for saving computation time!
+					 * aleph.isEmpty() is necessary!
+					 */
+					if (this.propagationOnlyToZ && sum > 0)// && aleph.isEmpty()) // New condition that works well for big instances!
+						continue;
+
+					if (nX == nW && sum >= 0) {
+						// it would be a redundant edge
+						continue;
+					}
+
+					final int oldValue = (aleph.isEmpty()) ? eXW.getValue(alphaBeta) : eXW.getUpperCaseValue(alphaBeta, aleph);
+
+					if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+						// value is stored only if it is more negative than the current one.
+						continue;
+					}
+
+					String logMsg = null;
+					if (Debug.ON) {
+						final String oldXW = eXW.toString();
+						logMsg = "CSTNPSU zLP/Nc/Uc applied to edge " + oldXW + ":\n" + "partic: "
+								+ nW.getName() + " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName() + " <---"
+								+ upperCaseValueAsString(ALabel.emptyLabel, u, alpha) + "--- " + nX.getName()
+								+ "\nresult: "
+								+ nW.getName() + " <---" + upperCaseValueAsString(aleph, sum, alphaBeta) + "--- " + nX.getName()
+								+ "; old value: " + Constants.formatInt(oldValue);
+					}
+
+					boolean mergeStatus = (aleph.isEmpty()) ? eXW.mergeLabeledValue(alphaBeta, sum) : eXW.mergeUpperCaseValue(alphaBeta, aleph, sum);
+
+					if (mergeStatus) {
+						ruleApplied = true;
+						if (aleph.isEmpty()) {
+							this.checkStatus.labeledValuePropagationCalls++;
+						} else {
+							getCheckStatus().zEsclamationRuleCalls++;
+						}
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.FINER)) {
+								LOG.log(Level.FINER, logMsg);
+							}
+						}
+
+						if (checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nX, nW, eXW, this.checkStatus)) {
+							if (LOG.isLoggable(Level.INFO)) {
+								LOG.log(Level.INFO, logMsg);
+							}
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		if (nWisNotZ) {
+			// it is possible to stop here, because the second part is applicable only when nW==Z.
+			if (Debug.ON) {
+				if (LOG.isLoggable(Level.FINER))
+					LOG.log(Level.FINER, "zLP/Nc/Uc + z!: end.");
+			}
+			return ruleApplied;
+		}
+
+		final ObjectSet<ALabel> XYUpperCaseALabels = eXY.getUpperCaseValueMap().keySet();
+
+		// 2) CASE FLUC + LCUC
+		ALabel nXasALabel = nX.getAlabel();
+		for (final ALabel upperCaseLabel : XYUpperCaseALabels) {
+			if (upperCaseLabel.size() != 1 || !upperCaseLabel.equals(nXasALabel)) {
+				continue;// only UC label corresponding to original contingent upper case value is considered.
+			}
+			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryXY : eXY.getUpperCaseValueMap().get(upperCaseLabel).entrySet()) {// entrySet
+																																				// read-only
+				final Label alpha = entryXY.getKey();
+				final int u = entryXY.getIntValue();
+
+				for (final ALabel aleph : YWAllLabeledValueMap.keySet()) {
+					for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryYW : YWAllLabeledValueMap.get(aleph).entrySet()) {// entrySet read-only
+						final Label beta = entryYW.getKey();
+
+						Label alphaBeta = alpha.conjunction(beta);
+						if (alphaBeta == null)
+							continue;
+
+						final ALabel upperCaseLetterAleph = upperCaseLabel.conjunction(aleph);
+						final int v = entryYW.getIntValue();
+
+						int sum = Constants.sumWithOverflowCheck(u, v);
+						if (sum > 0) {
+							if (this.propagationOnlyToZ) {// && upperCaseLetterAleph.isEmpty()) // upperCaseLetterAleph is never empty!
+								continue;
+							}
+							// FIXME redundant code
+							if (nX == nW) {
+								// it would be a redundant edge
+								continue;
+							}
+							// transform it as no upper-case value (useful for CSTNPSU)
+							final int oldValue = eXW.getValue(alphaBeta);
+							String logMsg = null;
+							if (Debug.ON) {
+								final String oldXW = eXW.toString();
+								logMsg = "CSTNPSU z! applied to edge " + oldXW + ":\n" + "partic: "
+										+ nW.getName() + " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName() + " <---"
+										+ upperCaseValueAsString(upperCaseLabel, u, alpha) + "--- " + nX.getName()
+										+ "\nresult: "
+										+ nW.getName() + " <---" + upperCaseValueAsString(upperCaseLetterAleph, sum, alphaBeta) + "--- " + nX.getName()
+										+ "; old value: " + Constants.formatInt(oldValue);
+
+							}
+							if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+								// in the case of A != C, a value is stored only if it is more negative than the current one.
+								continue;
+							}
+							boolean mergeStatus = eXW.mergeLabeledValue(alphaBeta, sum);
+							if (mergeStatus) {
+								ruleApplied = true;
+								getCheckStatus().zEsclamationRuleCalls++;
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.FINER)) {
+										LOG.log(Level.FINER, logMsg);
+									}
+								}
+
+								if (checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nX, nW, eXW, this.checkStatus)) {
+									if (LOG.isLoggable(Level.INFO)) {
+										LOG.log(Level.INFO, logMsg);
+									}
+									return true;
+								}
+							}
+						}
+
+						final int oldValue = eXW.getUpperCaseValue(alphaBeta, upperCaseLetterAleph);
+
+						if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+							// in the case of A != C, a value is stored only if it is more negative than the current one.
+							continue;
+						}
+
+						String logMsg = null;
+						if (Debug.ON) {
+							final String oldXW = eXW.toString();
+							logMsg = "CSTNPSU z! applied to edge " + oldXW + ":\n" + "partic: "
+									+ nW.getName() + " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName() + " <---"
+									+ upperCaseValueAsString(upperCaseLabel, u, alpha) + "--- " + nX.getName()
+									+ "\nresult: "
+									+ nW.getName() + " <---" + upperCaseValueAsString(upperCaseLetterAleph, sum, alphaBeta) + "--- " + nX.getName()
+									+ "; old value: " + Constants.formatInt(oldValue);
+						}
+
+						boolean mergeStatus = eXW.mergeUpperCaseValue(alphaBeta, upperCaseLetterAleph, sum);
+
+						if (mergeStatus) {
+							ruleApplied = true;
+							getCheckStatus().zEsclamationRuleCalls++;
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINER)) {
+									LOG.log(Level.FINER, logMsg);
+								}
+							}
+
+							if (checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nX, nW, eXW, this.checkStatus)) {
+								if (LOG.isLoggable(Level.INFO)) {
+									LOG.log(Level.INFO, logMsg);
+								}
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		if (Debug.ON) {
+			if (LOG.isLoggable(Level.FINER)) {
+				LOG.log(Level.FINER, "zLP/Nc/Uc + z!: end.");
+			}
 		}
 		return ruleApplied;
 	}
@@ -632,7 +925,7 @@ public class CSTNPSU extends CSTNU {
 								if (Debug.ON) {
 									if (LOG.isLoggable(Level.FINER)) {
 										if (LOG.isLoggable(Level.FINER))
-											LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
+											LOG.log(Level.FINER, "CSTNPSU zLR applied to edge " + oldYZ + ":\n" + "partic: "
 													+ nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
 													+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
 													+ "---" + lowerCaseValueAsString(nC.getAlabel(), x, l) + "---> " + nodeLetter

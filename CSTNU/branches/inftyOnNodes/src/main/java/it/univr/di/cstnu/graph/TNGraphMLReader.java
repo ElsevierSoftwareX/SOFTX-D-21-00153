@@ -50,9 +50,8 @@ public class TNGraphMLReader<E extends Edge> {
 	 * 
 	 * @author posenato
 	 * @param <E>
-	 * @param <M>
 	 */
-	static private class InternalEdgeFactory<E extends Edge, M extends LabeledIntMap> implements Supplier<E> {
+	static private class InternalEdgeFactory<E extends Edge> implements Supplier<E> {
 
 		/**
 		 * 
@@ -61,11 +60,10 @@ public class TNGraphMLReader<E extends Edge> {
 
 		/**
 		 * @param edgeImpl
-		 * @param mapTypeImpl
 		 */
-		public <E1 extends E, M1 extends M> InternalEdgeFactory(Class<E1> edgeImpl, Class<M1> mapTypeImpl) {
+		public <E1 extends E> InternalEdgeFactory(Class<E1> edgeImpl) {
 			super();
-			this.edgeFactory = new EdgeSupplier<>(edgeImpl, mapTypeImpl);
+			this.edgeFactory = new EdgeSupplier<>(edgeImpl);
 		}
 
 		@Override
@@ -81,9 +79,8 @@ public class TNGraphMLReader<E extends Edge> {
 	 * we modify the standard factory altering the default name
 	 * 
 	 * @author posenato
-	 * @param <M>
 	 */
-	static private class InternalVertexFactory<M extends LabeledIntMap> implements Supplier<LabeledNode> {
+	static private class InternalVertexFactory implements Supplier<LabeledNode> {
 
 		/**
 		 * 
@@ -91,11 +88,10 @@ public class TNGraphMLReader<E extends Edge> {
 		Supplier<LabeledNode> nodeFactory;
 
 		/**
-		 * @param mapTypeImplementation
 		 */
-		public InternalVertexFactory(Class<? extends M> mapTypeImplementation) {
+		public InternalVertexFactory() {
 			super();
-			this.nodeFactory = new LabeledNodeSupplier<>(mapTypeImplementation);
+			this.nodeFactory = new LabeledNodeSupplier();
 		}
 
 		@Override
@@ -107,9 +103,14 @@ public class TNGraphMLReader<E extends Edge> {
 	}
 
 	/**
+	 * Labeled value class used in the class.
+	 */
+	public static final Class<? extends LabeledIntMap> labeledValueMapImpl = LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS;
+
+	/**
 	 * logger
 	 */
-	static final Logger LOG = Logger.getLogger("TNGraphMLReader");
+	static final Logger LOG = Logger.getLogger(TNGraphMLReader.class.getName());
 
 	/**
 	 * 
@@ -125,15 +126,15 @@ public class TNGraphMLReader<E extends Edge> {
 	 * ALabel alphabet for UC a-labels
 	 */
 	private ALabelAlphabet aLabelAlphabet;
-
 	/**
 	 * 
 	 */
 	private Supplier<E> edgeFactory;
+
 	/**
-	 * 
+	 * Class for representing internal labeled values.
 	 */
-	private Supplier<LabeledNode> nodeFactory;
+	private Class<? extends E> edgeImpl;
 
 	/**
 	 * Input file reader
@@ -141,14 +142,9 @@ public class TNGraphMLReader<E extends Edge> {
 	private Reader fileReader;
 
 	/**
-	 * Class for representing internal labeled values.
+	 * 
 	 */
-	private Class<? extends LabeledIntMap> labeledValueMapImpl;
-
-	/**
-	 * Class for representing internal labeled values.
-	 */
-	private Class<? extends E> edgeImpl;
+	private Supplier<LabeledNode> nodeFactory;
 
 	/**
 	 * Allows to read a Temporal Network (TM) from a file written in GraphML format.<br>
@@ -158,35 +154,20 @@ public class TNGraphMLReader<E extends Edge> {
 	 * 
 	 * @param graphFile
 	 * @param edgeImplClass
-	 * @param labeledValueMapImplClass it is necessary for creating the right factory.
 	 * @throws FileNotFoundException if the graphFile is not found
 	 */
-	public TNGraphMLReader(final File graphFile, Class<? extends E> edgeImplClass, Class<? extends LabeledIntMap> labeledValueMapImplClass)
-			throws FileNotFoundException {
+	public TNGraphMLReader(final File graphFile, Class<? extends E> edgeImplClass) throws FileNotFoundException {
 		if (graphFile == null) {
 			throw new FileNotFoundException("The given file does not exist.");
 		}
 		this.fileReader = new FileReader(graphFile);
 		this.aLabelAlphabet = new ALabelAlphabet();
-		this.labeledValueMapImpl = labeledValueMapImplClass;
 		this.edgeImpl = edgeImplClass;
 
-		this.edgeFactory = new InternalEdgeFactory<>(this.edgeImpl, this.labeledValueMapImpl);
-		this.nodeFactory = new InternalVertexFactory<>(this.labeledValueMapImpl);
-		this.tnGraph = new TNGraph<>(this.edgeImpl, this.labeledValueMapImpl, this.aLabelAlphabet);
+		this.edgeFactory = new InternalEdgeFactory<>(this.edgeImpl);
+		this.nodeFactory = new InternalVertexFactory();
+		this.tnGraph = new TNGraph<>(this.edgeImpl, this.aLabelAlphabet);
 		this.tnGraph.setInputFile(graphFile);
-	}
-
-	/**
-	 * Helper constructor.
-	 * 
-	 * @see #TNGraphMLReader(File, Class, Class)
-	 * @param graphFile
-	 * @param edgeImplClass
-	 * @throws FileNotFoundException
-	 */
-	public TNGraphMLReader(final File graphFile, Class<? extends E> edgeImplClass) throws FileNotFoundException {
-		this(graphFile, edgeImplClass, LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
 	}
 
 	/**
@@ -240,7 +221,7 @@ public class TNGraphMLReader<E extends Edge> {
 
 			if (nodeLabeledPotentialValueF != null) {
 				String data = nodeLabeledPotentialValueF.apply(n);
-				LabeledIntMap potentialMap = AbstractLabeledIntMap.parse(data, this.labeledValueMapImpl);
+				LabeledIntMap potentialMap = AbstractLabeledIntMap.parse(data, labeledValueMapImpl);
 				if (data != null && data.length() > 2 && (potentialMap == null || potentialMap.isEmpty()))
 					throw new IllegalArgumentException("Potential values in a wrong format: " + data + " in node " + n);
 				n.setLabeledPotential(potentialMap);
@@ -279,7 +260,7 @@ public class TNGraphMLReader<E extends Edge> {
 		fieldReader = graphReader.getEdgeMetadata().get(TNGraphMLWriter.EDGE_VALUE_KEY);
 		Function<E, String> edgeValueF = (fieldReader != null) ? fieldReader.transformer : null;
 
-		LabeledIntMapSupplier<? extends LabeledIntMap> LabIntMapSupplier = new LabeledIntMapSupplier<>(this.labeledValueMapImpl);
+		LabeledIntMapSupplier<? extends LabeledIntMap> LabIntMapSupplier = new LabeledIntMapSupplier<>(labeledValueMapImpl);
 		String data;
 		for (E e : this.tnGraph.getEdges()) {
 			// Type

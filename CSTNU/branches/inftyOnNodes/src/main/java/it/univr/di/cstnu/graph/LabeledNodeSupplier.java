@@ -7,33 +7,29 @@ import java.util.logging.Logger;
 
 import com.google.common.base.Supplier;
 
-import it.univr.di.labeledvalue.LabeledIntMap;
-
 /**
  * LabeledIntEdgePluggabble supplier.
  * 
  * @author posenato
- * @param <C> type for managing labeled values.
  */
-public class LabeledNodeSupplier<C extends LabeledIntMap> implements Supplier<LabeledNode> {
+public class LabeledNodeSupplier implements Supplier<LabeledNode> {
 
 	/**
 	 * class logger
 	 */
 	@SuppressWarnings("unused")
-	static private Logger LOG = Logger.getLogger("LabeledNodeSupplier");
+	static private Logger LOG = Logger.getLogger(LabeledNodeSupplier.class.getName());
 
 	/**
 	 * 
 	 */
-	private Class<C> labeledIntValueMapImpl;
+	// private Class<C> labeledIntValueMapImpl;
 
 	/**
-	 * @param labeledIntMapImplementation
 	 */
-	public LabeledNodeSupplier(Class<C> labeledIntMapImplementation) {
+	public LabeledNodeSupplier() {// Class<C> labeledIntMapImplementation
 		super();
-		this.labeledIntValueMapImpl = labeledIntMapImplementation;
+		// this.labeledIntValueMapImpl = labeledIntMapImplementation;
 	}
 
 	/**
@@ -41,23 +37,25 @@ public class LabeledNodeSupplier<C extends LabeledIntMap> implements Supplier<La
 	 */
 	@Override
 	public LabeledNode get() {
-		return this.get("");
+		return get("");
 	}
 
 	/**
 	 * @param name
 	 * @return a new LabeledIntMap concrete object.
 	 */
+	@SuppressWarnings("static-method")
 	public LabeledNode get(String name) {
-		return new LabeledNode(name, this.labeledIntValueMapImpl);
+		return new LabeledNode(name);// , this.labeledIntValueMapImpl
 	}
 
 	/**
 	 * @param node the edge to clone.
 	 * @return a new edge
 	 */
+	@SuppressWarnings("static-method")
 	public LabeledNode get(LabeledNode node) {
-		return new LabeledNode(node, this.labeledIntValueMapImpl);
+		return new LabeledNode(node);// , this.labeledIntValueMapImpl
 	}
 
 	/**
@@ -65,20 +63,21 @@ public class LabeledNodeSupplier<C extends LabeledIntMap> implements Supplier<La
 	 * @param proposition
 	 * @return a new edge
 	 */
+	@SuppressWarnings("static-method")
 	public LabeledNode get(final String n, final char proposition) {
-		return new LabeledNode(n, proposition, this.labeledIntValueMapImpl);
+		return new LabeledNode(n, proposition);// , this.labeledIntValueMapImpl
 	}
 
 	/**
 	 * @return the class chosen for creating new object.
+	 *         public Class<C> getInternalObjectClass() {
+	 *         return this.labeledIntValueMapImpl;
+	 *         }
 	 */
-	public Class<C> getInternalObjectClass() {
-		return this.labeledIntValueMapImpl;
-	}
 
-	@Override
-	public String toString() {
-		return "Labeled value set managed as " + this.labeledIntValueMapImpl.toString() + ".";
-	}
+	// @Override
+	// public String toString() {
+	// return "Labeled value set managed as " + this.labeledIntValueMapImpl.toString() + ".";
+	// }
 
 }

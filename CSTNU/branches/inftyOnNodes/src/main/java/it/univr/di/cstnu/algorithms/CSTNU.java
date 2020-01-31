@@ -36,7 +36,6 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
@@ -123,12 +122,11 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	// static final public String VERSIONandDATE = "Version 6.1 - March, 12 2019";// full propagation option added
 	// static final public String VERSIONandDATE = "Version 6.2 - June, 9 2019";// Edge refactoring
 	static final public String VERSIONandDATE = "Version 6.3 - June, 9 2019";// CSTN Refactoring
-
 	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static final Logger LOG = Logger.getLogger("CSTNU");
+	static final Logger LOG = Logger.getLogger(CSTNU.class.getName());
 
 	/**
 	 * Reads a CSTNU file and checks it.
@@ -163,8 +161,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Loading graph...");
 		}
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-				LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 
 		cstnu.setG(graphMLReader.readGraph());
 		cstnu.g.setInputFile(cstnu.fInput);
@@ -318,7 +315,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		this.propagationOnlyToZ = false;
 		this.contingentAlsoAsOrdinary = false;
 		this.reactionTime = 0;// IR semantics
-		this.withNodeLabels = false;// without node labels
 	}
 
 	/**
@@ -482,7 +478,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			}
 		}
 		if (this.cleanCheckedInstance) {
-			this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass(), this.g.getLabeledValueMapImplClass());
+			this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass());
 			this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
 		}
 		return getCheckStatus();
@@ -721,11 +717,11 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				}
 			}
 			// it is necessary to check max value
-			int m = e.getMinUpperCaseValue();
+			int m = e.getMinUpperCaseValue().getValue().getIntValue();
 			// LOG.warning("m value: " + m);
 			if (m != Constants.INT_NULL && m < maxWeightContingent)
 				maxWeightContingent = m;
-			m = eInverted.getMinUpperCaseValue();
+			m = eInverted.getMinUpperCaseValue().getValue().getIntValue();
 			if (m != Constants.INT_NULL && m < maxWeightContingent)
 				maxWeightContingent = m;
 		} // end contingent edges cycle
@@ -741,8 +737,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		if (maxWeightContingent > this.maxWeight) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.warning("It is necessary to update the horizon of the graph since -" + maxWeightContingent
-							+ " is the new most negative found in contingent "
+					LOG.warning("-" + maxWeightContingent
+							+ " is the most negative found in contingent "
 							+ "while -" + this.maxWeight + " is the most negative found in normal constraint.");
 				}
 			}
@@ -753,22 +749,10 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			if (product >= Constants.INT_POS_INFINITE) {
 				throw new ArithmeticException("Horizon value is not representable by an integer.");
 			}
-			int oldHorizon = this.horizon;
 			this.horizon = (int) product;
-			// replace old horizon with the new one
-			for (LabeledNode node : this.g.getVertices()) {
-				if (node == this.Z)
-					continue;
-				CSTNUEdge e = this.g.findEdge(this.Z, node);
-				e.removeLabeledValue(node.getLabel());
-				e.mergeLabeledValue(node.getLabel(), this.horizon);
-			}
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.warning("For each node, a new bound from Z has set to " + this.horizon + " instead of " + oldHorizon);
-				}
-			}
 		}
+		addUpperBounds();
+
 		// init CSTNU structures.
 		this.g.getLowerLabeledEdges();
 		this.checkStatus.initialized = true;
@@ -1754,10 +1738,10 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					 * normal positive values may be not propagate for saving computation time!
 					 * aleph.isEmpty() is necessary!
 					 */
-					if (sum > 0)// && aleph.isEmpty()) // New condition that works well for big instances!
+					if (this.propagationOnlyToZ && sum > 0)// && aleph.isEmpty()) // New condition that works well for big instances!
 						continue;
 
-					if (nX == nW && sum == 0) {// >0 already checked!
+					if (nX == nW && sum >= 0) {
 						// it would be a redundant edge
 						continue;
 					}
@@ -1840,12 +1824,49 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 						final int v = entryYW.getIntValue();
 
 						int sum = Constants.sumWithOverflowCheck(u, v);
-						if (sum > 0)// && upperCaseLetterAleph.isEmpty()) // upperCaseLetterAleph is never empty!
-							continue;
+						if (sum > 0) {
+							if (this.propagationOnlyToZ) {// && upperCaseLetterAleph.isEmpty()) // upperCaseLetterAleph is never empty!
+								continue;
+							}
+							// FIXME redundant code
+							if (nX == nW) {
+								// it would be a redundant edge
+								continue;
+							}
+							// transform it as no upper-case value (useful for CSTNPSU)
+							final int oldValue = eXW.getValue(alphaBeta);
+							String logMsg = null;
+							if (Debug.ON) {
+								final String oldXW = eXW.toString();
+								logMsg = "z! applied to edge " + oldXW + ":\n" + "partic: "
+										+ nW.getName() + " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName() + " <---"
+										+ upperCaseValueAsString(upperCaseLabel, u, alpha) + "--- " + nX.getName()
+										+ "\nresult: "
+										+ nW.getName() + " <---" + upperCaseValueAsString(ALabel.emptyLabel, sum, alphaBeta) + "--- " + nX.getName()
+										+ "; old value: " + Constants.formatInt(oldValue);
 
-						if (nX == nW && sum == 0) {// >0 already checked
-							// it would be a redundant edge
-							continue;
+							}
+							if ((oldValue != Constants.INT_NULL) && (sum >= oldValue)) {
+								// in the case of A != C, a value is stored only if it is more negative than the current one.
+								continue;
+							}
+							boolean mergeStatus = eXW.mergeLabeledValue(alphaBeta, sum);
+							if (mergeStatus) {
+								ruleApplied = true;
+								getCheckStatus().zEsclamationRuleCalls++;
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.FINER)) {
+										LOG.log(Level.FINER, logMsg);
+									}
+								}
+
+								if (checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nX, nW, eXW, this.checkStatus)) {
+									if (LOG.isLoggable(Level.INFO)) {
+										LOG.log(Level.INFO, logMsg);
+									}
+									return true;
+								}
+							}
 						}
 
 						final int oldValue = eXW.getUpperCaseValue(alphaBeta, upperCaseLetterAleph);

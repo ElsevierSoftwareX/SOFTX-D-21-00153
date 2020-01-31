@@ -167,8 +167,8 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	public boolean alreadyRepresents(Label newLabel, int newValue) {
 		int valuePresented = get(newLabel);
 		if (valuePresented > newValue)
-			return false;// the newValue would simplify the map.
-		if (valuePresented != Constants.INT_NULL && valuePresented < newValue)
+			return false;
+		if (valuePresented != Constants.INT_NULL && valuePresented <= newValue)
 			return true;
 		/**
 		 * Check if there is already a value in the map that represents the new value.
@@ -489,56 +489,52 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 						// The disadvantage of this management is that is quite difficult to build base.
 						//
 						// An experimental test showed that is 2) management makes the algorithm ~30% faster.
-						// On 2016-03-30 I discovered that with Management 2) there is a possible problem in the representation of situations like:
-						// Current set={ (b,-1), (¬b,-2) }. Request to insert (¿b,-3).
-						// Even value (¿b,-3) should not be insert because the base is able to represent it (¿b is consistent with b/¬b)
-						// the value (¿b,-3) is insert in both the two management.//THIS COMMENT IS NOT CLEAR
 						// On 2019-03-22 I discovered that it is more important to have labels with fewer literals, so Management 2 is more important!
 						/**
 						 * Management 1)
 						 */
-						// if (inputValue == v1 && (lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
-						// // we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
-						// toRemove.add(inputLabel);
-						// toRemove.add(entry.getKey());
-						// if (Debug.ON) {
-						// if (LOG.isLoggable(Level.FINEST)) {
-						// LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
-						// + "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
-						// }
-						// }
-						// l1 = l1.remove(lit.getName());
-						// if (l1.size() < 0)
-						// throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
-						// if (Debug.ON) {
-						// if (LOG.isLoggable(Level.FINEST)) {
-						// LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
-						// }
-						// }
-						// toAdd.put(l1, v1);
-						// }
+//						if (inputValue == v1 && (lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
+//							// we can simplify (newLabel, newValue) and (v1,l1) removing them and putting in map (v1/lit,l1)
+//							toRemove.add(inputLabel);
+//							toRemove.add(entry.getKey());
+//							if (Debug.ON) {
+//								if (LOG.isLoggable(Level.FINEST)) {
+//									LOG.log(Level.FINEST, "Label " + l1 + ", combined with label " + inputLabel + " induces a simplification. "
+//											+ "Firstly, (" + inputLabel + ", " + inputValue + ") in removed.");
+//								}
+//							}
+//							l1 = l1.remove(lit.getName());
+//							if (l1.size() < 0)
+//								throw new IllegalStateException("There is no literal to remove, there is a problem in the code!");
+//							if (Debug.ON) {
+//								if (LOG.isLoggable(Level.FINEST)) {
+//									LOG.log(Level.FINEST, "Then, (" + l1 + ", " + v1 + ") is considering for adding at the end.");
+//								}
+//							}
+//							toAdd.put(l1, v1);
+//						}
 						/**
 						 * Management 2)
 						 */
-						if ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
-							int max = (inputValue > v1) ? inputValue : v1;
-							// we can simplify (newLabel, newValue) and (v1,l1)
-							// we maintain the pair with lower value
-							// while we insert the one with greater value removing from its label 'lit'
-							Label labelWOlit = l1.remove(lit.getName());
-
-							if (max == inputValue && max == v1) {
-								toRemove.add(inputLabel);
-								toRemove.add(l1);
-							} else {
-								if (max == inputValue) {
-									toRemove.add(inputLabel);
-								} else {
-									toRemove.add(l1);
-								}
-							}
-							toAdd.put(labelWOlit, max);
-						}
+						 if ((lit = l1.getUniqueDifferentLiteral(inputLabel)) != null) {
+						 int max = (inputValue > v1) ? inputValue : v1;
+						 // we can simplify (newLabel, newValue) and (v1,l1)
+						 // we maintain the pair with lower value
+						 // while we insert the one with greater value removing from its label 'lit'
+						 Label labelWOlit = l1.remove(lit.getName());
+						
+						 if (max == inputValue && max == v1) {
+						 toRemove.add(inputLabel);
+						 toRemove.add(l1);
+						 } else {
+						 if (max == inputValue) {
+						 toRemove.add(inputLabel);
+						 } else {
+						 toRemove.add(l1);
+						 }
+						 }
+						 toAdd.put(labelWOlit, max);
+						 }
 					}
 				}
 			}
@@ -612,6 +608,11 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 				// throw new IllegalStateException("A base component has a null value. It is not possible.");
 			}
 			if (inputLabel.subsumes(baseLabel)) {
+				if (inputLabel.size() == baseLabel.size()) {
+					// inputLabel subsumes all the literals of baseLabel and it has no more literals.
+					// so, they are equal or unknown.
+					return true;
+				}
 				if (inputValue >= baseValue) {
 					// entry.setValue(baseValue);// case 6
 					return true;
