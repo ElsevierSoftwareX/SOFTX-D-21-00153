@@ -12,11 +12,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
-
 /**
- * Allows to read a graph from a file written in GraphML format.<br>
- * GraphML format allows the definition of different attributes for the graph, vertices and edges.<br>
+ * Allows to read a tNGraph from a file written in GraphML format.<br>
+ * GraphML format allows the definition of different attributes for the tNGraph, vertices and edges.<br>
  * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
  * under CstnuTool one.
  * 
@@ -28,31 +26,39 @@ public class CSTNUGraphMLReaderTest {
 	/**
 	 * 
 	 */
-	File file = new File("src/test/resources/testGraphML.cstnu");
-
+	static File fileCSTNU = new File("src/test/resources/testGraphML.cstnu");
+	static File fileSTN = new File("src/test/resources/testGraphML.stn");
 	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
+	 * 
 	 */
+	TNGraphMLReader<CSTNUEdge> readerCSTNU;
+	TNGraphMLReader<STNEdge> readerSTN;
+
+	TNGraph<CSTNUEdge> cstnu;
+
+	TNGraph<STNEdge> stn;
+
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
-		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
-		LabeledIntGraph g = reader.readGraph();
-		Assert.assertEquals(1, g.getEdge("YX").getUpperCaseValueMap().size());
-		Assert.assertEquals(2, g.getEdge("XY").getLowerCaseValue().getValue());
+		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class);
+		this.cstnu = this.readerCSTNU.readGraph();
+		Assert.assertEquals(1, this.cstnu.getEdge("YX").getUpperCaseValueMap().size());
+		Assert.assertEquals(2, this.cstnu.getEdge("XY").getLowerCaseValue().getValue());
 	}
 
-	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 */
 	@Test
 	public void testCSTN() throws IOException, ParserConfigurationException, SAXException {
-		CSTNUGraphMLReader reader = new CSTNUGraphMLReader(this.file, LabeledIntTreeMap.class);
-		LabeledIntGraph g = reader.readGraph();
-		Assert.assertEquals(8, g.getEdgeCount());
+		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class);
+		this.cstnu = this.readerCSTNU.readGraph();
+		Assert.assertEquals(2, this.cstnu.getEdgeCount());
 	}
 
+	@Test
+	public void testSTN() throws IOException, ParserConfigurationException, SAXException {
+		this.readerSTN = new TNGraphMLReader<>(fileSTN, STNEdgeInt.class);
+		this.stn = this.readerSTN.readGraph();
+		Assert.assertEquals(18, this.stn.getEdgeCount());
+		Assert.assertEquals(-1, this.stn.getEdge("e7").getValue());
+		Assert.assertEquals(0, this.stn.findEdge("Z", "n5").getValue());
+	}
 }

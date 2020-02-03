@@ -1,5 +1,6 @@
 package it.univr.di.labeledvalue;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Duration;
@@ -26,7 +27,6 @@ public class LabeledALabelIntTreeMapTest {
 	/**
 	 *
 	 */
-	@SuppressWarnings("javadoc")
 	LabeledALabelIntTreeMap map,
 			result;
 
@@ -92,6 +92,25 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
 
 		Assert.assertEquals("Check of merge with simple simplification", this.result, this.map);
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void immutable() {
+		this.map.clear();
+		this.map.mergeTriple("¬a¬b", new ALabel("N9", this.alpha), 13);
+		this.map.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
+
+		LabeledALabelIntTreeMap view = this.map.unmodifiable();
+		view.remove(Label.parse("¬a"), new ALabel("N9", this.alpha));
+
+		this.result.clear();
+		this.result.mergeTriple("¬a", new ALabel("N9", this.alpha), 13);
+
+		Assert.assertEquals("Immutable makes read-only", this.result, view);
+		Assert.assertEquals(1, this.map.size());
 	}
 
 	/**
@@ -241,7 +260,85 @@ public class LabeledALabelIntTreeMapTest {
 		this.result.mergeTriple("a", ALabel.emptyLabel, -16);
 		this.result.mergeTriple("¬a", ALabel.emptyLabel, -17);
 
-		Assert.assertEquals("Check of merge with two concanated nodes\n", this.result, this.map);
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
+
+	/**
+	 * 
+	 */
+	@Test
+	public final void mergeConSemplificazione8() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple(Label.emptyLabel, n8, -16);
+		this.map.mergeTriple(Label.emptyLabel, n9, -17);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, n8, -16);
+		this.result.mergeTriple(Label.emptyLabel, n9, -17);
+
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public final void mergeConSemplificazione9() {
+		this.map.clear();
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -16);
+		this.map.mergeTriple("a", ALabel.emptyLabel, -17);
+		this.map.mergeTriple("¬a", ALabel.emptyLabel, -17);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -17);
+
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void mergeConSemplificazione10() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple("a", n8, -16);
+		this.map.mergeTriple("¬a", n9, -17);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -20);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -20);
+
+		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
+	}
+
+	/**
+	 *
+	 */
+	@Test
+	public final void mergeWOSimplification() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple("a", ALabel.emptyLabel, -16, true);
+		this.map.mergeTriple("¬a", ALabel.emptyLabel, -16, true);
+		this.map.mergeTriple(Label.emptyLabel, ALabel.emptyLabel, -9, true);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9, true);
+
+		Assert.assertEquals("Check of merge with two nodes\n", "{(◇, -9, ⊡) (◇, -16, a) (◇, -16, ¬a) (N8∙N9, -9, ⊡) }", this.map.toString());
+		Assert.assertEquals(4, this.map.size());
 	}
 
 	/**
@@ -274,6 +371,30 @@ public class LabeledALabelIntTreeMapTest {
 	}
 
 	/**
+	 * 
+	 */
+	@Test
+	public final void canRepresentTest() {
+		ALabel n8 = new ALabel("N8", this.alpha);
+		ALabel n9 = new ALabel("N9", this.alpha);
+		ALabel n89 = n8.conjunction(n9);
+
+		this.map.clear();
+		this.map.mergeTriple(Label.emptyLabel, n8, -16);
+		this.map.mergeTriple(Label.emptyLabel, n9, -17);
+		this.map.mergeTriple(Label.emptyLabel, n89, -9);
+
+		this.result.clear();
+		this.result.mergeTriple(Label.emptyLabel, n8, -16);
+		this.result.mergeTriple(Label.emptyLabel, n9, -17);
+
+		assertTrue(this.map.alreadyRepresents(Label.emptyLabel, n89, -4));
+		assertTrue(this.map.alreadyRepresents(Label.parse("a"), n89, -4));
+		assertTrue(this.map.alreadyRepresents(Label.emptyLabel, n89, -16));
+		assertFalse(this.map.alreadyRepresents(Label.parse("a"), n89, -18));
+	}
+
+	/**
 	 * Check if the management of the base is correct.
 	 */
 	@Test
@@ -281,10 +402,10 @@ public class LabeledALabelIntTreeMapTest {
 		this.map.clear();
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
 
-		assertTrue(this.map.getMinValue() == -14);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == -14);
 		this.map.clear();
 
-		assertTrue(this.map.getMinValue() == Constants.INT_NULL);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == Constants.INT_NULL);
 	}
 
 	/**
@@ -295,9 +416,9 @@ public class LabeledALabelIntTreeMapTest {
 		this.map.clear();
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
 //		System.out.println(this.map);
-		assertTrue(this.map.getMinValue() == -14);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == -14);
 		this.map.clear();
-		assertTrue(this.map.getMinValue() == Constants.INT_NULL);
+		assertTrue(this.map.getMinValue().getValue().getIntValue() == Constants.INT_NULL);
 
 		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}",this.alpha);
 		// System.out.println(map.getMinValueConsistentWith(Label.parse("¬a"), new ALabel("N9", alpha)) );
@@ -501,7 +622,7 @@ public class LabeledALabelIntTreeMapTest {
 		startTime = System.nanoTime();
 		int min = 1000;
 		for (int i = 0; i < nTest; i++) {
-			min = map.getMinValue();
+			min = map.getMinValue().getValue().getIntValue();
 		}
 		endTime = System.nanoTime();
 		// System.out.println("Execution time for determining the min value (" + min + ") (mean over " + nTest + " tests). (ms): "

@@ -9,7 +9,6 @@ import org.junit.Test;
  */
 public class LabeledLowerCaseValueTest {
 
-	@SuppressWarnings("javadoc")
 	ALabelAlphabet alpha;
 
 	/**

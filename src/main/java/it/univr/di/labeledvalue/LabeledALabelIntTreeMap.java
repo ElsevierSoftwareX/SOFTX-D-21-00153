@@ -6,8 +6,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap.BasicEntry;
+import it.unimi.dsi.fastutil.objects.AbstractObject2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectRBTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -108,15 +111,85 @@ import it.univr.di.Debug;
 public class LabeledALabelIntTreeMap implements Serializable {
 
 	/**
-	 * Keyword \w because it is necessary to accept also node names!
+	 * A read-only view of an object
+	 * 
+	 * @author posenato
 	 */
-	static final String labelCharsRE = ALabelAlphabet.ALETTER + ALabel.ALABEL_SEPARATORstring + ",\\- " + Constants.NOT + Constants.EMPTY_LABEL
-			+ Constants.UNKNOWNstring + Literal.PROPOSITIONS + Constants.INFINITY_SYMBOL;
+	public static class LabeledALabelIntTreeMapView extends LabeledALabelIntTreeMap {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * @param inputMap
+		 */
+		public LabeledALabelIntTreeMapView(LabeledALabelIntTreeMap inputMap) {
+			this.map = inputMap.map;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public boolean mergeTriple(Label l, ALabel p, int i) {
+			return false;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public boolean mergeTriple(Label newLabel, ALabel newAlabel, int newValue, boolean force) {
+			return false;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public boolean mergeTriple(String label, ALabel p, int i) {
+			return false;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public boolean mergeTriple(String label, ALabel p, int i, boolean force) {
+			return false;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public LabeledIntTreeMap put(ALabel alabel, LabeledIntMap labeledValueMap) {
+			return null;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public boolean putTriple(Label l, ALabel p, int i) {
+			return false;
+		}
+
+		@Override
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		public int remove(Label l, ALabel p) {
+			return Constants.INT_NULL;
+		}
+	}
 
 	/**
-	 * logger
+	 * Keyword \w because it is necessary to accept also node names!
 	 */
-	private static final Logger LOG = Logger.getLogger(LabeledALabelIntTreeMap.class.getName());
+	static final String labelCharsRE = ALabelAlphabet.ALETTER + ALabel.ALABEL_SEPARATORstring + ",\\-" + Constants.NOT + Constants.EMPTY_LABEL
+			+ Constants.INFINITY_SYMBOLstring + Constants.UNKNOWNstring + Constants.EMPTY_UPPER_CASE_LABELstring + Literal.PROPOSITIONS;
 
 	/**
 	 * Matcher for RE
@@ -124,9 +197,33 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	static final Pattern patternlabelCharsRE = Pattern.compile("\\{[\\(" + labelCharsRE + "\\) ]*\\}");
 
 	/**
+	 * logger
+	 */
+	private static final Logger LOG = Logger.getLogger("LabeledALabelIntTreeMap");
+
+	/**
 	 *
 	 */
 	private static final long serialVersionUID = 2L;
+
+	/**
+	 * @param label
+	 * @param value
+	 * @param nodeName this name is printed as it is. This method is necessary for saving the values of the map in a file.
+	 * @return the canonical representation of the triple (as stated in ICAPS/ICAART papers), i.e.
+	 *         {@link Constants#OPEN_PAIR}Alabel, value, label{@link Constants#CLOSE_PAIR}
+	 */
+	static final public String entryAsString(Label label, int value, ALabel nodeName) {
+		StringBuffer s = new StringBuffer();
+		s.append(Constants.OPEN_PAIR);
+		s.append(nodeName);
+		s.append(", ");
+		s.append(Constants.formatInt(value));
+		s.append(", ");
+		s.append(label);
+		s.append(Constants.CLOSE_PAIR);
+		return s.toString();
+	}
 
 	/**
 	 * Parse a string representing a LabeledValueTreeMap and return an object containing the labeled values represented by the string.<br>
@@ -248,13 +345,19 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * The other for lower-case ones.
 	 * </ol>
 	 */
-	private final Object2ObjectRBTreeMap<ALabel, LabeledIntTreeMap> map;// ObjectArrayMap is not suitable when the map is greater than 1000 values!
+	protected Object2ObjectRBTreeMap<ALabel, LabeledIntTreeMap> map;// ObjectArrayMap is not suitable when the map is greater than 1000 values!
+
+	/**
+	 * Number of elements
+	 */
+	private int count;
 
 	/**
 	 * Simple constructor. The internal structure is built and empty.
 	 */
 	public LabeledALabelIntTreeMap() {
 		this.map = new Object2ObjectRBTreeMap<>();
+		this.count = 0;
 	}
 
 	/**
@@ -271,14 +374,8 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		for (final ALabel alabel : lvm.keySet()) {
 			final LabeledIntTreeMap map1 = new LabeledIntTreeMap(lvm.get(alabel));
 			this.map.put(alabel, map1);
+			this.count += map1.size();
 		}
-	}
-
-	/**
-	 * 
-	 */
-	public void clear() {
-		this.map.clear();
 	}
 
 	/**
@@ -289,6 +386,41 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 *         return this.map.entrySet();
 	 *         }
 	 */
+
+	/**
+	 * @param newLabel it must be not null
+	 * @param newAlabel it must be not null
+	 * @param newValue
+	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
+	 *         If returns false, then the adding of the value to the map would modify the map.
+	 */
+	public boolean alreadyRepresents(final Label newLabel, final ALabel newAlabel, final int newValue) {
+		final LabeledIntTreeMap map1 = this.map.get(newAlabel);
+		if (map1 != null && map1.alreadyRepresents(newLabel, newValue))
+			return true;
+		/**
+		 * Check if there is already a value in the map having shorter ALabel that can represent the new value.
+		 */
+		final int newALabelSize = newAlabel.size();
+		for (ALabel otherALabel : this.keySet()) {
+			if (newALabelSize <= otherALabel.size() || !newAlabel.contains(otherALabel))
+				continue;
+			LabeledIntTreeMap labeledValuesOfOtherALabel = this.get(otherALabel);
+			if (labeledValuesOfOtherALabel.alreadyRepresents(newLabel, newValue)) {
+				// a smaller conjuncted upper case value map already contains the input value
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 
+	 */
+	public void clear() {
+		this.map.clear();
+		this.count = 0;
+	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -302,21 +434,35 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * @param alabel
+	 * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
+	 */
+	public final LabeledIntTreeMap get(final ALabel alabel) {
+		return this.map.get(alabel);
+	}
+
+	/**
 	 * @return the minimal value of this map not considering upper/lower case label (node label), {@link Constants#INT_NULL} if the map is empty.
 	 */
-	public int getMinValue() {
+	public Object2ObjectMap.Entry<Label, Entry<ALabel>> getMinValue() {
 		if (this.size() == 0)
-			return Constants.INT_NULL;
-		int min = Integer.MAX_VALUE, v = Constants.INT_NULL;
+			return new AbstractObject2ObjectMap.BasicEntry<>(Label.emptyLabel, new BasicEntry<>(ALabel.emptyLabel, Constants.INT_NULL));
+		int min = Integer.MAX_VALUE;
+		int v = min;
+		Entry<Label> vEntry = null;
+		ALabel aMin = ALabel.emptyLabel;
+		Label lMin = Label.emptyLabel;
 		for (final ALabel alabel : this.keySet()) {
 			final LabeledIntTreeMap map1 = this.get(alabel);
-			if ((map1 != null) && ((v = map1.getMinValue()) != Constants.INT_NULL)) {
+			if ((map1 != null) && ((v = (vEntry = map1.getMinLabeledValue()).getIntValue()) != Constants.INT_NULL)) {
 				if (min > v) {
 					min = v;
+					aMin = alabel;
+					lMin = vEntry.getKey();
 				}
 			}
 		}
-		return min;
+		return new AbstractObject2ObjectMap.BasicEntry<>(lMin, new BasicEntry<>(aMin, min));
 	}
 
 	/**
@@ -351,18 +497,24 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		return map1.get(l);
 	}
 
-	/**
-	 * @param alabel
-	 * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
-	 */
-	public LabeledIntTreeMap get(final ALabel alabel) {
-		return this.map.get(alabel);
-	}
-
 	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return this.map.hashCode();
+	}
+
+	/**
+	 * @return a read-only view of this.
+	 */
+	public LabeledALabelIntTreeMapView unmodifiable() {
+		return new LabeledALabelIntTreeMapView(this);
+	}
+
+	/**
+	 * @return true if the map does not contain any labeled value.
+	 */
+	public final boolean isEmpty() {
+		return this.size() == 0;
 	}
 
 	/**
@@ -383,42 +535,14 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param p a {@link java.lang.String} object.
-	 * @param i a int.
+	 * @param l the {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p the {@link java.lang.String} object.
+	 * @param i the value to merge.
 	 * @return see {@link #mergeTriple(Label, ALabel, int, boolean)}
 	 * @see #mergeTriple(Label, ALabel, int, boolean)
 	 */
 	public boolean mergeTriple(final Label l, final ALabel p, final int i) {
 		return this.mergeTriple(l, p, i, false);
-	}
-
-	/**
-	 * @param newLabel
-	 * @param newAlabel
-	 * @param newValue
-	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
-	 *         If returns false, then the adding of the value to the map would modify the map.
-	 */
-	public boolean alreadyRepresents(final Label newLabel, final ALabel newAlabel, final int newValue) {
-		int valuePresented = getValue(newLabel, newAlabel);
-		if (valuePresented > newValue)
-			return false;// the newValue would simplify the map.
-		if (valuePresented != Constants.INT_NULL && valuePresented < newValue)
-			return true;
-		/**
-		 * Check if there is already a value in the map that represents the new value.
-		 */
-		for (ALabel otherALabel : this.keySet()) {
-			if (newAlabel.contains(otherALabel)) {
-				LabeledIntTreeMap labeledValuesOfOtherALabel = this.get(otherALabel);
-				if (labeledValuesOfOtherALabel.alreadyRepresents(newLabel, newValue)) {
-					// a smaller conjuncted upper case value map already contains the input value
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -436,43 +560,53 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 */
 	public boolean mergeTriple(final Label newLabel, final ALabel newAlabel, final int newValue, final boolean force) {
 
-		if (this.alreadyRepresents(newLabel, newAlabel, newValue))
+		if (!force && this.alreadyRepresents(newLabel, newAlabel, newValue))
 			return false;
-		int newAlabelSize;
+		int prioriNewAlabelMapSize, newAlabelSize = newAlabel.size();
 		LabeledIntTreeMap newAlabelMap = this.map.get(newAlabel);
 		if (newAlabelMap == null) {
 			newAlabelMap = new LabeledIntTreeMap();
 			this.map.put(ALabel.clone(newAlabel), newAlabelMap);
-			newAlabelSize = 0;
+			prioriNewAlabelMapSize = 0;
 		} else {
-			newAlabelSize = newAlabelMap.size();
+			prioriNewAlabelMapSize = newAlabelMap.size();
 		}
-		boolean added = ((force) ? newAlabelMap.putForcibly(newLabel, newValue) != Constants.INT_NULL : newAlabelMap.put(newLabel, newValue));
 
-		boolean newAlabelMapSameSize = newAlabelSize == newAlabelMap.size();
-		
+		boolean added;
+		if (force) {
+			newAlabelMap.putForcibly(newLabel, newValue);
+			added = true;
+		} else {
+			added = newAlabelMap.put(newLabel, newValue);
+		}
+
+		// update the count
+		boolean newAlabelModifiedTheAlreadyPresentMap = prioriNewAlabelMapSize == newAlabelMap.size();
+		this.count += newAlabelMap.size() - prioriNewAlabelMapSize;
+
+		if (force)
+			return added;
 		/**
-		 * The input a-labeled value must be insert!
 		 * 2017-10-31
 		 * Algorithm removes all a-labeled values that will become redundant after the insertion of the input a-labeled value.
+		 * The a-label removed contain newALabel strictly.
 		 * I verified that following optimization reduces global computation time.
 		 */
 		ObjectSet<Entry<Label>> newAlabelEntrySet = newAlabelMap.entrySet();
-		LabeledIntTreeMap labeledValues;
+		LabeledIntTreeMap otherLabelValueMap;
 		for (ALabel otherALabel : this.keySet()) {
-			if (otherALabel.size() < newAlabelSize || !otherALabel.contains(newAlabel)) {
+			if (otherALabel.equals(newAlabel) || otherALabel.size() < newAlabelSize || !otherALabel.contains(newAlabel)) {
 				continue;
 			}
-			labeledValues = this.get(otherALabel);
-			if (labeledValues== newAlabelMap)
-				continue;
-			
+			otherLabelValueMap = this.get(otherALabel);
+
 			// Check only a-labels that contain newALabel strictly.
-			for (Object2IntMap.Entry<Label> entry : this.get(otherALabel).entrySet()) {
+			for (Object2IntMap.Entry<Label> entry : otherLabelValueMap.entrySet()) {// entrySet read-only
 				Label otherLabel = entry.getKey();
 				int otherValue = entry.getIntValue();
-			
-				if (newAlabelMapSameSize) {
+
+				if (newAlabelModifiedTheAlreadyPresentMap) {
+					// it is necessary to check all values in the newAlabelMap
 					for (Object2IntMap.Entry<Label> inputEntry : newAlabelEntrySet) {
 						Label inputLabel = inputEntry.getKey();
 						int inputValue = inputEntry.getIntValue();
@@ -488,30 +622,6 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			}
 		}
 		return added;
-	}
-
-	/**
-	 * Put the triple <code>(p,l,i)</code> into the map. If the triple is already present, it is overwritten.
-	 *
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param p a {@link java.lang.String} object.
-	 * @param i the new value to add.
-	 * @return true if the valued has been added.
-	 */
-	public boolean putTriple(final Label l, final ALabel p, final int i) {
-		return this.mergeTriple(l, p, i, false);
-	}
-
-	/**
-	 * Put a map associate to key alabel.
-	 * Possible previous map will be replaced.
-	 * 
-	 * @param alabel
-	 * @param labeledValueMap
-	 * @return the old map if one was associated to alabel, null otherwise
-	 */
-	public LabeledIntTreeMap put(ALabel alabel, LabeledIntMap labeledValueMap) {
-		return this.map.put(alabel, (LabeledIntTreeMap) labeledValueMap);
 	}
 
 	/**
@@ -545,6 +655,36 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * Put a map associate to key alabel.
+	 * Possible previous map will be replaced.
+	 * 
+	 * @param alabel
+	 * @param labeledValueMap
+	 * @return the old map if one was associated to alabel, null otherwise
+	 */
+	public LabeledIntTreeMap put(ALabel alabel, LabeledIntMap labeledValueMap) {
+
+		LabeledIntTreeMap oldMap = this.map.get(alabel);
+		if (oldMap != null) {
+			this.count -= oldMap.size();
+		}
+		this.count += labeledValueMap.size();
+		return this.map.put(alabel, (LabeledIntTreeMap) labeledValueMap);
+	}
+
+	/**
+	 * Put the triple <code>(p,l,i)</code> into the map. If the triple is already present, it is overwritten.
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param p a {@link java.lang.String} object.
+	 * @param i the new value to add.
+	 * @return true if the valued has been added.
+	 */
+	public boolean putTriple(final Label l, final ALabel p, final int i) {
+		return this.mergeTriple(l, p, i, false);
+	}
+
+	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @param p a {@link java.lang.String} object.
 	 * @return the old value if it exists, null otherwise.
@@ -556,6 +696,9 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		if (map1 == null)
 			return Constants.INT_NULL;
 		int old = map1.remove(l);
+		if (old != Constants.INT_NULL) {
+			this.count--;
+		}
 		if (map1.size() == 0) {
 			this.map.remove(p);// it is necessary for making equals working.
 		}
@@ -565,38 +708,13 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/**
 	 * @return the number of elements of the map.
 	 */
-	public int size() {
-		int n = 0;
-		for (final LabeledIntTreeMap map1 : this.map.values()) {
-			n += map1.size();
-		}
-		return n;
-	}
-
-	/**
-	 * @return true if the map does not contain any labeled value.
-	 */
-	public boolean isEmpty() {
-		return this.size() == 0;
-	}
-
-	/**
-	 * @param label
-	 * @param value
-	 * @param nodeName this name is printed as it is. This method is necessary for saving the values of the map in a file.
-	 * @return the canonical representation of the triple (as stated in ICAPS/ICAART papers), i.e.
-	 *         {@link Constants#OPEN_PAIR}Alabel, value, label{@link Constants#CLOSE_PAIR}
-	 */
-	static final public String entryAsString(Label label, int value, ALabel nodeName) {
-		StringBuffer s = new StringBuffer();
-		s.append(Constants.OPEN_PAIR);
-		s.append(nodeName);
-		s.append(", ");
-		s.append(Constants.formatInt(value));
-		s.append(", ");
-		s.append(label);
-		s.append(Constants.CLOSE_PAIR);
-		return s.toString();
+	public final int size() {
+		return this.count;
+		// int n = 0;
+		// for (final LabeledIntTreeMap map1 : this.map.values()) {
+		// n += map1.size();
+		// }
+		// return n;
 	}
 
 	/**

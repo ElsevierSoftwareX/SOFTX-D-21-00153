@@ -43,6 +43,45 @@ public interface LabeledIntMap {
 	};
 
 	/**
+	 * A read-only view of an object
+	 * 
+	 * @author posenato
+	 */
+	public interface LabeledIntMapView extends LabeledIntMap {
+
+		@Override
+		default public void clear() {
+			return;
+		}
+
+		/**
+		 * Object Read-only. It does nothing.
+		 */
+		@Override
+		default public boolean put(Label l, int i) {
+			return false;
+		}
+
+		@Override
+		default public void putAll(LabeledIntMap inputMap) {
+			return;
+		}
+
+		@Override
+		default public int remove(Label l) {
+			return Constants.INT_NULL;
+		}
+	}
+
+	/**
+	 * @param newLabel
+	 * @param newValue
+	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
+	 *         If returns false, then the adding of the value to the map would modify the map.
+	 */
+	public boolean alreadyRepresents(Label newLabel, int newValue);
+
+	/**
 	 * Remove all entries of the map.
 	 *
 	 * @see Map#clear()
@@ -50,44 +89,45 @@ public interface LabeledIntMap {
 	public void clear();
 
 	/**
-	 * Public method to enable a Factory class.
+	 * Factory
 	 * 
 	 * @return an object of type LabeledIntMap.
 	 */
-	public LabeledIntMap createLabeledIntMap();
+	public LabeledIntMap newInstance();
 
 	/**
-	 * Public method to enable a Factory class. *
+	 * Factory
 	 * 
 	 * @param lim an object to clone.
 	 * @return an object of type LabeledIntMap.
 	 */
-	public LabeledIntMap createLabeledIntMap(LabeledIntMap lim);
+	public LabeledIntMap newInstance(LabeledIntMap lim);
 
 	/**
-	 * It has the same specification of {@link java.util.Map#entrySet()}.
+	 * The set of all entries of the map. The set can be a view of the map,
+	 * so any modification of the map can be reflected on the returned entrySet.<br>
+	 * In other word, don't modify the map during the use of this returned set.
 	 * 
 	 * @see java.util.Map#entrySet()
 	 * @see ObjectSet
 	 * @see it.unimi.dsi.fastutil.objects.Object2IntMap.Entry
-	 * @return a set representation of this map.
+	 * @return The set of all entries of the map.
 	 */
 	public ObjectSet<Entry<Label>> entrySet();
 
+
 	/**
-	 * It has the same specification of {@link java.util.Map#entrySet()}.
-	 * <p>
-	 * It accepts setToReuse in order to reuse it (it is an attempt to save memory because on March, 01 2016 I verified that with some instances there occurs
-	 * "GC overhead limit exceeded").
+	 * The set of all entries of the map. The set can be a view of the map,
+	 * so any modification of the map can be reflected on the returned entrySet().<br>
+	 * In other word, don't modify the map during the use of this returned set.
 	 * 
 	 * @param setToReuse
 	 * @see java.util.Map#entrySet()
-	 * @see ObjectSet
+	 * @see ObjectSet an containter for the returned set
 	 * @see it.unimi.dsi.fastutil.objects.Object2IntMap.Entry
-	 * @return a set representation of this map.
+	 * @return The set of all entries of the map.
 	 */
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse);
-
 
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
@@ -138,21 +178,6 @@ public interface LabeledIntMap {
 		return (max == Constants.INT_NEG_INFINITE) ? Constants.INT_NULL : max;
 	}
 
-	/**
-	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
-	 */
-	default public int getMinValue() {
-		if (this.size() == 0)
-			return Constants.INT_NULL;
-		int min = Constants.INT_POS_INFINITE;
-
-		for (int value : this.values()) {
-			if (min > value)
-				min = value;
-		}
-		return min;
-	}
-
 
 	/**
 	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
@@ -170,6 +195,21 @@ public interface LabeledIntMap {
 			}
 		}
 		return new AbstractObject2IntMap.BasicEntry<>(label, min);
+	}
+
+	/**
+	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 */
+	default public int getMinValue() {
+		if (this.size() == 0)
+			return Constants.INT_NULL;
+		int min = Constants.INT_POS_INFINITE;
+
+		for (int value : this.values()) {
+			if (min > value)
+				min = value;
+		}
+		return min;
 	}
 
 	/**
@@ -220,35 +260,50 @@ public interface LabeledIntMap {
 		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
 	}
 
+	
 	/**
 	 * Returns the minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
 	 *
 	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
 	 * @return minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
 	 */
-	public int getMinValueSubsumedBy(final Label l);
-
-	
-	/**
-	 * @param newLabel
-	 * @param newValue
-	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
-	 *         If returns false, then the adding of the value to the map would modify the map.
-	 */
-	public boolean alreadyRepresents(Label newLabel, int newValue);
+	default public int getMinValueSubsumedBy(final Label l) {
+		if (l == null)
+			return Constants.INT_NULL;
+		int min = this.get(l);
+		if (min == Constants.INT_NULL) {
+			// the label does not exits, try all consistent labels
+			min = Constants.INT_POS_INFINITE;
+			int v1;
+			Label l1 = null;
+			for (final Entry<Label> e : this.entrySet()) {
+				l1 = e.getKey();
+				if (l.subsumes(l1)) {
+					v1 = e.getIntValue();
+					if (min > v1) {
+						min = v1;
+					}
+				}
+			}
+		}
+		return (min == Constants.INT_POS_INFINITE) ? Constants.INT_NULL : min;
+	}
 		
 	/**
-	 * @return the set view of all labels in the map.
+	 * @return true if the map has no elements.
+	 */
+	public boolean isEmpty();
+
+	/**
+	 * A a copy of all labels in the map. The set must not be connected with the map.
+	 * 
+	 * @return a copy of all labels in the map.
 	 */
 	public ObjectSet<Label> keySet();
 
 	/**
-	 * <p>
-	 * It accepts setToReuse in order to reuse it (it is an attempt to save memory because on March, 01 2016 I verified that with some instances there occurs
-	 * "GC overhead limit exceeded").
-	 * 
-	 * @param setToReuse
-	 * @return the set view of all labels in the map.
+	 * @param setToReuse a set to be reused for filling with the copy of labels
+	 * @return a copy of all labels in the map. The set must not be connected with the map.
 	 */
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse);
 
@@ -299,5 +354,10 @@ public interface LabeledIntMap {
 	 * @return the set of all integer present in the map as an ordered list.
 	 */
 	public IntSet values();
+
+	/**
+	 * @return a read-only view of this.
+	 */
+	public LabeledIntMapView unmodifiable();
 
 }

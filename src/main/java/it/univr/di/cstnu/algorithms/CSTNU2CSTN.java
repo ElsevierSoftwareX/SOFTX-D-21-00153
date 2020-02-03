@@ -13,17 +13,16 @@ import org.xml.sax.SAXException;
 
 import it.unimi.dsi.fastutil.chars.CharSet;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
-import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdge.ConstraintType;
-import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.Edge.ConstraintType;
+import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
+import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.cstnu.graph.TNGraphMLReader;
+import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
-import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 import it.univr.di.labeledvalue.Literal;
 
@@ -39,7 +38,6 @@ public class CSTNU2CSTN extends CSTNU {
 	 * logger
 	 */
 	static Logger LOG1 = Logger.getLogger(CSTNU2CSTN.class.getName());
-
 	/**
 	 * Version of the class
 	 */
@@ -50,33 +48,79 @@ public class CSTNU2CSTN extends CSTNU {
 	// static final String VERSIONandDATE = "Version 1.2 - December, 12 2017";
 	// static final String VERSIONandDATE = "Version 1.3 - December, 23 2018";// tweaking the transformation
 	static final String VERSIONandDATE = "Version 1.4 - January, 21 2019";// fixed an error on timeOut
+
 	/**
-	 * Default labeledIntValueMap
+	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws SAXException
+	 * @throws ParserConfigurationException
+	 * @throws IOException
 	 */
-	static final Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
+	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		LOG.finest("Start...");
+		final CSTNU2CSTN cstnu2cstn = new CSTNU2CSTN();
+
+		if (!cstnu2cstn.manageParameters(args))
+			return;
+		LOG.finest("Parameters ok!");
+
+		LOG.finest("Loading tNGraph...");
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
+		cstnu2cstn.setG(graphMLReader.readGraph());
+		LOG.finest("TNGraph loaded!");
+
+		LOG.finest("DC Checking...");
+		CSTNUCheckStatus status;
+		try {
+			status = cstnu2cstn.dynamicControllabilityCheck();
+		} catch (final WellDefinitionException e) {
+			System.out.print("An error has been occured during the checking: " + e.getMessage());
+			return;
+		}
+		if (status.finished) {
+			System.out.println("Checking finished!");
+			if (status.consistency) {
+				System.out.println("The given cstnu is Dynamic controllable!");
+			} else {
+				System.out.println("The given cstnu is NOT DC!");
+			}
+			System.out.println("Details: " + status);
+		} else {
+			System.out.println("Checking has not been finished!");
+			System.out.println("Details: " + status);
+		}
+
+		if (cstnu2cstn.fOutput != null) {
+			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
+			try {
+				graphWriter.save(cstnu2cstn.getG(), new PrintWriter(cstnu2cstn.output));
+			} catch (final IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * @param graph
+	 */
+	public CSTNU2CSTN(TNGraph<CSTNUEdge> graph) {
+		super(graph);
+	}
+
+	/**
+	 * Constructor for CSTNU
+	 * 
+	 * @param graph TNGraph to check
+	 * @param givenTimeOut timeout for the check
+	 */
+	public CSTNU2CSTN(TNGraph<CSTNUEdge> graph, int givenTimeOut) {
+		super(graph, givenTimeOut);
+	}
 
 	/**
 	 * Constructor for CSTNU2CSTN.
 	 */
 	CSTNU2CSTN() {
 		super();
-	}
-
-	/**
-	 * @param g
-	 */
-	public CSTNU2CSTN(LabeledIntGraph g) {
-		super(g);
-	}
-
-	/**
-	 * Constructor for CSTNU
-	 * 
-	 * @param g graph to check
-	 * @param timeOut timeout for the check
-	 */
-	public CSTNU2CSTN(LabeledIntGraph g, int timeOut) {
-		super(g, timeOut);
 	}
 
 	/**
@@ -94,14 +138,14 @@ public class CSTNU2CSTN extends CSTNU {
 
 		initAndCheck();
 
-		LabeledIntGraph nextGraph = new LabeledIntGraph(this.g, labeledIntValueMap);
-		nextGraph.setName("Next graph");
+		TNGraph<CSTNUEdge> nextGraph = new TNGraph<>(this.g, this.g.getEdgeImplClass());
+		nextGraph.setName("Next tNGraph");
 		CSTNUCheckStatus status = new CSTNUCheckStatus();
 
 		Instant startInstant = Instant.now();
 
 		LOG1.info("Conversion to the corresponding CSTN instance...");
-		LabeledIntGraph cstnGraph = transform();
+		TNGraph<CSTNEdge> cstnGraph = transform();
 		LOG1.info("Conversion to the corresponding CSTN instance done.");
 
 		LOG1.info("CSTN DC-checking...");
@@ -149,8 +193,9 @@ public class CSTNU2CSTN extends CSTNU {
 	 * 
 	 * @return g represented as a CSTN
 	 */
-	LabeledIntGraph transform() {
-		LabeledIntGraph cstnGraph = new LabeledIntGraph(this.g, labeledIntValueMap);
+	TNGraph<CSTNEdge> transform() {
+		TNGraph<CSTNEdge> cstnGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS);
+		cstnGraph.copy(cstnGraph.getClass().cast(this.g));
 
 		int nOfContingents = this.g.getContingentCount();
 		if (nOfContingents == 0) {
@@ -193,7 +238,7 @@ public class CSTNU2CSTN extends CSTNU {
 		// Clone all nodes
 		LabeledNode newV;
 		for (final LabeledNode v : this.g.getVertices()) {
-			newV = new LabeledNode(v);
+			newV = this.g.getNodeFactory().get(v);
 			cstnGraph.addVertex(newV);
 			if (v.equalsByName(this.Z)) {
 				cstnGraph.setZ(newV);
@@ -202,11 +247,11 @@ public class CSTNU2CSTN extends CSTNU {
 		}
 
 		// clone all edges, transforming the contingent ones
-		LabeledIntEdgePluggable newE;
-		LabeledIntEdge eInverted;
+		CSTNEdge newE;
+		CSTNUEdge eInverted;
 		LabeledLowerCaseValue lowerCaseValueTuple;
 		int firstPropAvailable = 0;
-		for (final LabeledIntEdge e : this.g.getEdges()) {
+		for (final CSTNUEdge e : this.g.getEdges()) {
 			LabeledNode sInG = this.g.getSource(e);
 			LabeledNode dInG = this.g.getDest(e);
 			if (!e.isContingentEdge()) {
@@ -234,13 +279,13 @@ public class CSTNU2CSTN extends CSTNU {
 			}
 
 			int lowerCaseValue = lowerCaseValueTuple.getValue();
-			int upperCaseValue = -eInverted.getMinUpperCaseValue();
+			int upperCaseValue = -eInverted.getMinUpperCaseValue().getValue().getIntValue();
 
 			if (lowerCaseValue == Constants.INT_NULL || upperCaseValue == Constants.INT_NULL) {
 				throw new IllegalStateException("Something is wrong with the two contingent edges " + e + " and " + eInverted);
 			}
 			// new observation time point K
-			LabeledNode newK = new LabeledNode(availableProposition[firstPropAvailable] + "?", availableProposition[firstPropAvailable++]);
+			LabeledNode newK = this.g.getNodeFactory().get(availableProposition[firstPropAvailable] + "?", availableProposition[firstPropAvailable++]);
 			// newK.setLabel(cstn.getNode(dInG.getName()).getLabel()); we consider only streamlined CSTN
 			newK.setX(sInG.getX() + 10);
 			newK.setY(sInG.getY());
@@ -297,56 +342,6 @@ public class CSTNU2CSTN extends CSTNU {
 			}
 		}
 		return cstnGraph;
-	}
-
-	/**
-	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 */
-	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
-		LOG.finest("Start...");
-		final CSTNU2CSTN cstnu2cstn = new CSTNU2CSTN();
-
-		if (!cstnu2cstn.manageParameters(args))
-			return;
-		LOG.finest("Parameters ok!");
-
-		LOG.finest("Loading graph...");
-		CSTNUGraphMLReader graphMLReader = new CSTNUGraphMLReader(cstnu2cstn.fInput, labeledIntValueMap);
-		cstnu2cstn.setG(graphMLReader.readGraph());
-		LOG.finest("LabeledIntGraph loaded!");
-
-		LOG.finest("DC Checking...");
-		CSTNUCheckStatus status;
-		try {
-			status = cstnu2cstn.dynamicControllabilityCheck();
-		} catch (final WellDefinitionException e) {
-			System.out.print("An error has been occured during the checking: " + e.getMessage());
-			return;
-		}
-		if (status.finished) {
-			System.out.println("Checking finished!");
-			if (status.consistency) {
-				System.out.println("The given cstnu is Dynamic controllable!");
-			} else {
-				System.out.println("The given cstnu is NOT DC!");
-			}
-			System.out.println("Details: " + status);
-		} else {
-			System.out.println("Checking has not been finished!");
-			System.out.println("Details: " + status);
-		}
-
-		if (cstnu2cstn.fOutput != null) {
-			final CSTNUGraphMLWriter graphWriter = new CSTNUGraphMLWriter(null);
-			try {
-				graphWriter.save(cstnu2cstn.getG(), new PrintWriter(cstnu2cstn.output));
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
-		}
 	}
 
 }

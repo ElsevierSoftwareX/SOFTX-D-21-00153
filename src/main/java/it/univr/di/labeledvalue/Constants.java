@@ -16,6 +16,16 @@ public final class Constants implements Serializable {
 	public static final String CLOSE_PAIR = ")";// '⟩';
 
 	/**
+	 * A tupla closing char
+	 */
+	public static final String CLOSE_TUPLE = "❯";
+
+	/**
+	 * A tupla opening char
+	 */
+	public static final String OPEN_TUPLE = "❮";
+
+	/**
 	 * Char representing empty label: ⊡.
 	 */
 	public static final char EMPTY_LABEL = '\u22A1';
@@ -163,5 +173,11 @@ public final class Constants implements Serializable {
 		if ((sum >= Constants.INT_POS_INFINITE) || (sum <= Constants.INT_NEG_INFINITE))
 			throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
 		return (int) sum;
+	}
+
+	/**
+	 * Prevents instantiation
+	 */
+	private Constants() {
 	}
 }

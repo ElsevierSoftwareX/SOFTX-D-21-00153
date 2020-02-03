@@ -1,6 +1,40 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v2.10
+------------
+	date: 2020-02-02
+	
+	CSTN class restored to a previous algorithms.
+	Removed the possibility to check without using unknown literals.
+	This version considers the new rule and algorithm names published in a work presented at ICAPS 2020. 
+	CSTN class implements two DC checking algorithms. With option --limitedToZ, the algorithm is the one presented at IJCAI18 (algorithm HR_18).
+	Without --limitedToZ, the algorithm is the one presented at ICAPS19 (algorithm HR_19). This last version is not efficient as IJCAI18 one.
+	For a very efficient version, consider CSTNPotential class (reintroduced but in a new form) that makes DC checking assuming IR semantics and node 
+	without labels (algorithm HR_20). 
+	CSTNPotential class implements the new DC checking algorithm based on single-sink shortest paths and potential R0 and potential R3 rules.
+	For all objects containing a labeled values field, the default implementation class is LabeledIntTreeMap. For changing this default class,
+	modify the field DEFAULT_LABELEDINTMAP_CLASS of LabeledIntMapSupplier and recompile sources.
+	CSTNPSU class allows the representation and the verification of temporal constraints containing guarded links. The DC checking algorithm is sound but not complete.
+	Moreover, the guarded link bounds are not guaranteed to be shrunk in the right way.
+
+v2.00
+------------
+	date: 2019-11-07
+	
+	CSTN class implements 9Rule DC algorithm. Such algorithm consists in 3 rules (LP, R0, and R3*) for generating also -∞ value and 6 rules for
+	managing -∞ values that are stored as potential values in nodes.
+	Added CSTNSPFA class that implements the DC checking algorithm as single-sink BellmanFord one. Therefore, only node potential values are generated.
+	This class uses only 3 rules.    	
+	
+v1.26.vassar
+------------
+	date: 2019-10-21
+
+	Rewritten many classes for representing efficiently edges and graphs for STN networks. 
+	Removed class CSTNPotential (last svn-version 296).
+	Added class STN & companions for some STN specific algorithms.
+	
 v1.26.0
 -------
 	date:	2019-03-23
