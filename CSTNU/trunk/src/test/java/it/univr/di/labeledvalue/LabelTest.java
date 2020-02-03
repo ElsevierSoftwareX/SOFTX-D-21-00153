@@ -604,7 +604,7 @@ public class LabelTest {
 				+ ((endTime - startTime) * msNorm));
 	}
 
-	@SuppressWarnings({ "javadoc", "static-method" })
+	@SuppressWarnings({ "static-method" })
 	public final void longTest() {
 		System.out.println("-2: " + Long.toBinaryString(1 << 63));
 		System.out.println("0: " + Long.toBinaryString(0));
@@ -616,7 +616,7 @@ public class LabelTest {
 		System.out.println(Long.compareUnsigned(-1, 1 << 60));
 	}
 
-	@SuppressWarnings({ "javadoc", "static-method" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void comparatorOrder() {
 		ObjectSortedSet<Label> order = new ObjectRBTreeSet<>();

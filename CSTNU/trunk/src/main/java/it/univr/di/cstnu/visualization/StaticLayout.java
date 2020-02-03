@@ -32,7 +32,8 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/**
 	 * Version
 	 */
-	static final public String VERSIONandDATE = StaticLayout.class.getName()+ ". Version  1.0 - October, 20 2017";
+	// static final public String VERSIONandDATE = "1.0 - October, 20 2017";
+	static final public String VERSIONandDATE = "1.1, June, 9 2019";// Refactoring Edge
 
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
@@ -48,20 +49,20 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/**
 	 * Creates an instance for the specified graph and default size; vertex locations are determined by {@link #positionInitializer}.
 	 *
-	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param graph1 a {@link edu.uci.ics.jung.graph.Graph} object.
 	 */
-	public StaticLayout(final Graph<LabeledNode, E> graph) {
-		super(graph, positionInitializer);
+	public StaticLayout(final Graph<LabeledNode, E> graph1) {
+		super(graph1, positionInitializer);
 	}
 
 	/**
 	 * Creates an instance for the specified graph and size.
 	 *
-	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
-	 * @param size a {@link java.awt.Dimension} object.
+	 * @param graph1 a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param size1 a {@link java.awt.Dimension} object.
 	 */
-	public StaticLayout(final Graph<LabeledNode, E> graph, final Dimension size) {
-		super(graph, positionInitializer, size);
+	public StaticLayout(final Graph<LabeledNode, E> graph1, final Dimension size1) {
+		super(graph1, positionInitializer, size1);
 	}
 
 	/**

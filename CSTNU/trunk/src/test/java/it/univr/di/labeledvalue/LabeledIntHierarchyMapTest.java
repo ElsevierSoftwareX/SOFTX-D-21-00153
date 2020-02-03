@@ -141,13 +141,13 @@ public class LabeledIntHierarchyMapTest {
 		}
 
 		@Override
-		public LabeledIntMap createLabeledIntMap() {
+		public LabeledIntMap newInstance() {
 			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
-		public LabeledIntMap createLabeledIntMap(LabeledIntMap lim) {
+		public LabeledIntMap newInstance(LabeledIntMap lim) {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -181,10 +181,21 @@ public class LabeledIntHierarchyMapTest {
 			// TODO Auto-generated method stub
 			return false;
 		}
+
+		@Override
+		public boolean isEmpty() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public LabeledIntMapView unmodifiable() {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 
-	@SuppressWarnings("javadoc")
-	LabeledIntMapFactory<LabeledIntHierarchyMap> factory = new LabeledIntMapFactory<>(LabeledIntHierarchyMap.class);
+	LabeledIntMapSupplier<LabeledIntHierarchyMap> factory = new LabeledIntMapSupplier<>(LabeledIntHierarchyMap.class);
 	/**
 	 * 
 	 */
@@ -494,7 +505,6 @@ public class LabeledIntHierarchyMapTest {
 		assertEquals("{(916, ⊡) (642, a) (459, ¬a¬b) (890, ¬d¬e) (775, ¬ab¬d¬e) (752, ¬a¬c¬de) (373, ¬a¬b¬c¬de) }", this.actual.toString());
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void caso20160109c() {
 		this.actual.clear();
@@ -512,7 +522,6 @@ public class LabeledIntHierarchyMapTest {
 		assertEquals("{(-22, ⊡) }", this.actual.toString());
 	}
 	
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void caso20160109d() {
 		this.actual.clear();
@@ -539,7 +548,6 @@ public class LabeledIntHierarchyMapTest {
 		assertEquals("{(-22, ⊡) }", this.actual.toString());
 	}
 
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void caso20160110() {
 		this.actual.clear();
@@ -557,7 +565,6 @@ public class LabeledIntHierarchyMapTest {
 		assertEquals("{(-189, ¬d¬e) }", this.actual.toString());
 	}
 	
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void caso20160111() {
 		//valori arco 13S_X5E?
@@ -626,9 +633,6 @@ public class LabeledIntHierarchyMapTest {
 	}
 	
 	
-	
-	
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void caso20160112() {
 		//valori arco 34E_5E

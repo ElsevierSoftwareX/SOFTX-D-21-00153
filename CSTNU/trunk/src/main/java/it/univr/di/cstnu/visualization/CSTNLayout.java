@@ -23,8 +23,9 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.labeledvalue.Constants;
 
@@ -33,10 +34,9 @@ import it.univr.di.labeledvalue.Constants;
  * Such class is highly depended on the name conventions used in Atapis Random generator tool.
  * So, it is not general and it cannot be used in other contexts.
  *
- * @param <E> edge type
  * @version $Id: $Id
  */
-public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements IterativeContext {
+public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, CSTNEdge> implements IterativeContext {
 
 	/**
 	 * half of the yShiftA length
@@ -46,7 +46,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	/**
 	 * 
 	 */
-	private static Logger LOG = Logger.getLogger(CSTNLayout.class.getName());
+	private static Logger LOG = Logger.getLogger("CSTNLayout");
 
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
@@ -68,7 +68,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	/**
 	 * Version
 	 */
-	static final public String VERSIONandDATE = CSTNLayout.class.getName() + ". Version  1.0 - October, 20 2017";
+	static final public String VERSIONandDATE = "Version  1.0 - October, 20 2017";
 
 	/**
 	 * half of y shift for next node if not particular condition applies.
@@ -113,25 +113,25 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	/**
 	 * Current layout from which take current node positions.
 	 */
-	private AbstractLayout<LabeledNode, E> currentLayout = null;
+	private AbstractLayout<LabeledNode, ? extends Edge> currentLayout = null;
 
 	/**
 	 * Creates an instance for the specified graph and default size; vertex locations are determined by {@link #positionInitializer}.
 	 *
-	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param graph1 a {@link edu.uci.ics.jung.graph.Graph} object.
 	 */
-	public CSTNLayout(final Graph<LabeledNode, E> graph) {
-		super(graph);
+	public CSTNLayout(final Graph<LabeledNode, CSTNEdge> graph1) {
+		super(graph1);
 	}
 
 	/**
 	 * Creates an instance for the specified graph and size.
 	 *
-	 * @param graph a {@link edu.uci.ics.jung.graph.Graph} object.
-	 * @param size a {@link java.awt.Dimension} object.
+	 * @param graph1 a {@link edu.uci.ics.jung.graph.Graph} object.
+	 * @param size1 a {@link java.awt.Dimension} object.
 	 */
-	public CSTNLayout(final Graph<LabeledNode, E> graph, final Dimension size) {
-		super(graph, positionInitializer, size);
+	public CSTNLayout(final Graph<LabeledNode, CSTNEdge> graph1, final Dimension size1) {
+		super(graph1, positionInitializer, size1);
 	}
 
 	/**
@@ -142,7 +142,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	 * @param nSplits
 	 * @return the set of nodes that have been laid out.
 	 */
-	public ObjectSet<LabeledNode> draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, LabeledIntGraph g, int nSplits) {
+	public ObjectSet<LabeledNode> draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, it.univr.di.cstnu.graph.TNGraph<CSTNEdge> g, int nSplits) {
 		if (firstNode == null)
 			return null;
 		if (Debug.ON) {
@@ -173,12 +173,12 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				}
 			}
 
-			ObjectList<LabeledIntEdge> inEdge;
+			ObjectList<CSTNEdge> inEdge;
 			String nodeName = node.getName();
 			if (nodeName.endsWith("S")) {
 				// Consider only the corresponding node
 				String adjName = nodeName.substring(0, nodeName.length() - 1) + "E";
-				LabeledIntEdge e = g.findEdge(adjName, nodeName);
+				CSTNEdge e = g.findEdge(adjName, nodeName);
 				if (e == null && nodeName.equals("1S"))// in some graph, 1E has been replaced by Ω
 					e = g.findEdge("Ω", nodeName);
 				inEdge = new ObjectArrayList<>();
@@ -194,19 +194,19 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 					}
 				}
 			} else {
-				inEdge = (ObjectList<LabeledIntEdge>) g.getInEdges(node);
+				inEdge = (ObjectList<CSTNEdge>) g.getInEdges(node);
 			}
-			ObjectIterator<LabeledIntEdge> eIte = inEdge.iterator();
+			ObjectIterator<CSTNEdge> eIte = inEdge.iterator();
 			while (eIte.hasNext()) {
-				LabeledIntEdge e = eIte.next();
+				CSTNEdge e = eIte.next();
 				if (e.getMinValue() > 0
-						|| (e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
-						|| (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
+						|| (e.getConstraintType() != Edge.ConstraintType.contingent && e.getConstraintType() != Edge.ConstraintType.normal)
+						|| (e.getConstraintType() == Edge.ConstraintType.contingent && ((CSTNUEdge) e).lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
 			}
 			int i = halfLength - inEdge.size() / 2;
-			for (LabeledIntEdge e : inEdge) {
+			for (CSTNEdge e : inEdge) {
 				LabeledNode adjacent = g.getSource(e);
 				if (marked.contains(adjacent)) {
 					// the adjacent has been already laid out.
@@ -284,7 +284,8 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	 * @param marked
 	 * @param nObs
 	 */
-	private void redraw(LabeledNode firstNode, double nodeX, double nodeY, LabeledIntGraph g, ObjectSet<LabeledNode> marked, int nObs) {
+	private void redraw(LabeledNode firstNode, double nodeX, double nodeY, it.univr.di.cstnu.graph.TNGraph<CSTNEdge> g, ObjectSet<LabeledNode> marked,
+			int nObs) {
 		if (firstNode == null)
 			return;
 		double shiftX = nodeX - firstNode.getX();
@@ -309,31 +310,32 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 				continue;
 			}
 			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINEST)) {
+				if (LOG.isLoggable(Level.FINER)) {
 					LOG.finest("Relocated node " + node.getName() + ": (" + node.getX() + ", " + node.getY() + ")-->" + "(" + (node.getX() + shiftX) + ", "
 							+ (node.getY() + shiftY) + ")");
 				}
 			}
 			node.setX(node.getX() + shiftX);
 			node.setY(node.getY() + shiftY);
-			ObjectList<LabeledIntEdge> inEdge = (ObjectList<LabeledIntEdge>) g.getInEdges(node);
-			ObjectIterator<LabeledIntEdge> eIte = inEdge.iterator();
+			ObjectList<CSTNEdge> inEdge = (ObjectList<CSTNEdge>) g.getInEdges(node);
+			ObjectIterator<CSTNEdge> eIte = inEdge.iterator();
 			while (eIte.hasNext()) {
-				LabeledIntEdge e = eIte.next();
-				if ((e.getConstraintType() != LabeledIntEdge.ConstraintType.contingent && e.getConstraintType() != LabeledIntEdge.ConstraintType.normal)
-						|| e.getMinValue() > 0 || (e.getConstraintType() == LabeledIntEdge.ConstraintType.contingent && e.lowerCaseValueSize() > 0)) {
+				CSTNEdge e = eIte.next();
+				if ((e.getConstraintType() != Edge.ConstraintType.contingent && e.getConstraintType() != Edge.ConstraintType.normal)
+						|| e.getMinValue() > 0 || (e.getConstraintType() == Edge.ConstraintType.contingent && ((CSTNUEdge) e).lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
 			}
 			double minDistanceAdjNode = Constants.INT_POS_INFINITE;
-			for (LabeledIntEdge e : inEdge) {
+			for (CSTNEdge e : inEdge) {
 				LabeledNode adjacent = g.getSource(e);
-				if (!marked.contains(adjacent))
+				if (!marked.contains(adjacent) || markedInternal.contains(adjacent))
 					continue;
 				double distanceAdjNode = (adjacent.getX() + shiftX) - node.getX();
 				if (distanceAdjNode < minDistanceAdjNode)
 					minDistanceAdjNode = distanceAdjNode;
 				queue.enqueue(adjacent);
+				markedInternal.add(adjacent);
 			}
 			if (minDistanceAdjNode > this.xShift)
 				shiftX = shiftX - minDistanceAdjNode + this.xShift;
@@ -372,7 +374,7 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 
 	@Override
 	public void initialize() {
-		LabeledIntGraph g = (LabeledIntGraph) this.graph;
+		it.univr.di.cstnu.graph.TNGraph<CSTNEdge> g = (it.univr.di.cstnu.graph.TNGraph<CSTNEdge>) this.graph;
 		LabeledNode Z = g.getZ();
 		// Approximate number of AND split = (n-6*obs -5)/6;
 		int nAnd = (g.getVertexCount() - 6 * g.getObserverCount() - 5) / 6;
@@ -461,39 +463,39 @@ public class CSTNLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayo
 	}
 
 	/**
-	 * @param initialX the initialX to set
+	 * @param initialX1 the initialX to set
 	 */
-	public void setInitialX(int initialX) {
-		this.initialX = initialX;
+	public void setInitialX(int initialX1) {
+		this.initialX = initialX1;
 	}
 
 	/**
-	 * @param initialY the initialY to set
+	 * @param initialY1 the initialY to set
 	 */
-	public void setInitialY(int initialY) {
-		this.initialY = initialY;
+	public void setInitialY(int initialY1) {
+		this.initialY = initialY1;
 	}
 
 	/**
-	 * @param xShift the xShift to set
+	 * @param xShift1 the xShift to set
 	 */
-	public void setxShift(int xShift) {
-		this.xShift = xShift;
+	public void setxShift(int xShift1) {
+		this.xShift = xShift1;
 	}
 
 	/**
-	 * @param yShift the yShift to set
+	 * @param yShift1 the yShift to set
 	 */
-	public void setyShift(int yShift) {
-		this.yShift = yShift;
-		this.halfYShift = yShift / 2;
+	public void setyShift(int yShift1) {
+		this.yShift = yShift1;
+		this.halfYShift = yShift1 / 2;
 	}
 
 	/**
-	 * @param currentLayout the currentLayout to set
+	 * @param currentLayout1 the currentLayout to set
 	 */
-	public void setCurrentLayout(AbstractLayout<LabeledNode, E> currentLayout) {
-		this.currentLayout = currentLayout;
+	public void setCurrentLayout(AbstractLayout<LabeledNode, ? extends Edge> currentLayout1) {
+		this.currentLayout = currentLayout1;
 	}
 
 	@Override

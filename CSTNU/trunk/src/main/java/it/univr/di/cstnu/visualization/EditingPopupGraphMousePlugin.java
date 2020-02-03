@@ -3,10 +3,8 @@ package it.univr.di.cstnu.visualization;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
-import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import org.freehep.graphicsbase.util.export.ExportDialog;
@@ -15,15 +13,12 @@ import com.google.common.base.Supplier;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.DirectedGraph;
 import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.picking.PickedState;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
+import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
@@ -33,14 +28,15 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @param <V>
  * @param <E>
  */
-public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends LabeledIntEdge> extends edu.uci.ics.jung.visualization.control.EditingPopupGraphMousePlugin<V,E> {
+public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
+		extends edu.uci.ics.jung.visualization.control.EditingPopupGraphMousePlugin<V, E> {
 
 	/**
-	 * @param vertexFactory
-	 * @param edgeFactory
+	 * @param vertexFactory1
+	 * @param edgeFactory1
 	 */
-	public EditingPopupGraphMousePlugin(Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
-		super(vertexFactory,edgeFactory);
+	public EditingPopupGraphMousePlugin(Supplier<V> vertexFactory1, Supplier<E> edgeFactory1) {
+		super(vertexFactory1, edgeFactory1);
 	}
 
 	@Override
@@ -61,35 +57,6 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 
 			JPopupMenu popup = new JPopupMenu();
 			if (vertex != null) {
-				Set<V> picked = pickedVertexState.getPicked();
-				if (picked.size() > 0) {
-					if (graph instanceof UndirectedGraph == false) {
-						JMenu directedMenu = new JMenu("Create Directed Edge");
-						popup.add(directedMenu);
-						for (final V other : picked) {
-							directedMenu.add(new AbstractAction("[" + other + "," + vertex + "]") {
-								@Override
-								public void actionPerformed(ActionEvent a) {
-									graph.addEdge(EditingPopupGraphMousePlugin.this.edgeFactory.get(), other, vertex, EdgeType.DIRECTED);
-									vv.repaint();
-								}
-							});
-						}
-					}
-					if (graph instanceof DirectedGraph == false) {
-						JMenu undirectedMenu = new JMenu("Create Undirected Edge");
-						popup.add(undirectedMenu);
-						for (final V other : picked) {
-							undirectedMenu.add(new AbstractAction("[" + other + "," + vertex + "]") {
-								@Override
-								public void actionPerformed(ActionEvent a) {
-									graph.addEdge(EditingPopupGraphMousePlugin.this.edgeFactory.get(), other, vertex);
-									vv.repaint();
-								}
-							});
-						}
-					}
-				}
 				popup.add(new AbstractAction("Delete Vertex") {
 					@Override
 					public void actionPerformed(ActionEvent a) {
@@ -122,7 +89,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Label
 					public void actionPerformed(ActionEvent a) {
 						ExportDialog export = new ExportDialog("Roberto Posenato");
 						VisualizationImageServer<V, E> vis = new VisualizationImageServer<>(vv.getGraphLayout(), vv.getGraphLayout().getSize());
-						CSTNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, LabeledIntEdge>) vis, false);
+						CSTNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, Edge>) vis, false);
 						export.showExportDialog(vv.getParent(), "Export view as ...", vis, "cstnExported.pdf");
 					}
 				});

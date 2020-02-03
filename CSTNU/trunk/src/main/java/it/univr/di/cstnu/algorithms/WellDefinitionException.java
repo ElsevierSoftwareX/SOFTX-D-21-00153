@@ -15,7 +15,6 @@ public class WellDefinitionException extends Exception {
 	 * @author posenato
 	 *
 	 */
-	@SuppressWarnings("javadoc")
 	public enum Type {
 		LabelInconsistent,
 		LabelNotSubsumes,

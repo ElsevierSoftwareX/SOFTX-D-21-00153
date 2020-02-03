@@ -21,13 +21,13 @@ Introduction
   medical tests for any given patient frequently generate information in real time that can affect which pathway that patient will follow [3].  
   The system must guarantee that any possible execution of the workflow strictly satisfies all specified temporal constraints no matter which test outcomes are observed.  
   A <<Conditional Simple Temporal Network (with Uncertainty) (CSTN(U))>> has been introduced to represent the temporal features of workflows, 
-  and the dynamic controllability property---which captures the temporal <safety> of workflows---has been defined for CSTN(U)s [4][5][6][7][8][9][10][11][12][13][14][15].  
+  and the dynamic controllability property---which captures the temporal <safety> of workflows---has been defined for CSTN(U)s [4][5][6][7][8][9][10][11][12][13][14][15][16].  
 
   <<The goal of this project is to publish a prototype allowing one to design and check the controllability of a CSTN(U) by a graphical editor.>>
 
 Benchmarks
 
-	The directory containing benchmarks used in papers [9][10][11][12][14][15] is {{http://profs.scienze.univr.it/~posenato/software/benchmarks/}}.
+	The directory containing benchmarks used in papers [9][10][11][12][14][15][16] is {{http://profs.scienze.univr.it/~posenato/software/benchmarks/}}.
 	
 Bibliography
 
@@ -88,3 +88,7 @@ Bibliography
   [[15]] L. Hunsberger, R. Posenato, ‘Reducing ε-DC Checking for Conditional Simple Temporal Networks to DC Checking’, 
     in 25th International Symposium on Temporal Representation and Reasoning (TIME 2018), 2018, vol. 120, no. 15, pp. 1–15.
     Available online: {{http://dx.doi.org/10.4230/LIPIcs.TIME.2018.15}}
+    
+  [[16]] L. Hunsberger and R. Posenato, “Faster Dynamic-Consistency Checking for Conditional Simple Temporal Networks”, 
+   in ICAPS 2020: International Conference on Automated Planning and Scheduling (ICAPS 2020), 2020.
+  

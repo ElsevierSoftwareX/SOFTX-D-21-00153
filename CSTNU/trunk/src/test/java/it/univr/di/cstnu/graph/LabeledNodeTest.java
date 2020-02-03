@@ -10,66 +10,60 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet;
 import it.univr.di.labeledvalue.Label;
 
-
 /**
  * @author posenato
- *
  */
 public class LabeledNodeTest {
+
+	static LabeledNodeSupplier nodeFactory = new LabeledNodeSupplier();
 
 	/**
 	 * 
 	 */
 	ALabelAlphabet alphabet;
+
+	/**
+	 * 
+	 */
+	LabeledNode a;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
 	public void setUp() throws Exception {
 		this.alphabet = new ALabelAlphabet();
+		this.a = nodeFactory.get("A");
+		this.a.setLabel(Label.emptyLabel);
 	}
 
-
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.LabeledNode#LabeledNode(java.lang.String)}.
 	 */
-	@SuppressWarnings({ "deprecation", "static-method" })
+	@SuppressWarnings("deprecation")
 	@Test
 	public final void testEquals() {
-		LabeledNode a = new LabeledNode("A");
-		LabeledNode aa = new LabeledNode("A", Label.emptyLabel);
-		
-		assertTrue(a.equalsByName(aa));
-		assertFalse(a.equals(aa));
+		LabeledNode aa = nodeFactory.get("A");
+		aa.setLabel(Label.emptyLabel);
+
+		assertTrue(this.a.equalsByName(aa));
+		assertFalse(this.a.equals(aa));
 	}
-	
+
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.LabeledNode#LabeledNode(java.lang.String)}.
 	 */
 	@Test
-	public final void potentialPut1() { 
-		LabeledNode a = new LabeledNode("A", Label.emptyLabel);
-		
-		ALabel C = new ALabel("C", this.alphabet);
-		ALabel D = new ALabel("D", this.alphabet);
+	public final void potentialPut1() {
+		this.a.putLabeledPotential(Label.parse("b"), -1);
+		this.a.putLabeledPotential(Label.parse("b"), -1);// ignored
+		this.a.putLabeledPotential(Label.parse("a"), -1);
 
-		a.potentialPut(C, Label.parse("b"), -1);
-		a.potentialPut(C.conjunction(D), Label.parse("b"), -1);// ignored
-		a.potentialPut(Label.parse("a"), -1);
+		assertEquals("{b->-1, a->-1}", this.a.getLabeledPotential().entrySet().toString());
 
-		assertEquals("{a->-1}", a.getPotentialEntrySet(ALabel.emptyLabel).toString());
-		assertEquals("{b->-1}", a.getPotentialEntrySet(C).toString());
-
-		a.potentialPut(Label.parse("b"), -1);
-		assertEquals("{a->-1, b->-1}", a.getPotentialEntrySet(ALabel.emptyLabel).toString());
-
-		a.potentialPut(Label.emptyLabel, -1);
-		assertEquals("{⊡->-1}", a.getPotentialEntrySet(ALabel.emptyLabel).toString());
-
+		this.a.putLabeledPotential(Label.parse("¬b"), -1);
+		assertEquals("{⊡->-1}", this.a.getLabeledPotential().entrySet().toString());
 	}
 
 }

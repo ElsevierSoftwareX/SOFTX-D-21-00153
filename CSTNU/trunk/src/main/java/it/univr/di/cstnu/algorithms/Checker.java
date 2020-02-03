@@ -32,25 +32,31 @@ import org.xml.sax.SAXException;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import it.univr.di.cstnu.algorithms.CSTN.CSTNCheckStatus;
-import it.univr.di.cstnu.algorithms.CSTN.DCSemantics;
+import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
+import it.univr.di.cstnu.algorithms.AbstractCSTN.DCSemantics;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
-import it.univr.di.cstnu.graph.CSTNUGraphMLReader;
-import it.univr.di.cstnu.graph.CSTNUGraphMLWriter;
-import it.univr.di.cstnu.graph.LabeledIntEdge;
-import it.univr.di.cstnu.graph.LabeledIntEdgePluggable;
-import it.univr.di.cstnu.graph.LabeledIntEdgeSupplier;
-import it.univr.di.cstnu.graph.LabeledIntGraph;
+import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.CSTNEdgePluggable;
+import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.CSTNUEdgePluggable;
+import it.univr.di.cstnu.graph.Edge;
+import it.univr.di.cstnu.graph.EdgeSupplier;
+import it.univr.di.cstnu.graph.STNEdge;
+import it.univr.di.cstnu.graph.STNEdgeInt;
+import it.univr.di.cstnu.graph.TNGraph;
+import it.univr.di.cstnu.graph.TNGraph.NetworkType;
+import it.univr.di.cstnu.graph.TNGraphMLReader;
+import it.univr.di.cstnu.graph.TNGraphMLWriter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledIntMap;
-import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import net.openhft.affinity.AffinityStrategies;
 import net.openhft.affinity.AffinityThreadFactory;
 
 /**
- * Simple class to determine the average execution time (and std dev) of the CSTN(U) DC checking algorithm on a input set of CSTN(U)s.
- *
+ * Simple class to determine the average execution time (and std dev) of the (C)STN(U) DC checking algorithm on a given set of (C)STN(U)s.
+ * It lacks to check STN network because the class is not present yet (2019-06-13).
+ * 
  * @author posenato
  * @version $Id: $Id
  */
@@ -62,14 +68,14 @@ public class Checker {
 	 * @author posenato
 	 */
 	public static class GlobalStatisticKey implements Comparable<GlobalStatisticKey> {
+		protected int contingents;
 		protected int nodes;
 		protected int propositions;
-		protected int contingents;
 
-		public GlobalStatisticKey(final int nodes1, final int propositions1, final int contingents1) {
-			this.nodes = nodes1;
-			this.propositions = propositions1;
-			this.contingents = contingents1;
+		public GlobalStatisticKey(final int inputNodes, final int inputPropositions, final int inputContingents) {
+			this.nodes = inputNodes;
+			this.propositions = inputPropositions;
+			this.contingents = inputContingents;
 		}
 
 		@Override
@@ -93,16 +99,16 @@ public class Checker {
 			return ((GlobalStatisticKey) o).compareTo(this) == 0;
 		}
 
+		public int getContingent() {
+			return this.contingents;
+		}
+
 		public int getNodes() {
 			return this.nodes;
 		}
 
 		public int getPropositions() {
 			return this.propositions;
-		}
-
-		public int getContingent() {
-			return this.contingents;
 		}
 
 		@Override
@@ -122,14 +128,14 @@ public class Checker {
 		long total;
 
 		/**
-		 * @param startTime1 in milliseconds
-		 * @param total1 number of time to show
-		 * @param current1 number of time to show
+		 * @param inputStartTime in milliseconds
+		 * @param inputTotal number of time to show
+		 * @param inputCurrent number of time to show
 		 */
-		public RunMeter(long startTime1, long total1, long current1) {
-			this.current = current1;
-			this.total = total1;
-			this.startTime = startTime1;
+		public RunMeter(long inputStartTime, long inputTotal, long inputCurrent) {
+			this.current = inputCurrent;
+			this.total = inputTotal;
+			this.startTime = inputStartTime;
 		}
 
 		void printProgress() {
@@ -170,18 +176,19 @@ public class Checker {
 	}
 
 	/**
-	 * For deciding which kind of instances has to be checked.
-	 * 
-	 * @author posenato
-	 */
-	private static enum CstnType {
-		cstn, cstnu
-	}
-
-	/**
 	 * CSV separator
 	 */
 	static final String CSVSep = ";\t";
+
+	/**
+	 * DateFormatter
+	 */
+	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+
+	/**
+	 * Default implementation class for CSTNEdge
+	 */
+	static final Class<? extends CSTNEdge> EDGE_IMPL_CLASS = CSTNEdgePluggable.class;
 
 	/**
 	 * Global header
@@ -196,7 +203,6 @@ public class Checker {
 			+ CSVSep + "averageRuleExecuted"
 			+ CSVSep + "std.Dev."
 			+ CSVSep + "\n";
-
 	/**
 	 * 
 	 */
@@ -209,6 +215,11 @@ public class Checker {
 			+ CSVSep + "%E"
 			+ CSVSep + "%E"
 			+ CSVSep + "\n";
+
+	/**
+	 * class logger
+	 */
+	static final Logger LOG = Logger.getLogger(Checker.class.getName());
 
 	/**
 	 * Output file header
@@ -226,8 +237,10 @@ public class Checker {
 			+ CSVSep + "DC"
 			+ CSVSep + "#R0"
 			+ CSVSep + "#R3"
-			+ CSVSep + "#LNC"
+			+ CSVSep + "#LP"
+			+ CSVSep + "#PotentialUpdate"
 			+ CSVSep;
+
 	/**
 	 * 
 	 */
@@ -265,7 +278,8 @@ public class Checker {
 	static final String OUTPUT_ROW_TIME_STATS = OUTPUT_ROW_TIME
 			+ "%d"// r0
 			+ CSVSep + "%d"// r3
-			+ CSVSep + "%d"// lp;
+			+ CSVSep + "%d"// LNC
+			+ CSVSep + "%d"// PotentialUpdate
 			+ CSVSep;
 
 	/**
@@ -276,21 +290,6 @@ public class Checker {
 			+ CSVSep + "%d"// crossCaseRuleCalls
 			+ CSVSep + "%d"// letterRemovalRuleCalls
 			+ CSVSep;
-
-	/**
-	 * Class for representing edge labeled values.
-	 */
-	final static Class<? extends LabeledIntMap> labeledIntValueMap = LabeledIntTreeMap.class;
-
-	/**
-	 * class logger
-	 */
-	static final Logger LOG = Logger.getLogger("it.univr.di.cstnu.CSTNRunningTime");
-
-	/**
-	 * DateFormatter
-	 */
-	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
 
 	/**
 	 * Version
@@ -306,264 +305,9 @@ public class Checker {
 	// static final String VERSIONandDATE = "2.23, November, 30 2017";// Improved the print of statistics file: std dev is print only when # checks > 1
 	// static final String VERSIONandDATE = "2.24, December, 04 2017";// Added CSTNEpsilon3R
 	// static final String VERSIONandDATE = "2.25, January, 17 2018";// Improved print of statistics.
-	static final String VERSIONandDATE = "2.26, December, 18 2018";// Improved print of statistics adding the total number of applied rules
-
-	/**
-	 * @param tester
-	 * @param cstn
-	 * @param file
-	 * @param executor
-	 */
-	@SuppressWarnings({ "javadoc" })
-	static private CSTNCheckStatus DCChecker(Checker tester, CSTN cstn, LabeledIntGraph graphToCheck, RunMeter runState) {
-		String msg;
-		boolean checkInterrupted = false;
-		LabeledIntGraph g = null;
-		CSTNCheckStatus status = (tester.cstnType == CstnType.cstnu) ? new CSTNUCheckStatus() : new CSTNCheckStatus();
-		SummaryStatistics localSummaryStat = new SummaryStatistics();
-		for (int j = 0; j < tester.nDCRepetition && !checkInterrupted && !status.timeout; j++) {
-			LOG.info("Test " + (j + 1) + "/" + tester.nDCRepetition + " for CSTN " + graphToCheck.getFileName().getName());
-
-			// It is necessary to reset the graph!
-			g = new LabeledIntGraph(graphToCheck, labeledIntValueMap);
-			cstn.setG(g);
-
-			try {
-				status = (tester.cstnType == CstnType.cstnu) ? ((CSTNU) cstn).dynamicControllabilityCheck()
-						: (cstn.dynamicConsistencyCheck());
-			} catch (CancellationException ex) {
-				msg = getNow() + ": Cancellation has occurred. " + graphToCheck.getFileName() + " CSTN(U) is ignored.";
-				System.out.println(msg);
-				LOG.severe(msg);
-				checkInterrupted = true;
-				status.consistency = false;
-				continue;
-			} catch (Exception e) {
-				msg = getNow() + ": a different exception has occurred. " + graphToCheck.getFileName()
-						+ " CSTN(U) is ignored.\nError details: " + e.toString();
-				System.out.println(msg);
-				LOG.severe(msg);
-				checkInterrupted = true;
-				status.consistency = false;
-				continue;
-			}
-			localSummaryStat.addValue(status.executionTimeNS);
-		} // end for checking repetition for a single file
-
-		if (status.timeout || checkInterrupted) {
-			if (status.timeout) {
-				msg = "\n\n" + getNow() + ": Timeout or interrupt occurred. " + graphToCheck.getFileName() + " CSTN(U) is ignored.\n";
-				System.out.println(msg);
-			}
-			return status;
-		}
-
-		msg = getNow() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
-		// System.out.println(msg);
-		LOG.info(msg);
-
-		status.executionTimeNS = (long) localSummaryStat.getMean();
-		status.stdDevExecutionTimeNS = (long) localSummaryStat.getStandardDeviation();
-
-		return status;
-	}
-
-	/**
-	 * @param tester
-	 * @param file
-	 * @param runState
-	 * @param globalExecutionTimeStatisticsMap
-	 * @param globalRuleExecutionStatisticsMap
-	 * @param edgeFactory
-	 * @return true if required task ends successfully, false otherwise.
-	 */
-	static private boolean worker(Checker tester, File file, RunMeter runState,
-			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalExecutionTimeStatisticsMap,
-			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalRuleExecutionStatisticsMap,
-			LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory) {
-		// System.out.println("Analyzing file " + file.getName() + "...");
-		LOG.finer("Loading " + file.getName() + "...");
-		CSTNUGraphMLReader graphMLReader;
-		try {
-			graphMLReader = new CSTNUGraphMLReader(file, labeledIntValueMap);
-		} catch (FileNotFoundException e2) {
-			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
-			LOG.warning(msg);
-			System.out.println(msg);
-			return false;
-		}
-		LabeledIntGraph graphToCheck = null;
-		try {
-			graphToCheck = graphMLReader.readGraph();
-		} catch (IOException | ParserConfigurationException | SAXException e2) {
-			String msg = "File " + file.getName() + " cannot be parsed. Details: " + e2.getMessage() + ".\nIgnored.";
-			LOG.warning(msg);
-			System.out.println(msg);
-			return false;
-		}
-		LOG.finer("...done!");
-		if (graphToCheck == null) {
-			LOG.warning("File " + file.getName() + " does not contain a valid CSTN instance.\nIgnored.");
-			return false;
-		}
-
-		if (tester.cuttingEdgeFactor > 1 || tester.removeValue != Constants.INT_NULL) {
-			if (tester.cuttingEdgeFactor > 1) {
-				LOG.info("Cutting all edge values by a factor " + tester.cuttingEdgeFactor + "...");
-				for (LabeledIntEdge e : graphToCheck.getEdgesArray()) {
-					LabeledIntEdgePluggable e1 = edgeFactory.get(e);
-					for (Entry<Label> entry : e.getLabeledValueSet()) {
-						int v = entry.getIntValue() / tester.cuttingEdgeFactor;
-						e1.mergeLabeledValue(entry.getKey(), v);
-					}
-					((LabeledIntEdgePluggable) e).takeIn(e1);
-				}
-			}
-			if (tester.removeValue != Constants.INT_NULL) {
-				LOG.info("Removing all edge values equal to " + tester.removeValue + "...");
-
-				int value = tester.removeValue;
-				for (LabeledIntEdge e : graphToCheck.getEdgesArray()) {
-					for (Entry<Label> entry : e.getLabeledValueSet()) {
-						if (entry.getIntValue() == value)
-							e.removeLabeledValue(entry.getKey());
-					}
-				}
-			}
-			String suffix = "_cutted";
-			CSTNUGraphMLWriter graphWrite = new CSTNUGraphMLWriter(null);
-			try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + suffix));) {
-				graphWrite.save(graphToCheck, writer);
-			} catch (Exception e) {
-				LOG.warning("File " + file.getAbsolutePath() + suffix + " cannot be written. Details: " + e.getMessage());
-				return false;
-			}
-		}
-
-		// In order to start with well-defined cstn, we preliminary make a check.
-		// Use g because next instructions change the structure of graph.
-		LabeledIntGraph g = new LabeledIntGraph(graphToCheck, labeledIntValueMap);
-
-		// Statistics about min, max values and #edges have to be done before init!
-		int min = 0;
-		int max = 0;
-		for (LabeledIntEdge e : g.getEdgesArray()) {
-			for (Entry<Label> entry : e.getLabeledValueSet()) {
-				int v = entry.getIntValue();
-				if (v > max) {
-					max = v;
-					continue;
-				}
-				if (v < min)
-					min = v;
-			}
-		}
-		int nEdges = g.getEdgeCount();
-
-		final CSTN cstn = makeCSTNInstance(tester, g);
-
-		try {
-			cstn.initAndCheck();
-		} catch (Exception e) {
-			String msg = getNow() + ": " + file.getName()
-					+ " is not a not well-defined instance. Details:" + e.getMessage()
-					+ "\nIgnored.";
-			System.out.println(msg);
-			LOG.severe(msg);
-			return false;
-		}
-
-		String rowToWrite = String.format(OUTPUT_ROW_GRAPH,
-				file.getName(),
-				graphToCheck.getVertexCount(),
-				nEdges,
-				graphToCheck.getObserverCount(),
-				graphToCheck.getContingentCount(),
-				min,
-				max);
-
-		if (tester.noDCCheck) {
-			synchronized (tester.output) {
-				tester.output.println(rowToWrite);
-			}
-			runState.printProgress();
-			return true;
-		}
-
-		GlobalStatisticKey globalStatisticsKey = new GlobalStatisticKey(graphToCheck.getVertexCount(), graphToCheck.getObserverCount(),
-				graphToCheck.getContingentCount());
-		SummaryStatistics globalExecutionTimeStatistics = globalExecutionTimeStatisticsMap.get(globalStatisticsKey);
-		SummaryStatistics globalRuleExecutionStatistics = globalRuleExecutionStatisticsMap.get(globalStatisticsKey);
-		if (globalExecutionTimeStatistics == null) {
-			globalExecutionTimeStatistics = new SummaryStatistics();
-			globalExecutionTimeStatisticsMap.put(globalStatisticsKey, globalExecutionTimeStatistics);
-		}
-		if (globalRuleExecutionStatistics == null) {
-			globalRuleExecutionStatistics = new SummaryStatistics();
-			globalRuleExecutionStatisticsMap.put(globalStatisticsKey, globalRuleExecutionStatistics);
-		}
-
-		String msg = getNow() + ": Determining DC check execution time of " + file.getName()
-				+ " repeating DC check for " + tester.nDCRepetition + " times.";
-		// System.out.println(msg);
-		LOG.info(msg);
-
-		CSTNCheckStatus status = DCChecker(tester, cstn, graphToCheck, runState);
-
-		if (!status.finished) {
-			// time out or generic error
-			rowToWrite += String.format(OUTPUT_ROW_TIME,
-					status.executionTimeNS / 1E9,
-					Double.NaN,
-					getNumberExecutedRules(tester, status),
-					((status.executionTimeNS != Constants.INT_NULL) ? "Timeout of " + tester.timeOut + " seconds." : "Generic error. See log."));
-			synchronized (tester.output) {
-				tester.output.println(rowToWrite);
-			}
-			globalExecutionTimeStatistics.addValue(tester.timeOut);
-			runState.printProgress();
-			return false;
-		}
-
-		Double localAvg = status.executionTimeNS / 1E9;
-		Double localStdDev = status.stdDevExecutionTimeNS / 1E9;
-
-		globalExecutionTimeStatistics.addValue(localAvg);
-
-		LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
-		LOG.info(file.getName() + " is " + status.consistency);
-		LOG.info(file.getName() + " average required time [s]" + localAvg);
-		LOG.info(file.getName() + " std. deviation [s]" + localStdDev);
-
-		int nRules = getNumberExecutedRules(tester, status);
-		globalRuleExecutionStatistics.addValue(nRules);
-
-		rowToWrite += String.format(OUTPUT_ROW_TIME_STATS,
-				localAvg,
-				((tester.nDCRepetition > 1) ? localStdDev : Double.NaN),
-				nRules,
-				((!tester.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"),
-				status.r0calls,
-				status.r3calls,
-				status.labeledValuePropagationCalls);
-		if (tester.cstnType == CstnType.cstnu) {
-			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
-					((CSTNUCheckStatus) status).zEsclamationRuleCalls,
-					((CSTNUCheckStatus) status).lowerCaseRuleCalls,
-					((CSTNUCheckStatus) status).crossCaseRuleCalls,
-					((CSTNUCheckStatus) status).letterRemovalRuleCalls);
-		}
-
-		synchronized (tester.output) {
-			tester.output.println(rowToWrite);
-		}
-		runState.printProgress();
-		return true;
-	}
-
-	private static String getNow() {
-		return dateFormatter.format(new Date());
-	}
+	// static final String VERSIONandDATE = "2.26, December, 18 2018";// Improved print of statistics adding the total number of applied rules
+	// static final String VERSIONandDATE = "2.27, June, 9 2019";// Refactoring Edge
+	static final String VERSIONandDATE = "2.5, November, 09 2019";// Removed all potential counters
 
 	/**
 	 * Allows to check the execution time of DC checking algorithm giving a set of instances.
@@ -590,8 +334,8 @@ public class Checker {
 		LOG.finest("Parameters ok!");
 		if (tester.versionReq)
 			return;
+		// All parameters are set
 
-		final LabeledIntEdgeSupplier<? extends LabeledIntMap> edgeFactory = new LabeledIntEdgeSupplier<>(labeledIntValueMap);
 		/**
 		 * <a id="affinity">AffinityLock allows to lock a CPU to a thread.</a>
 		 * It seems that allows better performance when a CPU-bound task has to be executed!
@@ -648,7 +392,7 @@ public class Checker {
 		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupRuleExecutionStatistics = new Object2ObjectAVLTreeMap<>();
 
 		System.out.println(getNow() + ": #Processors for computation: " + nCPUs);
-		System.out.println(getNow() + ": Instances to check are " + tester.cstnType + " instances.");
+		System.out.println(getNow() + ": Instances to check are " + tester.networkType + " instances.");
 		RunMeter runMeter = new RunMeter(System.currentTimeMillis(), tester.instances.size(), 0);
 		runMeter.printProgress(0);
 
@@ -657,9 +401,9 @@ public class Checker {
 		int nTaskSuccessfullyFinished = 0;
 		for (File file : tester.instances) {
 			if (nCPUs > 0) {
-				future.add(cstnExecutor.submit(() -> worker(tester, file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics, edgeFactory)));
+				future.add(cstnExecutor.submit(() -> tester.worker(file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics)));
 			} else {
-				if (worker(tester, file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics, edgeFactory))
+				if (tester.worker(file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics))
 					nTaskSuccessfullyFinished++;
 			}
 		}
@@ -718,41 +462,19 @@ public class Checker {
 		}
 	}
 
-	private static CSTN makeCSTNInstance(Checker tester, LabeledIntGraph g) {
-		if (tester.cstnType == CstnType.cstnu) {
-			if (tester.potential)
-				return new CSTNUPotential(g, tester.timeOut);
-			if (tester.cstnu2cstn)
-				return new CSTNU2CSTN(g, tester.timeOut);
-			return new CSTNU(g, tester.timeOut, tester.onlyLPQR0QR3OrToZ);
-		}
-		if (tester.cstn2cstn0) {
-			return new CSTN2CSTN0(tester.reactionTime, g, tester.timeOut);
-		}
-		CSTN cstn;
-		switch (tester.dcSemantics) {
-		case ε:
-			if (tester.onlyLPQR0QR3OrToZ) {
-				cstn = (tester.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(tester.reactionTime, g, tester.timeOut)
-						: new CSTNEpsilon3R(tester.reactionTime, g, tester.timeOut);
-			} else {
-				cstn = (tester.woNodeLabels) ? new CSTNEpsilonwoNodeLabels(tester.reactionTime, g, tester.timeOut)
-						: new CSTNEpsilon(tester.reactionTime, g, tester.timeOut);
-			}
-			break;
-		case IR:
-			if (tester.onlyLPQR0QR3OrToZ) {
-				cstn = (tester.woNodeLabels) ? new CSTNIR3RwoNodeLabels(g, tester.timeOut) : new CSTNIR3R(g, tester.timeOut);
-			} else {
-				cstn = (tester.woNodeLabels) ? new CSTNIRwoNodeLabels(g, tester.timeOut) : new CSTNIR(g, tester.timeOut);
-			}
-			break;
-		default:
-			cstn = (tester.woNodeLabels) ? new CSTNwoNodeLabel(g, tester.timeOut) : new CSTN(g, tester.timeOut);
-			break;
-		}
-		return cstn;
+	private static String getNow() {
+		return dateFormatter.format(new Date());
 	}
+
+	/**
+	 * 
+	 */
+	EdgeSupplier<Edge> currentEdgeFactory;
+
+	/**
+	 * Class for representing edge .
+	 */
+	Class<? extends Edge> currentEdgeImplClass;
 
 	/**
 	 * Parameter for asking to DC check epsilon DC reducing to IR DC
@@ -761,22 +483,16 @@ public class Checker {
 	private boolean cstn2cstn0 = false;
 
 	/**
+	 * Which type of CSTN are input files
+	 */
+	@Option(required = true, name = "-type", usage = "Specify if input files contain STN, CSTN or CSTNU instances (use one of such keywords: STN CSTN CSTNU).")
+	private TNGraph.NetworkType networkType = NetworkType.CSTN;
+
+	/**
 	 * Parameter for asking to DC check epsilon DC reducing to IR DC
 	 */
 	@Option(required = false, name = "-cstnu2cstn", usage = "Check the CSTNU DC of the input instance reducing the check to the equivalent streamlined CSTN instance and checking this last one using IR-DC. It is incompatible with -potential option.")
 	private boolean cstnu2cstn = false;
-
-	/**
-	 * Parameter for asking to DC check using potential
-	 */
-	@Option(required = false, name = "-potential", usage = "Check the DC of the input instance using potential DC algorithm (ONLY FOR CSTNU).")
-	private boolean potential = false;
-
-	/**
-	 * Which type of CSTN are input files
-	 */
-	@Option(required = true, name = "-type", usage = "Specify if input files contain CSTN or CSTNU instances.")
-	private CstnType cstnType = CstnType.cstn;
 
 	/**
 	 * Parameter for asking how much to cut all edge values (for studying pseudo-polynomial characteristics)
@@ -789,17 +505,12 @@ public class Checker {
 	 */
 	@Option(required = false, name = "-semantics", usage = "DC semantics. Possible values are: IR, ε, Std. Default is Std.")
 	private DCSemantics dcSemantics = DCSemantics.Std;
+
 	/**
 	 * The input file names. Each file has to contain a CSTN graph in GraphML format.
 	 */
 	@Argument(required = true, index = 0, usage = "Input files. Each input file has to be a CSTN graph in GraphML format.", metaVar = "CSTN_file_names", handler = StringArrayOptionHandler.class)
 	private String[] inputFiles;
-
-	/**
-	 * Output file where to write the determined experimental execution times in CSV format.
-	 */
-	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in CSV format. If file is already present, data will be added.", metaVar = "outputFile")
-	private File outputFile = null;
 
 	/**
 	 * 
@@ -827,13 +538,26 @@ public class Checker {
 	/**
 	 * Parameter for asking whether to consider only Lp,qR0, qR3* rules.
 	 */
-	@Option(required = false, name = "-onlyLPQR0QR3", aliases = { "-limitToZ" }, usage = "Check DC considering only rules LP, qR0 and QR3.")
+	@Option(required = false, name = "-onlyLPQR0QR3", aliases = {
+			"-limitToZ" }, depends = { "-semantics" }, usage = "Check DC considering only rules LP, qR0 and QR3.")
 	private boolean onlyLPQR0QR3OrToZ = false;
 
 	/**
 	 * Output stream to outputFile
 	 */
 	private PrintStream output = null;
+
+	/**
+	 * Output file where to write the determined experimental execution times in CSV format.
+	 */
+	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file in CSV format. If file is already present, data will be added.", metaVar = "outputFile")
+	private File outputFile = null;
+
+	/**
+	 * Check a CSTN instance using BellamanFord algorithm
+	 */
+	@Option(required = false, name = "-potential", depends = { "-type cstn" }, usage = "Check a CSTN instance using BellamanFord algorithm.")
+	private boolean potential = false;
 
 	/**
 	 * Parameter for asking reaction time.
@@ -844,13 +568,18 @@ public class Checker {
 	/**
 	 * Parameter for asking to remove a value from all constraints.
 	 */
-	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is null.")
+	@Option(required = false, name = "-removeValue", usage = "Value to be removed from any edge. Default value is a value representing NULL.")
 	private int removeValue = Constants.INT_NULL;
+
+	/**
+	 */
+	@Option(required = false, name = "-save", usage = "Save all checked instances.")
+	private boolean save = false;
 
 	/**
 	 * Parameter for asking timeout in sec.
 	 */
-	@Option(required = false, name = "-timeOut", usage = "Time in seconds. Default is 1200 s = 20 m")
+	@Option(required = false, name = "-timeOut", usage = "Time in seconds.")
 	private int timeOut = 1200; // 20 min
 
 	/**
@@ -864,6 +593,160 @@ public class Checker {
 	 */
 	@Option(required = false, name = "-woNodeLabels", usage = "Check DC transforming the network in an equivalent CSTN without node labels.")
 	private boolean woNodeLabels = false;
+
+	/**
+	 * @param tester
+	 * @param cstn
+	 * @param file
+	 * @param executor
+	 */
+	@SuppressWarnings({ "javadoc", "unchecked", "rawtypes", "null" })
+	private CSTNCheckStatus DCChecker(CSTN cstn, CSTNU cstnu, RunMeter runState) {
+		String msg;
+		boolean checkInterrupted = false;
+		CSTNCheckStatus status = null;
+		TNGraph<? extends CSTNEdge> graphToCheck = null;
+		TNGraph g = null;// even though raw is dangerous, here it is safe!
+
+		if (isCSTNU()) {
+			status = new CSTNUCheckStatus();
+			graphToCheck = cstnu.g;
+		} else if (isCSTN()) {
+			status = new CSTNCheckStatus();
+			graphToCheck = cstn.g;
+		}
+
+		SummaryStatistics localSummaryStat = new SummaryStatistics();
+		for (int j = 0; j < this.nDCRepetition && !checkInterrupted && !status.timeout; j++) {
+			LOG.info("Test " + (j + 1) + "/" + this.nDCRepetition + " for CSTN(U) " + graphToCheck.getFileName().getName());
+
+			// It is necessary to reset the graph!
+			g = new TNGraph(graphToCheck, this.currentEdgeImplClass);
+			if (isCSTNU()) {
+				cstnu.setG(g);
+			} else {
+				cstn.setG(g);
+			}
+			try {
+				status = (isCSTNU()) ? cstnu.dynamicControllabilityCheck() : (cstn.dynamicConsistencyCheck());
+			} catch (CancellationException ex) {
+				msg = getNow() + ": Cancellation has occurred. " + graphToCheck.getFileName() + " CSTN(U) is ignored.";
+				System.out.println(msg);
+				LOG.severe(msg);
+				checkInterrupted = true;
+				status.consistency = false;
+				continue;
+			} catch (Exception e) {
+				msg = getNow() + ": a different exception has occurred. " + graphToCheck.getFileName()
+						+ " CSTN(U) is ignored.\nError details: " + e.toString();
+				System.out.println(msg);
+				LOG.severe(msg);
+				checkInterrupted = true;
+				status.consistency = false;
+				continue;
+			}
+			localSummaryStat.addValue(status.executionTimeNS);
+		} // end for checking repetition for a single file
+
+		if (status.timeout || checkInterrupted) {
+			if (status.timeout) {
+				msg = "\n\n" + getNow() + ": Timeout or interrupt occurred. " + graphToCheck.getFileName() + " CSTN(U) is ignored.\n";
+				System.out.println(msg);
+			}
+			return status;
+		}
+
+		msg = getNow() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
+		// System.out.println(msg);
+		LOG.info(msg);
+
+		status.executionTimeNS = (long) localSummaryStat.getMean();
+		status.stdDevExecutionTimeNS = (long) localSummaryStat.getStandardDeviation();
+
+		return status;
+	}
+
+	/**
+	 * @param status
+	 * @return the number of executed rules.
+	 */
+	private int getNumberExecutedRules(CSTNCheckStatus status) {
+		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls + status.potentialUpdate;
+
+		if (isCSTNU())
+			nRules += ((CSTNUCheckStatus) status).zEsclamationRuleCalls +
+					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
+					((CSTNUCheckStatus) status).crossCaseRuleCalls +
+					((CSTNUCheckStatus) status).letterRemovalRuleCalls;
+		return nRules;
+	}
+
+	/**
+	 * @return true if the input graph represents a CSTN instance
+	 */
+	private boolean isCSTN() {
+		return this.networkType == NetworkType.CSTN;
+	}
+
+	/**
+	 * @return true if the input graph represents a CSTNU instance
+	 */
+	private boolean isCSTNU() {
+		return this.networkType == NetworkType.CSTNU;
+	}
+
+	@SuppressWarnings({ "unused", "static-method" })
+	private CSTNU makeSTNInstance(TNGraph<STNEdge> g) {
+		// if (this.isSTN()) {
+		// return new STN(g, this.timeOut);
+		// }
+		throw new IllegalArgumentException("Required a STN instance but it is not implemented yet. :-/");// the graph is not a CSTNU graph.");
+	}
+
+	private CSTNU makeCSTNUInstance(TNGraph<CSTNUEdge> g) {
+		if (this.isCSTNU()) {
+			if (this.cstnu2cstn) {
+				return new CSTNU2CSTN(g, this.timeOut);
+			}
+			return new CSTNU(g, this.timeOut, this.onlyLPQR0QR3OrToZ);
+		}
+		throw new IllegalArgumentException("Required a CSTNU instance but the graph is not a CSTNU graph.");
+	}
+
+	private CSTN makeCSTNInstance(TNGraph<CSTNEdge> g) {
+		if (this.cstn2cstn0) {
+			return new CSTN2CSTN0(this.reactionTime, g, this.timeOut);
+		}
+		if (this.potential)// the implicit semantics is IR
+			return new CSTNPotential(g, this.timeOut);
+		CSTN cstn = null;
+		switch (this.dcSemantics) {
+		case ε:
+			if (this.onlyLPQR0QR3OrToZ) {
+				cstn = (this.woNodeLabels) ? new CSTNEpsilon3RwoNodeLabels(this.reactionTime, g, this.timeOut)
+						: new CSTNEpsilon3R(this.reactionTime, g, this.timeOut);
+			} else {
+				cstn = (this.woNodeLabels) ? new CSTNEpsilonwoNodeLabels(this.reactionTime, g, this.timeOut)
+						: new CSTNEpsilon(this.reactionTime, g, this.timeOut);
+			}
+			break;
+		case IR:
+			if (this.onlyLPQR0QR3OrToZ) {
+				cstn = (this.woNodeLabels) ? new CSTNIR3RwoNodeLabels(g, this.timeOut) : new CSTNIR3R(g, this.timeOut);
+			} else {
+				cstn = (this.woNodeLabels) ? new CSTNIRwoNodeLabels(g, this.timeOut) : new CSTNIR(g, this.timeOut);
+			}
+			break;
+		default:
+			if (this.onlyLPQR0QR3OrToZ) {
+				throw new IllegalArgumentException(
+						"For standard semantics there is no DC checking algorithm that works only considering constraints ending to Z.");
+			}
+			cstn = (this.woNodeLabels) ? new CSTNwoNodeLabel(g, this.timeOut) : new CSTN(g, this.timeOut);
+			break;
+		}
+		return cstn;
+	}
 
 	/**
 	 * Simple method to manage command line parameters using args4j library.
@@ -894,24 +777,6 @@ public class Checker {
 			return true;
 		}
 
-		if (this.reactionTime <= 0) {
-			System.err.println("Reaction time must be > 0");
-			return false;
-		}
-		// LOG.finest("File number: " + this.fileNameInput.length);
-		// LOG.finest("File names: " + Arrays.deepToString(this.fileNameInput));
-		this.instances = new ArrayList<>(this.inputFiles.length);
-		for (String fileName : this.inputFiles) {
-			File file = new File(fileName);
-			if (!file.exists()) {
-				System.err.println("File " + fileName + " does not exit.");
-				parser.printUsage(System.err);
-				System.err.println();
-				return false;
-			}
-			this.instances.add(new File(fileName));
-		}
-
 		if (this.outputFile != null) {
 			if (this.outputFile.isDirectory()) {
 				System.err.println("Output file is a directory.");
@@ -934,26 +799,289 @@ public class Checker {
 		} else {
 			this.output = System.out;
 		}
-		if (this.cstnType == CstnType.cstn) {
-			this.output.println(OUTPUT_HEADER + CSVSep);
-		} else {
-			this.output.println(OUTPUT_HEADER_CSTNU);
+
+		if (this.reactionTime <= 0) {
+			System.err.println("Reaction time must be > 0");
+			return false;
 		}
+
+		String suffix = "";
+		if (this.networkType == NetworkType.CSTN) {
+			this.output.println(OUTPUT_HEADER + CSVSep);
+			this.currentEdgeImplClass = CSTNEdgePluggable.class;
+			suffix = "stn";
+		} else {
+			if (this.networkType == NetworkType.CSTNU) {
+				this.output.println(OUTPUT_HEADER_CSTNU);
+				this.currentEdgeImplClass = CSTNUEdgePluggable.class;
+				suffix = "cstn";
+			} else {
+				if (this.networkType == NetworkType.STN) {
+					this.output.println(OUTPUT_HEADER + CSVSep);
+					this.currentEdgeImplClass = STNEdgeInt.class;
+					suffix = "cstnu";
+				} else {
+					String msg = "Type of network not managed by current version of this class. Game over :-/";
+					throw new IllegalArgumentException(msg);
+				}
+			}
+		}
+		this.currentEdgeFactory = new EdgeSupplier<>(this.currentEdgeImplClass);
+
+		// LOG.finest("File number: " + this.fileNameInput.length);
+		// LOG.finest("File names: " + Arrays.deepToString(this.fileNameInput));
+		this.instances = new ArrayList<>(this.inputFiles.length);
+		for (String fileName : this.inputFiles) {
+			File file = new File(fileName);
+			if (!file.exists()) {
+				System.err.println("File " + fileName + " does not exit.");
+				parser.printUsage(System.err);
+				System.err.println();
+				return false;
+			}
+			if (!file.getName().endsWith(suffix)) {
+				System.err.println("File " + fileName + " has not the right suffix associated to the suffix of the given network type (right suffix: "
+						+ suffix + "). Game over :-/");
+				parser.printUsage(System.err);
+				System.err.println();
+				return false;
+			}
+			this.instances.add(file);
+		}
+
+
 		return true;
 	}
 
 	/**
-	 * @param tester
-	 * @param status
-	 * @return the number of executed rules.
+	 * @param file
+	 * @param runState
+	 * @param globalExecutionTimeStatisticsMap
+	 * @param globalRuleExecutionStatisticsMap
+	 * @return true if required task ends successfully, false otherwise.
 	 */
-	static private int getNumberExecutedRules(Checker tester, CSTNCheckStatus status) {
-		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls;
-		if (tester.cstnType == CstnType.cstnu)
-			nRules += ((CSTNUCheckStatus) status).zEsclamationRuleCalls +
-					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
-					((CSTNUCheckStatus) status).crossCaseRuleCalls +
-					((CSTNUCheckStatus) status).letterRemovalRuleCalls;
-		return nRules;
+	@SuppressWarnings({ "unchecked", "null" })
+	private <E1 extends Edge, M1 extends LabeledIntMap> boolean worker(File file, RunMeter runState,
+			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalExecutionTimeStatisticsMap,
+			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalRuleExecutionStatisticsMap) {
+		// System.out.println("Analyzing file " + file.getName() + "...");
+		LOG.finer("Loading " + file.getName() + "...");
+		TNGraphMLReader<E1> graphMLReader;
+		try {
+			graphMLReader = new TNGraphMLReader<>(file, (Class<E1>) this.currentEdgeImplClass);
+		} catch (FileNotFoundException e2) {
+			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
+			LOG.warning(msg);
+			System.out.println(msg);
+			return false;
+		}
+		TNGraph<E1> graphToCheck = null;
+		try {
+			graphToCheck = graphMLReader.readGraph();
+		} catch (IOException | ParserConfigurationException | SAXException e2) {
+			String msg = "File " + file.getName() + " cannot be parsed. Details: " + e2.getMessage() + ".\nIgnored.";
+			LOG.warning(msg);
+			System.out.println(msg);
+			return false;
+		}
+		LOG.finer("...done!");
+		if (graphToCheck == null) {
+			LOG.warning("File " + file.getName() + " does not contain a valid CSTN instance.\nIgnored.");
+			return false;
+		}
+
+		// Possible required modifications of the structure.
+		if (this.cuttingEdgeFactor > 1 || this.removeValue != Constants.INT_NULL) {
+			if (this.cuttingEdgeFactor > 1) {
+				LOG.info("Cutting all edge values by a factor " + this.cuttingEdgeFactor + "...");
+				for (Edge e : graphToCheck.getEdges()) {
+					if (e.isSTNEdge()) {
+						((STNEdge) e).setValue(((STNEdge) e).getValue() / this.cuttingEdgeFactor);
+					}
+					if (this.isCSTN() || this.isCSTNU()) {
+						CSTNEdge eNew = (CSTNEdge) this.currentEdgeFactory.get(e);
+						for (Entry<Label> entry : ((CSTNEdge) e).getLabeledValueSet()) {
+							int v = entry.getIntValue() / this.cuttingEdgeFactor;
+							eNew.mergeLabeledValue(entry.getKey(), v);
+						}
+						((CSTNEdge) e).takeIn(eNew);
+					}
+				}
+			}
+			if (this.removeValue != Constants.INT_NULL && (this.isCSTN() || this.isCSTNU())) {
+				LOG.info("Removing all edge values equal to " + this.removeValue + "...");
+
+				int value = this.removeValue;
+				for (Edge e : graphToCheck.getEdges()) {
+					if (e.isSTNEdge()) {
+						if (((STNEdge) e).getValue() == value) {
+							graphToCheck.removeEdge(e.getName());
+						}
+					}
+					for (Entry<Label> entry : ((CSTNEdge) e).getLabeledValueSet()) {
+						if (entry.getIntValue() == value)
+							((CSTNEdge) e).removeLabeledValue(entry.getKey());
+					}
+				}
+			}
+			String suffix = "_cutted";
+			TNGraphMLWriter graphWrite = new TNGraphMLWriter(null);
+
+			try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + suffix));) {
+				graphWrite.save(graphToCheck, writer);
+			} catch (Exception e) {
+				LOG.warning("File " + file.getAbsolutePath() + suffix + " cannot be written. Details: " + e.getMessage());
+				return false;
+			}
+		}
+
+		// In order to start with well-defined cstn, we preliminary make a check.
+		// Use g because next instructions change the structure of graph.
+		TNGraph<E1> g = new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
+
+		// Statistics about min, max values and #edges have to be done before init!
+		int min = 0;
+		int max = 0;
+		for (Edge e : g.getEdges()) {
+			if (e.isSTNEdge()) {
+				int v = ((STNEdge) e).getValue();
+				if (v > max) {
+					max = v;
+					continue;
+				}
+				if (v < min)
+					min = v;
+			}
+			if (e.isCSTNEdge() || e.isCSTNUEdge()) {
+				for (Entry<Label> entry : ((CSTNEdge) e).getLabeledValueSet()) {
+					int v = entry.getIntValue();
+					if (v > max) {
+						max = v;
+						continue;
+					}
+					if (v < min)
+						min = v;
+				}
+			}
+		}
+		int nEdges = g.getEdgeCount();
+
+		CSTN cstn = null;
+		CSTNU cstnu = null;
+		TNGraph<CSTNEdge> gCSTN;
+		TNGraph<CSTNUEdge> gCSTNU;
+		
+		if (this.isCSTN()) {
+			gCSTN = (TNGraph<CSTNEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
+			cstn = makeCSTNInstance(gCSTN);
+		} else {
+			if (this.isCSTNU()) {
+				gCSTNU = (TNGraph<CSTNUEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
+				cstnu = makeCSTNUInstance(gCSTNU);
+			}
+		}
+		try {
+			if (this.isCSTNU()) {
+				cstnu.initAndCheck();
+			} else {
+				if (this.isCSTN())
+					cstn.initAndCheck();
+			}
+		} catch (Exception e) {
+			String msg = getNow() + ": " + file.getName()
+					+ " is not a not well-defined instance. Details:" + e.getMessage()
+					+ "\nIgnored.";
+			System.out.println(msg);
+			LOG.severe(msg);
+			return false;
+		}
+
+		String rowToWrite = String.format(OUTPUT_ROW_GRAPH,
+				file.getName(),
+				graphToCheck.getVertexCount(),
+				nEdges,
+				graphToCheck.getObserverCount(),
+				graphToCheck.getContingentCount(),
+				min,
+				max);
+
+		if (this.noDCCheck) {
+			synchronized (this.output) {
+				this.output.println(rowToWrite);
+			}
+			runState.printProgress();
+			return true;
+		}
+
+		GlobalStatisticKey globalStatisticsKey = new GlobalStatisticKey(graphToCheck.getVertexCount(), graphToCheck.getObserverCount(),
+				graphToCheck.getContingentCount());
+		SummaryStatistics globalExecutionTimeStatistics = globalExecutionTimeStatisticsMap.get(globalStatisticsKey);
+		SummaryStatistics globalRuleExecutionStatistics = globalRuleExecutionStatisticsMap.get(globalStatisticsKey);
+		if (globalExecutionTimeStatistics == null) {
+			globalExecutionTimeStatistics = new SummaryStatistics();
+			globalExecutionTimeStatisticsMap.put(globalStatisticsKey, globalExecutionTimeStatistics);
+		}
+		if (globalRuleExecutionStatistics == null) {
+			globalRuleExecutionStatistics = new SummaryStatistics();
+			globalRuleExecutionStatisticsMap.put(globalStatisticsKey, globalRuleExecutionStatistics);
+		}
+
+		String msg = getNow() + ": Determining DC check execution time of " + file.getName()
+				+ " repeating DC check for " + this.nDCRepetition + " times.";
+		// System.out.println(msg);
+		LOG.info(msg);
+
+		CSTNCheckStatus status = DCChecker(cstn, cstnu, runState);
+
+		if (!status.finished) {
+			// time out or generic error
+			rowToWrite += String.format(OUTPUT_ROW_TIME,
+					status.executionTimeNS / 1E9,
+					Double.NaN,
+					getNumberExecutedRules(status),
+					((status.executionTimeNS != Constants.INT_NULL) ? "Timeout of " + this.timeOut + " seconds." : "Generic error. See log."));
+			synchronized (this.output) {
+				this.output.println(rowToWrite);
+			}
+			globalExecutionTimeStatistics.addValue(this.timeOut);
+			runState.printProgress();
+			return false;
+		}
+
+		Double localAvg = status.executionTimeNS / 1E9;
+		Double localStdDev = status.stdDevExecutionTimeNS / 1E9;
+
+		globalExecutionTimeStatistics.addValue(localAvg);
+
+		LOG.info(file.getName() + " has been checked (algorithm ends in a stable state): " + status.finished);
+		LOG.info(file.getName() + " is " + status.consistency);
+		LOG.info(file.getName() + " average required time [s]" + localAvg);
+		LOG.info(file.getName() + " std. deviation [s]" + localStdDev);
+
+		int nRules = getNumberExecutedRules(status);
+		globalRuleExecutionStatistics.addValue(nRules);
+
+		rowToWrite += String.format(OUTPUT_ROW_TIME_STATS,
+				localAvg,
+				((this.nDCRepetition > 1) ? localStdDev : Double.NaN),
+				nRules,
+				((!this.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"),
+				status.r0calls,
+				status.r3calls,
+				status.labeledValuePropagationCalls,
+				status.potentialUpdate);
+		if (isCSTNU()) {
+			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
+					((CSTNUCheckStatus) status).zEsclamationRuleCalls,
+					((CSTNUCheckStatus) status).lowerCaseRuleCalls,
+					((CSTNUCheckStatus) status).crossCaseRuleCalls,
+					((CSTNUCheckStatus) status).letterRemovalRuleCalls);
+		}
+
+		synchronized (this.output) {
+			this.output.println(rowToWrite);
+		}
+		runState.printProgress();
+		return true;
 	}
 }

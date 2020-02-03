@@ -27,7 +27,7 @@ public class LabeledLowerCaseValue {
 	/**
 	 * Logger.
 	 */
-	private static final Logger LOG = Logger.getLogger(LabeledLowerCaseValue.class.getName());
+	private static final Logger LOG = Logger.getLogger("LabeledLowerCaseValue");
 
 	/**
 	 * A constant empty label to represent an empty label that cannot be modified.
@@ -197,18 +197,18 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
-	 * @param nodeName a not null node name
-	 * @param value a value different from {@link Constants#INT_NULL}
-	 * @param label a non null label
+	 * @param nodeName1 a not null node name
+	 * @param value1 a value different from {@link Constants#INT_NULL}
+	 * @param label1 a non null label
 	 */
-	private LabeledLowerCaseValue(ALabel nodeName, int value, Label label) {
-		if (nodeName == null || value == Constants.INT_NULL || label == null)
+	private LabeledLowerCaseValue(ALabel nodeName1, int value1, Label label1) {
+		if (nodeName1 == null || value1 == Constants.INT_NULL || label1 == null)
 			return;
-		if (nodeName.size() > 1)
+		if (nodeName1.size() > 1)
 			throw new IllegalArgumentException("Node name label must contain only one name!");
-		this.label = label;
-		this.nodeName = nodeName;
-		this.value = value;
+		this.label = label1;
+		this.nodeName = nodeName1;
+		this.value = value1;
 	}
 
 	/**
