@@ -141,6 +141,7 @@
       </plugin>
       <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.8</version>
         <executions>
           <execution>
             <id>package</id>
@@ -374,6 +375,7 @@
         <plugins>
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
+            <version>1.8</version>
             <executions>
               <execution>
                 <id>process-sources</id>

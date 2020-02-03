@@ -339,6 +339,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
 				<executions>
 					<execution>
 						<id>package</id>
@@ -349,9 +350,7 @@
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
 							<target>
-								<fail
-									message="Non Ti sei ricordato di specificare -P noDebug! "
-									unless="noDebug" />
+								<fail message="Non Ti sei ricordato di specificare -P noDebug! " unless="noDebug" />
 								<!-- Non è più così efficiente. <taskdef name="JarOpt" classname="org.cmc.jaroptimizer.JarOptTask" 
 									classpath="/Users/posenato/Documents/workspace/JarOpt/jaropt.jar" /> <JarOpt 
 									src="${project.build.directory}/${project.artifactId}-${project.version}.jar" 
@@ -698,6 +697,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.8</version>
 						<executions>
 							<execution>
 								<id>process-sources</id>
