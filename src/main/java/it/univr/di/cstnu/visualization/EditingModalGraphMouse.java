@@ -2,20 +2,29 @@ package it.univr.di.cstnu.visualization;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.logging.Logger;
 
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
 import javax.swing.JComboBox;
+import javax.swing.JMenu;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.plaf.basic.BasicIconFactory;
 
 import com.google.common.base.Supplier;
 
+import edu.uci.ics.jung.visualization.MultiLayerTransformer;
 import edu.uci.ics.jung.visualization.RenderContext;
+import edu.uci.ics.jung.visualization.annotations.AnnotatingGraphMousePlugin;
+import edu.uci.ics.jung.visualization.control.AbstractModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.AnimatedPickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.EditingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
 import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.RotatingGraphMousePlugin;
@@ -23,7 +32,9 @@ import edu.uci.ics.jung.visualization.control.ScalingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.ShearingGraphMousePlugin;
 import edu.uci.ics.jung.visualization.control.TranslatingGraphMousePlugin;
 import it.univr.di.cstnu.graph.Edge;
+import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
+
 
 /**
  * I modified the source to use a local EditingGraphMousePlugin and to remove some extra useless features.
@@ -35,62 +46,12 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @author posenato
  */
 @SuppressWarnings("javadoc")
-public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> extends edu.uci.ics.jung.visualization.control.EditingModalGraphMouse<V, E> {
+public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> extends AbstractModalGraphMouse {
 
 	/**
 	 * logger
 	 */
 	static Logger LOG = Logger.getLogger(EditingModalGraphMouse.class.getName());
-
-	/**
-	 * Internal utility class to set the mode by keyboard.
-	 * I removed the annotation plugin.
-	 *
-	 * @author posenato
-	 */
-	public static class ModeKeyAdapter extends KeyAdapter {
-		private char t = 't';
-		private char p = 'p';
-		private char e = 'e';
-		protected ModalGraphMouse graphMouse;
-
-		/**
-		 * @param t t key
-		 * @param p p key
-		 * @param e e key
-		 * @param a a key, not used.
-		 * @param graphMouse a ModalGraphMouse object.
-		 */
-		@SuppressWarnings("hiding")
-		public ModeKeyAdapter(final char t, final char p, final char e, final char a, final ModalGraphMouse graphMouse) {
-			this.t = t;
-			this.p = p;
-			this.e = e;
-			this.graphMouse = graphMouse;
-		}
-
-		/**
-		 * @param graphMouse1 a ModalGraphMouse object.
-		 */
-		public ModeKeyAdapter(final ModalGraphMouse graphMouse1) {
-			this.graphMouse = graphMouse1;
-		}
-
-		@Override
-		public void keyTyped(final KeyEvent event) {
-			final char keyChar = event.getKeyChar();
-			if (keyChar == this.t) {
-				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				this.graphMouse.setMode(Mode.TRANSFORMING);
-			} else if (keyChar == this.p) {
-				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-				this.graphMouse.setMode(Mode.PICKING);
-			} else if (keyChar == this.e && ((EditingModalGraphMouse<?, ?>) this.graphMouse).editor) {
-				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-				this.graphMouse.setMode(Mode.EDITING);
-			}
-		}
-	}
 
 	/**
 	 * Internal reference to the main JFrame.
@@ -102,25 +63,15 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 */
 	boolean editor;
 
-	/**
-	 * create an instance with default values
-	 */
-	@SuppressWarnings({ "unused", "hiding" })
-	private EditingModalGraphMouse(RenderContext<V, E> rc, Supplier<V> vertexFactory, Supplier<E> edgeFactory) {
-		this(rc, vertexFactory, edgeFactory, 1.1f, 1 / 1.1f);
-	}
+	Supplier<V> vertexFactory;
+	Supplier<E> edgeFactory;
+	EditingGraphMousePlugin<V, E> editingPlugin;
+	LabelEditingGraphMousePlugin<V, E> labelEditingPlugin;
+	EditingPopupGraphMousePlugin<V, E> popupEditingPlugin;
+	AnnotatingGraphMousePlugin<V, E> annotatingPlugin;
+	MultiLayerTransformer basicTransformer;
+	RenderContext<V, E> rc;
 
-	/**
-	 * create an instance with passed values
-	 * 
-	 * @param in override value for scale in
-	 * @param out override value for scale out
-	 */
-	@SuppressWarnings("hiding")
-	private EditingModalGraphMouse(RenderContext<V, E> rc, Supplier<V> vertexFactory, Supplier<E> edgeFactory, float in, float out) {
-		super(rc, vertexFactory, edgeFactory, in, out);
-		initCompletion(null, false);
-	}
 
 	/**
 	 * Creates an instance with default values.
@@ -132,32 +83,36 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 */
 	public EditingModalGraphMouse(final RenderContext<V, E> rc1, final Supplier<V> vertexFactory1, final Supplier<E> edgeFactory1, CSTNEditor cstnEditor1,
 			boolean editor1) {
-		super(rc1, vertexFactory1, edgeFactory1);// this constructor uses local loadPlugins but LabelEditingGraphMousePlugin cannot be initialized correctly.
-		initCompletion(cstnEditor1, editor1);
-	}
-
-	private void initCompletion(CSTNEditor cstnEditor1, boolean editor1) {
-		this.cstnEditor = cstnEditor1;
-		// LOG.severe("EditingModalGraphMouse.cstnEditor " + cstnEditor);
-		// I set again this.labelEditingPlugin
-		((LabelEditingGraphMousePlugin<V, E>) this.labelEditingPlugin).setCstnEditor(this.cstnEditor);
+		super(1.1f, 1 / 1.1f);
+		this.vertexFactory = vertexFactory1;
+		this.edgeFactory = edgeFactory1;
+		this.rc = rc1;
+		this.basicTransformer = rc1.getMultiLayerTransformer();
 		this.editor = editor1;
+		this.cstnEditor = cstnEditor1;
+		loadPlugins();
+		setModeKeyListener(new ModeKeyAdapter(this));
 	}
 
 	/**
-	 * {@inheritDoc}
-	 * Removed annotating mode.
+	 * create the plugins, and load the plugins for TRANSFORMING mode
 	 */
 	@Override
-	public JComboBox<Mode> getModeComboBox() {
-		if (this.modeBox == null) {
-			this.modeBox = new JComboBox<>(
-					(this.editor) ? (new Mode[] { Mode.TRANSFORMING, Mode.PICKING, Mode.EDITING }) : new Mode[] { Mode.TRANSFORMING, Mode.PICKING });
-			this.modeBox.addItemListener(this.getModeListener());
-		}
-		this.modeBox.setSelectedItem(this.mode);
-		return this.modeBox;
+	protected void loadPlugins() {
+		this.pickingPlugin = new PickingGraphMousePlugin<V, E>();
+		this.animatedPickingPlugin = new AnimatedPickingGraphMousePlugin<V, E>();
+		this.translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_MASK);
+		this.scalingPlugin = new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, this.in, this.out);
+		this.rotatingPlugin = new RotatingGraphMousePlugin();
+		this.shearingPlugin = new ShearingGraphMousePlugin();
+		this.editingPlugin = new EditingGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
+		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<>(this.cstnEditor);
+		// this.annotatingPlugin = new AnnotatingGraphMousePlugin<>(this.rc);
+		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
+		add(this.scalingPlugin);// for zooming
+		setMode(Mode.TRANSFORMING);
 	}
+
 
 	/**
 	 * {@inheritDoc} setter for the Mode.
@@ -168,14 +123,18 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		if (this.mode != mode1) {
 			this.fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED, this.mode, ItemEvent.DESELECTED));
 			this.mode = mode1;
-			if (mode1 == Mode.TRANSFORMING) {
-				this.setTransformingMode();
-			} else if (mode1 == Mode.PICKING) {
-				this.setPickingMode();
-			} else if (mode1 == Mode.EDITING && this.editor) {
+			if (mode1 == Mode.EDITING) {
 				this.setEditingMode();
+			} else {
+				this.setTransformingMode();
 			}
-			// else if (mode == Mode.ANNOTATING) {
+			// if (mode1 == Mode.PICKING) {
+			// }
+			// this.setPickingMode();
+			// } else if (mode1 == Mode.EDITING && this.editor) {
+			// this.setOLDEditingMode();
+			// }
+			// // else if (mode == Mode.ANNOTATING) {
 			// setAnnotatingMode();
 			// }
 			if (this.modeBox != null) {
@@ -185,72 +144,205 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		}
 	}
 
-	/**
-	 * {@inheritDoc} Create the plugins, and load the plugins for TRANSFORMING mode
-	 */
-	@Override
-	protected void loadPlugins() {
-		// this.annotatingPlugin = new AnnotatingGraphMousePlugin<>(this.rc);
-		this.pickingPlugin = new PickingGraphMousePlugin<V, E>();
-		this.animatedPickingPlugin = new AnimatedPickingGraphMousePlugin<V, E>();
-		this.translatingPlugin = new TranslatingGraphMousePlugin(InputEvent.BUTTON1_MASK);
-		this.scalingPlugin = new ScalingGraphMousePlugin(new CrossoverScalingControl(), 0, this.in, this.out);
-		this.add(this.scalingPlugin);
-		this.rotatingPlugin = new RotatingGraphMousePlugin();
-		this.shearingPlugin = new ShearingGraphMousePlugin();
-		this.editingPlugin = new EditingGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
-		// LOG.severe("EditingModalGraphMouse.cstnEditor " + cstnEditor); loadPlugins is called by super() that has not access to this.cstnEditor
-		// so the following is made also in the constructor
-		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
-		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<>(this.cstnEditor);
-		this.setMode(Mode.PICKING);
+	public void setEdgeEditingPlugin(EdgeSupplier<E> edgeSupp) {
+		this.edgeFactory = edgeSupp;
+		this.editingPlugin.setEdgeFactory(edgeSupp);
+		this.popupEditingPlugin.setEdgeFactory(edgeSupp);
 	}
 
-	public void setEdgeEditingPlugin(Supplier<E> edgeF) {
-		this.edgeFactory = edgeF;
-		this.loadPlugins();
+	public Supplier<E> getEdgeEditingPlugin() {
+		return this.edgeFactory;
 	}
 
-	@Override
-	protected void setPickingMode() {
+	protected void setEditingMode() {
 		remove(this.translatingPlugin);
 		remove(this.rotatingPlugin);
 		remove(this.shearingPlugin);
-		remove(this.annotatingPlugin);
 		remove(this.editingPlugin);
+		// remove(this.annotatingPlugin);
 		add(this.pickingPlugin);
 		add(this.animatedPickingPlugin);
 		add(this.labelEditingPlugin);
 		add(this.popupEditingPlugin);
+		add(this.editingPlugin);
 	}
 
 	@Override
 	protected void setTransformingMode() {
 		remove(this.pickingPlugin);
 		remove(this.animatedPickingPlugin);
-		remove(this.annotatingPlugin);
-		remove(this.labelEditingPlugin);
-		remove(this.popupEditingPlugin);
 		remove(this.editingPlugin);
+		// remove(this.annotatingPlugin);
 		add(this.translatingPlugin);
 		add(this.rotatingPlugin);
 		add(this.shearingPlugin);
-		// add(this.labelEditingPlugin);
-		// add(this.popupEditingPlugin);
+		add(this.labelEditingPlugin);
+		add(this.popupEditingPlugin);
 	}
 
+	// protected void setAnnotatingMode() {
+	// remove(this.pickingPlugin);
+	// remove(this.animatedPickingPlugin);
+	// remove(this.translatingPlugin);
+	// remove(this.rotatingPlugin);
+	// remove(this.shearingPlugin);
+	// remove(this.labelEditingPlugin);
+	// remove(this.editingPlugin);
+	// remove(this.popupEditingPlugin);
+	// add(this.annotatingPlugin);
+	// }
+
+	/**
+	 * @return the modeBox.
+	 */
 	@Override
-	protected void setEditingMode() {
-		remove(this.pickingPlugin);
-		remove(this.animatedPickingPlugin);
-		remove(this.translatingPlugin);
-		remove(this.rotatingPlugin);
-		remove(this.shearingPlugin);
-		remove(this.annotatingPlugin);
-		remove(this.labelEditingPlugin);
-		remove(this.popupEditingPlugin);
-		add(this.editingPlugin);
-		// add(this.popupEditingPlugin);
-		// add(this.labelEditingPlugin);
+	public JComboBox<Mode> getModeComboBox() {
+		if (this.modeBox == null) {
+			this.modeBox = new JComboBox<>(new Mode[] { Mode.TRANSFORMING, Mode.EDITING });// , Mode.PICKING, Mode.ANNOTATING
+			this.modeBox.addItemListener(getModeListener());
+		}
+		this.modeBox.setSelectedItem(this.mode);
+		return this.modeBox;
 	}
+
+	/**
+	 * create (if necessary) and return a menu that will change
+	 * the mode
+	 * 
+	 * @return the menu
+	 */
+	@Override
+	public JMenu getModeMenu() {
+		if (this.modeMenu == null) {
+			this.modeMenu = new JMenu();// {
+			Icon icon = BasicIconFactory.getMenuArrowIcon();
+			this.modeMenu.setIcon(BasicIconFactory.getMenuArrowIcon());
+			this.modeMenu.setPreferredSize(new Dimension(icon.getIconWidth() + 10,
+					icon.getIconHeight() + 10));
+
+			final JRadioButtonMenuItem transformingButton = new JRadioButtonMenuItem(Mode.TRANSFORMING.toString());
+			transformingButton.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						setMode(Mode.TRANSFORMING);
+					}
+				}
+			});
+
+			// final JRadioButtonMenuItem pickingButton = new JRadioButtonMenuItem(Mode.PICKING.toString());
+			// pickingButton.addItemListener(new ItemListener() {
+			// @Override
+			// public void itemStateChanged(ItemEvent e) {
+			// if (e.getStateChange() == ItemEvent.SELECTED) {
+			// setMode(Mode.PICKING);
+			// }
+			// }
+			// });
+
+			final JRadioButtonMenuItem editingButton = new JRadioButtonMenuItem(Mode.EDITING.toString());
+			editingButton.addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						setMode(Mode.EDITING);
+					}
+				}
+			});
+
+			ButtonGroup radio = new ButtonGroup();
+			radio.add(transformingButton);
+			// radio.add(pickingButton);
+			radio.add(editingButton);
+			transformingButton.setSelected(true);
+			this.modeMenu.add(transformingButton);
+			// this.modeMenu.add(pickingButton);
+			this.modeMenu.add(editingButton);
+			this.modeMenu.setToolTipText("Menu for setting Mouse Mode");
+			addItemListener(new ItemListener() {
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						if (e.getItem() == Mode.TRANSFORMING) {
+							transformingButton.setSelected(true);
+							// } else if (e.getItem() == Mode.PICKING) {
+							// pickingButton.setSelected(true);
+						} else if (e.getItem() == Mode.EDITING) {
+							editingButton.setSelected(true);
+						}
+					}
+				}
+			});
+		}
+		return this.modeMenu;
+	}
+
+	@SuppressWarnings("hiding")
+	public static class ModeKeyAdapter extends KeyAdapter {
+		private char t = 't';
+		// private char p = 'p';
+		private char e = 'e';
+		// private char a = 'a';
+		protected ModalGraphMouse graphMouse;
+
+		public ModeKeyAdapter(ModalGraphMouse graphMouse) {
+			this.graphMouse = graphMouse;
+		}
+
+		public ModeKeyAdapter(char t, char p, char e, char a, ModalGraphMouse graphMouse) {
+			this.t = t;
+			// this.p = p;
+			this.e = e;
+			// this.a = a;
+			this.graphMouse = graphMouse;
+		}
+
+		@Override
+		public void keyTyped(KeyEvent event) {
+			char keyChar = event.getKeyChar();
+			if (keyChar == this.t) {
+				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				this.graphMouse.setMode(Mode.TRANSFORMING);
+				// } else if (keyChar == this.a) {
+				// ((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				// this.graphMouse.setMode(Mode.ANNOTATING);
+			} else if (keyChar == this.e) {
+				((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+				this.graphMouse.setMode(Mode.EDITING);
+			}
+			// else if (keyChar == this.a) {
+			// ((Component) event.getSource()).setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+			// this.graphMouse.setMode(Mode.ANNOTATING);
+			// }
+		}
+	}
+
+	/**
+	 * @return the annotatingPlugin
+	 */
+	// public AnnotatingGraphMousePlugin<V, E> getAnnotatingPlugin() {
+	// return this.annotatingPlugin;
+	// }
+	//
+	/**
+	 * @return the editingPlugin
+	 */
+	public EditingGraphMousePlugin<V, E> getEditingPlugin() {
+		return this.editingPlugin;
+	}
+
+	/**
+	 * @return the labelEditingPlugin
+	 */
+	public LabelEditingGraphMousePlugin<V, E> getLabelEditingPlugin() {
+		return this.labelEditingPlugin;
+	}
+
+	/**
+	 * @return the popupEditingPlugin
+	 */
+	public EditingPopupGraphMousePlugin<V, E> getPopupEditingPlugin() {
+		return this.popupEditingPlugin;
+	}
+
 }

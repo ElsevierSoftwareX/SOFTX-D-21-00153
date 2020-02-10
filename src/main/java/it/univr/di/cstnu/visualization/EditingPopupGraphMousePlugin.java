@@ -3,8 +3,10 @@ package it.univr.di.cstnu.visualization;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 import org.freehep.graphicsbase.util.export.ExportDialog;
@@ -14,9 +16,11 @@ import com.google.common.base.Supplier;
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.util.EdgeType;
 import edu.uci.ics.jung.visualization.BasicVisualizationServer;
 import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
+import edu.uci.ics.jung.visualization.control.AbstractPopupGraphMousePlugin;
 import edu.uci.ics.jung.visualization.picking.PickedState;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.LabeledNode;
@@ -28,25 +32,27 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @param <V>
  * @param <E>
  */
-public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
-		extends edu.uci.ics.jung.visualization.control.EditingPopupGraphMousePlugin<V, E> {
+public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge> extends AbstractPopupGraphMousePlugin {
 
-	/**
-	 * @param vertexFactory1
-	 * @param edgeFactory1
-	 */
+	Supplier<V> vertexFactory;
+	Supplier<E> edgeFactory;
 	public EditingPopupGraphMousePlugin(Supplier<V> vertexFactory1, Supplier<E> edgeFactory1) {
-		super(vertexFactory1, edgeFactory1);
+		this.vertexFactory = vertexFactory1;
+		this.edgeFactory = edgeFactory1;
+	}
+
+	public void setEdgeFactory(Supplier<E> edgeFactory1) {
+		this.edgeFactory = edgeFactory1;
 	}
 
 	@Override
-	@SuppressWarnings({ "unchecked", "serial", "synthetic-access" })
+	@SuppressWarnings({ "unchecked", "serial" })
 	protected void handlePopup(MouseEvent e) {
 		final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
 		final Layout<V, E> layout = vv.getGraphLayout();
 		final Graph<V, E> graph = layout.getGraph();
 		final Point2D p = e.getPoint();
-		
+
 		GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
 		if (pickSupport != null) {
 
@@ -57,6 +63,32 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 
 			JPopupMenu popup = new JPopupMenu();
 			if (vertex != null) {
+				Set<V> picked = pickedVertexState.getPicked();
+				if (picked.size() > 0) {
+					JMenu directedMenu = new JMenu("Create Edge");
+					popup.add(directedMenu);
+					for (final V other : picked) {
+						if (other.equalsByName(vertex))
+							continue;
+						directedMenu.add(new AbstractAction("[" + other + "→" + vertex + "]") {
+							@Override
+							public void actionPerformed(ActionEvent e1) {
+								E newEdge = EditingPopupGraphMousePlugin.this.edgeFactory.get();
+								graph.addEdge(newEdge, other, vertex, EdgeType.DIRECTED);
+								vv.repaint();
+							}
+						});
+						directedMenu.add(new AbstractAction("[" + vertex + "→" + other + "]") {
+							@Override
+							public void actionPerformed(ActionEvent e1) {
+								E newEdge = EditingPopupGraphMousePlugin.this.edgeFactory.get();
+								graph.addEdge(newEdge, vertex, other, EdgeType.DIRECTED);
+								vv.repaint();
+							}
+						});
+					}
+				}
+
 				popup.add(new AbstractAction("Delete Vertex") {
 					@Override
 					public void actionPerformed(ActionEvent a) {
