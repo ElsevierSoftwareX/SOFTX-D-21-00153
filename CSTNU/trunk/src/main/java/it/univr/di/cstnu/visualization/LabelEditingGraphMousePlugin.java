@@ -64,7 +64,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	/**
 	 * logger della classe
 	 */
-	static Logger LOG = Logger.getLogger("LabelEditingGraphMousePlugin");
+	static Logger LOG = Logger.getLogger(LabelEditingGraphMousePlugin.class.getName());
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -467,7 +467,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				// UPPER CASE VALUE
 				// we consider only the first row
 				// We don't use label because it has to be only one s = (labelUpperInputs[0] != null) ? labelUpperInputs[0].getText() : "";
-				caseValue = newUpperValueInputs[0].getText();
+				JTextField s = newUpperValueInputs[0];
+				caseValue = (s != null) ? s.getText() : "";
 				if (caseValue.length() != 0) {
 					// the value is in the form "<node name>: <int>"
 					splitted = caseValue.split(":[ ]*");

@@ -673,6 +673,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 			((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
+			CSTNEditor.this.onlyToZCB.setSelected(false);
 			CSTNEditor.this.cstnu = new CSTNPSU((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
 			jl1.setBackground(Color.orange);
 			try {
@@ -1141,9 +1142,9 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	private class HelpListener implements ActionListener {
 		private static final String instructions = "<html>"
 				+ "<h2>Simple CSTNU Editor " + CSTNEditor.VERSION + "</h2><h3>All Modes:</h3>"
-				+ "<h3>Picking Mode:</h3>"
+				+ "<h3>Editing Mode:</h3>"
 				+ "<ul>"
-				+ "<li>Left-click an empty area for <b>Popup a Create Menu</b> popup"
+				+ "<li>Right-click an empty area to create a new Vertex o to export the graph"
 				+ "<li>Left-click+Shift on a Vertex adds/removes Vertex selection"
 				+ "<li>Left-click an empty area unselects all Vertices"
 				+ "<li>Left+drag on a Vertex moves all selected Vertices"
@@ -1157,13 +1158,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				+ "<li>Mousewheel scales with a crossover value of 1.0.<br>"
 				+ "     - scales the graph layout when the combined scale is greater than 1<br>"
 				+ "     - scales the graph view when the combined scale is less than 1"
-				+ "</ul>"
-				+ "<h3>Editing Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Right-click an empty area to create a new Vertex"
-				+ "<li>Left double-click on a vertex allows you to edit the label"
-				+ "<li>Click on a vertex; then, Shift+Left-click on the same Vertex and drag to another Vertex to create a Directed Edge"
-				+ "</ul>"
 				+ "</ul>"
 				+ "<h3>Transforming Mode:</h3>"
 				+ "<ul>"
@@ -1592,6 +1586,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	boolean onlyToZ = true;
 
 	/**
+	 * 
+	 */
+	JCheckBox onlyToZCB;
+
+	/**
 	 * True if contingent link as to be represented also as ordinary constraints.
 	 */
 	boolean contingentAlsoAsOrdinary = false;
@@ -1886,10 +1885,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		rowForCSTNButtons.add(buttonCheck);
 
 		// ROW FOR CSTNU
-		JCheckBox onlyToZCB = new JCheckBox("Propagate only to Z");
-		onlyToZCB.setSelected(this.onlyToZ);
-		onlyToZCB.addItemListener(new OnlyToZListener());
-		rowForCSTNUButtons.add(onlyToZCB);
+		this.onlyToZCB = new JCheckBox("Propagate only to Z");
+		this.onlyToZCB.setSelected(this.onlyToZ);
+		this.onlyToZCB.addItemListener(new OnlyToZListener());
+		rowForCSTNUButtons.add(this.onlyToZCB);
 
 		JCheckBox contingentAlsoAsOrdinaryCB = new JCheckBox("Propagate contingents also as std constraints");
 		contingentAlsoAsOrdinaryCB.setSelected(this.contingentAlsoAsOrdinary);
@@ -1969,13 +1968,13 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	}
 
 	/**
-	 * Adds vertex and edges renders, tooltips and mouse behaviour to a viewer.
+	 * Adds vertex and edges renders, tooltips and mouse behavior to a viewer.
 	 * 
 	 * @param viewer
 	 * @param firstViewer
 	 */
 	<E extends Edge> void buildRenderContext(VisualizationViewer<LabeledNode, E> viewer, boolean firstViewer) {
-		LOG.severe("buildRenderContext: " + viewer + ", firstViewer:" + firstViewer);
+		LOG.finest("buildRenderContext: " + viewer + ", firstViewer:" + firstViewer);
 
 		// vertex and edge renders
 		setNodeEdgeRenders(viewer, firstViewer);
@@ -1987,8 +1986,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				null, // only after graph load it is possible to set edge supplier.
 				CSTNEditor.this,
 				firstViewer);
-		LOG.severe("buildRenderContext.graphMouse " + graphMouse);
-		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
+		LOG.finest("buildRenderContext.graphMouse " + graphMouse);
+//		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
 		viewer.setGraphMouse(graphMouse);
 		viewer.addKeyListener(graphMouse.getModeKeyListener());
 
@@ -2000,10 +1999,9 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * Updates Edge Supplier in viewer considering the current type of loaded graph.
 	 * 
 	 * @param viewer
-	 * @param firstViewer
 	 */
 	@SuppressWarnings("unchecked")
-	<E extends Edge> void updateEdgeSupplierInViewer(VisualizationViewer<LabeledNode, E> viewer, boolean firstViewer) {
+	<E extends Edge> void updateEdgeSupplierInViewer(VisualizationViewer<LabeledNode, E> viewer) {
 		// MOUSE setting
 		// Create a mouse and add it to the visualization component
 		// The following edgeSupp has to be update after graph load!
@@ -2076,8 +2074,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		CSTNEditor.this.inputGraph.setInputFile(fileName);
 		CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 		// LOG.severe(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-		updateEdgeSupplierInViewer(this.vvEditor, true);
-		updateEdgeSupplierInViewer(this.vvViewer, false);
+		updateEdgeSupplierInViewer(this.vvEditor);
+		updateEdgeSupplierInViewer(this.vvViewer);
 
 		CSTNEditor.this.validate();
 		CSTNEditor.this.repaint();
