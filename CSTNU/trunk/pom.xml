@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>2.10-SNAPSHOT</version>
+	<version>2.11-SNAPSHOT</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -339,7 +339,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
+				<version>1.8</version><!--$NO-MVN-MAN-VER$--><!-- Fondamentale usare la versione 1.8 -->
 				<executions>
 					<execution>
 						<id>package</id>

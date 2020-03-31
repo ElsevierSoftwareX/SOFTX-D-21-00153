@@ -83,6 +83,7 @@ import it.univr.di.cstnu.algorithms.STN;
 import it.univr.di.cstnu.algorithms.STN.STNCheckStatus;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.CSTNEdge;
+import it.univr.di.cstnu.graph.CSTNPSUEdge;
 import it.univr.di.cstnu.graph.CSTNUEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.EdgeSupplier;
@@ -669,22 +670,22 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl1 = CSTNEditor.this.viewerMessageArea;
 			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-			((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+			TNGraph<CSTNPSUEdge> g1 = new TNGraph<>((TNGraph<CSTNPSUEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends CSTNPSUEdge>) EdgeSupplier.DEFAULT_CSTNPSU_EDGE_CLASS);
+			((TNGraph<CSTNPSUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
 
-			CSTNEditor.this.onlyToZCB.setSelected(false);
-			CSTNEditor.this.cstnu = new CSTNPSU((TNGraph<CSTNUEdge>) CSTNEditor.this.checkedGraph, 30 * 60, CSTNEditor.this.onlyToZ);
+			// CSTNEditor.this.onlyToZCB.setSelected(false);
+			CSTNEditor.this.cstnpsu = new CSTNPSU((TNGraph<CSTNPSUEdge>) CSTNEditor.this.checkedGraph, 30 * 60);
 			jl1.setBackground(Color.orange);
 			try {
-				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnu.dynamicControllabilityCheck();
+				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnpsu.dynamicControllabilityCheck();
 				if (CSTNEditor.this.cstnuStatus.consistency) {
 					jl1.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The CSTNPSU is dynamically controllable.</b>");
 					// jl.setIcon(CSTNUEditor.infoIcon);
 					jl1.setBackground(Color.green);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.cstnu.getGChecked());
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.cstnpsu.getGChecked());
 						}
 					}
 				} else {
@@ -1287,11 +1288,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public OpenFileListener() {
 			this.chooser = new JFileChooser(CSTNEditor.default_dir);
 			this.chooser.setDragEnabled(true);
-			String msg = "The extension of the selected file determines the kind of network. Use *.stn, *.cstn, *.cstnu, *.cstpsu";
+			String msg = "The extension of the selected file determines the kind of network. Use *.stn, *.cstn, *.cstnu, *.stpsu, *.cstpsu";
 			this.chooser.setToolTipText(msg);
 			this.chooser.setApproveButtonToolTipText(msg);
 
-			FileFilter stnE = new FileNameExtensionFilter("(C)STN(U) file (.stn/.cstn/.cstnu)", "stn", "cstn", "cstnu", "cstnpsu");
+			FileFilter stnE = new FileNameExtensionFilter("(C)STN(U) file (.stn/.cstn/.cstnu)", "stn", "cstn", "cstnu", "cstnpsu", "stnpsu");
 			this.chooser.addChoosableFileFilter(stnE);
 			this.chooser.setFileFilter(stnE);
 			this.chooser.setAcceptAllFileFilterUsed(false);
@@ -1519,6 +1520,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * CSTNU checker
 	 */
 	CSTNU cstnu;
+
+	/**
+	 * CSTNPSU checker
+	 */
+	CSTNPSU cstnpsu;
 
 	/**
 	 * CSTNU2CSTN checker
@@ -2002,22 +2008,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	@SuppressWarnings("unchecked")
 	<E extends Edge> void updateEdgeSupplierInViewer(VisualizationViewer<LabeledNode, E> viewer) {
-		// MOUSE setting
-		// Create a mouse and add it to the visualization component
-		// The following edgeSupp has to be update after graph load!
-		EdgeSupplier<E> edgeSupp = null;
-
-		if (this.currentTNGraphType == NetworkType.STN) {
-			edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
-		} else {
-			if (this.currentTNGraphType == NetworkType.CSTN) {
-				edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-			} else {
-				edgeSupp = (EdgeSupplier<E>) new EdgeSupplier<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-			}
-		}
-		//
-		((EditingModalGraphMouse<LabeledNode, E>) viewer.getGraphMouse()).setEdgeEditingPlugin(edgeSupp);
+		((EditingModalGraphMouse<LabeledNode, E>) viewer.getGraphMouse()).setEdgeEditingPlugin((EdgeSupplier<E>) new EdgeSupplier<>(this.currentEdgeImpl));
 	}
 
 	/**
@@ -2061,10 +2052,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
 					showCommandRow("CSTNU");
 				} else {
-					if (name.endsWith(".cstnpsu")) {
+					if (name.endsWith("stnpsu") || name.endsWith("cstnpsu")) {
 						this.currentTNGraphType = NetworkType.CSTNPSU;
-						this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
-						graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
+						this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNPSU_EDGE_CLASS;
+						graphReader = new TNGraphMLReader<CSTNPSUEdge>(fileName, (Class<? extends CSTNPSUEdge>) this.currentEdgeImpl);
 						showCommandRow("CSTNU");
 					}
 				}

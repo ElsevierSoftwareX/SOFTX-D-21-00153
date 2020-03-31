@@ -148,7 +148,7 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Hypergraph<LabeledNode, Edge>, String>() {
 					@Override
 					public String apply(final Hypergraph<LabeledNode, Edge> g) {
-						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU)
+						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU || TNGraphMLWriter.this.networkType == NetworkType.CSTNPSU)
 							return String.valueOf(((TNGraph<Edge>) (g)).getContingentCount());
 						return null;
 					}
@@ -160,7 +160,8 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Hypergraph<LabeledNode, Edge>, String>() {
 					@Override
 					public String apply(final Hypergraph<LabeledNode, Edge> g) {
-						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU || TNGraphMLWriter.this.networkType == NetworkType.CSTN)
+						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU || TNGraphMLWriter.this.networkType == NetworkType.CSTNPSU
+								|| TNGraphMLWriter.this.networkType == NetworkType.CSTN)
 							return String.valueOf(((TNGraph<Edge>) (g)).getObserverCount());
 						return null;
 					}
@@ -217,7 +218,8 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<LabeledNode, String>() {
 					@Override
 					public String apply(final LabeledNode v) {
-						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU || TNGraphMLWriter.this.networkType == NetworkType.CSTN)
+						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU || TNGraphMLWriter.this.networkType == NetworkType.CSTNPSU
+								|| TNGraphMLWriter.this.networkType == NetworkType.CSTN)
 							return v.getLabel().toString();
 						return null;
 					}
@@ -244,7 +246,7 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Edge, String>() {
 					@Override
 					public String apply(final Edge e) {
-						if (e.isCSTNEdge() || e.isCSTNUEdge()) {
+						if (CSTNEdge.class.isAssignableFrom(e.getClass())) {
 							return ((CSTNEdge) e).getLabeledValueMap().toString();
 						}
 						return null;
@@ -265,8 +267,8 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Edge, String>() {
 					@Override
 					public String apply(final Edge e) {
-						if (e.isCSTNUEdge()) {
-							String s = ((CSTNUEdge) e).getUpperCaseValueMap().toString();
+						if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+							String s = ((BasicCSTNUEdge) e).getUpperCaseValueMap().toString();
 							return (s.startsWith("{}")) ? null : s;
 						}
 						return null;
@@ -277,8 +279,9 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Edge, String>() {
 					@Override
 					public String apply(final Edge e) {
-						if (e.isCSTNUEdge()) {
-							String s = ((CSTNUEdge) e).getLowerCaseValue().toString();
+						if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+							String s = (e.isCSTNUEdge()) ? ((CSTNUEdge) e).getLowerCaseValue().toString()
+									: ((CSTNPSUEdge) e).getLowerCaseValueMap().toString();
 							return (s.startsWith("{}")) ? null : s;
 						}
 						return null;

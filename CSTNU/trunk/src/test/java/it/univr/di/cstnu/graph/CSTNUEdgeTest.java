@@ -50,7 +50,7 @@ public class CSTNUEdgeTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.CSTNUEdgePluggable#clearLowerCaseValue()}.
+	 * Test method for {@link it.univr.di.cstnu.graph.CSTNUEdgePluggable#clearLowerCaseValues()}.
 	 */
 	@Test
 	public void testClearLowerCaseValue() {
@@ -59,7 +59,7 @@ public class CSTNUEdgeTest {
 
 		assertEquals("❮e; contingent; {(1, ⊡) }; LL: {(A, 1, ⊡) }; ❯", this.e.toString());
 
-		this.e.clearLowerCaseValue();
+		this.e.clearLowerCaseValues();
 		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
 	}
 

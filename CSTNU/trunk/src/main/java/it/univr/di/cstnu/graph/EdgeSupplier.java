@@ -25,6 +25,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	static final public Class<? extends STNEdge> DEFAULT_STN_EDGE_CLASS = STNEdgeInt.class;
 	static final public Class<? extends CSTNEdge> DEFAULT_CSTN_EDGE_CLASS = CSTNEdgePluggable.class;
 	static final public Class<? extends CSTNUEdge> DEFAULT_CSTNU_EDGE_CLASS = CSTNUEdgePluggable.class;
+	static final public Class<? extends CSTNPSUEdge> DEFAULT_CSTNPSU_EDGE_CLASS = CSTNPSUEdgePluggable.class;
 	/**
 	 * 
 	 */

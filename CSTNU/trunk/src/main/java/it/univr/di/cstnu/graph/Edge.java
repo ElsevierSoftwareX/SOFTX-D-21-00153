@@ -79,6 +79,13 @@ public interface Edge extends Component {
 	public boolean isCSTNUEdge();
 
 	/**
+	 * This method is inappropriate here, but it helps to speed up the code.
+	 * 
+	 * @return true if the edge is CSTNPSU edge
+	 */
+	boolean isCSTNPSUEdge();
+
+	/**
 	 * @return true is it does not contain any values
 	 */
 	public boolean isEmpty();
@@ -159,5 +166,6 @@ public interface Edge extends Component {
 	 * @param e edge to clone. If null, it does nothing.
 	 */
 	public void takeIn(Edge e);
+
 
 }

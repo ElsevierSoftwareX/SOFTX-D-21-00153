@@ -21,6 +21,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
+import it.univr.di.cstnu.graph.BasicCSTNUEdge;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.CSTNUEdge;
 import it.univr.di.cstnu.graph.Edge;
@@ -219,7 +220,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @return true if the value represent a negative loop!
 	 */
 	static final boolean checkAndManageIfNewLabeledValueIsANegativeLoop(final int value, final LabeledNode source, final LabeledNode dest,
-			final CSTNUEdge newEdge, CSTNCheckStatus status) {
+			final BasicCSTNUEdge newEdge, CSTNCheckStatus status) {
 		if (source == dest && value < 0) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
