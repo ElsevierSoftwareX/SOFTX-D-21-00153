@@ -84,6 +84,11 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	}
 
 	@Override
+	public boolean isCSTNPSUEdge() {
+		return false;
+	}
+
+	@Override
 	public boolean isSTNEdge() {
 		return false;
 	}

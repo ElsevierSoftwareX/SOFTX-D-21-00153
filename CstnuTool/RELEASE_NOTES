@@ -1,6 +1,14 @@
 RELEASE NOTES
 =============START SNIPPET: rn
 
+v2.11
+------------
+	date: 2020-02-02
+
+	Graphical interface simplified. 
+	Now it is more intuitive to add/remove nodes/edges.
+	CSTNPSU class offers a DC check sound-and-complete.
+
 v2.10
 ------------
 	date: 2020-02-02

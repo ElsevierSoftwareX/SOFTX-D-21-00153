@@ -32,8 +32,9 @@ import edu.uci.ics.jung.visualization.VisualizationViewer;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import it.univr.di.Debug;
+import it.univr.di.cstnu.graph.BasicCSTNUEdge;
 import it.univr.di.cstnu.graph.CSTNEdge;
-import it.univr.di.cstnu.graph.CSTNUEdge;
+import it.univr.di.cstnu.graph.CSTNPSUEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.STNEdge;
@@ -129,7 +130,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		final JRadioButton contingentButton = new JRadioButton(Edge.ConstraintType.contingent.toString());
 		contingentButton.setActionCommand(Edge.ConstraintType.contingent.toString());
 		contingentButton.setSelected(e.isContingentEdge());
-		if (g.getType() == NetworkType.CSTNU)
+		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU)
 			setConditionToEnable(contingentButton, viewerName, false);
 		final JRadioButton constraintButton = new JRadioButton(Edge.ConstraintType.constraint.toString());
 		constraintButton.setActionCommand(Edge.ConstraintType.constraint.toString());
@@ -144,13 +145,13 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		// Group the radio buttons.
 		final ButtonGroup buttonGroup = new ButtonGroup();
 		buttonGroup.add(normalButton);
-		if (g.getType() == NetworkType.CSTNU)
+		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU)
 			buttonGroup.add(contingentButton);
 		buttonGroup.add(constraintButton);
 		buttonGroup.add(derivedButton);
 
 		jp.add(normalButton);
-		if (g.getType() == NetworkType.CSTNU) {
+		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU) {
 			jp.add(contingentButton);
 			jp.add(new JLabel(""));// in order to jump a cell
 		}
@@ -257,25 +258,24 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			}
 		}
 
-		int nUpperLabels = ((CSTNUEdge)e).upperCaseValueSize();
+		int nUpperLabels = ((BasicCSTNUEdge) e).upperCaseValueSize();
 		JTextField[] labelUpperInputs = null;
 		JTextField[] newUpperValueInputs = null;
 
 		LabeledLowerCaseValue lowerValue = null;
-		int nLowerLabels = -1;
+		int nLowerLabels = ((BasicCSTNUEdge) e).lowerCaseValueSize();
 		JTextField[] labelLowerInputs = null;
 		JTextField[] newLowerValueInputs = null;
 
-		if (e.isContingentEdge() || nUpperLabels > 0) {
+		if (e.isContingentEdge() || nUpperLabels > 0 || nLowerLabels > 0) {
 			// Show all upper and lower case values allowing also the possibility of insertion.
-			CSTNUEdge e1 = (CSTNUEdge) e;
+			BasicCSTNUEdge e1 = (BasicCSTNUEdge) e;
 			labelUpperInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
 			newUpperValueInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
 
-			lowerValue = e1.getLowerCaseValue();
-			nLowerLabels = (lowerValue.isEmpty()) ? 0 : 1;
-			labelLowerInputs = new JTextField[1];
-			newLowerValueInputs = new JTextField[1];
+			// lowerValue = e1.getLowerCaseValue();
+			labelLowerInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
+			newLowerValueInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
 
 			// If the edge type is contingent, then we allow the modification of the single possible lower/upper case value.
 			// Show additional label
@@ -320,22 +320,40 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						"Contingent name is wrong or it is not followed by : without spaces!", false));
 			}
 			i = 0;
-			if (nLowerLabels == 1) {
-				// for (java.util.Map.Entry<ALabel, LabeledIntTreeMap> entry : e.getLowerLabelSet()) {
-				// LabeledIntTreeMap labeledValues = entry.getValue();
-				// for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
-				// It should be only one! I put a cycle in order to verify
-				jp.add(new JLabel("Lower Label"));
-				jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
-				labelLowerInputs[i] = jtLabel;
-				setConditionToEnable(jtLabel, viewerName, true);
-				jp.add(jtLabel);
-				jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
-				newLowerValueInputs[i] = jtLabel;
-				setConditionToEnable(jtLabel, viewerName, false);
-				jp.add(jtLabel);
-				// }
-				// }
+			if (nLowerLabels > 0) {
+				if (e1.isCSTNUEdge()) {
+					lowerValue = e1.getLowerCaseValue();
+					jp.add(new JLabel("Lower Label"));
+					jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
+					labelLowerInputs[i] = jtLabel;
+					setConditionToEnable(jtLabel, viewerName, true);
+					jp.add(jtLabel);
+					jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
+					newLowerValueInputs[i] = jtLabel;
+					setConditionToEnable(jtLabel, viewerName, false);
+					group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+					jp.add(jtLabel);
+				} else {
+					// CSTNPSU edge
+					CSTNPSUEdge e2 = (CSTNPSUEdge) e1;
+					for (ALabel alabel : e2.getLowerCaseValueMap().keySet()) {
+						LabeledIntTreeMap labeledValues = e2.getLowerCaseValueMap().get(alabel);
+						for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+							// It should be only one! I put a cycle in order to verify
+							jp.add(new JLabel("Lower Label"));
+							jtLabel = new JTextField(entry1.getKey().toString());
+							labelLowerInputs[i] = jtLabel;
+							setConditionToEnable(jtLabel, viewerName, true);
+							jp.add(jtLabel);
+							jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
+							newLowerValueInputs[i] = jtLabel;
+							setConditionToEnable(jtLabel, viewerName, (nLowerLabels > 1) ? true : false);
+							jp.add(jtLabel);
+							group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+							i++;
+						}
+					}
+				}
 			} else {
 				if (editorPanel) {
 					jp.add(new JLabel("Lower Label"));
@@ -346,6 +364,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					jtLabel = new JTextField("");
 					newLowerValueInputs[i] = jtLabel;
 					setConditionToEnable(jtLabel, viewerName, false);
+					group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
 					jp.add(jtLabel);
 				}
 			}
@@ -399,6 +418,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						e1.setValue(v.intValue());
 					}
 				}
+				modified = true;
 			}
 			if (e.isCSTNEdge()) {
 				CSTNEdge e1 = (CSTNEdge) e;
@@ -421,6 +441,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						continue; // if label is null or empty, the value is the default value!
 					l = ((s == null) || (s.length() == 0)) ? Label.emptyLabel : Label.parse(s);
 					comp.put(l, v);
+					modified = true;
 				}
 				// the row representing possible new value can have the two fields null!
 				is = (newIntInputs[i] != null) ? newIntInputs[i].getText() : "";
@@ -434,9 +455,9 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						}
 					}
 					comp.put(l, v);
+					modified = true;
 				}
 				if (!e1.getLabeledValueMap().equals(comp)) {
-					modified = true;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
 							LabelEditingGraphMousePlugin.LOG.finer("Original label set of the component: " + e1.getLabeledValueMap());
@@ -450,6 +471,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						}
 					}
 					e1.mergeLabeledValue(comp);
+					modified = true;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
 							LabelEditingGraphMousePlugin.LOG.finer("New label set assigned to the component: " + e1.getLabeledValueMap());
@@ -458,80 +480,25 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				}
 			}
 
-			// I manage possible specification of lower/upper case new values
-			String caseValue = null, nodeName = null;
-			String[] splitted = null;
-			if (e.isContingentEdge()) {
-				CSTNUEdge e1 = (CSTNUEdge) e;
+			if (e.isContingentEdge() || nUpperLabels > 0 || nLowerLabels > 0) {
+				// I manage possible specification of lower/upper case new values
+				String caseValue = null, nodeName = null;
+				String[] splitted = null;
+				if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+					BasicCSTNUEdge e1 = (BasicCSTNUEdge) e;
 
-				// UPPER CASE VALUE
-				// we consider only the first row
-				// We don't use label because it has to be only one s = (labelUpperInputs[0] != null) ? labelUpperInputs[0].getText() : "";
-				JTextField s = newUpperValueInputs[0];
-				caseValue = (s != null) ? s.getText() : "";
-				if (caseValue.length() != 0) {
-					// the value is in the form "<node name>: <int>"
-					splitted = caseValue.split(":[ ]*");
-					if (splitted.length < 2) {
-						v = null;
-					} else {
-						// nodeName = splitted[0].toUpperCase();
-						nodeName = splitted[0];
-						v = Integer.valueOf(splitted[1]);
-						if (nodeName != null && nodeName.isEmpty())
-							nodeName = null;
-						else {
-							if (g.getNode(nodeName) == null) {
-								if (Debug.ON) {
-									if (LOG.isLoggable(Level.SEVERE)) {
-										LabelEditingGraphMousePlugin.LOG
-												.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!" + caseValue);
-									}
-								}
-								nodeName = null;
-							}
-						}
-
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINEST)) {
-								LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
-							}
-						}
-					}
-				} else {
-					nodeName = null;
-					v = null;
-				}
-				if (nodeName != null && v != null) {
-					e1.clearUpperCaseValues();
-					final LabeledNode source = g.getSource(e);
-					final LabeledNode dest = g.getDest(e);
-					final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
-					ALabel alabel = new ALabel(new ALetter(source.getName()), g.getALabelAlphabet());
-					if (alabel.toString().equals(nodeName)) {
-						e1.clearUpperCaseValues();
-						e1.mergeUpperCaseValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
-						// value of a contingent must have the label of its endpoints.
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINEST)) {
-								LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
-							}
-						}
-					}
-				}
-				// lower case
-				// we consider only the first row
-				// s = (labelLowerInputs[0] != null) ? labelLowerInputs[0].getText() : "";
-				caseValue = newLowerValueInputs[0].getText();
-				if (caseValue.length() != 0) {
-					// the value is in the form "<node name>: <int>"
-					if (caseValue.length() > 0) {
+					// UPPER CASE VALUE
+					// we consider only the first row
+					// We don't use label because it has to be only one s = (labelUpperInputs[0] != null) ? labelUpperInputs[0].getText() : "";
+					JTextField s = newUpperValueInputs[0];
+					caseValue = (s != null) ? s.getText() : "";
+					if (caseValue.length() != 0) {
+						// the value is in the form "<node name>: <int>"
 						splitted = caseValue.split(":[ ]*");
 						if (splitted.length < 2) {
-							nodeName = null;
 							v = null;
 						} else {
-							// nodeName = splitted[0].toLowerCase();
+							// nodeName = splitted[0].toUpperCase();
 							nodeName = splitted[0];
 							v = Integer.valueOf(splitted[1]);
 							if (nodeName != null && nodeName.isEmpty())
@@ -540,10 +507,17 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 								if (g.getNode(nodeName) == null) {
 									if (Debug.ON) {
 										if (LOG.isLoggable(Level.SEVERE)) {
-											LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
+											LabelEditingGraphMousePlugin.LOG
+													.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!" + caseValue);
 										}
 									}
 									nodeName = null;
+								}
+							}
+
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINEST)) {
+									LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
 								}
 							}
 						}
@@ -551,22 +525,84 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						nodeName = null;
 						v = null;
 					}
+					if ((v == null || nodeName == null) && nUpperLabels > 0) {
+						// The upper case label was removed.
+						e1.clearUpperCaseValues();
+						modified = true;
+					}
+					if (nodeName != null && v != null) {
+						e1.clearUpperCaseValues();
+						final LabeledNode source = g.getSource(e);
+						final LabeledNode dest = g.getDest(e);
+						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
+						ALabel alabel = new ALabel(new ALetter(source.getName()), g.getALabelAlphabet());
+						if (alabel.toString().equals(nodeName)) {
+							e1.clearUpperCaseValues();
+							e1.putUpperCaseValue(endpointsLabel, alabel, v);// Temporally I ignore the label specified by user because an upper/lower case
+							// value of a contingent must have the label of its endpoints.
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.FINEST)) {
+									LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
+								}
+							}
+							modified = true;
+						}
+					}
+					// LOWER CASE
+					// we consider only the first row
+					// s = (labelLowerInputs[0] != null) ? labelLowerInputs[0].getText() : "";
+					caseValue = newLowerValueInputs[0].getText();
+					if (caseValue.length() != 0) {
+						// the value is in the form "<node name>: <int>"
+						if (caseValue.length() > 0) {
+							splitted = caseValue.split(":[ ]*");
+							if (splitted.length < 2) {
+								nodeName = null;
+								v = null;
+							} else {
+								// nodeName = splitted[0].toLowerCase();
+								nodeName = splitted[0];
+								v = Integer.valueOf(splitted[1]);
+								if (nodeName != null && nodeName.isEmpty())
+									nodeName = null;
+								else {
+									if (g.getNode(nodeName) == null) {
+										if (Debug.ON) {
+											if (LOG.isLoggable(Level.SEVERE)) {
+												LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
+											}
+										}
+										nodeName = null;
+									}
+								}
+							}
+						} else {
+							nodeName = null;
+							v = null;
+						}
+					}
+					if ((v == null || nodeName == null) && nLowerLabels > 0) {
+						// The upper case label was removed.
+						e1.clearLowerCaseValues();
+						modified = true;
+					}
 					if ((nodeName != null) && (v != null)) {
-						e1.clearLowerCaseValue();
+						e1.clearLowerCaseValues();
 						final LabeledNode source = g.getSource(e);
 						final LabeledNode dest = g.getDest(e);
 						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
 
 						if (dest.getName().equals(nodeName)) {
-							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel()) : new ALabel(dest.getName(), g.getALabelAlphabet());
+							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel())
+									: new ALabel(dest.getName(), g.getALabelAlphabet());
 							dest.setAlabel(destALabel);
-							e1.setLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower case
-							// value of a contingent must have the label of its endpoints.
+							e1.putLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower
+																				// case value of a contingent must have the label of its endpoints.
+							modified = true;
 						}
 					}
 				}
 			}
-
 		}
 		return modified;
 	}

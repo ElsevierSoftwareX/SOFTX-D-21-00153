@@ -325,7 +325,6 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		final int propositionN = this.g.getObserverCount();
 		final int nodeN = this.g.getVertexCount();
 		int m = (this.getMaxWeight() != 0) ? this.getMaxWeight() : 1;
-		// From CSTNU TIME 2018: m |T|^2 3^|P|
 		int maxCycles = m * nodeN * nodeN * (int) Math.pow(propositionN, 3);
 		if (maxCycles < 0)
 			maxCycles = Integer.MAX_VALUE;

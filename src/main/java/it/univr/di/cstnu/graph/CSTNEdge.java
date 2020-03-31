@@ -17,6 +17,11 @@ import it.univr.di.labeledvalue.LabeledIntMap;
  */
 public interface CSTNEdge extends Edge {
 	/**
+	 * @return the implementing class to represent labeled values
+	 */
+	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass();
+
+	/**
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */
 	public LabeledIntMap getLabeledValueMap();
@@ -35,12 +40,12 @@ public interface CSTNEdge extends Edge {
 	/**
 	 * @return the minimal value among all ordinary labeled values if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
-	public int getMinValue();
+	public Entry<Label> getMinLabeledValue();
 
 	/**
 	 * @return the minimal value among all ordinary labeled values if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
-	public Entry<Label> getMinLabeledValue();
+	public int getMinValue();
 
 	/**
 	 * @return the minimal value among all ordinary labeled values having label without unknown literals, if there are some;
@@ -59,13 +64,13 @@ public interface CSTNEdge extends Edge {
 	 * @return the value of label l or the minimal value of labels subsumed by <code>l</code> if it exists, null otherwise.
 	 */
 	public int getMinValueSubsumedBy(final Label l);
-
+	
 	/**
 	 * @param label label
 	 * @return the value associated to label it it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getValue(final Label label);
-	
+
 	/**
 	 * Merges the labeled value i to the set of labeled values of this edge.
 	 *
@@ -121,9 +126,4 @@ public interface CSTNEdge extends Edge {
 	 * @return the number of labeled values associated to this edge.
 	 */
 	public int size();
-
-	/**
-	 * @return the implementing class to represent labeled values
-	 */
-	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass();
 }

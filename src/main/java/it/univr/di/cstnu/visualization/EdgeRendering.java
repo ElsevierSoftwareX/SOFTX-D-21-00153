@@ -12,8 +12,8 @@ import com.google.common.base.Function;
 
 import edu.uci.ics.jung.visualization.RenderContext;
 import edu.uci.ics.jung.visualization.picking.PickedInfo;
+import it.univr.di.cstnu.graph.BasicCSTNUEdge;
 import it.univr.di.cstnu.graph.CSTNEdge;
-import it.univr.di.cstnu.graph.CSTNUEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.STNEdge;
 import it.univr.di.labeledvalue.Constants;
@@ -101,16 +101,16 @@ public class EdgeRendering {
 					sb.append(e1.getLabeledValueMap().toString());
 				}
 			}
-			if (e.isCSTNUEdge()) {
-				CSTNUEdge e1 = (CSTNUEdge) e;
+			if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+				BasicCSTNUEdge e1 = (BasicCSTNUEdge) e;
 
-				if (e1.getUpperCaseValueMap().size() > 0) {
+				if (e1.upperCaseValueSize() > 0) {
 					sb.append("; UL: ");
 					sb.append(e1.upperCaseValuesAsString());
 				}
-				if (!e1.getLowerCaseValue().isEmpty()) {
+				if (e1.lowerCaseValueSize() > 0) {
 					sb.append("; LL:");
-					sb.append(e1.lowerCaseValueAsString());
+					sb.append(e1.lowerCaseValuesAsString());
 				}
 
 			}

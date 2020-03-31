@@ -686,7 +686,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 
 	/**
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param p a {@link java.lang.String} object.
+	 * @param p a {@link ALabel} object.
 	 * @return the old value if it exists, null otherwise.
 	 */
 	public int remove(final Label l, final ALabel p) {
@@ -703,6 +703,16 @@ public class LabeledALabelIntTreeMap implements Serializable {
 			this.map.remove(p);// it is necessary for making equals working.
 		}
 		return old;
+	}
+
+	/**
+	 * @param aleph a {@link ALabel} object.
+	 * @return true if removed, false otherwise.
+	 */
+	public boolean remove(final ALabel aleph) {
+		if (aleph == null)
+			return false;
+		return this.map.remove(aleph) != null;
 	}
 
 	/**

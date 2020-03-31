@@ -62,7 +62,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * Edge Interface      Network Type
 	 * STNEdge             STN
 	 * CSTNEdge            CSTN
-	 * CSTNUEdge           CSTNU/CSTPSU
+	 * CSTNUEdge           CSTNU
+	 * CSTNPSUEdge		   CSTPSU
 	 * </pre>
 	 * 
 	 * <b>This is not a correct design-choice but it allows the written of classes that can use TNGraph<Edge> objects and make only different operations
@@ -192,7 +193,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 * List of edges with lower case label set not empty
 	 */
-	private ObjectList<CSTNUEdge> lowerCaseEdges;
+	private ObjectList<BasicCSTNUEdge> lowerCaseEdges;
 
 	/**
 	 * Name
@@ -239,7 +240,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 */
 	public <E1 extends E> TNGraph(Class<E1> inputEdgeImplClass) {// , Class<M1> inputLabeledValueMapImplClass
 		super(EdgeType.DIRECTED);
-		if (CSTNUEdge.class.isAssignableFrom(inputEdgeImplClass))
+		if (CSTNPSUEdge.class.isAssignableFrom(inputEdgeImplClass))
+			this.type = NetworkType.CSTNPSU;
+		else if (CSTNUEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.type = NetworkType.CSTNU;
 		else if (CSTNEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.type = NetworkType.CSTN;
@@ -256,7 +259,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		this.edge2index = new Object2ObjectAVLTreeMap<>(); // From fastutil javadoc:
 		// In general, AVL trees have slightly slower updates but faster searches; however, on very large collections the smaller height may lead in fact to
 		// faster updates, too.
-		if (this.type == NetworkType.CSTNU)
+		if (BasicCSTNUEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.aLabelAlphabet = new ALabelAlphabet();
 	}
 
@@ -266,7 +269,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 */
 	public <E1 extends E> TNGraph(Class<E1> edgeImplClass, ALabelAlphabet alphabet) {
 		this(edgeImplClass);
-		if (alphabet != null && this.type == NetworkType.CSTNU)
+		if (alphabet != null)
 			this.aLabelAlphabet = alphabet;
 	}
 
@@ -601,20 +604,26 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 					((CSTNEdge) eNew).mergeLabeledValue(entry.getKey(), value);
 				}
 			}
-			if (e.isCSTNUEdge()) {
-				for (ALabel alabel : ((CSTNUEdge) e).getUpperCaseValueMap().keySet()) {
-					for (Object2IntMap.Entry<Label> entry1 : ((CSTNUEdge) e).getUpperCaseValueMap().get(alabel).entrySet()) {// entrySet read-only
+			if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+				for (ALabel alabel : ((BasicCSTNUEdge) e).getUpperCaseValueMap().keySet()) {
+					for (Object2IntMap.Entry<Label> entry1 : ((BasicCSTNUEdge) e).getUpperCaseValueMap().get(alabel).entrySet()) {// entrySet read-only
 						value = entry1.getIntValue();
 						if (value == Constants.INT_NEG_INFINITE)
 							continue;
 						label = entry1.getKey();
 						if (label.containsUnknown())
 							continue;
-						((CSTNUEdge) eNew).mergeUpperCaseValue(entry1.getKey(), alabel, entry1.getIntValue());
+						((BasicCSTNUEdge) eNew).mergeUpperCaseValue(entry1.getKey(), alabel, entry1.getIntValue());
 					}
 				}
+				if (e.isCSTNUEdge()) {
 				// lower case value
 				((CSTNUEdge) eNew).setLowerCaseValue(((CSTNUEdge) e).getLowerCaseValue());
+				}
+				if (e.isCSTNPSUEdge()) {
+					// lower case value
+					((CSTNPSUEdge) eNew).setLowerCaseValue(((CSTNPSUEdge) e).getLowerCaseValueMap());
+				}
 			}
 			if (eNew.isEmpty())
 				continue;
@@ -862,16 +871,16 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * @return the set of edges containing Lower Case Labels (when type of network is CSTNU). If there is no such edges, it returns an empty list.
+	 * @return the set of edges containing Lower Case Labels (when type of network is CSTNU/CSTPSU). If there is no such edges, it returns an empty list.
 	 */
-	public ObjectList<CSTNUEdge> getLowerLabeledEdges() {
+	public ObjectList<BasicCSTNUEdge> getLowerLabeledEdges() {
 		if (this.lowerCaseEdges == null) {
 			this.lowerCaseEdges = new ObjectArrayList<>();
-			if (getType() == NetworkType.CSTNU) {
-				CSTNUEdge edge;
+			if (getType() == NetworkType.CSTNU || getType() == NetworkType.CSTNPSU) {
+				BasicCSTNUEdge edge;
 				for (int i = 0; i < this.order; i++) {
 					for (int j = 0; j < this.order; j++) {
-						if ((edge = (CSTNUEdge) this.adjacency[i][j]) != null && !edge.getLowerCaseValue().isEmpty()) {
+						if ((edge = (BasicCSTNUEdge) this.adjacency[i][j]) != null && edge.lowerCaseValueSize() == 1 && edge.isContingentEdge()) {
 							this.lowerCaseEdges.add(edge);
 						}
 					}
@@ -1074,10 +1083,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 * @return the set of edges containing Upper Case Label.
 	 */
-	public Set<CSTNUEdge> getUpperLabeledEdges() {
-		final ObjectArraySet<CSTNUEdge> es1 = new ObjectArraySet<>();
+	public Set<BasicCSTNUEdge> getUpperLabeledEdges() {
+		final ObjectArraySet<BasicCSTNUEdge> es1 = new ObjectArraySet<>();
 		for (final E e : this.getEdges()) {
-			CSTNUEdge e1 = ((CSTNUEdge) e);
+			BasicCSTNUEdge e1 = ((BasicCSTNUEdge) e);
 			if (e1.upperCaseValueSize() > 0) {
 				es1.add(e1);
 			}
@@ -1500,7 +1509,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 				return;
 			}
 			if (obj.equals("LowerLabel")) {
-				CSTNUEdge e1 = (CSTNUEdge) edge;
+				BasicCSTNUEdge e1 = (BasicCSTNUEdge) edge;
 				if (oldValue.equals("remove")) {
 					this.lowerCaseEdges.remove(e1);
 				} else {

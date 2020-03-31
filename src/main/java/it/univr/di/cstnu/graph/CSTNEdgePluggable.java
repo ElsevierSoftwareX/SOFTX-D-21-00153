@@ -25,6 +25,11 @@ import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 
 	/**
+	 * Labeled value class used in the class.
+	 */
+	public static final Class<? extends LabeledIntMap> labeledValueMapImpl = LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS;
+
+	/**
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
@@ -34,12 +39,6 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	 *
 	 */
 	private static final long serialVersionUID = 4L;
-
-
-	/**
-	 * Labeled value class used in the class.
-	 */
-	public static final Class<? extends LabeledIntMap> labeledValueMapImpl = LabeledIntMapSupplier.DEFAULT_LABELEDINTMAP_CLASS;
 
 	/**
 	 * Maintains log of labeled values that have been already inserted and, therefore, cannot be reinserted.
@@ -95,6 +94,11 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		super.clear();
 		this.labeledValue.clear();
 		this.consideredLabeledValue.clear();
+	}
+
+	@Override
+	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass() {
+		return labeledValueMapImpl;
 	}
 
 	/**
@@ -316,10 +320,5 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return Constants.OPEN_TUPLE + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "
 				+ ((this.labeledValue.size() > 0) ? this.labeledValue.toString() + "; " : "")
 				+ Constants.CLOSE_TUPLE;
-	}
-
-	@Override
-	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass() {
-		return labeledValueMapImpl;
 	}
 }

@@ -267,6 +267,7 @@ public class TNGraphMLReader<E extends Edge> {
 			e.setConstraintType(ConstraintType.valueOf(edgeTypeF.apply(e)));
 			// Labeled Value
 			data = "";
+			boolean containsLabeledValues = CSTNEdge.class.isAssignableFrom(e.getClass());
 			if (edgeLabeledValueF != null) {
 				data = edgeLabeledValueF.apply(e);
 				if (data != null && !data.isEmpty()) {
@@ -274,7 +275,7 @@ public class TNGraphMLReader<E extends Edge> {
 					if (data.length() > 2 && map == null) {
 						throw new IllegalArgumentException("Labeled values in a wrong format: " + data + " in edge " + e);
 					}
-					if (!e.isCSTNEdge() && !e.isCSTNUEdge()) {
+					if (!containsLabeledValues) {
 						throw new IllegalArgumentException(
 								"Labeled value set is present but it cannot be stored because edge type is not a CSTN o derived type: " + data);
 					}
@@ -288,7 +289,7 @@ public class TNGraphMLReader<E extends Edge> {
 					if (this.tnGraph.getType() == NetworkType.STN) {
 						((STNEdge) e).setValue(Integer.parseInt(data));
 					}
-					if (e.isCSTNEdge() || e.isCSTNUEdge()) {
+					if (containsLabeledValues) {
 						if (((CSTNEdge) e).getLabeledValueMap().isEmpty()) {
 							LabeledIntMap map = LabIntMapSupplier.get();
 							map.put(Label.emptyLabel, Integer.parseInt(data));
@@ -300,10 +301,10 @@ public class TNGraphMLReader<E extends Edge> {
 			if (this.tnGraph.getType() == NetworkType.CSTN && e.isEmpty())
 				this.tnGraph.removeEdge(e);
 		}
-		if (this.tnGraph.getType() != NetworkType.CSTNU)
+		if (this.tnGraph.getType() != NetworkType.CSTNU && this.tnGraph.getType() != NetworkType.CSTNPSU)
 			return this.tnGraph;
 
-		// FROM HERE the graph is assumed to be a CSTNU graph!
+		// FROM HERE the graph is assumed to be a CSTNU or CSTNPSU graph!
 
 		GraphMLMetadata<E> edgeLabeledUCValueMD = graphReader.getEdgeMetadata().get(TNGraphMLWriter.EDGE_LABELED_UC_VALUE_KEY);
 		GraphMLMetadata<E> edgeLabeledLCValueMD = graphReader.getEdgeMetadata().get(TNGraphMLWriter.EDGE_LABELED_LC_VALUE_KEY);
@@ -326,7 +327,7 @@ public class TNGraphMLReader<E extends Edge> {
 		Function<E, String> edgeLabeledLCValueF = edgeLabeledLCValueMD.transformer;
 
 		for (E e1 : this.tnGraph.getEdges()) {
-			CSTNUEdge e = (CSTNUEdge) e1;
+			BasicCSTNUEdge e = (BasicCSTNUEdge) e1;
 			// Labeled UC Value
 			data = edgeLabeledUCValueF.apply(e1);
 			LabeledALabelIntTreeMap upperCaseMap = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
@@ -337,12 +338,23 @@ public class TNGraphMLReader<E extends Edge> {
 			e.setUpperCaseValueMap(upperCaseMap);
 			// Labeled LC Value
 			data = edgeLabeledLCValueF.apply(e1);
-			LabeledLowerCaseValue lowerCaseValue = LabeledLowerCaseValue.parse(data, this.aLabelAlphabet);
-			if (data != null && data.length() > 2 && (lowerCaseValue == null || lowerCaseValue.isEmpty()))
-				throw new IllegalArgumentException("Lower Case values in a wrong format: " + data + " in edge " + e);
-			if (lowerCaseValue == null)
-				lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
-			e.setLowerCaseValue(lowerCaseValue);
+			if (this.tnGraph.getType() == NetworkType.CSTNU) {
+				LabeledLowerCaseValue lowerCaseValue = LabeledLowerCaseValue.parse(data, this.aLabelAlphabet);
+				if (data != null && data.length() > 2 && (lowerCaseValue == null || lowerCaseValue.isEmpty()))
+					throw new IllegalArgumentException("Lower Case values in a wrong format: " + data + " in edge " + e);
+				if (lowerCaseValue == null)
+					lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
+				((CSTNUEdge) e1).setLowerCaseValue(lowerCaseValue);
+			}
+			if (this.tnGraph.getType() == NetworkType.CSTNPSU) {
+				LabeledALabelIntTreeMap lowerCaseValue = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
+				if (data != null && data.length() > 2 && (lowerCaseValue == null || lowerCaseValue.isEmpty()))
+					throw new IllegalArgumentException("Lower Case values in a wrong format: " + data + " in edge " + e);
+				if (lowerCaseValue == null)
+					lowerCaseValue = new LabeledALabelIntTreeMap();
+				((CSTNPSUEdge) e1).setLowerCaseValue(lowerCaseValue);
+			}
+
 			if (e.isEmpty())
 				this.tnGraph.removeEdge(e1);
 		}
