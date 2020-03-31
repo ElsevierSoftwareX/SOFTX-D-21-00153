@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nta PUBLIC "-//Uppaal Team//DTD Flat System 1.1//EN"
+                     "http://www.it.uu.se/research/group/darts/uppaal/flat-1_1.dtd">
+<nta>
+    <template>
+        <name>fig2Paper_cstnu</name>
+        <!--Clock and proposition declarations-->
+        <declaration>clock t__G, t__Delta, tC, tE, tG, tZ, tD, tF, tH, tP_, tQ_;
+bool xC, xE, xG, xZ, xD, xF, xH, xP_, xQ_;
+int [-1,1] p = 0, q = 0;</declaration>
+        <!--LabeledNode declarations-->
+        <location id="agnes">
+            <name>agnes</name>
+            <urgent/>
+        </location>
+        <location id="vera">
+            <name>vera</name>
+        </location>
+        <location id="goal">
+            <name>goal</name>
+        </location>
+        <location id="go">
+            <name>go</name>
+            <urgent/>
+        </location>
+        <location id="go1">
+            <name>go1</name>
+            <urgent/>
+        </location>
+        <location id="go2">
+            <name>go2</name>
+            <urgent/>
+        </location>
+        <location id="go3">
+            <name>go3</name>
+            <urgent/>
+        </location>
+        <init ref="agnes"/>
+        <!--Transition declarations-->
+        <!--GAIN transition-->
+        <transition action="gain" controllable="false">
+            <source ref="vera"/>
+            <target ref="agnes"/>
+            <label kind="guard">t__Delta &gt; 0</label>
+            <label kind="assignment"/>
+        </transition>
+        <!--PASS transition-->
+        <transition action="pass" controllable="false">
+            <source ref="agnes"/>
+            <target ref="vera"/>
+            <label kind="guard"/>
+            <label kind="assignment">t__Delta := 0</label>
+        </transition>
+        <!--Transitions for clock setting-->
+        <transition action="set_xC" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xC</label>
+            <label kind="assignment">xC := true,tC := 0</label>
+        </transition>
+        <transition action="set_xE" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xE</label>
+            <label kind="assignment">xE := true,tE := 0</label>
+        </transition>
+        <transition action="set_xG" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xG</label>
+            <label kind="assignment">xG := true,tG := 0</label>
+        </transition>
+        <transition action="set_xZ" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xZ</label>
+            <label kind="assignment">xZ := true,tZ := 0</label>
+        </transition>
+        <!--Transitions for proposition setting-->
+        <transition action="set_p" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xP_ &amp;&amp; p == 0</label>
+            <label kind="assignment">xP_ := true, tP_ := 0</label>
+        </transition>
+        <transition action="set_p_false" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xP_ &amp;&amp; p == 0</label>
+            <label kind="assignment">p := -1, t__Delta := 0</label>
+        </transition>
+        <transition action="set_p_true" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xP_ &amp;&amp; p == 0</label>
+            <label kind="assignment">p := 1, t__Delta := 0</label>
+        </transition>
+        <transition action="pnot_set" controllable="false">
+            <source ref="agnes"/>
+            <target ref="goal"/>
+            <label kind="guard">xP_ &amp;&amp; p == 0 &amp;&amp; t__Delta &gt; 0</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="set_q" controllable="false">
+            <source ref="agnes"/>
+            <target ref="agnes"/>
+            <label kind="guard">!xQ_ &amp;&amp; q == 0</label>
+            <label kind="assignment">xQ_ := true, tQ_ := 0</label>
+        </transition>
+        <transition action="set_q_false" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xQ_ &amp;&amp; q == 0</label>
+            <label kind="assignment">q := -1, t__Delta := 0</label>
+        </transition>
+        <transition action="set_q_true" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xQ_ &amp;&amp; q == 0</label>
+            <label kind="assignment">q := 1, t__Delta := 0</label>
+        </transition>
+        <transition action="qnot_set" controllable="false">
+            <source ref="agnes"/>
+            <target ref="goal"/>
+            <label kind="guard">xQ_ &amp;&amp; q == 0 &amp;&amp; t__Delta &gt; 0</label>
+            <label kind="assignment"/>
+        </transition>
+        <!--Transitions for contingent-constraint setting-->
+        <transition action="set_xD" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xC &amp;&amp; !xD &amp;&amp; (tC &gt;= 10) &amp;&amp; (tC &lt;= 20)</label>
+            <label kind="assignment">xD := true, tD := 0, t__Delta := 0</label>
+        </transition>
+        <transition action="cv_tD" controllable="false">
+            <source ref="agnes"/>
+            <target ref="goal"/>
+            <label kind="guard">xC &amp;&amp; !xD &amp;&amp; (tC &gt; 20)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="set_xF" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xE &amp;&amp; !xF &amp;&amp; (tE &gt;= 8) &amp;&amp; (tE &lt;= 10)</label>
+            <label kind="assignment">xF := true, tF := 0, t__Delta := 0</label>
+        </transition>
+        <transition action="cv_tF" controllable="false">
+            <source ref="agnes"/>
+            <target ref="goal"/>
+            <label kind="guard">xE &amp;&amp; !xF &amp;&amp; (tE &gt; 10)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="set_xH" controllable="true">
+            <source ref="vera"/>
+            <target ref="vera"/>
+            <label kind="guard">xG &amp;&amp; !xH &amp;&amp; (tG &gt;= 10) &amp;&amp; (tG &lt;= 30)</label>
+            <label kind="assignment">xH := true, tH := 0, t__Delta := 0</label>
+        </transition>
+        <transition action="cv_tH" controllable="false">
+            <source ref="agnes"/>
+            <target ref="goal"/>
+            <label kind="guard">xG &amp;&amp; !xH &amp;&amp; (tG &gt; 30)</label>
+            <label kind="assignment"/>
+        </transition>
+        <!--WIN transitions-->
+        <transition action="win_labelled1p" controllable="false">
+            <source ref="go"/>
+            <target ref="go1"/>
+            <label kind="guard">(p == 1)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled1" controllable="false">
+            <source ref="go"/>
+            <target ref="go1"/>
+            <label kind="guard">(tG - tP_ &lt;= 10) &amp;&amp; (tP_ - tG &lt;= 0)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled2p" controllable="false">
+            <source ref="go1"/>
+            <target ref="go2"/>
+            <label kind="guard">(p == -1)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled2" controllable="false">
+            <source ref="go1"/>
+            <target ref="go2"/>
+            <label kind="guard">(tQ_ - tP_ &lt;= 1) &amp;&amp; (tP_ - tQ_ &lt;= 0)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled3p" controllable="false">
+            <source ref="go2"/>
+            <target ref="go3"/>
+            <label kind="guard">(p == -1)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled3q" controllable="false">
+            <source ref="go2"/>
+            <target ref="go3"/>
+            <label kind="guard">(q == 1)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled3" controllable="false">
+            <source ref="go2"/>
+            <target ref="go3"/>
+            <label kind="guard">(tE - tQ_ &lt;= 5) &amp;&amp; (tF - tP_ &lt;= 14) &amp;&amp; (tP_ - tF &lt;= -7) &amp;&amp; (tQ_ - tE &lt;= 0)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled4p" controllable="false">
+            <source ref="go3"/>
+            <target ref="goal"/>
+            <label kind="guard">(p == -1)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled4q" controllable="false">
+            <source ref="go3"/>
+            <target ref="goal"/>
+            <label kind="guard">(q == -1)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_labelled4" controllable="false">
+            <source ref="go3"/>
+            <target ref="goal"/>
+            <label kind="guard">(tD - tP_ &lt;= 25) &amp;&amp; (tQ_ - tC &lt;= 0) &amp;&amp; (tC - tQ_ &lt;= 10) &amp;&amp; (tP_ - tD &lt;= -10)</label>
+            <label kind="assignment"/>
+        </transition>
+        <transition action="win_unlabelled" controllable="false">
+            <source ref="vera"/>
+            <target ref="go"/>
+            <label kind="guard">xC &amp;&amp; xE &amp;&amp; xG &amp;&amp; xZ &amp;&amp; xD &amp;&amp; xF &amp;&amp; xH &amp;&amp; xP_ &amp;&amp; xQ_</label>
+            <label kind="assignment"/>
+        </transition>
+        <system>_processMain = fig2Paper_cstnu();
+		system _processMain;</system>
+    </template>
+</nta>
