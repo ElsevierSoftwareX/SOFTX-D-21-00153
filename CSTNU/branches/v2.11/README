@@ -1,0 +1,37 @@
+CSTNU Project README
+====================
+
+Directory summary
+--------------------
+	* CstnuTool
+	Contains the CSTNU instances, link to uppaal-tiga, the CSTNU SNAPSHOT jar and shell scripts to work with CSTNU-->TIGA translator.
+
+	* Old
+	Contains old ant scripts to compile CSTNU and SCTNU2UppaalTiga translator, old CSTNU.jat distribution (before the adoption of Maven build system) and the DTD for the TIGA Timed Automata description.
+
+	* src 
+	Contains all the source files about the project and the relative distribution site.
+
+	* uppaal-tiga-###
+	Contains the source and jar distribution of the UPPAAL-TIGA tool.
+
+Moreover, in the main directory there are the following files:
+	* README
+	This file
+	
+	* dependency-reduced-pom.xml
+	* pom.xml
+	Maven configuration files.
+
+
+
+To use maven
+------------
+	* mvn clean //Fundamental!!! Before to do anything regarding site
+	* mvn compile //for compiling
+	* mvn test //for executing JUNIT4 test
+	* mvn package //for preparing the jar package	
+	* mvn site //for building site without deploy
+	* mvn site-deploy //for building site and deploying it on profs.sci.univr.it.
+
+   Before a 'mvn site-deploy', make a 'mvn clean, mvn package'.
