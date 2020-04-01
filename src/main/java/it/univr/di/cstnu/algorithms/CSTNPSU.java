@@ -985,8 +985,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 						}
 
 						if (CSTNU.checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nX, nZ, eXZ, this.checkStatus)) {
-							if (LOG.isLoggable(Level.INFO)) {
-								LOG.log(Level.INFO, logMsg);
+							if (Debug.ON) {
+								if (LOG.isLoggable(Level.INFO)) {
+									LOG.log(Level.INFO, logMsg);
+								}
 							}
 							return true;
 						}
@@ -1048,8 +1050,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 							}
 
 							if (CSTNU.checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nX, nZ, eXZ, this.checkStatus)) {
-								if (LOG.isLoggable(Level.INFO)) {
-									LOG.log(Level.INFO, logMsg);
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.INFO)) {
+										LOG.log(Level.INFO, logMsg);
+									}
 								}
 								return true;
 							}
@@ -1179,8 +1183,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 					}
 
 					if (CSTNU.checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nA, nZ, eAZ, this.checkStatus)) {
-						if (LOG.isLoggable(Level.INFO)) {
-							LOG.log(Level.INFO, logMsg);
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.INFO)) {
+								LOG.log(Level.INFO, logMsg);
+							}
 						}
 						return true;
 					}
@@ -1563,8 +1569,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 								+ "; old value: " + Constants.formatInt(oldValue);
 					}
 					if (CSTNU.checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nZ, nY, eZY, this.checkStatus)) {
-						if (LOG.isLoggable(Level.INFO)) {
-							LOG.log(Level.INFO, logMsg);
+						if (Debug.ON) {
+							if (LOG.isLoggable(Level.INFO)) {
+								LOG.log(Level.INFO, logMsg);
+							}
 						}
 						return true;
 					}
@@ -1626,8 +1634,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 										+ "; old value: " + Constants.formatInt(oldValue);
 							}
 							if (CSTNU.checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nZ, nY, eZY, this.checkStatus)) {
-								if (LOG.isLoggable(Level.INFO)) {
-									LOG.log(Level.INFO, logMsg);
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.INFO)) {
+										LOG.log(Level.INFO, logMsg);
+									}
 								}
 								return true;
 							}
@@ -1709,8 +1719,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 							}
 
 							if (CSTNU.checkAndManageIfNewLabeledValueIsANegativeLoop(sum, nZ, nY, eZY, this.checkStatus)) {
-								if (LOG.isLoggable(Level.INFO)) {
-									LOG.log(Level.INFO, logMsg);
+								if (Debug.ON) {
+									if (LOG.isLoggable(Level.INFO)) {
+										LOG.log(Level.INFO, logMsg);
+									}
 								}
 								return true;
 							}
@@ -1960,9 +1972,11 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 						}
 						boolean added = eCA.mergeLabeledValue(Label.emptyLabel, sum);
 
-						if (added && LOG.isLoggable(Level.FINER)) {
+						if (added) {
 							ruleApplied = added;
-							LOG.log(Level.FINER, logMsg);
+							if (Debug.ON) {
+								LOG.log(Level.FINER, logMsg);
+							}
 						}
 					}
 				}
@@ -2001,7 +2015,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "rG8: start.");
 		}
-		String logMsg;
+		String logMsg = "";
 		boolean ruleApplied = false;
 		int lowerGuard = eAC.getLowerCaseValue(Label.emptyLabel, nC.getAlabel());
 		int upperGuard = eCA.getUpperCaseValue(Label.emptyLabel, nC.getAlabel());
@@ -2040,9 +2054,11 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 						}
 						boolean added = eAC.mergeLabeledValue(Label.emptyLabel, sum);
 
-						if (added && LOG.isLoggable(Level.FINER)) {
+						if (added) {
 							ruleApplied = added;
-							LOG.log(Level.FINER, logMsg);
+							if (Debug.ON) {
+								LOG.log(Level.FINER, logMsg);
+							}
 						}
 					}
 				}
@@ -2074,7 +2090,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "checkBoundGuarded: start.");
 		}
-		String logMsg;
+		String logMsg = "";
 
 		for (Entry<Label> entryAC : eAC.getLabeledValueSet()) {
 			Label alpha = entryAC.getKey();
@@ -2094,8 +2110,10 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 				boolean found = sum < 0;
 
 				if (found) {
-					if (LOG.isLoggable(Level.INFO)) {
-						LOG.log(Level.INFO, logMsg);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.INFO)) {
+							LOG.log(Level.INFO, logMsg);
+						}
 					}
 					checkStatus1.consistency = false;
 					checkStatus1.finished = true;
