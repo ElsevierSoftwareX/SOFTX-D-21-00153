@@ -4,27 +4,25 @@
 %%% Ad ogni compilazione, tutte le figure tikz sono automaticamente salvate come file svg separati.
 %%% Quanto poi htlatex viene invocato, ciascuna delle figure nel codice viene sostituita con un includegraphics configurato con il nome del file corrispondente. 
 %%%il file myexternalize.4ht contiene le direttive per htlatex di come includere i file svg nel file in html.
-\usetikzlibrary{external}
-\tikzsetexternalprefix{images/}%tex4ht is not able to manage it!
 
-\tikzset{external/system call/.add={}{%
-		; inkscape -z -f '\image.pdf' -l '\image.svg'%
-	}%
+\makeatletter
+\@ifpackageloaded{tex4ht}{
+%    \tikzexternalize[mode=only graphics] con la versione 2019, tex4ht NON vuone nessuna consfigurazione \tikzexternalize
+%    \tikzset{tex4ht inc}
+}{
+    \usepgfplotslibrary{external}% recall \usetikzlibrary{external}
+   \tikzsetexternalprefix{images/}%tex4ht is not able to manage it! Lo metto perché così pdflatex mette i *.svg qui dentro.
+    \tikzexternalize
 }
+\makeatother
 
-\tikzset{%
-	tex4ht inc/.style={%
-		/pgf/images/include external/.code={%
-        		\includegraphics[]{##1.svg}%
+\tikzset{tex4ht inc/.style={
+        /pgf/images/include external/.code={%
+            \includegraphics[]{##1.svg}%
         }
     }
 }
 
-
-\@ifpackageloaded{tex4ht}{
-    \tikzexternalize[mode=only graphics]
-    \tikzset{tex4ht inc}
-}{
-    \tikzexternalize
+\tikzset{external/system call/.add={}
+      ; inkscape -z -f $PWD/\image.pdf -l $PWD/\image.svg %metto $PWD perché inkscape vuole path assoluti
 }
-%%%

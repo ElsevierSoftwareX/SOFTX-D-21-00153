@@ -207,11 +207,11 @@
                 <delete>
                   <fileset />
                 </delete>
-                <mkdir />
                 <move>
                   <fileset>
                     <include />
                   </fileset>
+                  <regexpmapper />
                 </move>
               </target>
             </configuration>
@@ -326,45 +326,37 @@
         <version>1.2</version>
         <executions>
           <execution>
-            <id>pdf</id>
+            <id>pdf_html</id>
             <phase>pre-site</phase>
             <goals>
               <goal>latex</goal>
-            </goals>
-            <configuration>
-              <settings>
-                <outputDirectory>${tex.dir}</outputDirectory>
-                <texCommandArgs>
-                  <texCommandArg>-shell-escape</texCommandArg>
-                </texCommandArgs>
-              </settings>
-            </configuration>
-          </execution>
-          <execution>
-            <id>html</id>
-            <phase>pre-site</phase>
-            <goals>
               <goal>tex4ht</goal>
             </goals>
-            <configuration>
-              <settings>
-                <texCommandArgs>
-                  <texCommandArg>-interaction=nonstopmode</texCommandArg>
-                  <texCommandArg>--src-specials</texCommandArg>
-                  <texCommandArg>-shell-escape</texCommandArg>
-                </texCommandArgs>
-                <outputDirectory>${tex.dir}</outputDirectory>
-                <tex4htCommandArgs>
-                  <tex4htCommandArg>lib/mytex4ht.cfg</tex4htCommandArg>
-                  <tex4htCommandArg>-emyexternalize.4ht -cunihtf -utf8</tex4htCommandArg>
-                  <tex4htCommandArg>-cvalidate -p</tex4htCommandArg>
-                  <tex4htCommandArg>-shell-escape</tex4htCommandArg>
-                </tex4htCommandArgs>
-              </settings>
-            </configuration>
           </execution>
         </executions>
         <inherited>false</inherited>
+        <configuration>
+          <settings>
+            <texDirectory>${basedir}/src/site/tex</texDirectory>
+            <outputDirectory>${tex.dir}</outputDirectory>
+            <tempDirectory>m2latex</tempDirectory>
+            <cleanUp>false</cleanUp>
+            <texPath />
+            <texCommand>pdflatex</texCommand>
+            <bibtexCommand>bibtex</bibtexCommand>
+            <texCommandArgs>
+              <texCommandArg>-interaction=nonstopmode</texCommandArg>
+              <texCommandArg>-shell-escape</texCommandArg>
+            </texCommandArgs>
+            <tex4htCommand>htlatex</tex4htCommand>
+            <tex4htCommandArgs>
+              <tex4htCommandArg>lib/mytex4ht.cfg</tex4htCommandArg>
+              <tex4htCommandArg>-elib/myexternalize.4ht -cunihtf -utf8</tex4htCommandArg>
+              <tex4htCommandArg>-cvalidate -p</tex4htCommandArg>
+              <tex4htCommandArg>-interaction=nonstopmode -shell-escape</tex4htCommandArg>
+            </tex4htCommandArgs>
+          </settings>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -487,6 +479,7 @@
           </sourceFileExcludes>
           <javadocVersion>1.8</javadocVersion>
           <show>public</show>
+          <source>8</source>
         </configuration>
         <reportSets>
           <reportSet>
@@ -511,14 +504,14 @@
     </site>
   </distributionManagement>
   <properties>
-    <tex.dir>tex</tex.dir>
-    <tex.images.dir>${tex.dir}/images</tex.images.dir>
     <project.sourcejar.filename>${project.artifactId}-${project.version}-sources.jar</project.sourcejar.filename>
     <project.javadocjar.filename>${project.artifactId}-${project.version}-javadoc.jar</project.javadocjar.filename>
-    <project.jar.filename>${project.artifactId}-${project.version}.jar</project.jar.filename>
-    <project.tool.filename>CstnuTool-${project.version}</project.tool.filename>
+    <tex.images.dir>${tex.dir}/images</tex.images.dir>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.tool.filename>CstnuTool-${project.version}</project.tool.filename>
+    <tex.dir>tex</tex.dir>
     <exportAntProperties>true</exportAntProperties>
+    <project.jar.filename>${project.artifactId}-${project.version}.jar</project.jar.filename>
   </properties>
 </project>
 

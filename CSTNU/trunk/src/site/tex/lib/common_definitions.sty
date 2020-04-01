@@ -13,7 +13,7 @@
 \usepackage{ragged2e}
 % \usepackage{graphics}
 \usepackage{graphicx}%to import figures in pdflatex.
-\graphicspath{{images/}}
+\graphicspath{{./}{images/}}
 \usepackage{xspace}%to manage space after a defined command
 %\usepackage{import}
 \usepackage{microtype}
@@ -24,13 +24,21 @@
 % \usepackage[normalem]{ulem}
 \usepackage{xcolor}% 
 \usepackage{flushend}
+\usepackage{ifpdf}
+
+\ifdefined\HCode
+    \def\pgfsysdriver{pgfsys-dvisvgm4ht.def} %con Tex2019 è necessario mettere questa direttiva per impedire a tex4ht di generare i file svg
+	% e obbligarlo a usare quelli generati in inkscape. Uso inkscape perché genera svg corretti.
+	% Purtroppo i nomi creati da tikz externalize per i file svg NON sono compatibili con quelli che si aspetta tex4ht (solo dal 2019).
+	% in pom.xml faccio il rename
+%   \def\pgfsysdriver{pgfsys-tex4ht-updated.def}%NON FUNZIONA
+\fi
 
 \usepackage{tikz}%Front end per PGF, package di disegno
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-%\pgfplotsset{compat/show suggested version=true}
-% luke switched to compile: 
-\pgfplotsset{compat=1.15,compat/show suggested version=true}
+\usepackage{lib/myexternalize}
+\pgfplotsset{compat=1.16}%IT IS NECESSARY for compiling diagrams correctly 2020-033-31
 \usetikzlibrary{plotmarks}
 \usepgfplotslibrary{units}
 \usepgfplotslibrary{statistics}
@@ -163,8 +171,6 @@
    postaction = {draw,line width=1.5pt,white}]%,shorten >= 5pt}]
    
 \tikzstyle{guardRange}=[above,scale=.8,outer sep=0pt,inner sep=1.5pt,xshift=-2pt,transform shape,minimum width=\mingnat]
-
-\usepackage{lib/myexternalize}
 
 \newcommand{\makecal}[2]{\newcommand{#1}{\mathcal{#2}}}
 \makecal{\calc}{C}

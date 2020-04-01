@@ -430,13 +430,15 @@
 									<fileset dir="${basedir}/target/site/${tex.dir}"
 										includes="*.dvi" />
 								</delete>
-								<mkdir dir="${basedir}/target/site/${tex.images.dir}" />
-								<move todir="${basedir}/target/site/${tex.images.dir}"
-									preservelastmodified="true">
-									<fileset dir="${basedir}/target/site/${tex.dir}">
+									<!--<mkdir dir="${basedir}/target/site/${tex.images.dir}" /> tex4ht non riesce ad usare subdir-->
+								<move todir="${basedir}/target/site/${tex.dir}" preservelastmodified="true">
+									<fileset dir="${basedir}/target/m2latex/images">
 										<include name="*.svg" />
 									</fileset>
+									<regexpmapper from="^(.*)-figure(.*)\.svg$$" to="\1\2x.svg"/><!-- rename necessario perché tikz externalize genera
+									nomi che non solo quelli che si aspetta tex4ht-->
 								</move>
+
 							</target>
 						</configuration>
 					</execution>
@@ -595,44 +597,44 @@
 				<artifactId>maven-latex-plugin</artifactId>
 				<version>1.2</version>
 				<inherited>false</inherited>
+				<configuration>
+					<settings>
+						<!-- all tex main documents in this folder (including subfolders) will be processed -->
+						<texDirectory>${basedir}/src/site/tex</texDirectory>
+						<!-- the generated artifacts will be copied to this folder relative to ${project.reporting.outputDirectory} -->
+						<outputDirectory>${tex.dir}</outputDirectory> 
+						<!-- the working directory, for temporary files and LaTeX processing relative to ${project.build.directory} -->
+						<tempDirectory>m2latex</tempDirectory>
+						<!-- clean up the working directory in the end? May be used for debugging -->
+						<cleanUp>false</cleanUp>
+						<!-- path to the TeX scripts, if none, it must be on the system path -->
+						<texPath/>
+						<!-- the latex command -->
+						<texCommand>pdflatex</texCommand>
+						<!-- the bibtex command -->
+						<bibtexCommand>bibtex</bibtexCommand>
+						<!-- the arguments to use when calling latex -->
+						<texCommandArgs>
+							<texCommandArg>-interaction=nonstopmode</texCommandArg>
+							<texCommandArg>-shell-escape</texCommandArg>
+						</texCommandArgs>
+						<!-- the tex4ht command -->
+						<tex4htCommand>htlatex</tex4htCommand>
+						<!-- the argumants to use when calling tex4ht -->
+						<tex4htCommandArgs>
+							<tex4htCommandArg>lib/mytex4ht.cfg</tex4htCommandArg>
+							<tex4htCommandArg> -elib/myexternalize.4ht -cunihtf -utf8</tex4htCommandArg><!--initial space is necessary! -->
+							<tex4htCommandArg> -cvalidate -p</tex4htCommandArg>
+							<tex4htCommandArg> -interaction=nonstopmode -shell-escape</tex4htCommandArg>
+						</tex4htCommandArgs>
+					</settings>
+				</configuration>
 				<executions>
 					<execution>
-						<id>pdf</id>
+						<id>pdf_html</id>
 						<phase>pre-site</phase>
 						<goals>
 							<goal>latex</goal>
-						</goals>
-						<configuration>
-							<settings>
-								<!-- <texPath>/Library/TeX/texbin/</texPath> -->
-								<outputDirectory>${tex.dir}</outputDirectory>
-								<texCommandArgs>
-									<texCommandArg>-shell-escape</texCommandArg>
-								</texCommandArgs>
-							</settings>
-						</configuration>
-					</execution>
-					<execution>
-						<id>html</id>
-						<configuration>
-							<settings>
-								<texCommandArgs>
-									<texCommandArg>-interaction=nonstopmode</texCommandArg>
-									<texCommandArg>--src-specials</texCommandArg>
-									<texCommandArg>-shell-escape</texCommandArg><!-- This is fundamental! -->
-								</texCommandArgs>
-								<outputDirectory>${tex.dir}</outputDirectory>
-								<tex4htCommandArgs>
-									<tex4htCommandArg>lib/mytex4ht.cfg</tex4htCommandArg>
-									<tex4htCommandArg> -emyexternalize.4ht -cunihtf -utf8</tex4htCommandArg><!--initial 
-										space is necessary! -->
-									<tex4htCommandArg> -cvalidate -p</tex4htCommandArg>
-									<tex4htCommandArg> -shell-escape</tex4htCommandArg>
-								</tex4htCommandArgs>
-							</settings>
-						</configuration>
-						<phase>pre-site</phase>
-						<goals>
 							<goal>tex4ht</goal>
 						</goals>
 					</execution>
@@ -679,6 +681,7 @@
 					</sourceFileExcludes>
 					<javadocVersion>1.8</javadocVersion>
 					<show>public</show>
+					<source>8</source>
 				</configuration>
 			</plugin>
 		</plugins>
