@@ -610,7 +610,7 @@
 						<!-- path to the TeX scripts, if none, it must be on the system path -->
 						<texPath/>
 						<!-- the latex command -->
-						<texCommand>pdflatex</texCommand>
+						<texCommand>latexmk</texCommand>
 						<!-- the bibtex command -->
 						<bibtexCommand>bibtex</bibtexCommand>
 						<!-- the arguments to use when calling latex -->
