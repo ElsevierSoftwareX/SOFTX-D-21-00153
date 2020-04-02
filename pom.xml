@@ -430,8 +430,8 @@
 									<fileset dir="${basedir}/target/site/${tex.dir}"
 										includes="*.dvi" />
 								</delete>
-									<!--<mkdir dir="${basedir}/target/site/${tex.images.dir}" /> tex4ht non riesce ad usare subdir-->
-								<move todir="${basedir}/target/site/${tex.dir}" preservelastmodified="true">
+								<mkdir dir="${basedir}/target/site/${tex.images.dir}" /> 
+								<move todir="${basedir}/target/site/${tex.images.dir}" preservelastmodified="true">
 									<fileset dir="${basedir}/target/m2latex/images">
 										<include name="*.svg" />
 									</fileset>
