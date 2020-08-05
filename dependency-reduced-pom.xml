@@ -4,7 +4,7 @@
   <groupId>it.univr.di</groupId>
   <artifactId>CSTNU</artifactId>
   <name>CSTNU</name>
-  <version>2.11-SNAPSHOT</version>
+  <version>2.12</version>
   <url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
   <developers>
     <developer>
@@ -207,6 +207,7 @@
                 <delete>
                   <fileset />
                 </delete>
+                <mkdir />
                 <move>
                   <fileset>
                     <include />
@@ -342,7 +343,7 @@
             <tempDirectory>m2latex</tempDirectory>
             <cleanUp>false</cleanUp>
             <texPath />
-            <texCommand>pdflatex</texCommand>
+            <texCommand>latexmk</texCommand>
             <bibtexCommand>bibtex</bibtexCommand>
             <texCommandArgs>
               <texCommandArg>-interaction=nonstopmode</texCommandArg>
@@ -396,7 +397,7 @@
       <snapshots />
       <id>central</id>
       <name>Central Repository</name>
-      <url>http://repo1.maven.org/maven2</url>
+      <url>https://repo1.maven.org/maven2</url>
     </repository>
     <repository>
       <releases>
@@ -418,7 +419,7 @@
         <enabled>false</enabled>
       </snapshots>
       <id>Freehep</id>
-      <url>http://java.freehep.org/maven2/</url>
+      <url>https://java.freehep.org/maven2/</url>
     </repository>
     <repository>
       <releases>
