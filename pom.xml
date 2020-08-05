@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>2.11-SNAPSHOT</version>
+	<version>2.12</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -153,7 +153,7 @@
 		<repository>
 			<id>central</id>
 			<name>Central Repository</name>
-			<url>http://repo1.maven.org/maven2</url>
+			<url>https://repo1.maven.org/maven2</url>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -179,7 +179,7 @@
 		<!-- il seguente rep è per freehep -->
 		<repository>
 			<id>Freehep</id>
-			<url>http://java.freehep.org/maven2/</url>
+			<url>https://java.freehep.org/maven2/</url>
 			<releases>
 				<enabled>false</enabled>
 				<updatePolicy>never</updatePolicy>
