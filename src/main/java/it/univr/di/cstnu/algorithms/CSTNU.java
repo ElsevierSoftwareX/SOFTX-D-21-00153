@@ -268,7 +268,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * Utility map that return the edge containing the lower case constraint of a contingent link given the contingent time point.
 	 */
-	Object2ObjectMap<LabeledNode, CSTNUEdge> lowerContingentLink;
+	Object2ObjectMap<LabeledNode, CSTNUEdge> lowerContingentEdge;
 
 	/**
 	 * Constructor for CSTNU
@@ -302,7 +302,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		this(graph);
 		this.timeOut = givenTimeOut;
 		this.propagationOnlyToZ = givenPropagationOnlyToZ;
-
 	}
 
 	/**
@@ -312,7 +311,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		super();
 		this.checkStatus = new CSTNUCheckStatus();
 		this.activationNode = new Object2ObjectOpenHashMap<>();
-		this.lowerContingentLink = new Object2ObjectOpenHashMap<>();
+		this.lowerContingentEdge = new Object2ObjectOpenHashMap<>();
 		this.propagationOnlyToZ = false;
 		this.contingentAlsoAsOrdinary = false;
 		this.reactionTime = 0;// IR semantics
@@ -353,7 +352,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		EdgesToCheck<CSTNUEdge> edgesToCheck = new EdgesToCheck<>(this.g.getEdges());
 
 		final int n = this.g.getVertexCount();
-		int k = this.g.getContingentCount();
+		int k = this.g.getContingentNodeCount();
 		if (k == 0) {
 			k = 1;
 		}
@@ -640,16 +639,16 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 						}
 					}
 					// In order to speed up the checking, prepare some auxiliary data structure
-					s.setAlabel(sourceALabel);// s is the contingent node.
+					s.setALabel(sourceALabel);// s is the contingent node.
 					this.activationNode.put(s, d);
-					this.lowerContingentLink.put(s, eInverted);
+					this.lowerContingentEdge.put(s, eInverted);
 
 				} else {
 					// e : A--->C
 					// eInverted : C--->A
 					ALabel destALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
-					if (!destALabel.equals(d.getAlabel()))
-						d.setAlabel(destALabel);// to speed up DC checking!
+					if (!destALabel.equals(d.getALabel()))
+						d.setALabel(destALabel);// to speed up DC checking!
 					upperCaseValue = eInverted.getUpperCaseValue(conjunctedLabel, destALabel);
 					if (upperCaseValue != Constants.INT_NULL && -initialValue != upperCaseValue) {
 						throw new IllegalArgumentException(
@@ -682,7 +681,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 							e.setLowerCaseValue(conjunctedLabel, destALabel, lowerCaseValue);
 							// In order to speed up the checking, prepare some auxiliary data structure
 							this.activationNode.put(d, s);
-							this.lowerContingentLink.put(d, e);
+							this.lowerContingentEdge.put(d, e);
 
 							/**
 							 * @see comment "History for lower bound." above.
@@ -704,17 +703,17 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				// here initialvalue is indefinite... UC and LC values are already present.
 				if (!e.getLowerCaseValue().isEmpty()) {
 					this.activationNode.put(d, s);
-					this.lowerContingentLink.put(d, e);
+					this.lowerContingentEdge.put(d, e);
 				}
 				if (e.upperCaseValueSize() > 0) {
 					ALabel sourceALabel = new ALabel(s.getName(), this.g.getALabelAlphabet());
-					if (!sourceALabel.equals(s.getAlabel()))
-						s.setAlabel(sourceALabel);// to speed up DC checking!
+					if (!sourceALabel.equals(s.getALabel()))
+						s.setALabel(sourceALabel);// to speed up DC checking!
 				}
 				if (eInverted.upperCaseValueSize() > 0) {
 					ALabel destALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
-					if (!destALabel.equals(d.getAlabel()))
-						d.setAlabel(destALabel);// to speed up DC checking!
+					if (!destALabel.equals(d.getALabel()))
+						d.setALabel(destALabel);// to speed up DC checking!
 				}
 			}
 			// it is necessary to check max value
@@ -1257,7 +1256,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @return the edge containing the lower case value associated to the contingent link having nC as contingent time point.
 	 */
 	CSTNUEdge getLowerContingentLink(LabeledNode nC) {
-		return this.lowerContingentLink.get(nC);
+		return this.lowerContingentEdge.get(nC);
 	}
 
 	/**
@@ -1434,7 +1433,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					LOG.log(Level.FINER, "zLr: found contingent link " + eAC);
 			}
 			for (final ALabel aleph : eXA.getUpperCaseValueMap().keySet()) {
-				if (!aleph.contains(nC.getAlabel()))
+				if (!aleph.contains(nC.getALabel()))
 					continue;
 				LabeledIntTreeMap eXAValueMap = eXA.getUpperCaseValueMap().get(aleph);
 				if (eXAValueMap == null)
@@ -1453,7 +1452,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					final String oldXA = (Debug.ON) ? eXA.toString() : "";
 
 					ALabel aleph1 = ALabel.clone(aleph);
-					aleph1.remove(nC.getAlabel());
+					aleph1.remove(nC.getALabel());
 
 					boolean mergeStatus = (aleph1.isEmpty()) ? eXA.mergeLabeledValue(beta, newV) : eXA.mergeUpperCaseValue(beta, aleph1, newV);
 					if (mergeStatus) {
@@ -1803,7 +1802,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		final ObjectSet<ALabel> XYUpperCaseALabels = eXY.getUpperCaseValueMap().keySet();
 
 		// 2) CASE FLUC + LCUC
-		ALabel nXasALabel = nX.getAlabel();
+		ALabel nXasALabel = nX.getALabel();
 		for (final ALabel upperCaseLabel : XYUpperCaseALabels) {
 			if (upperCaseLabel.size() != 1 || !upperCaseLabel.equals(nXasALabel)) {
 				continue;// only UC label corresponding to original contingent upper case value is considered.
@@ -2131,11 +2130,11 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		super.reset();
 		if (this.activationNode == null) {
 			this.activationNode = new Object2ObjectOpenHashMap<>();
-			this.lowerContingentLink = new Object2ObjectOpenHashMap<>();
+			this.lowerContingentEdge = new Object2ObjectOpenHashMap<>();
 			return;
 		}
 		this.activationNode.clear();
-		this.lowerContingentLink.clear();
+		this.lowerContingentEdge.clear();
 	}
 
 	/**
@@ -2214,7 +2213,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 									if (LOG.isLoggable(Level.FINER))
 										LOG.log(Level.FINER, "zLR* applied to edge " + oldYZ + ":\n" + "partic: "
 												+ "Z <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName()
-												+ "---(" + nC.getAlabel().toLowerCase() + ",...," + Label.emptyLabel + ")---> " + nodeLetter
+												+ "---(" + nC.getALabel().toLowerCase() + ",...," + Label.emptyLabel + ")---> " + nodeLetter
 												+ "\nresult: " + "Z <---" + upperCaseValueAsString(alephAleph1, v, beta) + "--- " + nY.getName()
 												+ "; oldValue: " + Constants.formatInt(oldValue));
 								}
@@ -2267,7 +2266,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 											LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
 													+ nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
 													+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
-													+ "---" + lowerCaseValueAsString(nC.getAlabel(), x, Label.emptyLabel) + "---> " + nodeLetter
+													+ "---" + lowerCaseValueAsString(nC.getALabel(), x, Label.emptyLabel) + "---> " + nodeLetter
 													+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, newV, alphaBeta) + "---> Z"
 													+ "; oldValue: " + Constants.formatInt(oldValue));
 									}

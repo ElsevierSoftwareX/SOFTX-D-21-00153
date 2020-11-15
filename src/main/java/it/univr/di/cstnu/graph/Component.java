@@ -25,8 +25,7 @@ public interface Component extends Serializable, Comparable<Object> {
 	 * In general, we assume that a component is equal to another if it has the same name and that a user can modify a name even after the creation of the
 	 * component.
 	 * Clearly, if there is a set of components, it is responsibility of the user/software to allow a change only if there is no conflict with the names of
-	 * other
-	 * components.
+	 * other components.
 	 * <br>
 	 * On the other hand, we assume also that a component can be can be memorized in a structure like {@link HashMap}, where {@link #hashCode()} is
 	 * used for addressing elements. {@link #hashCode()} needs to identify an object even after its renaming and it must be coherent with
@@ -89,7 +88,7 @@ public interface Component extends Serializable, Comparable<Object> {
 	public String toString();
 
 	/**
-	 * Clear all compnent but name.
+	 * Clear all component but name.
 	 */
 	public void clear();
 }

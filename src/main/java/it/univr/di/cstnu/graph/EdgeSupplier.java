@@ -22,9 +22,25 @@ import com.google.common.base.Supplier;
  */
 public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 
+	/**
+	 * 
+	 */
 	static final public Class<? extends STNEdge> DEFAULT_STN_EDGE_CLASS = STNEdgeInt.class;
+	/**
+	 * 
+	 */
+	static final public Class<? extends STNUEdge> DEFAULT_STNU_EDGE_CLASS = STNUEdgeInt.class;
+	/**
+	 * 
+	 */
 	static final public Class<? extends CSTNEdge> DEFAULT_CSTN_EDGE_CLASS = CSTNEdgePluggable.class;
+	/**
+	 * 
+	 */
 	static final public Class<? extends CSTNUEdge> DEFAULT_CSTNU_EDGE_CLASS = CSTNUEdgePluggable.class;
+	/**
+	 * 
+	 */
 	static final public Class<? extends CSTNPSUEdge> DEFAULT_CSTNPSU_EDGE_CLASS = CSTNPSUEdgePluggable.class;
 	/**
 	 * 
@@ -41,12 +57,12 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	private Class<? extends E> generatorClass;
 
 	/**
-	 * @param defaultStnEdgeClass
+	 * @param defaultStnEdgeClass vg
 	 */
 	public EdgeSupplier(Class<? extends E> defaultStnEdgeClass) {// , Class<? extends LabeledIntMap> labeledIntMapImplClass
 		super();
 		this.generatorClass = defaultStnEdgeClass;
-//		this.labeledIntValueMapImpl = labeledIntMapImplClass;
+		// this.labeledIntValueMapImpl = labeledIntMapImplClass;
 		try {
 			// if (labeledIntMapImplClass != null) {
 			// this.generator = edgeImplClass.getDeclaredConstructor(new Class[] { this.labeledIntValueMapImpl.getClass() })
@@ -85,7 +101,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	}
 
 	/**
-	 * @param edgeClass
+	 * @param edgeClass dd
 	 * @param n dimension
 	 * @return a new LabeledIntEdge array of size n.
 	 */

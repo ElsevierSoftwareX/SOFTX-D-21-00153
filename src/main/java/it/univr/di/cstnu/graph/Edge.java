@@ -12,7 +12,7 @@ package it.univr.di.cstnu.graph;
 public interface Edge extends Component {
 
 	/**
-	 * Possible types
+	 * Possible types of an edge.
 	 *
 	 * @author posenato
 	 */
@@ -74,16 +74,16 @@ public interface Edge extends Component {
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
 	 * 
-	 * @return true if the edge is CSTNU edge
+	 * @return true if the edge is CSTNPSU edge
 	 */
-	public boolean isCSTNUEdge();
+	public boolean isCSTNPSUEdge();
 
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
 	 * 
-	 * @return true if the edge is CSTNPSU edge
+	 * @return true if the edge is CSTNU edge
 	 */
-	boolean isCSTNPSUEdge();
+	public boolean isCSTNUEdge();
 
 	/**
 	 * @return true is it does not contain any values
@@ -105,19 +105,18 @@ public interface Edge extends Component {
 	public boolean isSTNEdge();
 
 	/**
+	 * This method is inappropriate here, but it helps to speed up the code.
+	 * 
+	 * @return true if the edge is STNU edge
+	 */
+	public boolean isSTNUEdge();
+
+	/**
 	 * Factory
 	 * 
 	 * @return an object of type Edge.
 	 */
 	public Edge newInstance();
-
-	/**
-	 * Factory
-	 * 
-	 * @param labeledIntMapImpl implementation for labeled value map. This is necessary for CSTN & c. edges.
-	 * @return an object of type Edge.
-	 *         public Edge newInstance(Class<? extends LabeledIntMap> labeledIntMapImpl);
-	 */
 
 	/**
 	 * Any super-interfaces/implementing classes should assure that such method has Edge edge as argument!
@@ -128,30 +127,12 @@ public interface Edge extends Component {
 	public Edge newInstance(Edge edge);
 
 	/**
-	 * Any super-interfaces/implementing classes should assure that such method has Edge edge as argument!
-	 * 
-	 * @param edge an object to clone.
-	 * @param labeledIntMapImpl implementation for labeled value map. This is necessary for CSTN & c. edges.
-	 * @return an object of type Edge.
-	 *         public Edge newInstance(Edge edge, Class<? extends LabeledIntMap> labeledIntMapImpl);
-	 */
-
-	/**
 	 * Factory
 	 * 
 	 * @param name of the edge
 	 * @return an object of type Edge.
 	 */
 	public Edge newInstance(String name);
-
-	/**
-	 * Factory
-	 * 
-	 * @param name of the edge
-	 * @param labeledIntMapImpl implementation for labeled value map. This is necessary for CSTN & c. edges.
-	 * @return an object of type Edge.
-	 *         public Edge newInstance(String name, Class<? extends LabeledIntMap> labeledIntMapImpl);
-	 */
 
 	/**
 	 * Setter for the field <code>type</code>.

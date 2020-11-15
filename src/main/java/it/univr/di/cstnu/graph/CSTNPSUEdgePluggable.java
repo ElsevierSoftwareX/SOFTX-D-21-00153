@@ -291,8 +291,8 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 	public void takeIn(Edge e) {
 		if (e == null)
 			return;
+		super.takeIn(e);
 		if (e instanceof CSTNPSUEdgePluggable) {
-			super.takeIn(e);
 			CSTNPSUEdgePluggable e1 = (CSTNPSUEdgePluggable) e;
 			this.lowerCaseValue = e1.lowerCaseValue;
 			this.consideredLowerCaseValue = e1.consideredLowerCaseValue;

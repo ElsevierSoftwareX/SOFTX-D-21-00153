@@ -44,12 +44,6 @@ public class CSTNUGraphMLReaderTest {
 		this.cstnu = this.readerCSTNU.readGraph();
 		Assert.assertEquals(1, this.cstnu.getEdge("YX").getUpperCaseValueMap().size());
 		Assert.assertEquals(2, this.cstnu.getEdge("XY").getLowerCaseValue().getValue());
-	}
-
-	@Test
-	public void testCSTN() throws IOException, ParserConfigurationException, SAXException {
-		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class);
-		this.cstnu = this.readerCSTNU.readGraph();
 		Assert.assertEquals(2, this.cstnu.getEdgeCount());
 	}
 

@@ -306,7 +306,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 
 			@Override
 			public boolean hasNext() {
-				if (this.pos==this.last)
+				if (this.pos == this.last)
 					return false;
 				return true;
 			}
@@ -322,7 +322,6 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			}
 		};
 	}
-
 
 	@Override
 	public boolean add(K e) {
@@ -414,6 +413,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		sb.append("]");
 		return sb.toString();
 	}
+
 	/**
 	 * @param s
 	 * @throws IOException

@@ -64,7 +64,7 @@ public interface CSTNEdge extends Edge {
 	 * @return the value of label l or the minimal value of labels subsumed by <code>l</code> if it exists, null otherwise.
 	 */
 	public int getMinValueSubsumedBy(final Label l);
-	
+
 	/**
 	 * @param label label
 	 * @return the value associated to label it it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
@@ -81,7 +81,6 @@ public interface CSTNEdge extends Edge {
 	public boolean mergeLabeledValue(final Label l, final int i);
 
 	/**
-	 *
 	 * @param map a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
 	 */
 	public void mergeLabeledValue(final LabeledIntMap map);

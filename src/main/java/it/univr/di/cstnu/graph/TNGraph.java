@@ -61,6 +61,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * <pre>
 	 * Edge Interface      Network Type
 	 * STNEdge             STN
+	 * STNUEdge			   STNU
 	 * CSTNEdge            CSTN
 	 * CSTNUEdge           CSTNU
 	 * CSTNPSUEdge		   CSTPSU
@@ -133,7 +134,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 *
 	 */
-	private static Logger LOG = Logger.getLogger("TNGraph");
+	private static Logger LOG = Logger.getLogger("it.univr.di.cstnu.graph.TNGraph");
 
 	/**
 	 * 
@@ -171,7 +172,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private Map<LabeledNode, Label> childrenOfObserver;
 
 	/**
-	 * In order to guarantee a fast mapping edge-->adjacency position, a map is maintained.
+	 * Map (edge-->adjacency position)
 	 */
 	private Object2ObjectMap<String, EdgeIndex> edge2index;
 
@@ -181,7 +182,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private EdgeSupplier<E> edgeFactory;
 
 	/**
-	 * In order to guarantee a fast mapping adjacency position-->node, a map is maintained.
+	 * Map (adjacency row-->node)
 	 */
 	private Int2ObjectMap<LabeledNode> index2node;
 
@@ -206,7 +207,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private LabeledNodeSupplier nodeFactory;
 
 	/**
-	 * In order to guarantee a fast mapping node-->adjacency position, a map is maintained.
+	 * Map (node-->adjacency row)
 	 */
 	private Object2IntMap<String> nodeName2index;
 
@@ -221,7 +222,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private int order;
 
 	/**
-	 * Map of propositions observed in the graph.
+	 * Map of (proposition-->Observer node).
 	 */
 	private Char2ObjectMap<LabeledNode> proposition2Observer;
 
@@ -246,6 +247,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			this.type = NetworkType.CSTNU;
 		else if (CSTNEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.type = NetworkType.CSTN;
+		else if (STNUEdge.class.isAssignableFrom(inputEdgeImplClass))
+			this.type = NetworkType.STNU;
 		else if (STNEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.type = NetworkType.STN;
 
@@ -259,7 +262,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		this.edge2index = new Object2ObjectAVLTreeMap<>(); // From fastutil javadoc:
 		// In general, AVL trees have slightly slower updates but faster searches; however, on very large collections the smaller height may lead in fact to
 		// faster updates, too.
-		if (BasicCSTNUEdge.class.isAssignableFrom(inputEdgeImplClass))
+		if (BasicCSTNUEdge.class.isAssignableFrom(inputEdgeImplClass) || STNUEdge.class.isAssignableFrom(inputEdgeImplClass))
 			this.aLabelAlphabet = new ALabelAlphabet();
 	}
 
@@ -269,15 +272,16 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 */
 	public <E1 extends E> TNGraph(Class<E1> edgeImplClass, ALabelAlphabet alphabet) {
 		this(edgeImplClass);
-		if (alphabet != null)
+		if (alphabet != null) {
 			this.aLabelAlphabet = alphabet;
+		}
 	}
 
 	/**
 	 * A constructor that copy a given graph g using copy constructor even for internal structures. If g is null, this new graph will be empty.
 	 *
 	 * @param g the graph to be cloned
-	 * @param edgeImplClass
+	 * @param edgeImplClass class
 	 */
 	public <E1 extends E> TNGraph(final TNGraph<E> g, Class<E1> edgeImplClass) {
 		this(edgeImplClass);
@@ -389,52 +393,39 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 * Optimized method for adding edge. It exploits internal structure of the class.
 	 * 
-	 * @param e
-	 * @param v1Name
-	 * @param v2Name
+	 * @param e not null
+	 * @param v1Name not null
+	 * @param v2Name not null
 	 * @return true if edge has been added.
 	 */
 	public boolean addEdge(E e, final String v1Name, final String v2Name) {
-		if (e == null || v1Name == null || v2Name == null)
-			return false;
-
+		if (e == null || v1Name == null || v2Name == null) {
+			throw new IllegalArgumentException("A parameter is null: " + e + ", " + v1Name + ", " + v2Name);
+		}
 		if (this.edge2index.containsKey(e.getName())) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.warning("An edge with name " + e.getName() + " already exists. The new edge is not added.");
-				}
-			}
-			return false;
+			throw new IllegalArgumentException("An edge with name " + e.getName() + " already exists. The new edge cannot be added.");
 		}
 		int sourceIndex = this.nodeName2index.getInt(v1Name);
 		if (sourceIndex == Constants.INT_NULL) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.INFO)) {
-					LOG.info("Source node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
-				}
-			}
-			return false;
+			throw new IllegalArgumentException("Source node during adding edge with name " + e.getName() + " is null. The new edge cannot be added.");
 		}
 
 		int destIndex = this.nodeName2index.getInt(v2Name);
 		if (destIndex == Constants.INT_NULL) {
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.INFO)) {
-					LOG.info("Destination node during adding edge with name " + e.getName() + " is null. The new edge is not added.");
-				}
-			}
-			return false;
+			throw new IllegalArgumentException("Destination node during adding edge with name " + e.getName() + " is null. The new edge cannot be added.");
 		}
 
 		E old = this.adjacency[sourceIndex][destIndex];
-		removeEdgeFromIndex(old);
+		if (old != null) {
+			throw new IllegalArgumentException(
+					"Between node " + v1Name + " and node " + v2Name + " there exists the edge " + old + ". Remove it before adding a new one.");
+		}
+		// removeEdgeFromIndex(old);
 		this.adjacency[sourceIndex][destIndex] = e;
 
 		this.edge2index.put(e.getName(), new EdgeIndex(e, sourceIndex, destIndex));
 		this.lowerCaseEdges = null;
-		if (e instanceof AbstractEdge) {
-			((AbstractEdge) e).addObserver(this);
-		}
+		((Observable) e).addObserver(this);
 		return true;
 	}
 
@@ -617,8 +608,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 					}
 				}
 				if (e.isCSTNUEdge()) {
-				// lower case value
-				((CSTNUEdge) eNew).setLowerCaseValue(((CSTNUEdge) e).getLowerCaseValue());
+					// lower case value
+					((CSTNUEdge) eNew).setLowerCaseValue(((CSTNUEdge) e).getLowerCaseValue());
 				}
 				if (e.isCSTNPSUEdge()) {
 					// lower case value
@@ -640,8 +631,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			return true;
 		if (!(o instanceof TNGraph))
 			return false;
-		final TNGraph<?> g1 = (TNGraph<?>) o;
-		return g1.getEdges().equals(this.getEdges()) && g1.getVertices().equals(this.getVertices());
+		@SuppressWarnings("unchecked")
+		final TNGraph<E> g1 = (TNGraph<E>) o;
+		return this.hasSameEdgesOf(g1) && this.hasSameVerticesOf(g1);
 	}
 
 	@Override
@@ -715,9 +707,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * @return the number of contingents
+	 * @return the number of contingent nodes.
 	 */
-	public int getContingentCount() {
+	public int getContingentNodeCount() {
 		int c = 0;
 		for (E e : this.getEdges()) {
 			if (e.isContingentEdge())
@@ -1010,13 +1002,65 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
 			return outEdges;
 		E e;
-		// for (int i = 0; i < order; i++) {
 		for (int i = this.order; --i >= 0;) {
 			e = this.adjacency[nodeIndex][i];
 			if (e != null)
 				outEdges.add(e);
 		}
 		return outEdges;
+	}
+
+	/**
+	 * @param vertex
+	 * @return the number of outgoing edges, {@link Constants#INT_NULL} if vertex is null or not present.
+	 */
+	@Override
+	public int outDegree(LabeledNode vertex) {
+		int nodeIndex;
+		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
+			return Constants.INT_NULL;
+		int count = 0;
+		for (int i = this.order; --i >= 0;) {
+			if (this.adjacency[nodeIndex][i] != null)
+				count++;
+		}
+		return count;
+	}
+
+	/**
+	 * @param vertex
+	 * @return the number of ingoing edges, {@link Constants#INT_NULL} if vertex is null or not present.
+	 */
+	@Override
+	public int inDegree(LabeledNode vertex) {
+		int nodeIndex;
+		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
+			return Constants.INT_NULL;
+		int count = 0;
+		for (int i = this.order; --i >= 0;) {
+			if (this.adjacency[i][nodeIndex] != null)
+				count++;
+		}
+		return count;
+	}
+
+	/**
+	 * @param vertex
+	 * @return the number of ingoing edges, {@link Constants#INT_NULL} if vertex is null or not present.
+	 */
+	@Override
+	public int degree(LabeledNode vertex) {
+		int nodeIndex;
+		if (vertex == null || (nodeIndex = this.nodeName2index.getInt(vertex.name)) == Constants.INT_NULL)
+			return Constants.INT_NULL;
+		int count = 0;
+		for (int i = this.order; --i >= 0;) {
+			if (this.adjacency[nodeIndex][i] != null)
+				count++;
+			if (this.adjacency[i][nodeIndex] != null)
+				count++;
+		}
+		return count;
 	}
 
 	@Override
@@ -1081,7 +1125,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * @return the set of edges containing Upper Case Label.
+	 * @return the set of edges containing Upper Case Label only for TNGraphs that contain BasicCSTNEdge or derived.
 	 */
 	public Set<BasicCSTNUEdge> getUpperLabeledEdges() {
 		final ObjectArraySet<BasicCSTNUEdge> es1 = new ObjectArraySet<>();
@@ -1137,7 +1181,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * hasSameEdgesOf.
 	 *
 	 * @param g1 a {@link it.univr.di.cstnu.graph.TNGraph} object.
-	 * @return true if this graph contains edges equal to g1 edges. Equals is checked using method {@link #equals(Object)}. False otherwise.
+	 * @return true if this graph contains edges equal to g1 edges w.r.t. their name and their values. The check DOES NOT USE edge {@link #equals(Object)}.
+	 *         False, otherwise.
 	 */
 	public boolean hasSameEdgesOf(final TNGraph<E> g1) {
 		if (g1 == null)
@@ -1164,6 +1209,29 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 				TNGraph.LOG.log(Level.FINE, sb.toString());
 		}
 		return sameEdges;
+	}
+
+	/**
+	 * @param g1 a {@link it.univr.di.cstnu.graph.TNGraph} object.
+	 * @return true if this graph contains vertices equal to g1 vertices w.r.t. their name and their values. The check DOES NOT USE edge
+	 *         {@link #equals(Object)}.
+	 *         False, otherwise.
+	 */
+	public boolean hasSameVerticesOf(final TNGraph<E> g1) {
+		if (g1 == null)
+			return false;
+		boolean sameNodes = true;
+		ObjectSet<LabeledNode> allNodes = new ObjectAVLTreeSet<>(getVertices());
+		allNodes.addAll(g1.getVertices());
+		LabeledNode nodeG, nodeG1;
+		for (LabeledNode n : allNodes) {
+			nodeG = getNode(n.getName());
+			nodeG1 = g1.getNode(n.getName());
+			if (nodeG == null || nodeG1 == null || nodeG.propositionObserved != nodeG1.propositionObserved || !nodeG.getLabel().equals(nodeG1.getLabel())) {
+				sameNodes = false;
+			}
+		}
+		return sameNodes;
 	}
 
 	@Override
@@ -1241,6 +1309,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			return false;
 		}
 
+		removingNode.deleteObservers();
 		int last = this.order - 1;
 		// Start to move node to remove at the end of adjacency matrix and to remove all its edges.
 		if (removingNodeIndex == last) {
@@ -1291,24 +1360,27 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Reverse (transpose) the current graph.
-	 * 
-	 * @return true if the operation was successful.
 	 */
-	public boolean reverse() {
+	public void reverse() {
+		this.transpose();
+	}
+
+	/**
+	 * Transposes <code>this</code> inverting only the source/destination of each edge.
+	 * All other attributes of an edge are not modified.
+	 */
+	public void transpose() {
 		int n = this.getVertexCount();
-		E swap;
-		for (int i = 0; i < n; i++) {
+		for (int i = 1; i < n; i++) {
 			for (int j = 0; j < i; j++) {
-				swap = this.adjacency[i][j];
-				this.adjacency[i][j] = this.adjacency[j][i];
-				this.adjacency[j][i] = swap;
-				if (swap != null)
-					this.edge2index.put(swap.getName(), new EdgeIndex(swap, j, i));
-				if ((swap = this.adjacency[i][j]) != null)
-					this.edge2index.put(swap.getName(), new EdgeIndex(swap, i, j));
+				E eIJ = this.adjacency[i][j];
+				E eJI = this.adjacency[j][i];
+				this.adjacency[i][j] = eJI;
+				this.adjacency[j][i] = eIJ;
+				updateEdgeInIndex(eIJ, j, i);
+				updateEdgeInIndex(eJI, i, j);
 			}
 		}
-		return true;
 	}
 
 	/**
@@ -1380,28 +1452,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		}
 		sb.append("%Edges:\n");
 		for (final E e : this.getEdges()) {
-			sb.append(e.toString());
+			sb.append(this.getSource(e).toString() + "--" + e.toString() + "-->" + this.getDest(e).toString());
 			sb.append("\n");
 		}
 		return sb.toString();
-	}
-
-	/**
-	 * Transposes <code>this</code> inverting only the souce/destination of each edge.
-	 * All other attributes of an edge are not modified.
-	 */
-	public void transpose() {
-		int n = this.getVertexCount();
-		for (int i = 1; i < n; i++) {
-			for (int j = 0; j < i; j++) {
-				E eIJ = this.adjacency[i][j];
-				E eJI = this.adjacency[j][i];
-				this.adjacency[i][j] = eJI;
-				this.adjacency[j][i] = eIJ;
-				updateEdgeInIndex(eIJ, j, i);
-				updateEdgeInIndex(eJI, i, j);
-			}
-		}
 	}
 
 	@Override
@@ -1430,7 +1484,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 					node.name = oldValue;
 					return;
 				}
-				this.nodeName2index.removeInt(oldValue);
+				if (this.nodeName2index.removeInt(oldValue)!= oldI) {
+					LOG.severe("It is not possible to remove the node " + oldValue);
+				}
 				this.nodeName2index.put(node.getName(), oldI);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
@@ -1438,7 +1494,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 								+ "\nValues in nodeName2index: " + this.nodeName2index.toString());
 					}
 				}
-				node.setAlabel(null);
+				node.setALabel(null);
 				if (this.getZ() != null && oldValue.equals(this.getZ().name)) {
 					this.setZ(null);
 				}
@@ -1519,6 +1575,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 					this.lowerCaseEdges.add(e1);
 				}
 			}
+			if (obj.equals("Type")) {
+				this.lowerCaseEdges = null;
+
+			}
 		}
 	}
 
@@ -1552,6 +1612,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private void removeEdgeFromIndex(E e) {
 		if (e == null || e.getName() == null)
 			return;
+		((Observable) e).deleteObservers();
 		this.edge2index.remove(e.getName());
 	}
 

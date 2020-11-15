@@ -35,7 +35,6 @@ import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
 
-
 /**
  * I modified the source to use a local EditingGraphMousePlugin and to remove some extra useless features.
  *
@@ -71,7 +70,6 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	AnnotatingGraphMousePlugin<V, E> annotatingPlugin;
 	MultiLayerTransformer basicTransformer;
 	RenderContext<V, E> rc;
-
 
 	/**
 	 * Creates an instance with default values.
@@ -112,7 +110,6 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		add(this.scalingPlugin);// for zooming
 		setMode(Mode.TRANSFORMING);
 	}
-
 
 	/**
 	 * {@inheritDoc} setter for the Mode.

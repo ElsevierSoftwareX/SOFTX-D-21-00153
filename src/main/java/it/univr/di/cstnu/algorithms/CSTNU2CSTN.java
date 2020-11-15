@@ -197,7 +197,7 @@ public class CSTNU2CSTN extends CSTNU {
 		TNGraph<CSTNEdge> cstnGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS);
 		cstnGraph.copy(cstnGraph.getClass().cast(this.g));
 
-		int nOfContingents = this.g.getContingentCount();
+		int nOfContingents = this.g.getContingentNodeCount();
 		if (nOfContingents == 0) {
 			return cstnGraph;
 		}

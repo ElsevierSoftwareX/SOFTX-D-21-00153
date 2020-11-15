@@ -81,6 +81,8 @@ import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
 import it.univr.di.cstnu.algorithms.CSTNU2CSTN;
 import it.univr.di.cstnu.algorithms.STN;
 import it.univr.di.cstnu.algorithms.STN.STNCheckStatus;
+import it.univr.di.cstnu.algorithms.STNU;
+import it.univr.di.cstnu.algorithms.STNU.STNUCheckStatus;
 import it.univr.di.cstnu.algorithms.WellDefinitionException;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.CSTNPSUEdge;
@@ -90,6 +92,7 @@ import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.LabeledNodeSupplier;
 import it.univr.di.cstnu.graph.STNEdge;
+import it.univr.di.cstnu.graph.STNUEdge;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraph.NetworkType;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
@@ -104,25 +107,6 @@ import it.univr.di.labeledvalue.Constants;
  * @version $Id: $Id
  */
 public class CSTNEditor extends JFrame implements Cloneable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
-	 * @author posenato
-	 */
-	private class ContingentAlsoAsOrdinaryListener implements ItemListener {
-
-		public ContingentAlsoAsOrdinaryListener() {
-		}
-
-		@Override
-		public void itemStateChanged(ItemEvent e) {
-			CSTNEditor.this.contingentAlsoAsOrdinary = e.getStateChange() == ItemEvent.SELECTED;
-		}
-	}
 
 	/**
 	 * @author posenato
@@ -147,10 +131,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			bvv.setName(CSTNEditor.INPUT_GRAPH_BIG_VIEWER_NAME);
 			buildRenderContext(bvv, true);
 			((ModalGraphMouse) bvv.getGraphMouse()).setMode(ModalGraphMouse.Mode.TRANSFORMING);
-			final JPanel rowForAppButtons = new JPanel();
+			final JPanel rowForAppButtons1 = new JPanel();
 			@SuppressWarnings("unchecked")
-			final JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, Edge>) bvv.getGraphMouse()).getModeComboBox();
-			rowForAppButtons.add(modeBox);
+			final JComboBox<Mode> modeBox1 = ((EditingModalGraphMouse<LabeledNode, Edge>) bvv.getGraphMouse()).getModeComboBox();
+			rowForAppButtons1.add(modeBox1);
 			JButton close = new JButton(new AbstractAction("Close") {
 				private static final long serialVersionUID = 1L;
 
@@ -159,13 +143,27 @@ public class CSTNEditor extends JFrame implements Cloneable {
 					frame.dispose();
 				}
 			});
-			rowForAppButtons.add(close);
+			rowForAppButtons1.add(close);
 			frame.setLayout(new FlowLayout(FlowLayout.CENTER));
 			frame.add(new JLabel(getGraphLabelDescription(((TNGraph<?>) CSTNEditor.this.layoutEditor.getGraph()))));
 			frame.add(bvv);
-			frame.add(rowForAppButtons);
+			frame.add(rowForAppButtons1);
 			frame.setVisible(true);
 			frame.validate();
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class ContingentAlsoAsOrdinaryListener implements ItemListener {
+
+		public ContingentAlsoAsOrdinaryListener() {
+		}
+
+		@Override
+		public void itemStateChanged(ItemEvent e) {
+			CSTNEditor.this.contingentAlsoAsOrdinary = e.getStateChange() == ItemEvent.SELECTED;
 		}
 	}
 
@@ -245,6 +243,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			case IR:
 				CSTNEditor.this.cstn = new CSTNIR((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 				break;
+			case Std:
 			default:
 				CSTNEditor.this.cstn = new CSTN((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 				break;
@@ -289,160 +288,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * @author posenato
 	 */
-	private class STNConsistencyCheckListener implements ActionListener {
-
-		public STNConsistencyCheckListener() {
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-
-			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
-			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
-
-			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph);
-			CSTNEditor.this.stn.setDefaultConsistencyCheckAlg(CSTNEditor.this.stnCheckAlg);
-			CSTNEditor.this.stn.setOutputCleaned(CSTNEditor.this.cleanResult);
-
-			jl.setBackground(Color.orange);
-			try {
-				CSTNEditor.this.stnStatus = CSTNEditor.this.stn.consistencyCheck();
-				if (CSTNEditor.this.stnStatus.consistency) {
-
-					jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is STN consistent.");
-					jl.setBackground(Color.green);
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
-							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.stn.getGChecked());
-						}
-					}
-				} else {
-					jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
-				}
-			} catch (final WellDefinitionException ex) {
-				jl.setText("There is a problem in the code: " + ex.getMessage());
-			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			CSTNEditor.this.vvViewer.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.vvViewer.validate();
-			CSTNEditor.this.vvViewer.repaint();
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	private class STNDispatchableListener implements ActionListener {
-
-		public STNDispatchableListener() {
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-
-			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
-			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
-
-			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph);
-			CSTNEditor.this.stn.setDefaultConsistencyCheckAlg(CSTNEditor.this.stnCheckAlg);
-			CSTNEditor.this.stn.setOutputCleaned(CSTNEditor.this.cleanResult);
-
-			jl.setBackground(Color.orange);
-			boolean status = CSTNEditor.this.stn.makeDispatchable();
-			if (status) {
-
-				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is dispatchable.");
-				jl.setBackground(Color.green);
-			} else {
-				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
-			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			CSTNEditor.this.vvViewer.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.vvViewer.validate();
-			CSTNEditor.this.vvViewer.repaint();
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	private class STNPredecessorGraphListener implements ActionListener {
-
-		public STNPredecessorGraphListener() {
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-
-			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.inputGraph);
-			CSTNEditor.this.stn.setOutputCleaned(CSTNEditor.this.cleanResult);
-
-			LabeledNode node = null;
-			while (node == null) {
-				LabeledNode[] nodes = CSTNEditor.this.stn.getG().getVerticesArray();
-				node = (LabeledNode) JOptionPane.showInputDialog(
-						CSTNEditor.this.rowForSTNButtons,
-						"Chose the source node:",
-						"Customized Dialog",
-						JOptionPane.PLAIN_MESSAGE,
-						null,
-						nodes,
-						"Z");
-			}
-			jl.setBackground(Color.orange);
-			TNGraph<STNEdge> g1 = CSTNEditor.this.stn.getSTNPredecessorGraph(node);
-			if (g1 != null) {
-				((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
-				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>Predecessor graphs of " + node.getName() + ".");
-				jl.setBackground(Color.green);
-			} else {
-				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
-			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			CSTNEditor.this.vvViewer.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.vvViewer.validate();
-			CSTNEditor.this.vvViewer.repaint();
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
 	private class CSTNInitListener implements ActionListener {
 
 		public CSTNInitListener() {
@@ -464,6 +309,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			case IR:
 				CSTNEditor.this.cstn = new CSTNIR((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 				break;
+			case Std:
 			default:
 				CSTNEditor.this.cstn = new CSTN((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 				break;
@@ -488,57 +334,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				return;
 			}
 			jl.setText("CSTN initialized.");
-			// jl.setIcon(CSTNEditor.infoIcon);
-			jl.setOpaque(true);
-			jl.setBackground(Color.orange);
-			updateNodePositions();
-			CSTNEditor.this.vvViewer.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	private class STNInitListener implements ActionListener {
-
-		public STNInitListener() {
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
-			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
-			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
-
-			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph);
-			try {
-				CSTNEditor.this.stn.initAndCheck();
-			} catch (final Exception ec) {
-				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.WARNING)) {
-						CSTNEditor.LOG.warning(msg);
-					}
-				}
-				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>" + msg + "</b>");
-				// jl.setIcon(CSTNEditor.warnIcon);
-				jl.setOpaque(true);
-				jl.setBackground(Color.orange);
-				// CSTNEditor.this.vv2.validate();
-				// CSTNEditor.this.vv2.repaint();
-				CSTNEditor.this.validate();
-				CSTNEditor.this.repaint();
-				return;
-			}
-			jl.setText("STN initialized.");
 			// jl.setIcon(CSTNEditor.infoIcon);
 			jl.setOpaque(true);
 			jl.setBackground(Color.orange);
@@ -580,6 +375,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				case IR:
 					CSTNEditor.this.cstn = new CSTNIR((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 					break;
+				case Std:
 				default:
 					CSTNEditor.this.cstn = new CSTN((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 					break;
@@ -660,6 +456,62 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * @author posenato
 	 */
+	private class CSTNPotentialCheckListener implements ActionListener {
+
+		public CSTNPotentialCheckListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
+			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+
+			jl.setBackground(Color.orange);
+			CSTNEditor.this.cstn = new CSTNPotential((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
+
+			try {
+				CSTNEditor.this.cstnStatus = CSTNEditor.this.cstn.dynamicConsistencyCheck();
+				if (CSTNEditor.this.cstnStatus.consistency) {
+
+					jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is CSTN consistent.");
+					jl.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.cstn.getGChecked());
+						}
+					}
+				} else {
+					// The distance graph is not consistent
+					jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not CSTN consistent.</b>");
+					// jl.setIcon(CSTNEditor.warnIcon);
+				}
+			} catch (final WellDefinitionException ex) {
+				jl.setText("There is a problem in the code: " + ex.getMessage());
+				// jl.setIcon(CSTNEditor.warnIcon);
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
 	private class CSTNPSUCheckListener implements ActionListener {
 
 		public CSTNPSUCheckListener() {
@@ -680,7 +532,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			try {
 				CSTNEditor.this.cstnuStatus = CSTNEditor.this.cstnpsu.dynamicControllabilityCheck();
 				if (CSTNEditor.this.cstnuStatus.consistency) {
-					jl1.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The CSTNPSU is dynamically controllable.</b>");
+					jl1.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The CSTNPSU/FTNU is dynamically controllable.</b>");
 					// jl.setIcon(CSTNUEditor.infoIcon);
 					jl1.setBackground(Color.green);
 					if (Debug.ON) {
@@ -689,7 +541,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 						}
 					}
 				} else {
-					jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The CSTNPSU is not dynamically controllable.</b>");
+					jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The CSTNPSU/FTNU is not dynamically controllable.</b>");
 					// jl.setIcon(CSTNUEditor.warnIcon);
 				}
 			} catch (final WellDefinitionException ex) {
@@ -736,6 +588,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			case IR:
 				CSTNEditor.this.cstn = new CSTNIR3R((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 				break;
+			case Std:
 			default:
 				jl.setText("<img align='middle' src='" + WARN_ICON_FILE
 						+ "'>&nbsp;<b>There is no DC checking algorithm for std semantics and rules restricted to Z.</b>");
@@ -743,62 +596,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 				CSTNEditor.this.cycle = 0;
 				return;
 			}
-			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
-
-			try {
-				CSTNEditor.this.cstnStatus = CSTNEditor.this.cstn.dynamicConsistencyCheck();
-				if (CSTNEditor.this.cstnStatus.consistency) {
-
-					jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is CSTN consistent.");
-					jl.setBackground(Color.green);
-					if (Debug.ON) {
-						if (LOG.isLoggable(Level.FINER)) {
-							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.cstn.getGChecked());
-						}
-					}
-				} else {
-					// The distance graph is not consistent
-					jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not CSTN consistent.</b>");
-					// jl.setIcon(CSTNEditor.warnIcon);
-				}
-			} catch (final WellDefinitionException ex) {
-				jl.setText("There is a problem in the code: " + ex.getMessage());
-				// jl.setIcon(CSTNEditor.warnIcon);
-			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			CSTNEditor.this.vvViewer.setVisible(true);
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			CSTNEditor.this.vvViewer.validate();
-			CSTNEditor.this.vvViewer.repaint();
-
-			CSTNEditor.this.validate();
-			CSTNEditor.this.repaint();
-			CSTNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	private class CSTNPotentialCheckListener implements ActionListener {
-
-		public CSTNPotentialCheckListener() {
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
-			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
-			TNGraph<CSTNEdge> g1 = new TNGraph<>((TNGraph<CSTNEdge>) CSTNEditor.this.inputGraph,
-					(Class<? extends CSTNEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-			((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
-			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-
-			jl.setBackground(Color.orange);
-			CSTNEditor.this.cstn = new CSTNPotential((TNGraph<CSTNEdge>) CSTNEditor.this.checkedGraph);
 			CSTNEditor.this.cstn.setOutputCleaned(CSTNEditor.this.cleanResult);
 
 			try {
@@ -1124,22 +921,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * @author posenato
 	 */
-	private class STNCheckAlgListener implements ActionListener {
-		JComboBox<STN.CheckAlgorithm> comboBox;
-
-		public STNCheckAlgListener(JComboBox<STN.CheckAlgorithm> comboBox1) {
-			this.comboBox = comboBox1;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			CSTNEditor.this.stnCheckAlg = (STN.CheckAlgorithm) this.comboBox.getSelectedItem();
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
 	private class HelpListener implements ActionListener {
 		private static final String instructions = "<html>"
 				+ "<h2>Simple CSTNU Editor " + CSTNEditor.VERSION + "</h2><h3>All Modes:</h3>"
@@ -1288,11 +1069,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public OpenFileListener() {
 			this.chooser = new JFileChooser(CSTNEditor.default_dir);
 			this.chooser.setDragEnabled(true);
-			String msg = "The extension of the selected file determines the kind of network. Use *.stn, *.cstn, *.cstnu, *.stpsu, *.cstpsu";
+			String msg = "The extension of the selected file determines the kind of network. Use *.stn, *.stnu, *.cstn, *.cstnu, *.stpsu, *.cstpsu";
 			this.chooser.setToolTipText(msg);
 			this.chooser.setApproveButtonToolTipText(msg);
 
-			FileFilter stnE = new FileNameExtensionFilter("(C)STN(U) file (.stn/.cstn/.cstnu)", "stn", "cstn", "cstnu", "cstnpsu", "stnpsu");
+			FileFilter stnE = new FileNameExtensionFilter("(C)STN(PS)(U) file (.(c)stn(ps)(u))", "stn", "stnu", "cstn", "cstnu", "cstnpsu", "stnpsu");
 			this.chooser.addChoosableFileFilter(stnE);
 			this.chooser.setFileFilter(stnE);
 			this.chooser.setAcceptAllFileFilterUsed(false);
@@ -1362,6 +1143,380 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	}
 
 	/**
+	 * @author posenato
+	 */
+	private class NewNetworkActivation implements ActionListener {
+
+		public NewNetworkActivation() {
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			switch (e.getActionCommand()) {
+			case "STNU":
+				setDefaultParametersForNetwork(NetworkType.STNU);
+				break;
+			case "CSTN":
+				setDefaultParametersForNetwork(NetworkType.CSTN);
+				break;
+			case "CSTNU":
+				setDefaultParametersForNetwork(NetworkType.CSTNU);
+				break;
+			case "CSTNPSU":
+				setDefaultParametersForNetwork(NetworkType.CSTNPSU);
+				break;
+			case "STN":
+			default:
+				setDefaultParametersForNetwork(NetworkType.STN);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNCheckAlgListener implements ActionListener {
+		JComboBox<STN.CheckAlgorithm> comboBox;
+
+		public STNCheckAlgListener(JComboBox<STN.CheckAlgorithm> comboBox1) {
+			this.comboBox = comboBox1;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			CSTNEditor.this.stnCheckAlg = (STN.CheckAlgorithm) this.comboBox.getSelectedItem();
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNConsistencyCheckListener implements ActionListener {
+
+		public STNConsistencyCheckListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+
+			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
+			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.stn.setDefaultConsistencyCheckAlg(CSTNEditor.this.stnCheckAlg);
+			CSTNEditor.this.stn.setOutputCleaned(CSTNEditor.this.cleanResult);
+
+			jl.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.stnStatus = CSTNEditor.this.stn.consistencyCheck();
+				if (CSTNEditor.this.stnStatus.consistency) {
+
+					jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is STN consistent.");
+					jl.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.stn.getGChecked());
+						}
+					}
+				} else {
+					jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
+				}
+			} catch (final WellDefinitionException ex) {
+				jl.setText("There is a problem in the code: " + ex.getMessage());
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNUControllabilityCheckListener implements ActionListener {
+
+		public STNUControllabilityCheckListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+
+			TNGraph<STNUEdge> g1 = new TNGraph<>((TNGraph<STNUEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends STNUEdge>) EdgeSupplier.DEFAULT_STNU_EDGE_CLASS);
+			((TNGraph<STNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.stnu = new STNU((TNGraph<STNUEdge>) CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.stnu.setDefaultConsistencyCheckAlg(CSTNEditor.this.stnuCheckAlg);
+			CSTNEditor.this.stnu.setOutputCleaned(CSTNEditor.this.cleanResult);
+
+			jl.setBackground(Color.orange);
+			try {
+				CSTNEditor.this.stnuStatus = CSTNEditor.this.stnu.dynamicControllabilityCheck();
+				if (CSTNEditor.this.stnuStatus.isControllability()) {
+
+					jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is STNU consistent.");
+					jl.setBackground(Color.green);
+					if (Debug.ON) {
+						if (LOG.isLoggable(Level.FINER)) {
+							CSTNEditor.LOG.finer("Final controllable graph: " + CSTNEditor.this.stnu.getGChecked());
+						}
+					}
+				} else {
+					jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not controllable.</b>");
+				}
+			} catch (final WellDefinitionException ex) {
+				jl.setText("There is a problem in the code: " + ex.getMessage());
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNDispatchableListener implements ActionListener {
+
+		public STNDispatchableListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+
+			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
+			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph);
+			CSTNEditor.this.stn.setDefaultConsistencyCheckAlg(CSTNEditor.this.stnCheckAlg);
+			CSTNEditor.this.stn.setOutputCleaned(CSTNEditor.this.cleanResult);
+
+			jl.setBackground(Color.orange);
+			boolean status = CSTNEditor.this.stn.makeDispatchable();
+			if (status) {
+
+				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is dispatchable.");
+				jl.setBackground(Color.green);
+			} else {
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNInitListener implements ActionListener {
+
+		public STNInitListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			TNGraph<STNEdge> g1 = new TNGraph<>((TNGraph<STNEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends STNEdge>) EdgeSupplier.DEFAULT_STN_EDGE_CLASS);
+			((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph);
+			try {
+				CSTNEditor.this.stn.initAndCheck();
+			} catch (final Exception ec) {
+				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						CSTNEditor.LOG.warning(msg);
+					}
+				}
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>" + msg + "</b>");
+				// jl.setIcon(CSTNEditor.warnIcon);
+				jl.setOpaque(true);
+				jl.setBackground(Color.orange);
+				// CSTNEditor.this.vv2.validate();
+				// CSTNEditor.this.vv2.repaint();
+				CSTNEditor.this.validate();
+				CSTNEditor.this.repaint();
+				return;
+			}
+			jl.setText("STN initialized.");
+			// jl.setIcon(CSTNEditor.infoIcon);
+			jl.setOpaque(true);
+			jl.setBackground(Color.orange);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNUInitListener implements ActionListener {
+
+		public STNUInitListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			TNGraph<STNUEdge> g1 = new TNGraph<>((TNGraph<STNUEdge>) CSTNEditor.this.inputGraph,
+					(Class<? extends STNUEdge>) EdgeSupplier.DEFAULT_STNU_EDGE_CLASS);
+			((TNGraph<STNUEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.stnu = new STNU((TNGraph<STNUEdge>) CSTNEditor.this.checkedGraph);
+			try {
+				CSTNEditor.this.stnu.initAndCheck();
+			} catch (final Exception ec) {
+				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						CSTNEditor.LOG.warning(msg);
+					}
+				}
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>" + msg + "</b>");
+				// jl.setIcon(CSTNEditor.warnIcon);
+				jl.setOpaque(true);
+				jl.setBackground(Color.orange);
+				// CSTNEditor.this.vv2.validate();
+				// CSTNEditor.this.vv2.repaint();
+				CSTNEditor.this.validate();
+				CSTNEditor.this.repaint();
+				return;
+			}
+			jl.setText("STNU initialized.");
+			// jl.setIcon(CSTNEditor.infoIcon);
+			jl.setOpaque(true);
+			jl.setBackground(Color.orange);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNPredecessorGraphListener implements ActionListener {
+
+		public STNPredecessorGraphListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl = CSTNEditor.this.viewerMessageArea;
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(false);
+
+			CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
+			CSTNEditor.this.stn = new STN((TNGraph<STNEdge>) CSTNEditor.this.inputGraph);
+			CSTNEditor.this.stn.setOutputCleaned(CSTNEditor.this.cleanResult);
+
+			LabeledNode node = null;
+			while (node == null) {
+				LabeledNode[] nodes = CSTNEditor.this.stn.getG().getVerticesArray();
+				node = (LabeledNode) JOptionPane.showInputDialog(
+						CSTNEditor.this.rowForSTNButtons,
+						"Chose the source node:",
+						"Customized Dialog",
+						JOptionPane.PLAIN_MESSAGE,
+						null,
+						nodes,
+						"Z");
+			}
+			jl.setBackground(Color.orange);
+			TNGraph<STNEdge> g1 = CSTNEditor.this.stn.getSTNPredecessorGraph(node);
+			if (g1 != null) {
+				((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
+				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>Predecessor graphs of " + node.getName() + ".");
+				jl.setBackground(Color.green);
+			} else {
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
+			}
+			jl.setOpaque(true);
+			updateNodePositions();
+			CSTNEditor.this.vvViewer.setVisible(true);
+			CSTNEditor.this.saveCSTNResultButton.setEnabled(true);
+
+			CSTNEditor.this.vvViewer.validate();
+			CSTNEditor.this.vvViewer.repaint();
+
+			CSTNEditor.this.validate();
+			CSTNEditor.this.repaint();
+			CSTNEditor.this.cycle = 0;
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class STNUCheckAlgListener implements ActionListener {
+		JComboBox<STNU.CheckAlgorithm> comboBox;
+
+		public STNUCheckAlgListener(JComboBox<STNU.CheckAlgorithm> comboBox1) {
+			this.comboBox = comboBox1;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			CSTNEditor.this.stnuCheckAlg = (STNU.CheckAlgorithm) this.comboBox.getSelectedItem();
+		}
+	}
+
+	/**
 	 * Name of the derived graph big viewer
 	 */
 	public static final String DERIVED_GRAPH_BIG_VIEWER_NAME = "Derived Graph Big Viewer";
@@ -1391,12 +1546,12 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	static final URL INFO_ICON_FILE = Class.class.getResource("/images/metal-info.png");
 
-	// EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
-
 	/**
 	 * class logger
 	 */
 	static final Logger LOG = Logger.getLogger(CSTNEditor.class.getName());
+
+	// EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS,
 
 	/**
 	 * the preferred sizes for the two views
@@ -1413,10 +1568,23 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	@SuppressWarnings("unused")
 	private static final long SERIAL_VERSION_UID = 647420826043015776L;
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	/**
 	 * Version
 	 */
 	private static final String VERSION = "Version  $Rev$";
+
+	/**
+	 * @param args an array of {@link java.lang.String} objects.
+	 */
+	public static void main(final String[] args) {
+		@SuppressWarnings("unused")
+		CSTNEditor editor = new CSTNEditor();
+	}
 
 	/**
 	 * @param g
@@ -1437,19 +1605,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		sb.append(g.getEdgeCount());
 		sb.append(", #obs: ");
 		sb.append(g.getObserverCount());
-		if (g.getContingentCount() > 0) {
+		if (g.getContingentNodeCount() > 0) {
 			sb.append(", #contingent: ");
-			sb.append(g.getContingentCount());
+			sb.append(g.getContingentNodeCount());
 		}
 		return sb.toString();
-	}
-
-	/**
-	 * @param args an array of {@link java.lang.String} objects.
-	 */
-	public static void main(final String[] args) {
-		@SuppressWarnings("unused")
-		CSTNEditor editor = new CSTNEditor();
 	}
 
 	/**
@@ -1497,19 +1657,21 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	final boolean cleanResult = false;
 
 	/**
-	 * STN checker
+	 * True if contingent link as to be represented also as ordinary constraints.
 	 */
-	STN stn;
+	boolean contingentAlsoAsOrdinary = false;
 
-	/**
-	 * STN check status
-	 */
-	STNCheckStatus stnStatus;
+	JPanel controlSouthPanel;
 
 	/**
 	 * CSTN checker
 	 */
 	CSTN cstn;
+
+	/**
+	 * CSTNPSU checker
+	 */
+	CSTNPSU cstnpsu;
 
 	/**
 	 * CSTN check status
@@ -1522,11 +1684,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	CSTNU cstnu;
 
 	/**
-	 * CSTNPSU checker
-	 */
-	CSTNPSU cstnpsu;
-
-	/**
 	 * CSTNU2CSTN checker
 	 */
 	CSTNU2CSTN cstnu2cstn;
@@ -1535,6 +1692,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * CSTNU check status
 	 */
 	CSTNUCheckStatus cstnuStatus;
+
+	/**
+	 * Current edge implementation class
+	 */
+	Class<? extends Edge> currentEdgeImpl;
+
+	/**
+	 * The kind of network the system is currently showing
+	 */
+	TNGraph.NetworkType currentTNGraphType;
 
 	/**
 	 * Number of cycles of CSTN(U) check step-by-step
@@ -1597,14 +1764,30 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	JCheckBox onlyToZCB;
 
 	/**
-	 * True if contingent link as to be represented also as ordinary constraints.
-	 */
-	boolean contingentAlsoAsOrdinary = false;
-
-	/**
 	 * Reaction time for CSTN
 	 */
 	int reactionTime = 1;
+
+	JPanel rowForAppButtons;
+
+	JPanel rowForSTNButtons;
+
+	JPanel rowForSTNUButtons;
+
+	/**
+	 * Result Save Button
+	 */
+	JButton saveCSTNResultButton;
+
+	/**
+	 * STN checker
+	 */
+	STN stn;
+
+	/**
+	 * STNU checker
+	 */
+	STNU stnu;
 
 	/**
 	 * Which check alg to use for STN
@@ -1612,9 +1795,21 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	STN.CheckAlgorithm stnCheckAlg = STN.CheckAlgorithm.FloydWarshall;
 
 	/**
-	 * Result Save Button
+	 * STN check status
 	 */
-	JButton saveCSTNResultButton;
+	STNCheckStatus stnStatus;
+
+	/**
+	 * STNU check status
+	 */
+	STNUCheckStatus stnuStatus;
+
+	/**
+	 * Which check alg to use for STNU
+	 */
+	STNU.CheckAlgorithm stnuCheckAlg = STNU.CheckAlgorithm.Morris2014;
+
+	ValidationPanel validationPanelCSTN, validationPanelCSTNU;
 
 	/**
 	 * Message area above the derived (no input) graph.
@@ -1631,11 +1826,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	VisualizationViewer<LabeledNode, ? extends Edge> vvViewer;
 
-	ValidationPanel validationPanelCSTN, validationPanelCSTNU;
-
-	JPanel controlSouthPanel;
-
-	JPanel rowForSTNButtons;
+	/**
+	 * Mode box for the editor and the viewer
+	 */
+	int modeBoxIndex, modeBoxViewerIndex;
 
 	/**
 	 * with unknown literal
@@ -1643,19 +1837,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	boolean withUknown = true;
 
 	/**
-	 * The kind of network the system is currently showing
-	 */
-	TNGraph.NetworkType currentTNGraphType;
-
-	/**
-	 * Current edge implementation class
-	 */
-	Class<? extends Edge> currentEdgeImpl;
-
-	/**
 	 * Default constructor
 	 */
-	@SuppressWarnings("unchecked")
 	public CSTNEditor() {
 		super("Simple (C)STN(U) Editor. CSTN " + CSTN.VERSIONandDATE + ". CSTNU " + CSTNU.VERSIONandDATE);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -1680,8 +1863,8 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		this.vvViewer = new VisualizationViewer<>(this.layoutViewer, CSTNEditor.preferred_size);
 		this.vvViewer.setName(CSTNEditor.DISTANCE_VIEWER_NAME);
 
-		buildRenderContext(this.vvEditor, true);
-		buildRenderContext(this.vvViewer, false);
+		// buildRenderContext(this.vvEditor, true);
+		// buildRenderContext(this.vvViewer, false);
 		// CONTENT
 		// content is the canvas of the application.
 		final Container contentPane = this.getContentPane();
@@ -1722,10 +1905,16 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		contentPane.add(centralPanel, BorderLayout.CENTER);
 
 		// SOUTH
-		this.controlSouthPanel = new JPanel(new GridLayout(4, 1));// one row for AppButtons, one for validationPanelCSTN, one for validationPanelCSTNU
-		JPanel rowForAppButtons = new JPanel();
+		this.controlSouthPanel = new JPanel(new GridLayout(2, 1));// one row for AppButtons, one for STN, one for STNU, one for validationPanelCSTN, one for
+																	// validationPanelCSTNU
+		this.rowForAppButtons = new JPanel();
+		this.controlSouthPanel.add(this.rowForAppButtons, 0);// for tuning application
+		contentPane.add(this.controlSouthPanel, BorderLayout.SOUTH);
 
 		this.rowForSTNButtons = new JPanel();
+		this.rowForSTNButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
+		this.rowForSTNUButtons = new JPanel();
+		this.rowForSTNUButtons.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
 
 		JPanel rowForCSTNButtons = new JPanel();
 		this.validationPanelCSTN = new ValidationPanel();
@@ -1740,26 +1929,20 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		this.validationPanelCSTNU.setInnerComponent(rowForCSTNUButtons);
 		this.validationPanelCSTNU.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
 
-		this.controlSouthPanel.add(rowForAppButtons, 0);// for tuning application
-		this.controlSouthPanel.add(this.rowForSTNButtons, 1);// for button regarding STN
-		this.controlSouthPanel.add(this.validationPanelCSTN, 2);// for button regarding CSTN
-		this.controlSouthPanel.add(this.validationPanelCSTNU, 3);// for button regarding CSTNU
-		contentPane.add(this.controlSouthPanel, BorderLayout.SOUTH);
-
 		JButton buttonCheck;
 
 		// FIRST ROW OF COMMANDS
 		// mode box for the editor
-		JComboBox<Mode> modeBox = ((EditingModalGraphMouse<LabeledNode, Edge>) this.vvEditor.getGraphMouse()).getModeComboBox();
-		rowForAppButtons.add(modeBox);
+		this.rowForAppButtons.add(new JComboBox<>());
+		this.modeBoxIndex = 0;
 
 		this.layoutToggleButton = new JToggleButton("Layout input graph");
 		this.layoutToggleButton.addActionListener(new LayoutListener());
-		rowForAppButtons.add(this.layoutToggleButton);
+		this.rowForAppButtons.add(this.layoutToggleButton);
 
 		buttonCheck = new JButton("Input Graph big viewer");
 		buttonCheck.addActionListener(new BigViewerListener(true));
-		rowForAppButtons.add(buttonCheck);
+		this.rowForAppButtons.add(buttonCheck);
 
 		// AnnotationControls<LabeledNode,Edge> annotationControls =
 		// new AnnotationControls<LabeledNode,Edge>(gm.getAnnotatingPlugin());
@@ -1782,16 +1965,15 @@ public class CSTNEditor extends JFrame implements Cloneable {
 
 		buttonCheck = new JButton("Derived Graph big viewer");
 		buttonCheck.addActionListener(new BigViewerListener(false));
-		rowForAppButtons.add(buttonCheck);
+		this.rowForAppButtons.add(buttonCheck);
 
 		buttonCheck = new JButton("Help");
 		buttonCheck.addActionListener(new HelpListener());
-		rowForAppButtons.add(buttonCheck);
+		this.rowForAppButtons.add(buttonCheck);
 
 		// mode box for the distance viewer
-		JComboBox<Mode> modeBoxViewer = ((EditingModalGraphMouse<LabeledNode, Edge>) this.vvViewer.getGraphMouse()).getModeComboBox();
-		rowForAppButtons.add(modeBoxViewer);
-
+		this.rowForAppButtons.add(new JComboBox<>());
+		this.modeBoxViewerIndex = this.rowForAppButtons.getComponentCount() - 1;
 		// SECOND ROW OF COMMANDS
 
 		// ROW FOR STNs
@@ -1816,6 +1998,21 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck = new JButton("PredecessorGraph");
 		buttonCheck.addActionListener(new STNPredecessorGraphListener());
 		this.rowForSTNButtons.add(buttonCheck);
+
+		// ROW FOR STNUs
+		this.rowForSTNUButtons.add(new JLabel("Check Alg: "));
+		JComboBox<STNU.CheckAlgorithm> cAlgComboSTNU = new JComboBox<>(STNU.CheckAlgorithm.values());
+		cAlgComboSTNU.setSelectedItem(this.stnuCheckAlg);
+		cAlgComboSTNU.addActionListener(new STNUCheckAlgListener(cAlgComboSTNU));
+		this.rowForSTNUButtons.add(cAlgComboSTNU);
+
+		buttonCheck = new JButton("Init");
+		buttonCheck.addActionListener(new STNUInitListener());
+		this.rowForSTNUButtons.add(buttonCheck);
+
+		buttonCheck = new JButton("Controllability");
+		buttonCheck.addActionListener(new STNUControllabilityCheckListener());
+		this.rowForSTNUButtons.add(buttonCheck);
 
 		// ROW FOR CSTNs
 		JCheckBox withUnkwon = new JCheckBox("With unknown literals");
@@ -1917,13 +2114,38 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new CSTNU2CSTNCheckListener());
 		rowForCSTNUButtons.add(buttonCheck);
 
-		buttonCheck = new JButton("CSTNPSU Check");
+		buttonCheck = new JButton("CSTNPSU/FTNU Check");
 		buttonCheck.addActionListener(new CSTNPSUCheckListener());
 		rowForCSTNUButtons.add(buttonCheck);
 
+		NewNetworkActivation newNetAct = new NewNetworkActivation();
 		// MENU
 		CSTNEditor.default_dir = (new JFileChooser()).getCurrentDirectory() + CSTNEditor.default_dir;
 		final JMenu menu = new JMenu("File");
+		final JMenu newFile = new JMenu("New network");
+		final JMenuItem newStn = new JMenuItem("STN");
+		newStn.setActionCommand("STN");
+		newStn.addActionListener(newNetAct);
+		final JMenuItem newStnu = new JMenuItem("STNU");
+		newStnu.setActionCommand("STNU");
+		newStnu.addActionListener(newNetAct);
+		final JMenuItem newCstn = new JMenuItem("CSTN");
+		newCstn.setActionCommand("CSTN");
+		newCstn.addActionListener(newNetAct);
+		final JMenuItem newCstnu = new JMenuItem("CSTNU");
+		newCstnu.setActionCommand("CSTNU");
+		newCstnu.addActionListener(newNetAct);
+		final JMenuItem newCstnpsu = new JMenuItem("CSTNPSU/FTNU");
+		newCstnpsu.setActionCommand("CSTNPSU");
+		newCstnpsu.addActionListener(newNetAct);
+
+		newFile.add(newStn);
+		newFile.add(newStnu);
+		newFile.add(newCstn);
+		newFile.add(newCstnu);
+		newFile.add(newCstnpsu);
+		menu.add(newFile);
+
 		final JMenuItem openItem = new JMenuItem("Open...");
 		openItem.addActionListener(new OpenFileListener());
 		menu.add(openItem);
@@ -1940,40 +2162,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	}
 
 	/**
-	 * In the command panel, only one row of commands is visible.
-	 * This method makes visible one row, hiding the others.
-	 * 
-	 * @param rowName Admissible value 'STN', 'CSTN', 'CSTNU'.
-	 */
-	void showCommandRow(String rowName) {
-		switch (rowName) {
-		case "CSTNU":
-			this.validationPanelCSTNU.setVisible(true);
-			this.validationPanelCSTN.setVisible(false);
-			this.rowForSTNButtons.setVisible(false);
-			break;
-		case "CSTN":
-			this.validationPanelCSTNU.setVisible(false);
-			this.validationPanelCSTN.setVisible(true);
-			this.rowForSTNButtons.setVisible(false);
-			break;
-		default:
-			this.validationPanelCSTNU.setVisible(false);
-			this.validationPanelCSTN.setVisible(false);
-			this.rowForSTNButtons.setVisible(true);
-		}
-	}
-
-	/**
-	 * 
-	 */
-	void resetDerivedGraphStatus() {
-		this.vvViewer.setVisible(false);
-		this.viewerMessageArea.setText("");
-		this.cycle = 0;
-	}
-
-	/**
 	 * Adds vertex and edges renders, tooltips and mouse behavior to a viewer.
 	 * 
 	 * @param viewer
@@ -1986,29 +2174,26 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		setNodeEdgeRenders(viewer, firstViewer);
 
 		// mouse action
+		@SuppressWarnings("unchecked")
 		EditingModalGraphMouse<LabeledNode, E> graphMouse = new EditingModalGraphMouse<>(
 				viewer.getRenderContext(),
 				new LabeledNodeSupplier(),
-				null, // only after graph load it is possible to set edge supplier.
+				(EdgeSupplier<E>) new EdgeSupplier<>(CSTNEditor.this.currentEdgeImpl), // only after graph load it is possible to set edge supplier.
 				CSTNEditor.this,
 				firstViewer);
 		LOG.finest("buildRenderContext.graphMouse " + graphMouse);
-//		graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
+		// graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
 		viewer.setGraphMouse(graphMouse);
 		viewer.addKeyListener(graphMouse.getModeKeyListener());
-
 		// TOOLTIPS setting
 		viewer.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
-	}
-
-	/**
-	 * Updates Edge Supplier in viewer considering the current type of loaded graph.
-	 * 
-	 * @param viewer
-	 */
-	@SuppressWarnings("unchecked")
-	<E extends Edge> void updateEdgeSupplierInViewer(VisualizationViewer<LabeledNode, E> viewer) {
-		((EditingModalGraphMouse<LabeledNode, E>) viewer.getGraphMouse()).setEdgeEditingPlugin((EdgeSupplier<E>) new EdgeSupplier<>(this.currentEdgeImpl));
+		if (firstViewer) {
+			CSTNEditor.this.rowForAppButtons.remove(this.modeBoxIndex);
+			CSTNEditor.this.rowForAppButtons.add(graphMouse.getModeComboBox(), this.modeBoxIndex);
+		} else {
+			CSTNEditor.this.rowForAppButtons.remove(this.modeBoxViewerIndex);
+			CSTNEditor.this.rowForAppButtons.add(graphMouse.getModeComboBox(), this.modeBoxViewerIndex);
+		}
 	}
 
 	/**
@@ -2019,10 +2204,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * <pre>
 	 * .stn ===> STN 
 	 * .cstn ===> CSTN
+	 * .stnu ===> STNU
 	 * .cstnu ===> CSTNU
+	 * .cstpsu ===> CSTNPSU
 	 * </pre>
-	 * 
-	 * It creates call {@link #buildRenderContext(VisualizationViewer, boolean)}
 	 * 
 	 * @param fileName
 	 * @throws SAXException
@@ -2035,28 +2220,25 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		TNGraphMLReader graphReader = null;
 		String name = fileName.getName();
 		if (name.endsWith(".stn")) {
-			this.currentTNGraphType = NetworkType.STN;
-			this.currentEdgeImpl = EdgeSupplier.DEFAULT_STN_EDGE_CLASS;
+			setDefaultParametersForNetwork(NetworkType.STN);
 			graphReader = new TNGraphMLReader<STNEdge>(fileName, (Class<? extends STNEdge>) this.currentEdgeImpl);
-			showCommandRow("STN");
 		} else {
-			if (name.endsWith(".cstn")) {
-				this.currentTNGraphType = NetworkType.CSTN;
-				this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
-				graphReader = new TNGraphMLReader<CSTNEdge>(fileName, (Class<? extends CSTNEdge>) this.currentEdgeImpl);
-				showCommandRow("CSTN");
+			if (name.endsWith(".stnu")) {
+				setDefaultParametersForNetwork(NetworkType.STNU);
+				graphReader = new TNGraphMLReader<STNEdge>(fileName, (Class<? extends STNUEdge>) this.currentEdgeImpl);
 			} else {
-				if (name.endsWith(".cstnu")) {
-					this.currentTNGraphType = NetworkType.CSTNU;
-					this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
-					graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
-					showCommandRow("CSTNU");
+				if (name.endsWith(".cstn")) {
+					setDefaultParametersForNetwork(NetworkType.CSTN);
+					graphReader = new TNGraphMLReader<CSTNEdge>(fileName, (Class<? extends CSTNEdge>) this.currentEdgeImpl);
 				} else {
-					if (name.endsWith("stnpsu") || name.endsWith("cstnpsu")) {
-						this.currentTNGraphType = NetworkType.CSTNPSU;
-						this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNPSU_EDGE_CLASS;
-						graphReader = new TNGraphMLReader<CSTNPSUEdge>(fileName, (Class<? extends CSTNPSUEdge>) this.currentEdgeImpl);
-						showCommandRow("CSTNU");
+					if (name.endsWith(".cstnu")) {
+						setDefaultParametersForNetwork(NetworkType.CSTNU);
+						graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
+					} else {
+						if (name.endsWith(".stnpsu") || name.endsWith(".cstnpsu")) {
+							setDefaultParametersForNetwork(NetworkType.CSTNPSU);
+							graphReader = new TNGraphMLReader<CSTNPSUEdge>(fileName, (Class<? extends CSTNPSUEdge>) this.currentEdgeImpl);
+						}
 					}
 				}
 			}
@@ -2065,11 +2247,64 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		CSTNEditor.this.inputGraph.setInputFile(fileName);
 		CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 		// LOG.severe(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
-		updateEdgeSupplierInViewer(this.vvEditor);
-		updateEdgeSupplierInViewer(this.vvViewer);
-
 		CSTNEditor.this.validate();
 		CSTNEditor.this.repaint();
+	}
+
+	/**
+	 * Set all default parameter about the editor according with the input type.
+	 * 
+	 * @param networkType
+	 */
+	@SuppressWarnings("unchecked")
+	void setDefaultParametersForNetwork(TNGraph.NetworkType networkType) {
+		switch (networkType) {
+		case STNU:
+			CSTNEditor.this.currentTNGraphType = NetworkType.STNU;
+			CSTNEditor.this.currentEdgeImpl = EdgeSupplier.DEFAULT_STNU_EDGE_CLASS;
+			break;
+		case CSTN:
+			CSTNEditor.this.currentTNGraphType = NetworkType.CSTN;
+			CSTNEditor.this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS;
+			break;
+		case CSTNU:
+			CSTNEditor.this.currentTNGraphType = NetworkType.CSTNU;
+			CSTNEditor.this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS;
+			break;
+		case CSTNPSU:
+			CSTNEditor.this.currentTNGraphType = NetworkType.CSTNPSU;
+			CSTNEditor.this.currentEdgeImpl = EdgeSupplier.DEFAULT_CSTNPSU_EDGE_CLASS;
+			break;
+		default:
+		case STN:
+			CSTNEditor.this.currentTNGraphType = NetworkType.STN;
+			CSTNEditor.this.currentEdgeImpl = EdgeSupplier.DEFAULT_STN_EDGE_CLASS;
+			break;
+		}
+
+		@SuppressWarnings("rawtypes")
+		TNGraph g = new TNGraph<>(this.currentEdgeImpl);
+		CSTNEditor.this.inputGraph.takeIn(g);
+		g = new TNGraph<>(this.currentEdgeImpl);
+		CSTNEditor.this.checkedGraph.takeIn(g);
+
+		showCommandRow(networkType);
+		buildRenderContext(CSTNEditor.this.vvEditor, true);
+		buildRenderContext(CSTNEditor.this.vvViewer, false);
+
+		// updateEdgeSupplierInViewer(this.vvEditor);
+		// updateEdgeSupplierInViewer(this.vvViewer);
+		CSTNEditor.this.validate();
+		CSTNEditor.this.repaint();
+	}
+
+	/**
+	 * 
+	 */
+	void resetDerivedGraphStatus() {
+		this.vvViewer.setVisible(false);
+		this.viewerMessageArea.setText("");
+		this.cycle = 0;
 	}
 
 	/**
@@ -2085,6 +2320,65 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			e.printStackTrace();
 		}
 	}
+
+	/**
+	 * In the command panel, only one row of commands is visible.
+	 * This method makes visible one row, hiding the others.
+	 * 
+	 * @param networkType
+	 */
+	void showCommandRow(TNGraph.NetworkType networkType) {
+		switch (networkType) {
+		case CSTNU:
+		case CSTNPSU:
+			this.validationPanelCSTNU.setVisible(true);
+			this.validationPanelCSTN.setVisible(false);
+			this.rowForSTNUButtons.setVisible(false);
+			this.rowForSTNButtons.setVisible(false);
+			if (this.controlSouthPanel.getComponentCount() == 2)
+				this.controlSouthPanel.remove(1);
+			this.controlSouthPanel.add(this.validationPanelCSTNU, 1);// for button regarding CSTNU
+			break;
+		case CSTN:
+			this.validationPanelCSTNU.setVisible(false);
+			this.validationPanelCSTN.setVisible(true);
+			this.rowForSTNUButtons.setVisible(false);
+			this.rowForSTNButtons.setVisible(false);
+			if (this.controlSouthPanel.getComponentCount() == 2)
+				this.controlSouthPanel.remove(1);
+			this.controlSouthPanel.add(this.validationPanelCSTN, 1);// for button regarding CSTN
+			break;
+		case STNU:
+			this.validationPanelCSTNU.setVisible(false);
+			this.validationPanelCSTN.setVisible(false);
+			this.rowForSTNButtons.setVisible(false);
+			this.rowForSTNUButtons.setVisible(true);
+			if (this.controlSouthPanel.getComponentCount() == 2)
+				this.controlSouthPanel.remove(1);
+			this.controlSouthPanel.add(this.rowForSTNUButtons, 1);// for button regarding STN
+			break;
+		case STN:
+		default:
+			this.validationPanelCSTNU.setVisible(false);
+			this.validationPanelCSTN.setVisible(false);
+			this.rowForSTNUButtons.setVisible(false);
+			this.rowForSTNButtons.setVisible(true);
+			if (this.controlSouthPanel.getComponentCount() == 2)
+				this.controlSouthPanel.remove(1);
+			this.controlSouthPanel.add(this.rowForSTNButtons, 1);// for button regarding STN
+		}
+	}
+
+	/**
+	 * Updates Edge Supplier in viewer considering the current type of loaded graph.
+	 * 
+	 * @param viewer
+	 *            @SuppressWarnings("unchecked")
+	 *            <E extends Edge> void updateEdgeSupplierInViewer(VisualizationViewer<LabeledNode, E> viewer) {
+	 *            ((EditingModalGraphMouse<LabeledNode, E>) viewer.getGraphMouse()).setEdgeEditingPlugin((EdgeSupplier<E>) new
+	 *            EdgeSupplier<>(this.currentEdgeImpl));
+	 *            }
+	 */
 
 	/**
 	 * Update node positions in derived graph.

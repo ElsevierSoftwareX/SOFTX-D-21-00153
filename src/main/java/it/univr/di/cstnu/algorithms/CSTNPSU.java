@@ -234,7 +234,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		EdgesToCheck<CSTNPSUEdge> edgesToCheck = new EdgesToCheck<>(this.g.getEdges());
 
 		final int n = this.g.getVertexCount();
-		int k = this.g.getContingentCount();
+		int k = this.g.getContingentNodeCount();
 		if (k == 0) {
 			k = 1;
 		}
@@ -439,8 +439,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 				if (initialValue < 0) {
 					// current edge is the lower bound.
 					ALabel contingentALabel = new ALabel(s.getName(), this.g.getALabelAlphabet());
-					if (!contingentALabel.equals(s.getAlabel()))
-						s.setAlabel(contingentALabel);// to speed up DC checking!
+					if (!contingentALabel.equals(s.getALabel()))
+						s.setALabel(contingentALabel);// to speed up DC checking!
 					lowerCaseValueInEInverted = eInverted.getLowerCaseValue(conjunctedLabel, contingentALabel);
 					if (lowerCaseValueInEInverted != Constants.INT_NULL && -initialValue > lowerCaseValueInEInverted) {
 						throw new IllegalArgumentException(
@@ -510,7 +510,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 						}
 					}
 					// In order to speed up the checking, prepare some auxiliary data structure
-					s.setAlabel(contingentALabel);// s is the contingent node.
+					s.setALabel(contingentALabel);// s is the contingent node.
 					this.activationNode.put(s, d);
 					this.lowerContingentLink.put(s, eInverted);
 
@@ -518,8 +518,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 					// e : A--->C
 					// eInverted : C--->A
 					ALabel contingentALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
-					if (!contingentALabel.equals(d.getAlabel()))
-						d.setAlabel(contingentALabel);// to speed up DC checking!
+					if (!contingentALabel.equals(d.getALabel()))
+						d.setALabel(contingentALabel);// to speed up DC checking!
 					Object2ObjectMap.Entry<Label, Entry<ALabel>> minUC = eInverted.getMinUpperCaseValue();
 					Label ucLabel = minUC.getKey();
 					ALabel ucALabel = minUC.getValue().getKey();
@@ -578,13 +578,13 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 				}
 				if (e.upperCaseValueSize() > 0) {
 					ALabel sourceALabel = new ALabel(s.getName(), this.g.getALabelAlphabet());
-					if (!sourceALabel.equals(s.getAlabel()))
-						s.setAlabel(sourceALabel);// to speed up DC checking!
+					if (!sourceALabel.equals(s.getALabel()))
+						s.setALabel(sourceALabel);// to speed up DC checking!
 				}
 				if (eInverted.upperCaseValueSize() > 0) {
 					ALabel destALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
-					if (!destALabel.equals(d.getAlabel()))
-						d.setAlabel(destALabel);// to speed up DC checking!
+					if (!destALabel.equals(d.getALabel()))
+						d.setALabel(destALabel);// to speed up DC checking!
 				}
 			}
 			// it is necessary to check max value
@@ -1001,21 +1001,21 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		if (!nX.isContingent() || (nX.isContingent() && this.getActivationNode(nX) != nY))
 			return ruleApplied;
 
-		LabeledIntTreeMap eXYUpperCaseValues = eXY.getUpperCaseValueMap().get(nX.getAlabel());
+		LabeledIntTreeMap eXYUpperCaseValues = eXY.getUpperCaseValueMap().get(nX.getALabel());
 		if (eXYUpperCaseValues != null) {
 
 			for (Object2IntMap.Entry<Label> entryXY : eXYUpperCaseValues.entrySet()) {// entrySet read-only
 				final Label alpha = entryXY.getKey();
 				final int u = entryXY.getIntValue();
 				for (final ALabel aleph : YZAllLabeledValueMap.keySet()) {
-					if (aleph.contains(nX.getAlabel()))
+					if (aleph.contains(nX.getALabel()))
 						continue;
 					for (Object2IntMap.Entry<Label> entryYW : YZAllLabeledValueMap.get(aleph).entrySet()) {// entrySet read-only
 						final Label beta = entryYW.getKey();
 						Label alphaBeta = alpha.conjunctionExtended(beta);
 						if (alphaBeta == null)
 							continue;
-						final ALabel newXAleph = nX.getAlabel().conjunction(aleph);
+						final ALabel newXAleph = nX.getALabel().conjunction(aleph);
 						final int v = entryYW.getIntValue();
 
 						int sum = Constants.sumWithOverflowCheck(u, v);
@@ -1033,7 +1033,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 							final String oldXW = eXZ.toString();
 							logMsg = "CSTNPSU rG3 applied to edge " + oldXW + ":\n" + "partic: "
 									+ nZ.getName() + " <---" + CSTNU.upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName() + " <---"
-									+ CSTNU.upperCaseValueAsString(nX.getAlabel(), u, alpha) + "--- " + nX.getName()
+									+ CSTNU.upperCaseValueAsString(nX.getALabel(), u, alpha) + "--- " + nX.getName()
 									+ "\nresult: "
 									+ nZ.getName() + " <---" + CSTNU.upperCaseValueAsString(newXAleph, sum, alphaBeta) + "--- " + nX.getName()
 									+ "; old value: " + Constants.formatInt(oldValue);
@@ -1114,7 +1114,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		if (this.activationNode.get(nC) != nA)
 			return false;
 
-		final LabeledIntTreeMap lowerCaseValueMap = eAC.getLowerCaseValueMap().get(nC.getAlabel());
+		final LabeledIntTreeMap lowerCaseValueMap = eAC.getLowerCaseValueMap().get(nC.getALabel());
 		if (lowerCaseValueMap == null || lowerCaseValueMap.isEmpty())
 			return false;
 
@@ -1136,7 +1136,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 				LabeledIntTreeMap czValuesMap = CZAllValueMap.get(aleph);
 				if (czValuesMap == null)
 					continue;
-				if (aleph.contains(nC.getAlabel())) {
+				if (aleph.contains(nC.getALabel())) {
 					continue;// Rule condition: upper case label cannot be equal or contain c name
 				}
 				boolean emptyAleph = aleph.isEmpty();
@@ -1160,7 +1160,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 					if (Debug.ON) {
 						final String oldAX = eAZ.toString();
 						logMsg = "rG2 applied to edge " + oldAX + ":\npartic: " + nZ.getName() + " <---" + CSTNU.upperCaseValueAsString(aleph, v, beta)
-								+ "--- " + nC.getName() + " <---" + CSTNU.lowerCaseValueAsString(nC.getAlabel(), u, alpha) + "--- "
+								+ "--- " + nC.getName() + " <---" + CSTNU.lowerCaseValueAsString(nC.getALabel(), u, alpha) + "--- "
 								+ nA.getName()
 								+ "\nresult: " + nZ.getName()
 								+ " <---" + CSTNU.upperCaseValueAsString(aleph, sum, alphaBeta) + "--- " + nA.getName() + "; oldValue: "
@@ -1246,7 +1246,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 						continue;
 					CSTNPSUEdge AC = this.getLowerContingentLink(nC);
 					Label guardedLinkLabel = nC.getLabel().conjunction(nA.getLabel());
-					int lowerCaseEntry = AC.getLowerCaseValue(guardedLinkLabel, nC.getAlabel());
+					int lowerCaseEntry = AC.getLowerCaseValue(guardedLinkLabel, nC.getALabel());
 					if (lowerCaseEntry == Constants.INT_NULL)
 						continue;
 					CSTNPSUEdge CA = this.g.findEdge(nC, nA);
@@ -1290,7 +1290,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 											LOG.log(Level.FINER, "CSTNPSU rG4 applied to edge " + oldYZ + ":\n" + "partic: "
 													+ nY.getName() + "---" + CSTNU.upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
 													+ CSTNU.upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
-													+ "---" + CSTNU.lowerCaseValueAsString(nC.getAlabel(), x, guardedLinkLabel) + "---> " + nodeLetter
+													+ "---" + CSTNU.lowerCaseValueAsString(nC.getALabel(), x, guardedLinkLabel) + "---> " + nodeLetter
 													+ "\nresult: " + nY.getName() + "---" + CSTNU.upperCaseValueAsString(alephAleph1, m, alphaBeta) + "---> Z"
 													+ "; oldValue: " + Constants.formatInt(oldValue));
 									}
@@ -1604,13 +1604,13 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		// 2) rG6
 		if (nY.isContingent() && this.getActivationNode(nY) == nX) {
 
-			LabeledIntTreeMap eXYLowerCaseValues = eXY.getLowerCaseValueMap().get(nY.getAlabel());
+			LabeledIntTreeMap eXYLowerCaseValues = eXY.getLowerCaseValueMap().get(nY.getALabel());
 			if (eXYLowerCaseValues != null) {
 				for (Object2IntMap.Entry<Label> entryXY : eXYLowerCaseValues.entrySet()) {
 					final Label alpha = entryXY.getKey();
 					final int u = entryXY.getIntValue();
 					for (final ALabel dalet : ZXLowerCAndLabeledValueMap.keySet()) {
-						if (dalet.contains(nY.getAlabel()))
+						if (dalet.contains(nY.getALabel()))
 							continue;
 						for (Object2IntMap.Entry<Label> entryZX : ZXLowerCAndLabeledValueMap.get(dalet).entrySet()) {// It should be one!
 							final Label beta = entryZX.getKey();
@@ -1621,14 +1621,14 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 								continue;
 							final int v = entryZX.getIntValue();
 							int sum = Constants.sumWithOverflowCheck(u, v);
-							final ALabel newXAleph = nY.getAlabel().conjunction(dalet);
+							final ALabel newXAleph = nY.getALabel().conjunction(dalet);
 							final int oldValue = eZY.getLowerCaseValue(alphaBeta, newXAleph);
 
 							if (Debug.ON) {
 								final String oldZY = eZY.toString();
 								logMsg = "CSTNPSU rG6 applied to edge " + oldZY + ":\n" + "partic: "
 										+ nZ.getName() + " ---" + CSTNU.lowerCaseValueAsString(dalet, v, beta) + "---> " + nX.getName() + " ---"
-										+ CSTNU.lowerCaseValueAsString(nY.getAlabel(), u, alpha) + "---> " + nY.getName()
+										+ CSTNU.lowerCaseValueAsString(nY.getALabel(), u, alpha) + "---> " + nY.getName()
 										+ "\nresult: "
 										+ nZ.getName() + " ---" + CSTNU.lowerCaseValueAsString(newXAleph, sum, alphaBeta) + "---> " + nY.getName()
 										+ "; old value: " + Constants.formatInt(oldValue);
@@ -1691,13 +1691,13 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 		// 2) rG7
 		if (nX.isContingent() && this.getActivationNode(nX) == nY) {
-			LabeledIntTreeMap eXYUpperCaseValue = eXY.getUpperCaseValueMap().get(nX.getAlabel());
+			LabeledIntTreeMap eXYUpperCaseValue = eXY.getUpperCaseValueMap().get(nX.getALabel());
 			if (eXYUpperCaseValue != null) {
 				for (Object2IntMap.Entry<Label> entryXY : eXYUpperCaseValue.entrySet()) {// entrySet read-only
 					final Label alpha = entryXY.getKey();
 					final int u = entryXY.getIntValue();
 					for (final ALabel dalet : ZXLowerCAndLabeledValueMap.keySet()) {
-						if (dalet.contains(nX.getAlabel()))
+						if (dalet.contains(nX.getALabel()))
 							continue;
 						for (Object2IntMap.Entry<Label> entryZX : ZXLowerCAndLabeledValueMap.get(dalet).entrySet()) {// it should be only one!
 							final Label beta = entryZX.getKey();
@@ -1712,7 +1712,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 								final String oldZY = eZY.toString();
 								logMsg = "CSTNPSU rG7 applied to edge " + oldZY + ":\n" + "partic: "
 										+ nZ.getName() + " ---" + CSTNU.lowerCaseValueAsString(dalet, v, beta) + "---> " + nX.getName() + " ---"
-										+ CSTNU.upperCaseValueAsString(nX.getAlabel(), u, alpha) + "---> " + nY.getName()
+										+ CSTNU.upperCaseValueAsString(nX.getALabel(), u, alpha) + "---> " + nY.getName()
 										+ "\nresult: "
 										+ nZ.getName() + " ---" + CSTNU.lowerCaseValueAsString(dalet, sum, alphaBeta) + "---> " + nY.getName()
 										+ "; old value: " + Constants.formatInt(oldValue);
@@ -1934,8 +1934,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		}
 		String logMsg;
 		boolean ruleApplied = false;
-		int lowerGuard = eAC.getLowerCaseValue(Label.emptyLabel, nC.getAlabel());
-		int upperGuard = eCA.getUpperCaseValue(Label.emptyLabel, nC.getAlabel());
+		int lowerGuard = eAC.getLowerCaseValue(Label.emptyLabel, nC.getALabel());
+		int upperGuard = eCA.getUpperCaseValue(Label.emptyLabel, nC.getALabel());
 		if (lowerGuard > -upperGuard) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER))
@@ -1947,13 +1947,13 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		LabeledALabelIntTreeMap eCZMaps = eCZ.getAllUpperCaseAndLabeledValuesMaps();
 		LabeledALabelIntTreeMap eZAMaps = eZA.getAllLowerCaseAndLabeledValuesMaps();
 		for (ALabel aleph : eCZMaps.keySet()) {
-			if (aleph.contains(nC.getAlabel()))
+			if (aleph.contains(nC.getALabel()))
 				continue;
 			for (Entry<Label> entryCZ : eCZMaps.get(aleph).entrySet()) {
 				Label alpha = entryCZ.getKey();
 				int u = entryCZ.getIntValue();
 				for (ALabel dalet : eZAMaps.keySet()) {
-					if (dalet.contains(nC.getAlabel()) || !aleph.intersect(dalet).isEmpty())
+					if (dalet.contains(nC.getALabel()) || !aleph.intersect(dalet).isEmpty())
 						continue;
 					for (Entry<Label> entryZA : eZAMaps.get(dalet).entrySet()) {
 						Label beta = entryZA.getKey();
@@ -2017,8 +2017,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		}
 		String logMsg = "";
 		boolean ruleApplied = false;
-		int lowerGuard = eAC.getLowerCaseValue(Label.emptyLabel, nC.getAlabel());
-		int upperGuard = eCA.getUpperCaseValue(Label.emptyLabel, nC.getAlabel());
+		int lowerGuard = eAC.getLowerCaseValue(Label.emptyLabel, nC.getALabel());
+		int upperGuard = eCA.getUpperCaseValue(Label.emptyLabel, nC.getALabel());
 		if (lowerGuard > -upperGuard) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER))
@@ -2029,13 +2029,13 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		LabeledALabelIntTreeMap eZCMaps = eZC.getAllLowerCaseAndLabeledValuesMaps();
 		LabeledALabelIntTreeMap eAZMaps = eAZ.getAllUpperCaseAndLabeledValuesMaps();
 		for (ALabel dalet : eZCMaps.keySet()) {
-			if (dalet.contains(nC.getAlabel()))
+			if (dalet.contains(nC.getALabel()))
 				continue;
 			for (Entry<Label> entryCZ : eZCMaps.get(dalet).entrySet()) {
 				Label beta = entryCZ.getKey();
 				int v = entryCZ.getIntValue();
 				for (ALabel aleph : eAZMaps.keySet()) {
-					if (aleph.contains(nC.getAlabel()) || !aleph.intersect(dalet).isEmpty())
+					if (aleph.contains(nC.getALabel()) || !aleph.intersect(dalet).isEmpty())
 						continue;
 					for (Entry<Label> entryZA : eAZMaps.get(aleph).entrySet()) {
 						Label alpha = entryZA.getKey();

@@ -83,7 +83,7 @@ public class CSTNPSUTest {
 		final LabeledNode A = this.g.getNodeFactory().get("A");
 		final LabeledNode B = this.g.getNodeFactory().get("B");
 		ALabel aLabel4B = new ALabel(B.getName(), this.alphabeth);
-		B.setAlabel(aLabel4B);
+		B.setALabel(aLabel4B);
 		final LabeledNode C = this.g.getNodeFactory().get("C");
 
 		final LabeledNode a = this.g.getNodeFactory().get("A?");

@@ -35,6 +35,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.DCSemantics;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
+import it.univr.di.cstnu.algorithms.STN.STNCheckStatus;
+import it.univr.di.cstnu.algorithms.STNU.CheckAlgorithm;
+import it.univr.di.cstnu.algorithms.STNU.STNUCheckStatus;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.CSTNEdgePluggable;
 import it.univr.di.cstnu.graph.CSTNUEdge;
@@ -43,6 +46,8 @@ import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.STNEdge;
 import it.univr.di.cstnu.graph.STNEdgeInt;
+import it.univr.di.cstnu.graph.STNUEdge;
+import it.univr.di.cstnu.graph.STNUEdgeInt;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraph.NetworkType;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
@@ -68,10 +73,26 @@ public class Checker {
 	 * @author posenato
 	 */
 	public static class GlobalStatisticKey implements Comparable<GlobalStatisticKey> {
+		/**
+		 * # contingents
+		 */
 		protected int contingents;
+		/**
+		 * # of nodes
+		 */
 		protected int nodes;
+		/**
+		 * # of propositions
+		 */
 		protected int propositions;
 
+		/**
+		 * default constructor
+		 * 
+		 * @param inputNodes #nodes
+		 * @param inputPropositions #prop
+		 * @param inputContingents # cont
+		 */
 		public GlobalStatisticKey(final int inputNodes, final int inputPropositions, final int inputContingents) {
 			this.nodes = inputNodes;
 			this.propositions = inputPropositions;
@@ -99,14 +120,23 @@ public class Checker {
 			return ((GlobalStatisticKey) o).compareTo(this) == 0;
 		}
 
+		/**
+		 * @return #cont
+		 */
 		public int getContingent() {
 			return this.contingents;
 		}
 
+		/**
+		 * @return #nodes
+		 */
 		public int getNodes() {
 			return this.nodes;
 		}
 
+		/**
+		 * @return # prop
+		 */
 		public int getPropositions() {
 			return this.propositions;
 		}
@@ -119,7 +149,7 @@ public class Checker {
 	}
 
 	@SuppressWarnings({ "javadoc" })
-	private static class RunMeter {
+	static class RunMeter {
 
 		static final int maxMeterSize = 50;// [0--100]
 
@@ -198,10 +228,12 @@ public class Checker {
 			+ CSVSep + "#nodes"
 			+ CSVSep + "#contingent"
 			+ CSVSep + "#propositions"
-			+ CSVSep + "averageTime[s]"
-			+ CSVSep + "std.Dev.[s]"
-			+ CSVSep + "averageRuleExecuted"
-			+ CSVSep + "std.Dev."
+			+ CSVSep + "avgExeTime[s]"
+			+ CSVSep + "std.dev.[s]"
+			+ CSVSep + "avgRules/Cycles"
+			+ CSVSep + "std.dev."
+			+ CSVSep + "avgAddedEdgesRate"
+			+ CSVSep + "std.dev."
 			+ CSVSep + "\n";
 	/**
 	 * 
@@ -210,6 +242,8 @@ public class Checker {
 			+ CSVSep + "%d"
 			+ CSVSep + "%d"
 			+ CSVSep + "%d"
+			+ CSVSep + "%E"
+			+ CSVSep + "%E"
 			+ CSVSep + "%E"
 			+ CSVSep + "%E"
 			+ CSVSep + "%E"
@@ -231,20 +265,31 @@ public class Checker {
 			+ CSVSep + "#ctg"
 			+ CSVSep + "#minEdgeValue"
 			+ CSVSep + "#maxEdgeValue"
-			+ CSVSep + "averageTime[s]"
-			+ CSVSep + "std.Dev.[s]"
-			+ CSVSep + "#ruleExecuted"
-			+ CSVSep + "DC"
+			+ CSVSep + "avgTime[s]"
+			+ CSVSep + "std.dev.[s]"
+			+ CSVSep + "#ruleExecuted/cyles"
+			+ CSVSep + "DC";
+
+	/**
+	 * Header
+	 */
+	static final String OUTPUT_HEADER_STNU = OUTPUT_HEADER
+			+ CSVSep + "rateAddedEdges"
+			+ CSVSep;
+
+	/**
+	 * CSTN header
+	 */
+	static final String OUTPUT_HEADER_CSTN = OUTPUT_HEADER
 			+ CSVSep + "#R0"
 			+ CSVSep + "#R3"
 			+ CSVSep + "#LP"
 			+ CSVSep + "#PotentialUpdate"
 			+ CSVSep;
-
 	/**
-	 * 
+	 * CSTNU header
 	 */
-	static final String OUTPUT_HEADER_CSTNU = OUTPUT_HEADER
+	static final String OUTPUT_HEADER_CSTNU = OUTPUT_HEADER_CSTN
 			+ "#LUC+FLUC+LCUC"// upperCaseRuleCalls
 			+ CSVSep + "#LLC"// lowerCaseRuleCalls
 			+ CSVSep + "#LCC"// crossCaseRuleCalls
@@ -268,18 +313,23 @@ public class Checker {
 	 */
 	static final String OUTPUT_ROW_TIME = "%E"// average time
 			+ CSVSep + "%E"// std dev
-			+ CSVSep + "%d"// #ruleExecuted
+			+ CSVSep + "%d"// #ruleExecuted or cycles
 			+ CSVSep + "%s"// true of false for DC
 			+ CSVSep;
 
 	/**
 	 * 
 	 */
-	static final String OUTPUT_ROW_TIME_STATS = OUTPUT_ROW_TIME
-			+ "%d"// r0
+	static final String OUTPUT_ROW_TIME_CSTN = "%d"// r0
 			+ CSVSep + "%d"// r3
 			+ CSVSep + "%d"// LNC
 			+ CSVSep + "%d"// PotentialUpdate
+			+ CSVSep;
+
+	/**
+	 * 
+	 */
+	static final String OUTPUT_ROW_TIME_STNU = "%E"// added edges
 			+ CSVSep;
 
 	/**
@@ -307,7 +357,9 @@ public class Checker {
 	// static final String VERSIONandDATE = "2.25, January, 17 2018";// Improved print of statistics.
 	// static final String VERSIONandDATE = "2.26, December, 18 2018";// Improved print of statistics adding the total number of applied rules
 	// static final String VERSIONandDATE = "2.27, June, 9 2019";// Refactoring Edge
-	static final String VERSIONandDATE = "2.5, November, 09 2019";// Removed all potential counters
+	// static final String VERSIONandDATE = "2.5, November, 09 2019";// Removed all potential counters
+	// static final String VERSIONandDATE = "3, June, 29 2020";// Add check for STN and STNU
+	static final String VERSIONandDATE = "3.1, July, 28 2020";// Refined stats for STNU
 
 	/**
 	 * Allows to check the execution time of DC checking algorithm giving a set of instances.
@@ -318,9 +370,9 @@ public class Checker {
 	 * it is possible to run the parallel thread in the better conditions.
 	 * 
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws SAXException if instances contains syntax errors
+	 * @throws ParserConfigurationException if input parameters contains errors
+	 * @throws IOException if files are not readable
 	 */
 	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
@@ -386,10 +438,11 @@ public class Checker {
 				new AffinityThreadFactory("cstnWorker", AffinityStrategies.DIFFERENT_CORE)) : null;
 
 		/**
-		 * To collect statistics w.r.t. the dimension of CSTNs
+		 * To collect statistics w.r.t. the dimension of networks
 		 */
 		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupExecutionTimeStatistics = new Object2ObjectAVLTreeMap<>();
 		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupRuleExecutionStatistics = new Object2ObjectAVLTreeMap<>();
+		Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> groupAddedEdgeStatistics = new Object2ObjectAVLTreeMap<>();
 
 		System.out.println(getNow() + ": #Processors for computation: " + nCPUs);
 		System.out.println(getNow() + ": Instances to check are " + tester.networkType + " instances.");
@@ -401,9 +454,10 @@ public class Checker {
 		int nTaskSuccessfullyFinished = 0;
 		for (File file : tester.instances) {
 			if (nCPUs > 0) {
-				future.add(cstnExecutor.submit(() -> tester.worker(file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics)));
+				future.add(cstnExecutor
+						.submit(() -> tester.worker(file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics, groupAddedEdgeStatistics)));
 			} else {
-				if (tester.worker(file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics))
+				if (tester.worker(file, runMeter, groupExecutionTimeStatistics, groupRuleExecutionStatistics, groupAddedEdgeStatistics))
 					nTaskSuccessfullyFinished++;
 			}
 		}
@@ -438,8 +492,11 @@ public class Checker {
 					globalStatisticsKey.getPropositions(),
 					entry.getValue().getMean(), entry.getValue().getStandardDeviation(),
 					groupRuleExecutionStatistics.get(globalStatisticsKey).getMean(),
-					groupRuleExecutionStatistics.get(globalStatisticsKey).getStandardDeviation());
+					groupRuleExecutionStatistics.get(globalStatisticsKey).getStandardDeviation(),
+					groupAddedEdgeStatistics.get(globalStatisticsKey).getMean(),
+					groupAddedEdgeStatistics.get(globalStatisticsKey).getStandardDeviation());
 		}
+		tester.output.printf("\n\n\n");
 
 		if (nCPUs > 0) {
 			// executor shutdown!
@@ -462,6 +519,9 @@ public class Checker {
 		}
 	}
 
+	/**
+	 * @return the current date formatted.
+	 */
 	private static String getNow() {
 		return dateFormatter.format(new Date());
 	}
@@ -485,7 +545,7 @@ public class Checker {
 	/**
 	 * Which type of CSTN are input files
 	 */
-	@Option(required = true, name = "-type", usage = "Specify if input files contain STN, CSTN or CSTNU instances (use one of such keywords: STN CSTN CSTNU).")
+	@Option(required = true, name = "-type", usage = "Specify if input files contain STN, STNU, CSTN or CSTNU instances (use one of such keywords: STN STNU CSTN CSTNU).")
 	private TNGraph.NetworkType networkType = NetworkType.CSTN;
 
 	/**
@@ -595,6 +655,12 @@ public class Checker {
 	private boolean woNodeLabels = false;
 
 	/**
+	 * Parameter for asking which algorithm to use for checking STNU.
+	 */
+	@Option(required = false, name = "-stnuCheck", usage = "Which algorithm to use for checking STNU network. (use one of such keywords: Morris2014 RUL2020)")
+	private STNU.CheckAlgorithm stnuCheckAlgorithm = CheckAlgorithm.RUL2020;
+
+	/**
 	 * @param tester
 	 * @param cstn
 	 * @param file
@@ -618,7 +684,7 @@ public class Checker {
 
 		SummaryStatistics localSummaryStat = new SummaryStatistics();
 		for (int j = 0; j < this.nDCRepetition && !checkInterrupted && !status.timeout; j++) {
-			LOG.info("Test " + (j + 1) + "/" + this.nDCRepetition + " for CSTN(U) " + graphToCheck.getFileName().getName());
+			LOG.info("Test " + (j + 1) + "/" + this.nDCRepetition + " for (C)STN(U) " + graphToCheck.getFileName().getName());
 
 			// It is necessary to reset the graph!
 			g = new TNGraph(graphToCheck, this.currentEdgeImplClass);
@@ -667,12 +733,92 @@ public class Checker {
 	}
 
 	/**
-	 * @param status
+	 * @param tester
+	 * @param cstn
+	 * @param file
+	 * @param executor
+	 */
+	@SuppressWarnings({ "javadoc", "unchecked", "rawtypes", "null" })
+	private STNCheckStatus STNUDCChecker(STN stn, STNU stnu, RunMeter runState) {
+		String msg;
+		boolean checkInterrupted = false;
+		STNCheckStatus status = null;
+		TNGraph<? extends STNEdge> graphToCheck = null;
+		TNGraph g = null;// even though raw is dangerous, here it is safe!
+
+		if (isSTN()) {
+			status = new STNCheckStatus();
+			graphToCheck = stn.g;
+		} else if (isSTNU()) {
+			status = new STNUCheckStatus();
+			graphToCheck = stnu.g;
+		}
+
+		SummaryStatistics localSummaryStat = new SummaryStatistics();
+		for (int j = 0; j < this.nDCRepetition && !checkInterrupted && !status.timeout; j++) {
+			LOG.info("Test " + (j + 1) + "/" + this.nDCRepetition + " for STN(U) " + graphToCheck.getFileName().getName());
+
+			// It is necessary to reset the graph!
+			g = new TNGraph(graphToCheck, this.currentEdgeImplClass);
+			if (isSTN()) {
+				stn.setG(g);
+			} else {
+				stnu.setG(g);
+			}
+			try {
+				status = (isSTNU()) ? stnu.dynamicControllabilityCheck(this.stnuCheckAlgorithm) : (stn.consistencyCheck());
+			} catch (CancellationException ex) {
+				msg = getNow() + ": Cancellation has occurred. " + graphToCheck.getFileName() + " STN(U) is ignored.";
+				System.out.println(msg);
+				LOG.severe(msg);
+				checkInterrupted = true;
+				status.consistency = false;
+				continue;
+			} catch (Exception e) {
+				msg = getNow() + ": a different exception has occurred. " + graphToCheck.getFileName()
+						+ " STN(U) is ignored.\nError details: " + e.toString();
+				System.out.println(msg);
+				LOG.severe(msg);
+				checkInterrupted = true;
+				status.consistency = false;
+				continue;
+			}
+			localSummaryStat.addValue(status.executionTimeNS);
+		} // end for checking repetition for a single file
+
+		if (status.timeout || checkInterrupted) {
+			if (status.timeout) {
+				msg = "\n\n" + getNow() + ": Timeout or interrupt occurred. " + graphToCheck.getFileName() + " STN(U) is ignored.\n";
+				System.out.println(msg);
+			}
+			return status;
+		}
+
+		msg = getNow() + ": done! It is " + ((!status.consistency) ? "NOT " : "") + "DC.";
+		// System.out.println(msg);
+		LOG.info(msg);
+
+		status.executionTimeNS = (long) localSummaryStat.getMean();
+		status.stdDevExecutionTimeNS = (long) localSummaryStat.getStandardDeviation();
+
+		return status;
+	}
+
+	/**
+	 * @param status current status
 	 * @return the number of executed rules.
 	 */
-	private int getNumberExecutedRules(CSTNCheckStatus status) {
-		int nRules = status.r0calls + status.r3calls + status.labeledValuePropagationCalls + status.potentialUpdate;
+	private int getNumberExecutedRules(STNCheckStatus status) {
+		int nRules = status.propagationCalls;
 
+		if (this.isCSTN()) {
+			CSTNCheckStatus s = ((CSTNCheckStatus) status);
+			nRules = s.r0calls + s.r3calls + s.labeledValuePropagationCalls + s.potentialUpdate;
+		}
+		if (this.isSTNU()) {
+			STNUCheckStatus s = ((STNUCheckStatus) status);
+			nRules = s.cycles;
+		}
 		if (isCSTNU())
 			nRules += ((CSTNUCheckStatus) status).zEsclamationRuleCalls +
 					((CSTNUCheckStatus) status).lowerCaseRuleCalls +
@@ -689,19 +835,55 @@ public class Checker {
 	}
 
 	/**
+	 * @return true if the input graph represents a STN instance
+	 */
+	private boolean isSTN() {
+		return this.networkType == NetworkType.STN;
+	}
+
+	/**
+	 * @return true if the input graph represents a STNU instance
+	 */
+	private boolean isSTNU() {
+		return this.networkType == NetworkType.STNU;
+	}
+
+	/**
 	 * @return true if the input graph represents a CSTNU instance
 	 */
 	private boolean isCSTNU() {
 		return this.networkType == NetworkType.CSTNU;
 	}
 
-	@SuppressWarnings({ "unused", "static-method" })
-	private CSTNU makeSTNInstance(TNGraph<STNEdge> g) {
-		// if (this.isSTN()) {
-		// return new STN(g, this.timeOut);
-		// }
-		throw new IllegalArgumentException("Required a STN instance but it is not implemented yet. :-/");// the graph is not a CSTNU graph.");
+	/**
+	 * @param g input graph
+	 * @return an stn instance
+	 */
+	private STN makeSTNInstance(TNGraph<STNEdge> g) {
+		if (this.isSTN()) {
+			return new STN(g, this.timeOut);
+		}
+		throw new IllegalArgumentException("Required a STN instance but the input graph is not a STN graph.");
 	}
+
+	/**
+	 * @param g input graph
+	 * @return an stnu instance
+	 */
+
+	private STNU makeSTNUInstance(TNGraph<STNUEdge> g) {
+		if (this.isSTNU()) {
+			STNU stnu = new STNU(g, this.timeOut);
+			stnu.setSave(this.save);
+			return stnu;
+		}
+		throw new IllegalArgumentException("Required a STNU instance but the input graph is not a STNU graph.");
+	}
+
+	/**
+	 * @param g input graph
+	 * @return a cstnu instance
+	 */
 
 	private CSTNU makeCSTNUInstance(TNGraph<CSTNUEdge> g) {
 		if (this.isCSTNU()) {
@@ -712,6 +894,11 @@ public class Checker {
 		}
 		throw new IllegalArgumentException("Required a CSTNU instance but the graph is not a CSTNU graph.");
 	}
+
+	/**
+	 * @param g input graph
+	 * @return a cstn instance
+	 */
 
 	private CSTN makeCSTNInstance(TNGraph<CSTNEdge> g) {
 		if (this.cstn2cstn0) {
@@ -737,6 +924,7 @@ public class Checker {
 				cstn = (this.woNodeLabels) ? new CSTNIRwoNodeLabels(g, this.timeOut) : new CSTNIR(g, this.timeOut);
 			}
 			break;
+		case Std:
 		default:
 			if (this.onlyLPQR0QR3OrToZ) {
 				throw new IllegalArgumentException(
@@ -751,7 +939,7 @@ public class Checker {
 	/**
 	 * Simple method to manage command line parameters using args4j library.
 	 * 
-	 * @param args
+	 * @param args input arguments
 	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
 	 */
 	private boolean manageParameters(String[] args) {
@@ -761,7 +949,7 @@ public class Checker {
 		} catch (CmdLineException e) {
 			// if there's a problem in the command line, you'll get this exception. this will report an error message.
 			System.err.println(e.getMessage());
-			System.err.println("java -cp CSTNU-<version>.jar -cp it.univr.di.cstnu.CSTNRunningTime [options...] arguments...");
+			System.err.println("java -cp CSTNU-<version>.jar -cp it.univr.di.cstnu.Checker [options...] arguments...");
 			// print the list of available options
 			parser.printUsage(System.err);
 			System.err.println();
@@ -773,7 +961,7 @@ public class Checker {
 		}
 		if (this.versionReq) {
 			System.out.print(this.getClass().getName() + " " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2017, Roberto Posenato");
+					+ "Copyright © 2017-2020, Roberto Posenato");
 			return true;
 		}
 
@@ -807,22 +995,28 @@ public class Checker {
 
 		String suffix = "";
 		if (this.networkType == NetworkType.CSTN) {
-			this.output.println(OUTPUT_HEADER + CSVSep);
+			this.output.println(OUTPUT_HEADER_CSTN + CSVSep);
 			this.currentEdgeImplClass = CSTNEdgePluggable.class;
-			suffix = "stn";
+			suffix = "cstn";
 		} else {
 			if (this.networkType == NetworkType.CSTNU) {
 				this.output.println(OUTPUT_HEADER_CSTNU);
 				this.currentEdgeImplClass = CSTNUEdgePluggable.class;
-				suffix = "cstn";
+				suffix = "cstnu";
 			} else {
-				if (this.networkType == NetworkType.STN) {
-					this.output.println(OUTPUT_HEADER + CSVSep);
-					this.currentEdgeImplClass = STNEdgeInt.class;
-					suffix = "cstnu";
+				if (this.networkType == NetworkType.STNU) {
+					this.output.println(OUTPUT_HEADER_STNU + CSVSep);
+					this.currentEdgeImplClass = STNUEdgeInt.class;
+					suffix = "stnu";
 				} else {
-					String msg = "Type of network not managed by current version of this class. Game over :-/";
-					throw new IllegalArgumentException(msg);
+					if (this.networkType == NetworkType.STN) {
+						this.output.println(OUTPUT_HEADER + CSVSep);
+						this.currentEdgeImplClass = STNEdgeInt.class;
+						suffix = "stn";
+					} else {
+						String msg = "Type of network not managed by current version of this class. Game over :-/";
+						throw new IllegalArgumentException(msg);
+					}
 				}
 			}
 		}
@@ -849,21 +1043,24 @@ public class Checker {
 			this.instances.add(file);
 		}
 
-
 		return true;
 	}
 
 	/**
-	 * @param file
-	 * @param runState
-	 * @param globalExecutionTimeStatisticsMap
-	 * @param globalRuleExecutionStatisticsMap
+	 * @param <E1> type of edge
+	 * @param <M1> type of labeled value map
+	 * @param file input file
+	 * @param runState current state
+	 * @param globalExecutionTimeStatisticsMap global statistics
+	 * @param globalRuleExecutionStatisticsMap another global statistics
+	 * @param globalAddedEdgeStatisticsMap only for STNU
 	 * @return true if required task ends successfully, false otherwise.
 	 */
 	@SuppressWarnings({ "unchecked", "null" })
 	private <E1 extends Edge, M1 extends LabeledIntMap> boolean worker(File file, RunMeter runState,
 			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalExecutionTimeStatisticsMap,
-			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalRuleExecutionStatisticsMap) {
+			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalRuleExecutionStatisticsMap,
+			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalAddedEdgeStatisticsMap) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
 		TNGraphMLReader<E1> graphMLReader;
@@ -890,7 +1087,11 @@ public class Checker {
 			return false;
 		}
 
-		// Possible required modifications of the structure.
+		/**
+		 * *************************************************
+		 * Possible required modifications of the structure.
+		 * *************************************************
+		 */
 		if (this.cuttingEdgeFactor > 1 || this.removeValue != Constants.INT_NULL) {
 			if (this.cuttingEdgeFactor > 1) {
 				LOG.info("Cutting all edge values by a factor " + this.cuttingEdgeFactor + "...");
@@ -943,8 +1144,10 @@ public class Checker {
 		int min = 0;
 		int max = 0;
 		for (Edge e : g.getEdges()) {
-			if (e.isSTNEdge()) {
+			if (e.isSTNEdge() || e.isSTNUEdge()) {
 				int v = ((STNEdge) e).getValue();
+				if (v == Constants.INT_NULL)
+					continue;
 				if (v > max) {
 					max = v;
 					continue;
@@ -963,14 +1166,30 @@ public class Checker {
 						min = v;
 				}
 			}
+			if (e.isSTNUEdge() && e.isContingentEdge()) {
+				int v = ((STNUEdge) e).getLabeledValue();
+				if (v == Constants.INT_NULL)
+					continue;
+				if (v > max) {
+					max = v;
+					continue;
+				}
+				if (v < min)
+					min = v;
+			}
 		}
 		int nEdges = g.getEdgeCount();
 
 		CSTN cstn = null;
 		CSTNU cstnu = null;
+		STNU stnu = null;
+		STN stn = null;
+
 		TNGraph<CSTNEdge> gCSTN;
 		TNGraph<CSTNUEdge> gCSTNU;
-		
+		TNGraph<STNEdge> gSTN;
+		TNGraph<STNUEdge> gSTNU;
+
 		if (this.isCSTN()) {
 			gCSTN = (TNGraph<CSTNEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
 			cstn = makeCSTNInstance(gCSTN);
@@ -978,14 +1197,29 @@ public class Checker {
 			if (this.isCSTNU()) {
 				gCSTNU = (TNGraph<CSTNUEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
 				cstnu = makeCSTNUInstance(gCSTNU);
+			} else {
+				if (this.isSTNU()) {
+					gSTNU = (TNGraph<STNUEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
+					stnu = makeSTNUInstance(gSTNU);
+				} else {
+					gSTN = (TNGraph<STNEdge>) new TNGraph<>(graphToCheck, (Class<E1>) this.currentEdgeImplClass);
+					stn = makeSTNInstance(gSTN);
+				}
 			}
 		}
 		try {
 			if (this.isCSTNU()) {
 				cstnu.initAndCheck();
 			} else {
-				if (this.isCSTN())
+				if (this.isCSTN()) {
 					cstn.initAndCheck();
+				} else {
+					if (this.isSTNU()) {
+						stnu.initAndCheck();
+					} else {
+						stn.initAndCheck();
+					}
+				}
 			}
 		} catch (Exception e) {
 			String msg = getNow() + ": " + file.getName()
@@ -1001,7 +1235,7 @@ public class Checker {
 				graphToCheck.getVertexCount(),
 				nEdges,
 				graphToCheck.getObserverCount(),
-				graphToCheck.getContingentCount(),
+				graphToCheck.getContingentNodeCount(),
 				min,
 				max);
 
@@ -1014,9 +1248,10 @@ public class Checker {
 		}
 
 		GlobalStatisticKey globalStatisticsKey = new GlobalStatisticKey(graphToCheck.getVertexCount(), graphToCheck.getObserverCount(),
-				graphToCheck.getContingentCount());
+				graphToCheck.getContingentNodeCount());
 		SummaryStatistics globalExecutionTimeStatistics = globalExecutionTimeStatisticsMap.get(globalStatisticsKey);
 		SummaryStatistics globalRuleExecutionStatistics = globalRuleExecutionStatisticsMap.get(globalStatisticsKey);
+		SummaryStatistics globalAddedEdgeStatistics = globalAddedEdgeStatisticsMap.get(globalStatisticsKey);
 		if (globalExecutionTimeStatistics == null) {
 			globalExecutionTimeStatistics = new SummaryStatistics();
 			globalExecutionTimeStatisticsMap.put(globalStatisticsKey, globalExecutionTimeStatistics);
@@ -1025,13 +1260,21 @@ public class Checker {
 			globalRuleExecutionStatistics = new SummaryStatistics();
 			globalRuleExecutionStatisticsMap.put(globalStatisticsKey, globalRuleExecutionStatistics);
 		}
-
+		if (globalAddedEdgeStatistics == null) {
+			globalAddedEdgeStatistics = new SummaryStatistics();
+			globalAddedEdgeStatisticsMap.put(globalStatisticsKey, globalAddedEdgeStatistics);
+		}
 		String msg = getNow() + ": Determining DC check execution time of " + file.getName()
 				+ " repeating DC check for " + this.nDCRepetition + " times.";
 		// System.out.println(msg);
 		LOG.info(msg);
 
-		CSTNCheckStatus status = DCChecker(cstn, cstnu, runState);
+		STNCheckStatus status;
+		if (this.isCSTN() || this.isCSTNU()) {
+			status = DCChecker(cstn, cstnu, runState);
+		} else {
+			status = STNUDCChecker(stn, stnu, runState);
+		}
 
 		if (!status.finished) {
 			// time out or generic error
@@ -1061,15 +1304,23 @@ public class Checker {
 		int nRules = getNumberExecutedRules(status);
 		globalRuleExecutionStatistics.addValue(nRules);
 
-		rowToWrite += String.format(OUTPUT_ROW_TIME_STATS,
+		rowToWrite += String.format(OUTPUT_ROW_TIME,
 				localAvg,
 				((this.nDCRepetition > 1) ? localStdDev : Double.NaN),
 				nRules,
-				((!this.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"),
-				status.r0calls,
-				status.r3calls,
-				status.labeledValuePropagationCalls,
-				status.potentialUpdate);
+				((!this.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"));
+		if (isCSTN()) {
+			rowToWrite += String.format(OUTPUT_ROW_TIME_CSTN,
+					((CSTNCheckStatus) status).r0calls,
+					((CSTNCheckStatus) status).r3calls,
+					((CSTNCheckStatus) status).labeledValuePropagationCalls,
+					((CSTNCheckStatus) status).potentialUpdate);
+		}
+		if (isSTNU()) {
+			double edgeRate = ((double) ((STNUCheckStatus) status).addedEdges) / nEdges;
+			globalAddedEdgeStatistics.addValue(edgeRate);
+			rowToWrite += String.format(OUTPUT_ROW_TIME_STNU, edgeRate);
+		}
 		if (isCSTNU()) {
 			rowToWrite += String.format(OUTPUT_ROW_TIME_STATS_CSTNU,
 					((CSTNUCheckStatus) status).zEsclamationRuleCalls,

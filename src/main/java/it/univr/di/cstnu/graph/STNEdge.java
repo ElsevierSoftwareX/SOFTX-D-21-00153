@@ -26,6 +26,4 @@ public interface STNEdge extends Edge {
 	 *         If the weight was not set, it returns {@link Constants#INT_NULL}.
 	 */
 	public int setValue(int w);
-
-
 }

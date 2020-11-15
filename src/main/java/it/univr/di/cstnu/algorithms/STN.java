@@ -394,11 +394,11 @@ public class STN {
 			return null;
 		int v;
 
-		NodeFibonacciHeap nodeQueue = new NodeFibonacciHeap();
+		NodePriorityHeap nodeQueue = new NodePriorityHeap();
 		for (LabeledNode node : nodes) {
-			nodeQueue.add(node, Constants.INT_POS_INFINITE);
+			nodeQueue.insertOrDecrease(node, Constants.INT_POS_INFINITE);
 		}
-		nodeQueue.decreasePriority(source, 0);
+		nodeQueue.insertOrDecrease(source, 0);
 
 		LabeledNode s, d;
 		BasicEntry<LabeledNode> entry;
@@ -424,7 +424,7 @@ public class STN {
 								"Dijkstra updates " + d.getName() + " potential adding edge value " + eValue + ": " + Constants.formatInt(nodeQueue.value(d))
 										+ " --> " + Constants.formatInt(v));
 					}
-					nodeQueue.decreasePriority(d, v);
+					nodeQueue.insertOrDecrease(d, v);
 					if (checkStatus1 != null)
 						checkStatus1.propagationCalls++;
 				}
@@ -948,7 +948,6 @@ public class STN {
 	 * @return the checkStatus
 	 */
 	public STNCheckStatus getCheckStatus() {
-		// STNU override this
 		return this.checkStatus;
 	}
 
@@ -1095,7 +1094,7 @@ public class STN {
 			LabeledNode[] revPOV = reversePostOrderVisit(g1, root);
 			if (revPOV.length > 1) {
 				ObjectList<LabeledNode> lrc = new ObjectArrayList<>();
-				for (LabeledNode node: revPOV) {
+				for (LabeledNode node : revPOV) {
 					LabeledNode n1 = this.g.getNode(node.getName());
 					n1.setPotential(node.getPotential());
 					lrc.add(n1);
