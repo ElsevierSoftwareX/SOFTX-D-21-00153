@@ -16,6 +16,7 @@ import it.univr.di.cstnu.graph.BasicCSTNUEdge;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.STNEdge;
+import it.univr.di.cstnu.graph.STNUEdge;
 import it.univr.di.labeledvalue.Constants;
 
 /**
@@ -91,9 +92,17 @@ public class EdgeRendering {
 			final StringBuffer sb = new StringBuffer();
 			sb.append((e.getName().length() == 0 ? "''" : e.getName()));
 			sb.append("; ");
-			if (e.isSTNEdge()) {
+			if (e.isSTNEdge() || e.isSTNUEdge()) {
 				STNEdge e1 = (STNEdge) e;
 				sb.append(Constants.formatInt(e1.getValue()));
+			}
+			if (e.isSTNUEdge()) {
+				STNUEdge e1 = (STNUEdge) e;
+				String lv = e1.getLabeledValueFormatted();
+				if (!lv.isEmpty()) {
+					sb.append("; ");
+					sb.append(lv);
+				}
 			}
 			if (e.isCSTNEdge()) {
 				CSTNEdge e1 = (CSTNEdge) e;
@@ -132,6 +141,8 @@ public class EdgeRendering {
 			case derived:
 			case internal:
 				return derivedEdgeStroke;
+			case contingent:
+			case qloopFinder:
 			default:
 				return contingentEdgeStroke;
 			}

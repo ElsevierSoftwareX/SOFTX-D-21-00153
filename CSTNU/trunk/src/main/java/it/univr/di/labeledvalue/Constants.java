@@ -1,6 +1,9 @@
 package it.univr.di.labeledvalue;
 
 import java.io.Serializable;
+import java.util.logging.Logger;
+
+import it.univr.di.Debug;
 
 /**
  * Some useful constants for the package.
@@ -9,6 +12,11 @@ import java.io.Serializable;
  * @version $Id: $Id
  */
 public final class Constants implements Serializable {
+
+	/**
+	 * logger
+	 */
+	private static Logger LOG = Logger.getLogger("it.univr.di.cstnu.labeledvalue.Constants");
 
 	/**
 	 * Char representing labeled-value closing ")".
@@ -77,12 +85,10 @@ public final class Constants implements Serializable {
 	 */
 	public static final int INT_POS_INFINITE = Integer.MAX_VALUE;
 
-
 	/**
 	 * Regular expression for an acceptable value in a LabeledValue.
 	 */
 	public static final String LabeledValueRE = "[-[0-9]|[0-9]]*";
-
 
 	/**
 	 * Regular expression for an acceptable positive integer.
@@ -158,14 +164,21 @@ public final class Constants implements Serializable {
 			min = a;
 			max = b;
 		}
+		if (a == INT_NULL || b == INT_NULL) {
+			throw new ArithmeticException("Integer sum with a null value: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
+		}
 		if (min == Constants.INT_NEG_INFINITE) {
 			if (max == Constants.INT_POS_INFINITE)
 				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
+			if (Debug.ON)
+				LOG.warning("Sum of " + formatInt(a) + " and " + formatInt(b) + " =" + formatInt(INT_NEG_INFINITE));
 			return Constants.INT_NEG_INFINITE;
 		}
 		if (max == Constants.INT_POS_INFINITE) {
 			if (min == Constants.INT_NEG_INFINITE)
 				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
+			if (Debug.ON)
+				LOG.warning("Sum of " + formatInt(a) + " and " + formatInt(b) + " =" + formatInt(INT_POS_INFINITE));
 			return Constants.INT_POS_INFINITE;
 		}
 

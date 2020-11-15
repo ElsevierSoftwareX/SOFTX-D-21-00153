@@ -73,10 +73,10 @@ public class LabeledNode extends AbstractComponent {
 
 	/**
 	 * ALabel associated to this node.
-	 * This field has the scope to speed up the DC checking.
+	 * This field has the scope to speed up the DC checking but it has the limit that only 64 distinct contingent names can be present in a graph.
 	 * It is used to represent the name of a contingent time point as ALabel, instead of to calculate it every time.
 	 */
-	private ALabel alabel;
+	private ALabel aLabel;
 
 	/**
 	 * Label associated to this node.
@@ -85,7 +85,7 @@ public class LabeledNode extends AbstractComponent {
 
 	/**
 	 * Labeled potential values.
-	 * This map can also represents Upper-case lebeled potentials.
+	 * This map can also represents Upper-case labeled potentials.
 	 */
 	private LabeledALabelIntTreeMap labeledPotential;
 
@@ -105,6 +105,11 @@ public class LabeledNode extends AbstractComponent {
 	private double y;
 
 	/**
+	 * contingent name
+	 */
+	boolean contingent;
+
+	/**
 	 * Constructor for cloning.
 	 *
 	 * @param n the node to copy.
@@ -115,9 +120,9 @@ public class LabeledNode extends AbstractComponent {
 		this.propositionObserved = n.getPropositionObserved();
 		this.x = n.x;
 		this.y = n.y;
-		this.alabel = n.alabel;
+		this.aLabel = n.aLabel;
+		this.contingent = n.contingent;
 		this.potential = n.potential;
-		// this.labeledPotential = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get();
 		this.labeledPotential = new LabeledALabelIntTreeMap(n.getUpperCaseLabeledPotential());
 	}
 
@@ -132,8 +137,8 @@ public class LabeledNode extends AbstractComponent {
 		this.x = this.y = 0;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.potential = Constants.INT_NULL;
-		this.alabel = null;
-		// this.labeledPotential = (new LabeledIntMapSupplier<>(labeledValueMapImpl)).get();
+		this.aLabel = null;
+		this.contingent = false;
 		this.labeledPotential = new LabeledALabelIntTreeMap();
 		this.labeledPotential.put(ALabel.emptyLabel, new LabeledIntMapSupplier<>(labeledValueMapImpl).get());
 	}
@@ -159,7 +164,8 @@ public class LabeledNode extends AbstractComponent {
 		this.label = Label.emptyLabel;
 		this.propositionObserved = Constants.UNKNOWN;
 		this.x = this.y = 0;
-		this.alabel = null;
+		this.aLabel = null;
+		this.contingent = false;
 		this.potential = Constants.INT_NULL;
 		this.labeledPotential.clear();
 		this.labeledPotential.put(ALabel.emptyLabel, new LabeledIntMapSupplier<>(labeledValueMapImpl).get());
@@ -168,8 +174,8 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * @return the alabel
 	 */
-	public ALabel getAlabel() {
-		return this.alabel;
+	public ALabel getALabel() {
+		return this.aLabel;
 	}
 
 	/**
@@ -181,10 +187,10 @@ public class LabeledNode extends AbstractComponent {
 		return this.label;
 	}
 
-
 	public LabeledALabelIntTreeMap getUpperCaseLabeledPotential() {
 		return this.labeledPotential.unmodifiable();
 	}
+
 	/**
 	 * @return an unmodifiable view of the labeled potential values
 	 */
@@ -238,7 +244,7 @@ public class LabeledNode extends AbstractComponent {
 	 *         It is assumed that a node representing a contingent time point has its field 'alabel' not null.
 	 */
 	public boolean isContingent() {
-		return this.alabel != null;
+		return this.contingent;
 	}
 
 	/**
@@ -268,26 +274,24 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
-	 * @param l a not null label
-	 * @param reset true if the count has to be reset and, therefore, this becomes the first update.
-	 * @return the old value associate to to label l. If the label does not exists, returns {@link Constants#INT_NULL}. In case of reset, returns 0.
-	 *         public int updatePotentialCount(Label l, boolean reset) {
-	 *         if (l == null)
-	 *         return Constants.INT_NULL;
-	 *         int i = this.labeledPotentialCount.getInt(l);
-	 *         i = (i == Constants.INT_NULL || reset) ? 1 : i + 1;
-	 *         this.labeledPotentialCount.put(l, i);
-	 *         return i - 1;
-	 *         }
-	 */
-
-	/**
+	 * Sets the ALabel of the node.
+	 * The contingent status is updated as side-effect: contingent = inputALabel!=null.<br>
 	 * It is responsibility of programmer to maintain the correspondence between name and alabel.
 	 * 
 	 * @param inputAlabel the alabel to set
 	 */
-	public void setAlabel(ALabel inputAlabel) {
-		this.alabel = inputAlabel;
+	public void setALabel(ALabel inputAlabel) {
+		this.aLabel = inputAlabel;
+		this.setContingent(this.aLabel != null);
+	}
+
+	/**
+	 * Set contingent property.<br>
+	 * 
+	 * @param b the new state.
+	 */
+	public void setContingent(boolean b) {
+		this.contingent = b;
 	}
 
 	/**
@@ -376,8 +380,10 @@ public class LabeledNode extends AbstractComponent {
 	public String toString() {
 		final StringBuilder sb = new StringBuilder(Constants.OPEN_TUPLE);
 		sb.append(this.getName());
-		sb.append("; ");
-		sb.append(this.getLabel());
+		if (!this.getLabel().isEmpty()) {
+			sb.append("; ");
+			sb.append(this.getLabel());
+		}
 		if (this.propositionObserved != Constants.UNKNOWN) {
 			sb.append("; Obs: ");
 			sb.append(this.propositionObserved);
@@ -390,7 +396,6 @@ public class LabeledNode extends AbstractComponent {
 			sb.append("; Potential: ");
 			sb.append(this.potential);
 		}
-
 		sb.append(Constants.CLOSE_TUPLE);
 		return sb.toString();
 	}

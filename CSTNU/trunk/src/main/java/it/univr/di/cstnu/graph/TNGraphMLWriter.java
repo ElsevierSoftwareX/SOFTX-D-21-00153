@@ -44,6 +44,11 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 	/**
 	 * 
 	 */
+	static final public String EDGE_CASE_VALUE_KEY = "LabeledValue";
+
+	/**
+	 * 
+	 */
 	static final public String EDGE_LABELED_VALUE_KEY = "LabeledValues";
 
 	/**
@@ -123,6 +128,22 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 		super();
 		this.layout = lay;
 
+	}
+
+	/**
+	 * @param graph
+	 * @param w
+	 * @throws IOException
+	 */
+	@SuppressWarnings("unchecked")
+	public void save(TNGraph<? extends Edge> graph, Writer w) throws IOException {
+		this.networkType = graph.getType();
+		this.addMetaData();
+		super.save((TNGraph<Edge>) graph, w);
+	}
+
+	@SuppressWarnings("javadoc")
+	private void addMetaData() {
 		/*
 		 * TNGraph attributes
 		 */
@@ -130,8 +151,7 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Hypergraph<LabeledNode, Edge>, String>() {
 					@Override
 					public String apply(final Hypergraph<LabeledNode, Edge> g) {
-						TNGraph<Edge> g1 = (TNGraph<Edge>) (g);
-						return g1.getType().toString();
+						return TNGraphMLWriter.this.networkType.toString();
 					}
 				});
 
@@ -148,8 +168,9 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				new Function<Hypergraph<LabeledNode, Edge>, String>() {
 					@Override
 					public String apply(final Hypergraph<LabeledNode, Edge> g) {
-						if (TNGraphMLWriter.this.networkType == NetworkType.CSTNU || TNGraphMLWriter.this.networkType == NetworkType.CSTNPSU)
-							return String.valueOf(((TNGraph<Edge>) (g)).getContingentCount());
+						if (TNGraphMLWriter.this.networkType == NetworkType.STNU || TNGraphMLWriter.this.networkType == NetworkType.CSTNU
+								|| TNGraphMLWriter.this.networkType == NetworkType.CSTNPSU)
+							return String.valueOf(((TNGraph<Edge>) (g)).getContingentNodeCount());
 						return null;
 					}
 				});
@@ -241,62 +262,78 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 						return e.getConstraintType().toString();
 					}
 				});
-
-		this.addEdgeData(EDGE_LABELED_VALUE_KEY, "Labeled Values. Format: {[('integer', 'label') ]+}|{}", "",
-				new Function<Edge, String>() {
-					@Override
-					public String apply(final Edge e) {
-						if (CSTNEdge.class.isAssignableFrom(e.getClass())) {
-							return ((CSTNEdge) e).getLabeledValueMap().toString();
+		if (this.networkType == NetworkType.CSTN || this.networkType == NetworkType.CSTNU || this.networkType == NetworkType.CSTNPSU) {
+			this.addEdgeData(EDGE_LABELED_VALUE_KEY, "Labeled Values. Format: {[('integer', 'label') ]+}|{}", "",
+					new Function<Edge, String>() {
+						@Override
+						public String apply(final Edge e) {
+							if (CSTNEdge.class.isAssignableFrom(e.getClass())) {
+								return ((CSTNEdge) e).getLabeledValueMap().toString();
+							}
+							return null;
 						}
-						return null;
-					}
-				});
+					});
+		}
 		this.addEdgeData(EDGE_VALUE_KEY, "Value for STN edge. Format: 'integer'", "",
 				new Function<Edge, String>() {
 					@Override
 					public String apply(final Edge e) {
-						if (e.isSTNEdge()) {
-							return String.valueOf(((STNEdge) e).getValue());
+						if (e.isSTNEdge() || e.isSTNUEdge()) {
+							int v = ((STNEdge) e).getValue();
+							if (v == Constants.INT_NULL)
+								return null;
+							return String.valueOf(v);
 						}
 						return null;
 					}
 				});
-		this.addEdgeData(EDGE_LABELED_UC_VALUE_KEY, "Labeled Upper-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
-				"",
-				new Function<Edge, String>() {
-					@Override
-					public String apply(final Edge e) {
-						if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
-							String s = ((BasicCSTNUEdge) e).getUpperCaseValueMap().toString();
-							return (s.startsWith("{}")) ? null : s;
-						}
-						return null;
-					}
-				});
-		this.addEdgeData(EDGE_LABELED_LC_VALUE_KEY, "Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
-				"",
-				new Function<Edge, String>() {
-					@Override
-					public String apply(final Edge e) {
-						if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
-							String s = (e.isCSTNUEdge()) ? ((CSTNUEdge) e).getLowerCaseValue().toString()
-									: ((CSTNPSUEdge) e).getLowerCaseValueMap().toString();
-							return (s.startsWith("{}")) ? null : s;
-						}
-						return null;
-					}
-				});
-	}
 
-	/**
-	 * @param graph
-	 * @param w
-	 * @throws IOException
-	 */
-	@SuppressWarnings("unchecked")
-	public void save(TNGraph<? extends Edge> graph, Writer w) throws IOException {
-		this.networkType = graph.getType();
-		super.save((TNGraph<Edge>) graph, w);
+		if (this.networkType == NetworkType.STNU) {
+			this.addEdgeData(EDGE_CASE_VALUE_KEY,
+					"Case Value. Format: 'LC(NodeName):integer' or 'UC(NodeName):integer'",
+					"",
+					new Function<Edge, String>() {
+						@Override
+						public String apply(final Edge e) {
+							if (e.isSTNUEdge()) {
+								STNUEdge e1 = ((STNUEdge) e);
+								String s = e1.getLabeledValueFormatted();
+								if (s.isEmpty())
+									return null;
+								return s;
+							}
+							return null;
+						}
+					});
+
+		}
+		if (this.networkType == NetworkType.CSTNU || this.networkType == NetworkType.CSTNPSU) {
+
+			this.addEdgeData(EDGE_LABELED_UC_VALUE_KEY, "Labeled Upper-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
+					"",
+					new Function<Edge, String>() {
+						@Override
+						public String apply(final Edge e) {
+							if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+								String s = ((BasicCSTNUEdge) e).getUpperCaseValueMap().toString();
+								return (s.startsWith("{}")) ? null : s;
+							}
+							return null;
+						}
+					});
+			this.addEdgeData(EDGE_LABELED_LC_VALUE_KEY, "Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}",
+					"",
+					new Function<Edge, String>() {
+						@Override
+						public String apply(final Edge e) {
+							if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
+								String s = (e.isCSTNUEdge()) ? ((CSTNUEdge) e).getLowerCaseValue().toString()
+										: ((CSTNPSUEdge) e).getLowerCaseValueMap().toString();
+								return (s.startsWith("{}")) ? null : s;
+							}
+							return null;
+						}
+					});
+		}
 	}
 }

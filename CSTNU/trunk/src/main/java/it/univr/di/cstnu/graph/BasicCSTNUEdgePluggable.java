@@ -343,8 +343,8 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 	public void takeIn(Edge e) {
 		if (e == null)
 			return;
+		super.takeIn(e);
 		if (e instanceof BasicCSTNUEdgePluggable) {
-			super.takeIn(e);
 			BasicCSTNUEdgePluggable e1 = (BasicCSTNUEdgePluggable) e;
 			this.upperCaseValue = e1.upperCaseValue;
 			this.consideredUpperCaseValue = e1.consideredUpperCaseValue;

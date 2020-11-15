@@ -23,6 +23,8 @@
     }
 }
 
-\tikzset{external/system call/.add={}
-      ; inkscape -z -f $PWD/\image.pdf -l $PWD/\image.svg %metto $PWD perché inkscape vuole path assoluti
+\tikzset{%
+	external/system call/.add={}{; pdftocairo -svg "\image.pdf" "\image.svg"}%
 }
+%OLD	external/system call/.add={};{/usr/local/bin/inkscape --export-filename="\image.svg" "\image.pdf"}%
+%OLD COMMAND ; inkscape -z -f $PWD/\image.pdf -l $PWD/\image.svg %metto $PWD perché inkscape vuole path assoluti

@@ -27,6 +27,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectRBTreeSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
+import it.univr.di.cstnu.algorithms.STN.STNCheckStatus;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
@@ -56,55 +57,23 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 *
 	 * @author Roberto Posenato
 	 */
-	public static class CSTNCheckStatus {
-		/**
-		 * True if the network is consistent so far.
-		 */
-		public boolean consistency = true;
+	public static class CSTNCheckStatus extends STNCheckStatus {
 
 		/**
 		 * Counters about the # of application of different rules.
 		 */
-		public int cycles = 0, r0calls = 0, r3calls = 0, labeledValuePropagationCalls = 0, potentialUpdate;
-
-		/**
-		 * Execution time in nanoseconds.
-		 */
-		public long executionTimeNS = Constants.INT_NULL;
-
-		/**
-		 * True if no rule can be applied anymore.
-		 */
-		public boolean finished = false;
-
-		/**
-		 * Standard Deviation of Execution time if this last one is a mean. In nanoseconds.
-		 */
-		public long stdDevExecutionTimeNS = Constants.INT_NULL;
-
-		/**
-		 * True if check has been interrupted because a give time-out has occurred.
-		 */
-		public boolean timeout = false;
-
-		/**
-		 * True if all data structured have been initialized.
-		 */
-		boolean initialized = false;
+		public int r0calls = 0, r3calls = 0, labeledValuePropagationCalls = 0, potentialUpdate;
 
 		/**
 		 * Reset all indexes.
 		 */
+		@Override
 		public void reset() {
-			this.consistency = true;
-			this.cycles = 0;
+			super.reset();
 			this.r0calls = 0;
 			this.r3calls = 0;
 			this.labeledValuePropagationCalls = 0;
 			this.potentialUpdate = 0;
-			this.executionTimeNS = this.stdDevExecutionTimeNS = Constants.INT_NULL;
-			this.finished = this.timeout = false;
-			this.initialized = false;
 		}
 
 		@Override
@@ -427,7 +396,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 	}
 
-
 	/**
 	 * Suffix for file name
 	 */
@@ -519,7 +487,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		return consistent;
 	}
-
 
 	/**
 	 * Stops a computation if current instant is after the <code>timeoutInstant</code>
@@ -1369,9 +1336,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		return fromObs;
 	}
 
-
-
-
 	/**
 	 * Applies rule R0/qR0: label containing a proposition that can be decided only in the future is simplified removing such proposition.
 	 * <b>Standard DC semantics is assumed.</b>
@@ -1613,7 +1577,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		return alphaBetaGamma;
 	}
 
-
 	/**
 	 * Simple method to determine the α' to use in rules R0 and in rule qR0.
 	 * Check paper TIME15 and ICAPS 2016 about CSTN sound&amp;complete DC check.
@@ -1785,6 +1748,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		return l;
 	}
+
 	/**
 	 * Resets all internal structures
 	 */

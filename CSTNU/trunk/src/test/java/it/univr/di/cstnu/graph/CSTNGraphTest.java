@@ -83,7 +83,6 @@ public class CSTNGraphTest {
 		g.addVertex(g.getNodeFactory().get("Z"));
 		g.addVertex(g.getNodeFactory().get("X"));
 		g.addEdge(edgeFactory.get("ZX"), "Z", "X");
-		g.addEdge(edgeFactory.get("ZX"), "X", "Z");
 		g.addEdge(edgeFactory.get("XZ"), "X", "Z");
 
 		assertEquals(g.getVertexCount(), 2);
@@ -100,7 +99,8 @@ public class CSTNGraphTest {
 		g.addVertex(Z);
 		g.addVertex(X);
 		g.addEdge(edgeFactory.get("ZX"), Z, X);
-		g.addEdge(edgeFactory.get("ZX"), "X", "Z");
+		g.addEdge(edgeFactory.get("XZ"), "X", "Z");
+		g.removeEdge("XZ");
 		g.addEdge(edgeFactory.get("XZ"), X, Z);
 
 		g.removeVertex(X);
@@ -128,8 +128,7 @@ public class CSTNGraphTest {
 		g.addVertex(g.getNodeFactory().get("A10"));
 		g.addVertex(g.getNodeFactory().get("A11"));
 		g.addEdge(edgeFactory.get("ZX"), Z, X);
-		g.addEdge(edgeFactory.get("ZX"), "X", "Z");
-		g.addEdge(edgeFactory.get("XZ"), X, Z);
+		g.addEdge(edgeFactory.get("XZ"), "X", "Z");
 		g.addEdge(edgeFactory.get("Z3"), "Z", "A3");
 		g.addEdge(edgeFactory.get("Z4"), "Z", "A4");
 		g.addEdge(edgeFactory.get("Z5"), "Z", "A5");
@@ -353,38 +352,42 @@ public class CSTNGraphTest {
 		g.addEdge(edgeFactory.get("A4_11"), "A4", "A11");
 		g.addEdge(edgeFactory.get("A11_4"), "A11", "A4");
 		g.addEdge(edgeFactory.get("A11_5"), "A11", "A5");
-		// System.out.println("G: "+g);
+		// System.out.println("G: " + g);
 
 		CSTNEdge e1;
 		for (CSTNEdge edge : g.getEdges()) {
 			e1 = edgeFactory.get(edge.getName() + "new");
 			edge.takeIn(e1);
 		}
+		// System.out.println("Gnew: " + g);
+
 		g.reverse();
-		assertEquals(g.getVertexCount(), 11);
-		assertEquals(g.getEdgeCount(), 8);
+		// System.out.println("Greversed: " + g);
+
+		assertEquals(11, g.getVertexCount());
+		assertEquals(8, g.getEdgeCount());
 		String expected = "%TNGraph: prova\n" +
 				"%Nodes:\n" +
-				"❮Z; ⊡❯\n" +
-				"❮A3; ⊡❯\n" +
-				"❮A7; ⊡❯\n" +
-				"❮A5; ⊡❯\n" +
-				"❮A9; ⊡❯\n" +
-				"❮A10; ⊡❯\n" +
-				"❮A11; ⊡❯\n" +
-				"❮X; ⊡❯\n" +
-				"❮A4; ⊡❯\n" +
-				"❮A8; ⊡❯\n" +
-				"❮A6; ⊡❯\n" +
+				"❮Z❯\n" +
+				"❮A3❯\n" +
+				"❮A7❯\n" +
+				"❮A5❯\n" +
+				"❮A9❯\n" +
+				"❮A10❯\n" +
+				"❮A11❯\n" +
+				"❮X❯\n" +
+				"❮A4❯\n" +
+				"❮A8❯\n" +
+				"❮A6❯\n" +
 				"%Edges:\n" +
-				"❮A11_3; normal; ❯\n" +
-				"❮A11_4; normal; ❯\n" +
-				"❮A11_5; normal; ❯\n" +
-				"❮A3_11; normal; ❯\n" +
-				"❮A4_11; normal; ❯\n" +
-				"❮Z3; normal; ❯\n" +
-				"❮Z4; normal; ❯\n" +
-				"❮ZX; normal; ❯\n";
+				"❮A3❯--❮A11_3new; normal; ❯-->❮A11❯\n" +
+				"❮A4❯--❮A11_4new; normal; ❯-->❮A11❯\n" +
+				"❮A5❯--❮A11_5new; normal; ❯-->❮A11❯\n" +
+				"❮A11❯--❮A3_11new; normal; ❯-->❮A3❯\n" +
+				"❮A11❯--❮A4_11new; normal; ❯-->❮A4❯\n" +
+				"❮A3❯--❮Z3new; normal; ❯-->❮Z❯\n" +
+				"❮A4❯--❮Z4new; normal; ❯-->❮Z❯\n" +
+				"❮X❯--❮ZXnew; normal; ❯-->❮Z❯\n";
 		assertEquals("Reversed tNGraph:", expected, g.toString());
 	}
 }

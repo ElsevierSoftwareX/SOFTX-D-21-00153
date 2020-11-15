@@ -13,11 +13,6 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
-
-	/**
 	 * To provide a unique id for the default creation of component.
 	 */
 	@SuppressWarnings("hiding")
@@ -27,6 +22,11 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	 * logger
 	 */
 	static final Logger LOG = Logger.getLogger("AbstractEdge");
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The type of the edge.
@@ -69,17 +69,7 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	}
 
 	@Override
-	public void setConstraintType(final ConstraintType type) {
-		this.constraintType = type;
-	}
-
-	@Override
 	public boolean isCSTNEdge() {
-		return false;
-	}
-
-	@Override
-	public boolean isCSTNUEdge() {
 		return false;
 	}
 
@@ -89,7 +79,46 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	}
 
 	@Override
+	public boolean isCSTNUEdge() {
+		return false;
+	}
+
+	@Override
 	public boolean isSTNEdge() {
 		return false;
+	}
+
+	@Override
+	public boolean isSTNUEdge() {
+		return false;
+	}
+
+	@Override
+	public void setConstraintType(final ConstraintType type) {
+		this.constraintType = type;
+		notifyObservers("Type:" + type);
+	}
+
+	@Override
+	public void takeIn(Edge e) {
+		super.takeIn(e);
+		this.constraintType = e.getConstraintType();
+	}
+
+	/**
+	 * Set the name of the edge. Cannot be null or empty.
+	 *
+	 * @param edgeName the not-null not-empty new name
+	 * @return the old name
+	 */
+	@Override
+	public String setName(final String edgeName) {
+		final String old = this.name;
+		if ((edgeName != null) && (edgeName.length() > 0)) {
+			this.name = edgeName;
+			this.setChanged();
+			notifyObservers("Name:" + old);
+		}
+		return old;
 	}
 }

@@ -38,6 +38,7 @@ import it.univr.di.cstnu.graph.CSTNPSUEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.STNEdge;
+import it.univr.di.cstnu.graph.STNUEdge;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraph.NetworkType;
 import it.univr.di.labeledvalue.ALabel;
@@ -122,45 +123,43 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		// group.add(value, StringValidators.regexp(Constants.labeledValueRE, "Check the syntax!", false));
 
 		// Type
+		// Group the radio buttons.
+		final ButtonGroup buttonGroup = new ButtonGroup();
 		jp.add(new JLabel("Edge type: "));
 		final JRadioButton normalButton = new JRadioButton(Edge.ConstraintType.normal.toString());
 		normalButton.setActionCommand(Edge.ConstraintType.normal.toString());
 		normalButton.setSelected(e.getConstraintType() == Edge.ConstraintType.normal);
 		setConditionToEnable(normalButton, viewerName, false);
+		jp.add(normalButton);
+		buttonGroup.add(normalButton);
+
 		final JRadioButton contingentButton = new JRadioButton(Edge.ConstraintType.contingent.toString());
-		contingentButton.setActionCommand(Edge.ConstraintType.contingent.toString());
-		contingentButton.setSelected(e.isContingentEdge());
-		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU)
+		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU || g.getType() == NetworkType.STNU) {
+			contingentButton.setActionCommand(Edge.ConstraintType.contingent.toString());
+			contingentButton.setSelected(e.isContingentEdge());
 			setConditionToEnable(contingentButton, viewerName, false);
+			jp.add(contingentButton);
+			jp.add(new JLabel(""));// in order to jump a cell
+			buttonGroup.add(contingentButton);
+		}
+
 		final JRadioButton constraintButton = new JRadioButton(Edge.ConstraintType.constraint.toString());
 		constraintButton.setActionCommand(Edge.ConstraintType.constraint.toString());
 		constraintButton.setSelected(e.getConstraintType() == Edge.ConstraintType.constraint);
 		setConditionToEnable(constraintButton, viewerName, false);
+		jp.add(constraintButton);
+		if (g.getType() == NetworkType.STN) {
+			jp.add(new JLabel(""));// in order to jump a cell
+		}
+		buttonGroup.add(constraintButton);
+
 		final JRadioButton derivedButton = new JRadioButton(Edge.ConstraintType.derived.toString());
 		derivedButton.setActionCommand(Edge.ConstraintType.derived.toString());
 		derivedButton
 				.setSelected(e.getConstraintType() == Edge.ConstraintType.derived || e.getConstraintType() == Edge.ConstraintType.internal);
 		derivedButton.setEnabled(false);
-
-		// Group the radio buttons.
-		final ButtonGroup buttonGroup = new ButtonGroup();
-		buttonGroup.add(normalButton);
-		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU)
-			buttonGroup.add(contingentButton);
-		buttonGroup.add(constraintButton);
-		buttonGroup.add(derivedButton);
-
-		jp.add(normalButton);
-		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU) {
-			jp.add(contingentButton);
-			jp.add(new JLabel(""));// in order to jump a cell
-		}
-		jp.add(constraintButton);
-		if (g.getType() == NetworkType.STN) {
-			jp.add(new JLabel(""));// in order to jump a cell
-		}
 		jp.add(derivedButton);
-		// setConditionToEnable(jp, viewerName, false);
+		buttonGroup.add(derivedButton);
 
 		JTextField jt;
 		int i = 0;
@@ -171,13 +170,13 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		JTextField[] newIntInputs = null;
 		Integer[] oldIntInputs = null;
 
-		if (e.isSTNEdge()) {
+		if (e.isSTNEdge() || e.isSTNUEdge()) {
 			inputsN = 1;
 			newIntInputs = new JTextField[inputsN];
 			oldIntInputs = new Integer[inputsN];
 
 			// Show value label
-			jp.add(new JLabel(""));// in order to jump a cell
+			// jp.add(new JLabel(""));// in order to jump a cell
 			jp.add(new JLabel("Value: "));// in order to jump a cell
 			// Show value
 			oldIntInputs[0] = ((STNEdge) e).getValue();
@@ -199,6 +198,18 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			// jp.add(jtValue);
 			// group.add(jtValue, StringValidators.regexp(Constants.LabeledValueRE + "|", "Integer please or let it empty!", false));
 			// }
+		}
+
+		if (e.isSTNUEdge()) {
+			STNUEdge e1 = (STNUEdge) e;
+			String labeledValue = e1.getLabeledValueFormatted();
+			if (!labeledValue.isEmpty()) {
+				// jp.add(new JLabel(""));// in order to jump a cell
+				jp.add(new JLabel("Case value: "));// in order to jump a cell
+				jtValue = new JTextField(labeledValue);
+				setConditionToEnable(jtValue, viewerName, true);
+				jp.add(jtValue);
+			}
 		}
 
 		if (e.isCSTNEdge()) {
@@ -258,114 +269,118 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			}
 		}
 
-		int nUpperLabels = ((BasicCSTNUEdge) e).upperCaseValueSize();
+		int nUpperLabels = 0, nLowerLabels = 0;
 		JTextField[] labelUpperInputs = null;
 		JTextField[] newUpperValueInputs = null;
-
-		LabeledLowerCaseValue lowerValue = null;
-		int nLowerLabels = ((BasicCSTNUEdge) e).lowerCaseValueSize();
 		JTextField[] labelLowerInputs = null;
 		JTextField[] newLowerValueInputs = null;
 
-		if (e.isContingentEdge() || nUpperLabels > 0 || nLowerLabels > 0) {
-			// Show all upper and lower case values allowing also the possibility of insertion.
-			BasicCSTNUEdge e1 = (BasicCSTNUEdge) e;
-			labelUpperInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
-			newUpperValueInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
+		if (e.isCSTNUEdge() || e.isCSTNPSUEdge()) {
+			nUpperLabels = ((BasicCSTNUEdge) e).upperCaseValueSize();
 
-			// lowerValue = e1.getLowerCaseValue();
-			labelLowerInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
-			newLowerValueInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
+			LabeledLowerCaseValue lowerValue = null;
+			nLowerLabels = ((BasicCSTNUEdge) e).lowerCaseValueSize();
 
-			// If the edge type is contingent, then we allow the modification of the single possible lower/upper case value.
-			// Show additional label
+			if (e.isContingentEdge() || nUpperLabels > 0 || nLowerLabels > 0) {
+				// Show all upper and lower case values allowing also the possibility of insertion.
+				BasicCSTNUEdge e1 = (BasicCSTNUEdge) e;
+				labelUpperInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
+				newUpperValueInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
 
-			jp.add(new JLabel("Syntax:"));
-			jt = new JTextField("Label (read-only)");
-			setConditionToEnable(jt, viewerName, true);
-			jp.add(jt);
-			jt = new JTextField("<node Name>: <value>");
-			setConditionToEnable(jt, viewerName, true);
-			jp.add(jt);
-			i = 0;
-			if (nUpperLabels > 0) {
-				for (ALabel alabel : e1.getUpperCaseValueMap().keySet()) {
-					LabeledIntTreeMap labeledValues = e1.getUpperCaseValueMap().get(alabel);
-					for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
-						// It should be only one! I put a cycle in order to verify
-						jp.add(new JLabel("Upper Label"));
-						jtLabel = new JTextField(entry1.getKey().toString());
-						labelUpperInputs[i] = jtLabel;
-						setConditionToEnable(jtLabel, viewerName, true);
-						jp.add(jtLabel);
-						jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
-						newUpperValueInputs[i] = jtLabel;
-						setConditionToEnable(jtLabel, viewerName, (nUpperLabels > 1) ? true : false);
-						jp.add(jtLabel);
-						group.add(jtLabel, StringValidators.regexp("^" + sourceNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
-						i++;
-					}
-				}
-			} else {
-				jp.add(new JLabel("Upper Label"));
-				jtLabel = new JTextField("");
-				labelUpperInputs[i] = jtLabel;
-				setConditionToEnable(jtLabel, viewerName, true);
-				jp.add(jtLabel);
-				jtLabel = new JTextField("");
-				newUpperValueInputs[i] = jtLabel;
-				setConditionToEnable(jtLabel, viewerName, !editorPanel);
-				jp.add(jtLabel);
-				group.add(jtLabel, StringValidators.regexp("^" + sourceNode.getName() + ":.*" + "|",
-						"Contingent name is wrong or it is not followed by : without spaces!", false));
-			}
-			i = 0;
-			if (nLowerLabels > 0) {
-				if (e1.isCSTNUEdge()) {
-					lowerValue = e1.getLowerCaseValue();
-					jp.add(new JLabel("Lower Label"));
-					jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
-					labelLowerInputs[i] = jtLabel;
-					setConditionToEnable(jtLabel, viewerName, true);
-					jp.add(jtLabel);
-					jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
-					newLowerValueInputs[i] = jtLabel;
-					setConditionToEnable(jtLabel, viewerName, false);
-					group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
-					jp.add(jtLabel);
-				} else {
-					// CSTNPSU edge
-					CSTNPSUEdge e2 = (CSTNPSUEdge) e1;
-					for (ALabel alabel : e2.getLowerCaseValueMap().keySet()) {
-						LabeledIntTreeMap labeledValues = e2.getLowerCaseValueMap().get(alabel);
+				// lowerValue = e1.getLowerCaseValue();
+				labelLowerInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
+				newLowerValueInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
+
+				// If the edge type is contingent, then we allow the modification of the single possible lower/upper case value.
+				// Show additional label
+
+				jp.add(new JLabel("Syntax:"));
+				jt = new JTextField("Label (read-only)");
+				setConditionToEnable(jt, viewerName, true);
+				jp.add(jt);
+				jt = new JTextField("<node Name>: <value>");
+				setConditionToEnable(jt, viewerName, true);
+				jp.add(jt);
+				i = 0;
+				if (nUpperLabels > 0) {
+					for (ALabel alabel : e1.getUpperCaseValueMap().keySet()) {
+						LabeledIntTreeMap labeledValues = e1.getUpperCaseValueMap().get(alabel);
 						for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
 							// It should be only one! I put a cycle in order to verify
-							jp.add(new JLabel("Lower Label"));
+							jp.add(new JLabel("Upper Label"));
 							jtLabel = new JTextField(entry1.getKey().toString());
-							labelLowerInputs[i] = jtLabel;
+							labelUpperInputs[i] = jtLabel;
 							setConditionToEnable(jtLabel, viewerName, true);
 							jp.add(jtLabel);
 							jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
-							newLowerValueInputs[i] = jtLabel;
-							setConditionToEnable(jtLabel, viewerName, (nLowerLabels > 1) ? true : false);
+							newUpperValueInputs[i] = jtLabel;
+							setConditionToEnable(jtLabel, viewerName, (nUpperLabels > 1) ? true : false);
 							jp.add(jtLabel);
-							group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+							group.add(jtLabel, StringValidators.regexp("^" + sourceNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
 							i++;
 						}
 					}
-				}
-			} else {
-				if (editorPanel) {
-					jp.add(new JLabel("Lower Label"));
+				} else {
+					jp.add(new JLabel("Upper Label"));
 					jtLabel = new JTextField("");
-					labelLowerInputs[i] = jtLabel;
+					labelUpperInputs[i] = jtLabel;
 					setConditionToEnable(jtLabel, viewerName, true);
 					jp.add(jtLabel);
 					jtLabel = new JTextField("");
-					newLowerValueInputs[i] = jtLabel;
-					setConditionToEnable(jtLabel, viewerName, false);
-					group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+					newUpperValueInputs[i] = jtLabel;
+					setConditionToEnable(jtLabel, viewerName, !editorPanel);
 					jp.add(jtLabel);
+					group.add(jtLabel, StringValidators.regexp("^" + sourceNode.getName() + ":.*" + "|",
+							"Contingent name is wrong or it is not followed by : without spaces!", false));
+				}
+				i = 0;
+				if (nLowerLabels > 0) {
+					if (e1.isCSTNUEdge()) {
+						lowerValue = e1.getLowerCaseValue();
+						jp.add(new JLabel("Lower Label"));
+						jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
+						labelLowerInputs[i] = jtLabel;
+						setConditionToEnable(jtLabel, viewerName, true);
+						jp.add(jtLabel);
+						jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
+						newLowerValueInputs[i] = jtLabel;
+						setConditionToEnable(jtLabel, viewerName, false);
+						group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+						jp.add(jtLabel);
+					} else {
+						// CSTNPSU edge
+						CSTNPSUEdge e2 = (CSTNPSUEdge) e1;
+						for (ALabel alabel : e2.getLowerCaseValueMap().keySet()) {
+							LabeledIntTreeMap labeledValues = e2.getLowerCaseValueMap().get(alabel);
+							for (Object2IntMap.Entry<Label> entry1 : labeledValues.entrySet()) {
+								// It should be only one! I put a cycle in order to verify
+								jp.add(new JLabel("Lower Label"));
+								jtLabel = new JTextField(entry1.getKey().toString());
+								labelLowerInputs[i] = jtLabel;
+								setConditionToEnable(jtLabel, viewerName, true);
+								jp.add(jtLabel);
+								jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
+								newLowerValueInputs[i] = jtLabel;
+								setConditionToEnable(jtLabel, viewerName, (nLowerLabels > 1) ? true : false);
+								jp.add(jtLabel);
+								group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+								i++;
+							}
+						}
+					}
+				} else {
+					if (editorPanel) {
+						jp.add(new JLabel("Lower Label"));
+						jtLabel = new JTextField("");
+						labelLowerInputs[i] = jtLabel;
+						setConditionToEnable(jtLabel, viewerName, true);
+						jp.add(jtLabel);
+						jtLabel = new JTextField("");
+						newLowerValueInputs[i] = jtLabel;
+						setConditionToEnable(jtLabel, viewerName, false);
+						group.add(jtLabel, StringValidators.regexp("^" + destNode.getName() + "\\s*:.*" + "|", "Contingent name is wrong!", false));
+						jp.add(jtLabel);
+					}
 				}
 			}
 		}
@@ -420,6 +435,26 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				}
 				modified = true;
 			}
+
+			if (e.isSTNUEdge()) {
+				STNUEdge e1 = (STNUEdge) e;
+				String is = newIntInputs[0].getText();
+				v = (is.length() > 0) ? Integer.valueOf(is) : null;
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINER)) {
+						LabelEditingGraphMousePlugin.LOG.finest("Value: " + is + " [old:" + oldIntInputs[0] + "])");
+					}
+				}
+				if (v != null) {
+					if (e1.getValue() != v) {
+						modified = true;
+						e1.setValue(v.intValue());
+						e1.setLabeledValue(null, -1, false);
+					}
+				}
+				modified = true;
+			}
+
 			if (e.isCSTNEdge()) {
 				CSTNEdge e1 = (CSTNEdge) e;
 
@@ -480,8 +515,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				}
 			}
 
-			if (e.isContingentEdge() || nUpperLabels > 0 || nLowerLabels > 0) {
+			if ((e.isCSTNUEdge() || e.isCSTNPSUEdge()) && (newUpperValueInputs != null && newLowerValueInputs != null)) {
+
 				// I manage possible specification of lower/upper case new values
+				LOG.info("It is a modified CSTNU (" + e.isCSTNUEdge() + ") or CSTPSU (" + e.isCSTNPSUEdge() + ") edge. nUpperValues: " + nUpperLabels
+						+ ", nLowerValues:" + nLowerLabels);
 				String caseValue = null, nodeName = null;
 				String[] splitted = null;
 				if (BasicCSTNUEdge.class.isAssignableFrom(e.getClass())) {
@@ -593,9 +631,9 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						final Label endpointsLabel = dest.getLabel().conjunction(source.getLabel());
 
 						if (dest.getName().equals(nodeName)) {
-							ALabel destALabel = (dest.getAlabel() != null) ? ALabel.clone(dest.getAlabel())
+							ALabel destALabel = (dest.getALabel() != null) ? ALabel.clone(dest.getALabel())
 									: new ALabel(dest.getName(), g.getALabelAlphabet());
-							dest.setAlabel(destALabel);
+							dest.setALabel(destALabel);
 							e1.putLowerCaseValue(endpointsLabel, destALabel, v);// Temporally I ignore the label specified by user because an upper/lower
 																				// case value of a contingent must have the label of its endpoints.
 							modified = true;
@@ -728,7 +766,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	 * @param g graph
 	 * @return true if one attribute at least has been modified
 	 */
-	@SuppressWarnings({ "unchecked", "static-method" })
+	@SuppressWarnings({ "unchecked", "static-method", "null" })
 	private boolean nodeAttributesEditor(final LabeledNode node, final String viewerName, final TNGraph<? extends Edge> g) {
 
 		// Planning a possible extension, a node could contains more labels with associated integers.
@@ -760,35 +798,6 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					new ObservableValidator(g, node));
 		}
 
-		// Observed proposition
-		JTextField observedProposition = new JTextField(1);
-		char p = node.getPropositionObserved();
-		observedProposition = new JTextField((p == Constants.UNKNOWN) ? "" : "" + p);
-		jl = new JLabel("Observed proposition:");
-		jl.setLabelFor(observedProposition);
-		jp.add(jl);
-		jp.add(observedProposition);
-		setConditionToEnable(observedProposition, viewerName, false);
-		if (editorPanel) {
-			jp.add(new JLabel("Syntax: " + Literal.PROPOSITION_RANGE + "| "));
-			group.add(observedProposition, StringValidators.regexp(Literal.PROPOSITION_RANGE + "|", "Must be a single char in the range!", false),
-					new ObservableValidator(g, node));
-		}
-
-		// Label
-		final Label l = node.getLabel();
-		final JTextField label = new JTextField(l.toString());
-		jl = new JLabel("Label:");
-		jl.setLabelFor(label);
-		jp.add(jl);
-		jp.add(label);
-		setConditionToEnable(label, viewerName, false);
-		if (editorPanel) {
-			final JTextField jtf = new JTextField("Syntax: " + Label.LABEL_RE);
-			jp.add(jtf);
-			group.add(label, StringValidators.regexp(Label.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
-		}
-
 		// Potential
 		int potential = node.getPotential();
 		if (potential != Constants.INT_NULL) {
@@ -799,17 +808,51 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			jp.add(potentialValue);
 			setConditionToEnable(potentialValue, viewerName, true);
 		}
-		// Labeled Potential
-		LabeledIntMap potentialMap = node.getLabeledPotential();
-		if (!potentialMap.isEmpty()) {
-			jl = new JLabel("Labeled Potential: ");
+
+		JTextField observedProposition = null;
+		char p;
+		Label l = null;
+		JTextField label = null;
+		if (BasicCSTNUEdge.class.isAssignableFrom(g.getEdgeImplClass())) {
+			// Observed proposition
+			p = node.getPropositionObserved();
+			observedProposition = new JTextField((p == Constants.UNKNOWN) ? "" : "" + p);
+			jl = new JLabel("Observed proposition:");
+			jl.setLabelFor(observedProposition);
 			jp.add(jl);
-			JLabel potentialValues = new JLabel(
-					"<html>" + potentialMap.toString().replace("{", "").replace("}", "").replaceAll("\\) \\(", ")<br />(") + "</html>", SwingConstants.LEFT);
-			potentialValues.setBackground(Color.white);
-			potentialValues.setOpaque(true);
-			jp.add(potentialValues);
-			// }
+			jp.add(observedProposition);
+			setConditionToEnable(observedProposition, viewerName, false);
+			if (editorPanel) {
+				jp.add(new JLabel("Syntax: " + Literal.PROPOSITION_RANGE + "| "));
+				group.add(observedProposition, StringValidators.regexp(Literal.PROPOSITION_RANGE + "|", "Must be a single char in the range!", false),
+						new ObservableValidator(g, node));
+			}
+
+			// Label
+			l = node.getLabel();
+			label = new JTextField(l.toString());
+			jl = new JLabel("Label:");
+			jl.setLabelFor(label);
+			jp.add(jl);
+			jp.add(label);
+			setConditionToEnable(label, viewerName, false);
+			if (editorPanel) {
+				final JTextField jtf = new JTextField("Syntax: " + Label.LABEL_RE);
+				jp.add(jtf);
+				group.add(label, StringValidators.regexp(Label.LABEL_RE, "Check the syntax!", false), Label.labelValidator);
+			}
+			// Labeled Potential
+			LabeledIntMap potentialMap = node.getLabeledPotential();
+			if (!potentialMap.isEmpty()) {
+				jl = new JLabel("Labeled Potential: ");
+				jp.add(jl);
+				JLabel potentialValues = new JLabel(
+						"<html>" + potentialMap.toString().replace("{", "").replace("}", "").replaceAll("\\) \\(", ")<br />(") + "</html>",
+						SwingConstants.LEFT);
+				potentialValues.setBackground(Color.white);
+				potentialValues.setOpaque(true);
+				jp.add(potentialValues);
+			}
 		}
 
 		// Build the new object from the return values.
@@ -824,32 +867,34 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				modified = true;
 			}
 
-			// Observable
-			newValue = observedProposition.getText();
-			if (newValue != null) {
-				final char oldP = node.getPropositionObserved();
-				if (newValue.length() > 0) {
-					p = newValue.charAt(0);
-					if ((oldP == Constants.UNKNOWN) || oldP != p) {
-						node.setObservable(p);
+			if (BasicCSTNUEdge.class.isAssignableFrom(g.getEdgeImplClass())) {
+				// Observable
+				newValue = observedProposition.getText();
+				if (newValue != null) {
+					final char oldP = node.getPropositionObserved();
+					if (newValue.length() > 0) {
+						p = newValue.charAt(0);
+						if ((oldP == Constants.UNKNOWN) || oldP != p) {
+							node.setObservable(p);
+							modified = true;
+						}
+					} else if (oldP != Constants.UNKNOWN) {
+						node.setObservable(Constants.UNKNOWN);
 						modified = true;
 					}
-				} else if (oldP != Constants.UNKNOWN) {
-					node.setObservable(Constants.UNKNOWN);
+				}
+				// Label
+				newValue = label.getText();
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.FINEST)) {
+						LabelEditingGraphMousePlugin.LOG.finest("New label for node " + node.getName() + ": " + newValue + ". Old: " + l.toString());
+					}
+				}
+				if (!l.toString().equals(newValue)) {
+					// syntax check allows a fast assignment!
+					node.setLabel(Label.parse(newValue));
 					modified = true;
 				}
-			}
-			// Label
-			newValue = label.getText();
-			if (Debug.ON) {
-				if (LOG.isLoggable(Level.FINEST)) {
-					LabelEditingGraphMousePlugin.LOG.finest("New label for node " + node.getName() + ": " + newValue + ". Old: " + l.toString());
-				}
-			}
-			if (!l.toString().equals(newValue)) {
-				// syntax check allows a fast assignment!
-				node.setLabel(Label.parse(newValue));
-				modified = true;
 			}
 		}
 		return modified;

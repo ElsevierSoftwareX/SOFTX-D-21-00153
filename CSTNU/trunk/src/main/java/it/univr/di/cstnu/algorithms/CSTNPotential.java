@@ -48,7 +48,7 @@ public class CSTNPotential extends CSTNIR {
 	// will be identified by putting -∞ in their potential.
 	// static final public String VERSIONandDATE = "Version 3.0 - May, 01 2019";// It apply SPFA approach directly on instance adjusting the SPFA.
 	// static final public String VERSIONandDATE = "Version 3.1 - June, 09 2019";// Edge refactoring
-//	static final public String VERSIONandDATE = "Version 3.5 - November, 07 2019";// Version working with CSTN 9R v. 6.5 (SVN 363)
+	// static final public String VERSIONandDATE = "Version 3.5 - November, 07 2019";// Version working with CSTN 9R v. 6.5 (SVN 363)
 	// static final public String VERSIONandDATE = "Version 3.6 - November, 25 2019";// Renamed
 	static final public String VERSIONandDATE = "Version 4.0 - January, 31 2020";// Implements HP_20 algorithm presented at ICAPS 2020
 	/**
@@ -518,11 +518,11 @@ public class CSTNPotential extends CSTNIR {
 	 * If <code>obsAlignment</code> is true, then it assumed that <code>nodesToCheck</code> contains obs nodes only and such nodes has to be aligned among them.
 	 * Therefore, the rule is applied considering only obs nodes until no potential is modified.
 	 * 
-	 * @param nodesToCheck
-	 * @param obsNodes
-	 * @param newNodesToCheck
-	 * @param obsAlignment
-	 * @param timeoutInstant
+	 * @param nodesToCheck the set of nodes to check
+	 * @param obsNodes the observation node to which all nodes have to be checked
+	 * @param newNodesToCheck If the potential of X is modified, X is added to <code>newNodesToCheck</code>
+	 * @param obsAlignment if true, then it assumed that <code>nodesToCheck</code> contains obs nodes only and such nodes has to be aligned among them.
+	 * @param timeoutInstant maximum allowed time for the check
 	 * @return true if at least a value has been modified.
 	 */
 	private boolean potentialR3internalCycle(final LabeledNode[] nodesToCheck, final NodesToCheck obsNodes, final NodesToCheck newNodesToCheck,
@@ -583,7 +583,7 @@ public class CSTNPotential extends CSTNIR {
 	}
 
 	/**
-	 * Completes the graph adding only new negative edges for n round. In this way it finds negative q-loops.
+	 * Completes the graph adding only new negative edges for n round. In this way it finds some negative q-loops.
 	 * Once possibly negative q-loops have been found (and store as (-∞, <qLabel>) in node potentials), the added edges are removed from the graph.
 	 * 
 	 * @return if during the computation, it founds a negative loop, it updates this.checkStatus and return false, true otherwise.

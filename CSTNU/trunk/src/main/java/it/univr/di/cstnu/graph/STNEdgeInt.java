@@ -4,7 +4,6 @@
 package it.univr.di.cstnu.graph;
 
 import it.univr.di.labeledvalue.Constants;
-import it.univr.di.labeledvalue.LabeledIntMap;
 
 /**
  * @author posenato
@@ -15,7 +14,6 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
 
 	/**
 	 * the value associated to the edge
@@ -33,18 +31,19 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	/**
 	 * helper constructor
 	 * 
-	 * @param labeledIntMapImpl useless. This method is only here for convencience.
+	 * @param labeledIntMapImpl useless. This method is only here for convenience.
+	 *            public STNEdgeInt(Class<? extends LabeledIntMap> labeledIntMapImpl) {
+	 *            this();
+	 *            }
 	 */
-	public STNEdgeInt(Class<? extends LabeledIntMap> labeledIntMapImpl) {
-		this();
-	}
 
 	/**
 	 * @param e
 	 */
 	public STNEdgeInt(Edge e) {
 		super(e);
-		this.value = ((STNEdge) e).getValue();
+		if (e instanceof STNEdge)
+			this.value = ((STNEdge) e).getValue();
 	}
 
 	/**
@@ -119,7 +118,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	public void takeIn(Edge e) {
 		if (e == null || !(e instanceof STNEdge))
 			return;
-		this.name = e.getName();
+		super.takeIn(e);
 		this.value = ((STNEdge) e).getValue();
 	}
 
@@ -134,8 +133,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	@Override
 	public String toString() {
 		return Constants.OPEN_TUPLE + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "
-				+ Constants.formatInt(this.value) + Constants.CLOSE_TUPLE;
+				+ Constants.formatInt(this.value) + "; " + Constants.CLOSE_TUPLE;
 	}
-
 
 }

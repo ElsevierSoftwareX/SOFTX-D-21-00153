@@ -39,7 +39,7 @@ public class ALabelAlphabet {
 		 */
 		public ALetter(String s) {
 			if (s == null || s.isEmpty())
-				throw new IllegalArgumentException("A ALetter cannot be null or empty");
+				throw new IllegalArgumentException("An ALetter cannot be null or empty");
 			if (!Pattern.matches(ALabelAlphabet.ALETTER_RANGE, s))
 				throw new IllegalArgumentException("The argument " + s + " must be in the regular-expression range: " + ALabelAlphabet.ALETTER_RANGE);
 			this.name = s;
@@ -69,7 +69,6 @@ public class ALabelAlphabet {
 			return this.name;
 		}
 	}
-
 
 	/**
 	 * A-Letter.

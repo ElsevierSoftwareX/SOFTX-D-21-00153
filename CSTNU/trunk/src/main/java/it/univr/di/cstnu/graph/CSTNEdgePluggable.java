@@ -304,6 +304,7 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	public void takeIn(Edge e) {
 		if (e == null)
 			return;
+		super.takeIn(e);
 		if (e instanceof CSTNEdgePluggable) {
 			CSTNEdgePluggable e1 = (CSTNEdgePluggable) e;
 			this.constraintType = e1.constraintType;

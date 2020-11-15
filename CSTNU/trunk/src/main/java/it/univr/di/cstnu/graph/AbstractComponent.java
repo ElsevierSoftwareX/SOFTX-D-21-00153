@@ -6,11 +6,10 @@ package it.univr.di.cstnu.graph;
 import java.util.Observable;
 
 /**
- *
  * @author posenato
  * @version $Id: $Id
  */
-public abstract class AbstractComponent extends Observable implements Component  {
+public abstract class AbstractComponent extends Observable implements Component {
 
 	/**
 	 * To provide a unique id for the default creation of component.
@@ -70,8 +69,10 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 */
 	@Override
 	public int compareTo(final Object o) {
-		if (o == null) return 1;
-		if (this == o) return 0;
+		if (o == null)
+			return 1;
+		if (this == o)
+			return 0;
 		return this.name.compareToIgnoreCase(((Component) o).getName());
 	}
 
@@ -89,12 +90,15 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 */
 	@Override
 	public boolean equalsByName(final Component c) {
-		if (c == null) return false;
+		if (c == null)
+			return false;
 		return this.name.equals(c.getName());
 	}
 
 	/**
-	 * <p>Getter for the field <code>name</code>.</p>
+	 * <p>
+	 * Getter for the field <code>name</code>.
+	 * </p>
 	 *
 	 * @return the name of the component
 	 */
@@ -130,7 +134,6 @@ public abstract class AbstractComponent extends Observable implements Component 
 
 	/**
 	 * {@inheritDoc}
-	 *
 	 * Return a string representation of labeled values.
 	 */
 	@Override
@@ -151,5 +154,10 @@ public abstract class AbstractComponent extends Observable implements Component 
 	@Override
 	public void clear() {
 		this.color = null;
+	}
+
+	public void takeIn(Component c) {
+		this.color = c.getColor();
+		this.setName(c.getName());
 	}
 }

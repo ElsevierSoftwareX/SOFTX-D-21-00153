@@ -110,7 +110,7 @@ public class TNGraphMLReader<E extends Edge> {
 	/**
 	 * logger
 	 */
-	static final Logger LOG = Logger.getLogger(TNGraphMLReader.class.getName());
+	static final Logger LOG = Logger.getLogger("it.univr.di.cstnu.graph.TNGraphMLReader");
 
 	/**
 	 * 
@@ -196,8 +196,9 @@ public class TNGraphMLReader<E extends Edge> {
 			@Override
 			public void accept(LabeledNode n, String s) {
 				n.setName(s);
-				if (s.equals(AbstractCSTN.ZeroNodeName))
+				if (s.equals(AbstractCSTN.ZeroNodeName)) {
 					TNGraphMLReader.this.tnGraph.setZ(n);
+				}
 			}
 		});
 		// Label
@@ -260,13 +261,22 @@ public class TNGraphMLReader<E extends Edge> {
 		fieldReader = graphReader.getEdgeMetadata().get(TNGraphMLWriter.EDGE_VALUE_KEY);
 		Function<E, String> edgeValueF = (fieldReader != null) ? fieldReader.transformer : null;
 
+		// STNU
+		fieldReader = graphReader.getEdgeMetadata().get(TNGraphMLWriter.EDGE_CASE_VALUE_KEY);
+		Function<E, String> edgeCaseValueF = (fieldReader != null) ? fieldReader.transformer : null;
+
 		LabeledIntMapSupplier<? extends LabeledIntMap> LabIntMapSupplier = new LabeledIntMapSupplier<>(labeledValueMapImpl);
 		String data;
+		boolean notCSTNUCSTNPSU = this.tnGraph.getType() == NetworkType.STN || this.tnGraph.getType() == NetworkType.CSTN
+				|| this.tnGraph.getType() == NetworkType.STNU;
 		for (E e : this.tnGraph.getEdges()) {
 			// Type
 			e.setConstraintType(ConstraintType.valueOf(edgeTypeF.apply(e)));
 			// Labeled Value
 			data = "";
+			LabeledNode s = this.tnGraph.getSource(e);
+			LabeledNode d = this.tnGraph.getDest(e);
+
 			boolean containsLabeledValues = CSTNEdge.class.isAssignableFrom(e.getClass());
 			if (edgeLabeledValueF != null) {
 				data = edgeLabeledValueF.apply(e);
@@ -286,8 +296,16 @@ public class TNGraphMLReader<E extends Edge> {
 			if (edgeValueF != null) {
 				data = edgeValueF.apply(e);
 				if (data != null && !data.isEmpty()) {
-					if (this.tnGraph.getType() == NetworkType.STN) {
+					if (this.tnGraph.getType() == NetworkType.STN || this.tnGraph.getType() == NetworkType.STNU) {
 						((STNEdge) e).setValue(Integer.parseInt(data));
+						if (e.getConstraintType() == ConstraintType.contingent) {
+							STNUEdge e1 = (STNUEdge) e;
+							if (e1.getValue() <= 0) {
+								s.setContingent(true);
+							} else {
+								d.setContingent(true);
+							}
+						}
 					}
 					if (containsLabeledValues) {
 						if (((CSTNEdge) e).getLabeledValueMap().isEmpty()) {
@@ -298,12 +316,28 @@ public class TNGraphMLReader<E extends Edge> {
 					}
 				}
 			}
-			if (this.tnGraph.getType() == NetworkType.CSTN && e.isEmpty())
+			// STNU
+			if (edgeCaseValueF != null) {
+				data = edgeCaseValueF.apply(e);
+				if (data != null && !data.isEmpty()) {
+					if (this.tnGraph.getType() == NetworkType.STNU) {
+						STNUEdge e1 = ((STNUEdge) e);
+						e1.setLabeledValue(data);
+						if (e1.isUpperCase()) {
+							s.setContingent(true);
+						} else {
+							d.setContingent(true);
+						}
+					}
+				}
+			}
+			if (e.isEmpty() && notCSTNUCSTNPSU) {
 				this.tnGraph.removeEdge(e);
+			}
 		}
-		if (this.tnGraph.getType() != NetworkType.CSTNU && this.tnGraph.getType() != NetworkType.CSTNPSU)
+		if (notCSTNUCSTNPSU) {
 			return this.tnGraph;
-
+		}
 		// FROM HERE the graph is assumed to be a CSTNU or CSTNPSU graph!
 
 		GraphMLMetadata<E> edgeLabeledUCValueMD = graphReader.getEdgeMetadata().get(TNGraphMLWriter.EDGE_LABELED_UC_VALUE_KEY);
@@ -355,8 +389,9 @@ public class TNGraphMLReader<E extends Edge> {
 				((CSTNPSUEdge) e1).setLowerCaseValue(lowerCaseValue);
 			}
 
-			if (e.isEmpty())
+			if (e.isEmpty()) {
 				this.tnGraph.removeEdge(e1);
+			}
 		}
 
 		return this.tnGraph;
