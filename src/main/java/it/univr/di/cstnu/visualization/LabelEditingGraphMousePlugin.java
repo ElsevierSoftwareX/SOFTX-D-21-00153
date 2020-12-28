@@ -1,8 +1,8 @@
-/*
- * Copyright (c) 2005, the JUNG Project and the Regents of the University of California All rights reserved. This
- * software is open-source under the BSD license;
- * see either "license.txt" or http://jung.sourceforge.net/license.txt for a description. Created on Mar 8, 2005
- */
+// Copyright (c) 2005, the JUNG Project and the Regents of the University of California All rights reserved. This
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.cstnu.visualization;
 
 import java.awt.Color;

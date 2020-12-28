@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.cstnu.algorithms;
 
 import java.io.FileNotFoundException;
@@ -2083,7 +2087,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * @param eAC
 	 * @param eCA
 	 * @param checkStatus1
-	 * @return
+	 * @return true if the guarded link is uncontrollable.
 	 */
 	static boolean checkBoundGuarded(LabeledNode nA, LabeledNode nC, CSTNPSUEdge eAC, CSTNPSUEdge eCA, CSTNCheckStatus checkStatus1) {
 		if (Debug.ON) {

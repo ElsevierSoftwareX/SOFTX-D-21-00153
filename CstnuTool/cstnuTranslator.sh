@@ -1,4 +1,9 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 #Simple script to invoke CSTN2UppaalTiga translator and to verify if the original CSTNU is controllable
 #
 # 2014 (C) Roberto Posenato

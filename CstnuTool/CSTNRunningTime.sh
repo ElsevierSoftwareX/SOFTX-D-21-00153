@@ -1,8 +1,10 @@
 #!/bin/bash
+
+# SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 #Simple script to invoke CSTNRunningTime class for testing CSTN DC check algorithm running time.
-#
-# 2017 (C) Roberto Posenato
-#
 
 ############################
 # START parameter configuration

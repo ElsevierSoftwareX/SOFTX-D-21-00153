@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.labeledvalue;
 
 import java.io.Serializable;
@@ -122,7 +126,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * @param inputMap
+		 * @param inputMap the input map
 		 */
 		public LabeledALabelIntTreeMapView(LabeledALabelIntTreeMap inputMap) {
 			this.map = inputMap.map;
@@ -207,8 +211,8 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	private static final long serialVersionUID = 2L;
 
 	/**
-	 * @param label
-	 * @param value
+	 * @param label the input label
+	 * @param value the input value
 	 * @param nodeName this name is printed as it is. This method is necessary for saving the values of the map in a file.
 	 * @return the canonical representation of the triple (as stated in ICAPS/ICAART papers), i.e.
 	 *         {@link Constants#OPEN_PAIR}Alabel, value, label{@link Constants#CLOSE_PAIR}
@@ -233,7 +237,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * or <code>"{[(&lang;Alabel&rang;, &lang;value&rang;, &lang;label&rang;) ]*}"</code>, where [a]* is a meta constructor for saying zero o more 'a'.
 	 * 
 	 * @param arg a {@link java.lang.String} object.
-	 * @param alphabet
+	 * @param alphabet the alphabet to use to code the labels
 	 * @return a LabeledPairMap object if args represents a valid map, null otherwise.
 	 */
 	public static LabeledALabelIntTreeMap parse(String arg, ALabelAlphabet alphabet) {
@@ -390,7 +394,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/**
 	 * @param newLabel it must be not null
 	 * @param newAlabel it must be not null
-	 * @param newValue
+	 * @param newValue the new value
 	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
 	 *         If returns false, then the adding of the value to the map would modify the map.
 	 */
@@ -434,7 +438,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param alabel
+	 * @param alabel the input label
 	 * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
 	 */
 	public final LabeledIntTreeMap get(final ALabel alabel) {
@@ -658,8 +662,8 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * Put a map associate to key alabel.
 	 * Possible previous map will be replaced.
 	 * 
-	 * @param alabel
-	 * @param labeledValueMap
+	 * @param alabel the input label
+	 * @param labeledValueMap its map
 	 * @return the old map if one was associated to alabel, null otherwise
 	 */
 	public LabeledIntTreeMap put(ALabel alabel, LabeledIntMap labeledValueMap) {

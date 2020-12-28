@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.labeledvalue;
 
 import java.util.ConcurrentModificationException;
@@ -125,7 +129,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * @author posenato
 	 */
 	public static final class EmptyLabel extends ALabel {
-		@SuppressWarnings({ "synthetic-access" })
+		@SuppressWarnings({ "synthetic-access", "javadoc" })
 		public EmptyLabel() {
 			super();
 		}
@@ -258,7 +262,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * In order to have a correct copy of a a-label.
 	 * 
-	 * @param label
+	 * @param label the input value
 	 * @return a distinct equal copy of label
 	 */
 	static final public ALabel clone(final ALabel label) {
@@ -374,7 +378,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Default constructor using a given alphabet.
 	 * 
-	 * @param alphabet1
+	 * @param alphabet1 the input alphabet. It cannot be null.
 	 */
 	public ALabel(ALabelAlphabet alphabet1) {
 		this();
@@ -512,7 +516,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Compare the letter with an a-letter name.
 	 * 
-	 * @param name
+	 * @param name the input aletter
 	 * @return true if the label is equal to the a-letter name.
 	 */
 	public boolean equals(final ALetter name) {
@@ -558,7 +562,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 */
 
 	/**
-	 * @param letter
+	 * @param letter the input a-letter
 	 * @return the index of the letter in the alphabet.
 	 */
 	private final byte getIndex(final ALetter letter) {
@@ -592,7 +596,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * @param label
+	 * @param label the input label
 	 * @return the label containing common ALetter between this and label.
 	 */
 	public ALabel intersect(final ALabel label) {
@@ -624,7 +628,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
-	 * @param l
+	 * @param l the letter to add
 	 * @return true if a-letter is added, false otherwise.
 	 */
 	public boolean put(final ALetter l) {

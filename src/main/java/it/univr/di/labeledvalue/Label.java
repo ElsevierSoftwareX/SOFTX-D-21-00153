@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.labeledvalue;
 
 import java.util.Arrays;
@@ -256,7 +260,7 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @param index
+	 * @param index the input index
 	 * @return the lower part of the given index as unsigned int
 	 */
 	private static int getB0(long index) {
@@ -264,7 +268,7 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @param index
+	 * @param index the input index
 	 * @return the upper part of the given index as unsigned int
 	 */
 	private static int getB1(long index) {
@@ -393,8 +397,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @param proposition
-	 * @param state
+	 * @param proposition the input proposition as chat
+	 * @param state its state
 	 * @return the label initialized with literal represented by the proposition and its state.
 	 *         If proposition is a char not allowed, a IllegalArgumentException is raised.
 	 */
@@ -409,7 +413,7 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @param index
+	 * @param index the input index
 	 * @return the label represented by the two state ints.
 	 */
 	static private Label valueOf(long index) {
@@ -434,6 +438,7 @@ public class Label implements Comparable<Label> {
 	 * unknown              1   1
 	 * </pre>
 	 */
+	@SuppressWarnings("javadoc")
 	private final int bit1, bit0;
 
 	/**
@@ -452,8 +457,8 @@ public class Label implements Comparable<Label> {
 	/**
 	 * Create a label from state integers b1 and b0.
 	 * 
-	 * @param b1
-	 * @param b0
+	 * @param b1 one input index
+	 * @param b0 the other input index
 	 */
 	private Label(final int b1, final int b0) {
 		this.bit0 = b0;
@@ -534,7 +539,6 @@ public class Label implements Comparable<Label> {
 		return Label.valueOf(index);
 	}
 
-
 	/**
 	 * Conjuncts <code>label</code> to <code>this</code> if <code>this</code> is consistent with <code>label</code> and returns the result without modifying
 	 * <code>this</code>.
@@ -613,7 +617,7 @@ public class Label implements Comparable<Label> {
 	 * @return Label where literal has been added.
 	 */
 	public Label conjunctionExtended(final Literal literal) {
-		if (literal==null)
+		if (literal == null)
 			return null;
 		return conjunctionExtended(literal.getName(), literal.getState());
 	}
@@ -635,7 +639,7 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @param l
+	 * @param l the input literal
 	 * @return true if the literal <code>l</code> is present into the label.
 	 */
 	public boolean contains(final Literal l) {
@@ -857,8 +861,8 @@ public class Label implements Comparable<Label> {
 	/**
 	 * A literal l is consistent with a label if the last one does not contain ¬l.
 	 * 
-	 * @param literalIndex
-	 * @param literalState
+	 * @param literalIndex the index of the literal
+	 * @param literalState its state
 	 * @return true if the literal is consistent with this label.
 	 */
 	boolean isConsistentWith(final byte literalIndex, char literalState) {
@@ -935,7 +939,7 @@ public class Label implements Comparable<Label> {
 
 	/**
 	 * @see Label#isConsistentWith(byte, char)
-	 * @param lit
+	 * @param lit the input literal
 	 * @return true if lit is consistent with this label.
 	 */
 	public boolean isConsistentWith(Literal lit) {

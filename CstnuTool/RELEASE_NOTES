@@ -5,8 +5,8 @@ v3.0
 ------------
 	date: 2020-11-15
 	
-	STNU class added with different DC checking algorithms: Morris2016, RUL2018 and RUL2020 faster one.
-	CSTNPSU class offers a DC check sound-and-complete that can also adjusts guarded links to the right ranges for an execution.
+	STNU class added with different DC checking algorithms: Morris2016, RUL2018, and RUL2020 faster one.
+	CSTNPSU class offers a DC check sound-and-complete that can also adjust guarded links to the right ranges for an execution.
 	Fixed some minor bugs.
 	
 v2.11
