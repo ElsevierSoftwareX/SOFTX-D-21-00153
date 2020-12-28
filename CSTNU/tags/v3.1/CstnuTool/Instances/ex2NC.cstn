@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="Optimized" for="graph">
+<desc>Label optimization</desc>
+<default></default>
+</key>
+<key id="Name" for="graph">
+<desc>LabeledIntGraph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Format: [a-zA-Z]</desc>
+<default></default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-zA-Z]|[a-zA-Z]]+|⊡</desc>
+<default></default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: normal|contingent|constraint.</desc>
+<default>normal</default>
+</key>
+<key id="LowerCaseLabeledValues" for="edge">
+<desc>Lower-Case Labeled Values. Format: {[[\('label', 'lower case name', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<key id="Optimized" for="edge">
+<desc>If the labeled values must be optimized. Format: a boolean.</desc>
+<default>true</default>
+</key>
+<key id="UpperCaseLabeledValues" for="edge">
+<desc>Upper-Case Labeled Values. Format: {[[\('label', 'UPPER CASE NAME', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values. Format: {[[\('label', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="Optimized">false</data>
+<data key="Name">ex2NC.cstn</data>
+<node id="A?">
+<data key="Obs">a</data>
+<data key="x">183.0</data>
+<data key="Label">⊡</data>
+<data key="y">300.0</data>
+</node>
+<node id="n1">
+<data key="Obs"></data>
+<data key="x">326.0</data>
+<data key="Label">¬a</data>
+<data key="y">208.0</data>
+</node>
+<node id="n2">
+<data key="Obs"></data>
+<data key="x">329.0</data>
+<data key="Label">a</data>
+<data key="y">401.0</data>
+</node>
+<node id="n3">
+<data key="Obs"></data>
+<data key="x">492.0</data>
+<data key="Label">⊡</data>
+<data key="y">316.0</data>
+</node>
+<edge id="e0" source="A?" target="n1">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, 4) }</data>
+</edge>
+<edge id="e1" source="n1" target="A?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, -3) }</data>
+</edge>
+<edge id="e2" source="n1" target="n3">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, 4) }</data>
+</edge>
+<edge id="e3" source="n3" target="n1">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, -3) }</data>
+</edge>
+<edge id="e4" source="A?" target="n2">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, 10) }</data>
+</edge>
+<edge id="e5" source="n2" target="A?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, -5) }</data>
+</edge>
+<edge id="e6" source="n2" target="n3">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, 10) }</data>
+</edge>
+<edge id="e7" source="n3" target="n2">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, -5) }</data>
+</edge>
+<edge id="e8" source="A?" target="n3">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, 7) }</data>
+</edge>
+<edge id="e9" source="n3" target="A?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(⊡, -7) }</data>
+</edge>
+</graph>
+</graphml>
