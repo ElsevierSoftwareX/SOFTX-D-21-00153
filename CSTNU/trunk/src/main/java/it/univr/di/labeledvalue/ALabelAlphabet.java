@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 /**
  * 
  */
@@ -35,7 +39,7 @@ public class ALabelAlphabet {
 		public final String name;
 
 		/**
-		 * @param s
+		 * @param s the input string represent the letter
 		 */
 		public ALetter(String s) {
 			if (s == null || s.isEmpty())
@@ -101,8 +105,10 @@ public class ALabelAlphabet {
 	 */
 	public static final byte MAX_ALABELALPHABET_SIZE = ALabel.MAX_ALABELALPHABET_SIZE;
 
-	@SuppressWarnings({ "unused" })
-	private static final long serialVersionUID = 1L;
+	/**
+	 * 
+	 */
+	static final long serialVersionUID = 1L;
 
 	/**
 	 * The number of valid entries in {@link #value}.
@@ -155,7 +161,7 @@ public class ALabelAlphabet {
 	}
 
 	/**
-	 * @param v
+	 * @param v the input letter
 	 * @return true if v is present, false otherwise
 	 */
 	public boolean containsValue(ALetter v) {
@@ -173,7 +179,7 @@ public class ALabelAlphabet {
 	}
 
 	/**
-	 * @param name
+	 * @param name the input a-letter
 	 * @return the index associated to name if it exists, {@link #DEFAULT_BYTE_RET_VALUE} otherwise
 	 */
 	public byte index(final ALetter name) {

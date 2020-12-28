@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.labeledvalue;
 
 import java.util.logging.Logger;
@@ -32,7 +36,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * @param inputMap
+		 * @param inputMap the input map
 		 */
 		public LabeledIntHierarchyMapView(LabeledIntHierarchyMap inputMap) {
 			this.root = inputMap.root;
@@ -79,8 +83,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 
 		/**
-		 * @param l
-		 * @param v
+		 * @param l the input label
+		 * @param v the input value
 		 */
 		public HierarchyNode(Label l, int v) {
 			this();
@@ -102,7 +106,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 			}
 			if (this.label != null) {
 				if (this.label.equals(Label.emptyLabel)) {
-					this.label = Label.emptyLabel; //this is necessary to restore the original empty root node 
+					this.label = Label.emptyLabel; // this is necessary to restore the original empty root node
 					this.value = Constants.INT_POS_INFINITE;
 					return;
 				}
@@ -236,8 +240,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * When a father has to be add a set of father, it is necessary to check that there is no other father that subsumes the new one.
 	 * 
-	 * @param newFather
-	 * @param nodeWhereToAddFather
+	 * @param newFather the new father
+	 * @param nodeWhereToAddFather the other node
 	 */
 	private static void addFatherTo(HierarchyNode newFather, HierarchyNode nodeWhereToAddFather) {
 		if (newFather == null || nodeWhereToAddFather == null)
@@ -268,8 +272,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * This helper method checks if newSon has nodeWhereToAddSon as father and, in positive case, adds newSon as so to nodeWhereToAddSon.
 	 * 
-	 * @param newSon
-	 * @param nodeWhereToAddSon
+	 * @param newSon the input node
+	 * @param nodeWhereToAddSon where to add it
 	 */
 	private static void addSonTo(HierarchyNode newSon, HierarchyNode nodeWhereToAddSon) {
 		if (newSon == null || nodeWhereToAddSon == null || newSon.father == null || !newSon.father.contains(nodeWhereToAddSon))
@@ -412,8 +416,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * Removes 'nodeToRemove' because it has been made redundant by 'newNode' and adjusts nodeToRemove's sons w.r.t. newNode as a possible father.
 	 * 
-	 * @param nodeToRemove
-	 * @param newNode
+	 * @param nodeToRemove node to remove
+	 * @param newNode the node that replaces the node to remove
 	 */
 	private static void removeNodeAndAddFather(HierarchyNode nodeToRemove, HierarchyNode newNode) {
 		if (nodeToRemove == null || nodeToRemove.label == null || nodeToRemove.father == null || nodeToRemove.father.size() == 0 || newNode == null)
@@ -436,8 +440,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	/**
 	 * Replace currentNode with newNode.
 	 * 
-	 * @param currentNode
-	 * @param newNode
+	 * @param currentNode node to be replaced
+	 * @param newNode the new node
 	 */
 	private static void replace(HierarchyNode currentNode, HierarchyNode newNode) {
 		for (HierarchyNode father : currentNode.father) {
@@ -455,8 +459,8 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * @param label 
-	 * @param value 
+	 * @param label the label to check
+	 * @param value the value to checl
 	 * @return true if the node is the original emptyRoot node.
 	 */
 	private static final boolean isEmptyRootNode(Label label, int value) {
@@ -597,7 +601,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
 		for (final Entry<Label> entry : this.entrySet()) {
-			if (isEmptyRootNode(entry.getKey(),entry.getIntValue()))
+			if (isEmptyRootNode(entry.getKey(), entry.getIntValue()))
 				continue;
 			setToReuse.add(entry.getKey());
 		}
@@ -807,8 +811,6 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		return min;
 	}
 
-	
-	
 	/**
 	 * @param node
 	 * @param l
@@ -843,8 +845,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		}
 		return min;
 	}
-	
-	
+
 	/**
 	 * @param current
 	 * @param newNode
@@ -1053,7 +1054,7 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	public IntSet values() {
 		final IntArraySet coll = new IntArraySet(this.size());
 		for (final Entry<Label> entry : this.entrySet()) {
-			if (isEmptyRootNode(entry.getKey(), entry.getIntValue())) 
+			if (isEmptyRootNode(entry.getKey(), entry.getIntValue()))
 				continue;
 			coll.add(entry.getIntValue());
 		}

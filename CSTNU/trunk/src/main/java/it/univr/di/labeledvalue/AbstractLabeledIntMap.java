@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.labeledvalue;
 
 import java.io.Serializable;
@@ -71,7 +75,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	}
 
 	/**
-	 * @param value
+	 * @param value an int
 	 * @param label must be not null!
 	 * @return string representing the labeled value, i.e., "(value, label)"
 	 */
@@ -91,7 +95,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	 * This method is also capable to parse the old format: {\[(&lt;key&gt;, &lt;value&gt;) \]*}
 	 *
 	 * @param inputMap a {@link java.lang.String} object.
-	 * @param labeledIntMapClass
+	 * @param labeledIntMapClass the class to manage the labeled values
 	 * @return a LabeledValueTreeMap object if <code>inputMap</code> represents a valid map, null otherwise.
 	 */
 	static public LabeledIntMap parse(final String inputMap, Class<? extends LabeledIntMap> labeledIntMapClass) {
@@ -158,7 +162,7 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	}
 
 	/**
-	 * @param inputMap
+	 * @param inputMap the string representing a set of labeled values
 	 * @return a new labeledintmap object
 	 * @see AbstractLabeledIntMap#parse(String, Class)
 	 */

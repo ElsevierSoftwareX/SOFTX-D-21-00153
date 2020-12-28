@@ -22,7 +22,6 @@ Azioni per rilasciare una nuova versione di CSTNU
 
 3) Fare i commit di tutti i file modificati.
 
-
 Azioni per un tag
 ================
 Se si vuole salvare una particolare versione del repository con un tag, dare il comando

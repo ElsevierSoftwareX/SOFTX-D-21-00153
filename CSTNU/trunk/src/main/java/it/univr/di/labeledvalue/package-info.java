@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 /**
  * Provides the classes necessary to manage labeled value maps.
  * <p>

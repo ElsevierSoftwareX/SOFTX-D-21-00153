@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
+
 package it.univr.di.cstnu.algorithms;
 
 import java.io.BufferedWriter;
@@ -709,11 +713,12 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Initializes the CSTN instance represented by graph g.
-	 * It calls {@link #coreCSTNInitAndCheck()}.
 	 * 
 	 * @return true if the graph is a well formed
 	 * @throws WellDefinitionException if the initial graph is not well defined.
+	 * @see #coreCSTNInitAndCheck()
 	 */
+	@SuppressWarnings("javadoc")
 	public boolean initAndCheck() throws WellDefinitionException {
 		boolean status = coreCSTNInitAndCheck();
 		if (status)
@@ -736,7 +741,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * Stores the graph after a check to the file {@link #fOutput}.
+	 * Stores the graph after a check to the file {@link #getfOutput()}.
 	 * 
 	 * @see #getGChecked()
 	 */
@@ -791,7 +796,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Considers the given graph as the graph to check (graph will be modified).
-	 * Clear all {@link #maxWeight}, {@link #horizon} and {@link #checkStatus}.
+	 * Clear all auxiliary variables.
 	 * 
 	 * @param graph set internal TNGraph to g. It cannot be null.
 	 */

@@ -1,7 +1,10 @@
 #!/bin/bash
-#Simple script to invoke CSTNURunningTime class for testing CSTNU DC check algorithm running time.
+
+# SPDX-FileCopyrightText: 2020 Roberto Posenato <roberto.posenato@univr.it>
 #
-# 2017 (C) Roberto Posenato
+# SPDX-License-Identifier: CC0-1.0
+
+#Simple script to invoke CSTNURunningTime class for testing CSTNU DC check algorithm running time.
 #
 
 ############################
