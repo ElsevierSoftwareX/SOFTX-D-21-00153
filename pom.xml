@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>3.0</version>
+	<version>3.1</version>
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -20,10 +20,16 @@
 	</properties>
 	<licenses>
 		<license>
-			<name>Apache License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<name>GNU LESSER GENERAL PUBLIC LICENSE, Version 3</name>
+			<url>https://www.gnu.org/licenses/lgpl-3.0-standalone.html</url>
 			<distribution>repo</distribution>
-			<comments>A business-friendly OSS license</comments>
+			<comments>For all Java Source files</comments>
+		</license>
+		<license>
+			<name>CC0 1.0 Universal</name>
+			<url>https://creativecommons.org/publicdomain/zero/1.0/legalcode</url>
+			<distribution>repo</distribution>
+			<comments>For no Jaba source files</comments>
 		</license>
 	</licenses>
 	<organization>
