@@ -8,7 +8,7 @@ Azioni per rilasciare una nuova versione di CSTNU
 	* mvn clean //Fundamental!!! Before to do anything regarding site
 	* mvn compile //for compiling
 	* mvn test //for executing JUNIT4 test
-	* mvn package //for preparing the jar package	
+	* mvn package -P noDebug //for preparing the jar package	
 
 2) Aggiornare le informazioni del sito
 --------------------------------------
