@@ -4,12 +4,8 @@
 
 package it.univr.di.cstnu.algorithms;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Writer;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
@@ -66,6 +62,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
+		@SuppressWarnings({ "javadoc" })
 		public int r0calls = 0, r3calls = 0, labeledValuePropagationCalls = 0, potentialUpdate;
 
 		/**
@@ -150,7 +147,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		/**
 		 * A simple constructor when the initial set of edges is available.
 		 * 
-		 * @param coll
+		 * @param coll collection to copy
 		 */
 		public EdgesToCheck(Collection<? extends E> coll) {
 			this.edgesToCheck = new ObjectRBTreeSet<>(coll);
@@ -263,7 +260,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		/**
 		 * A simple constructor when the initial set of nodes is available.
 		 * 
-		 * @param coll
+		 * @param coll collection to scan
 		 */
 		public NodesToCheck(Collection<LabeledNode> coll) {
 			this();
@@ -299,7 +296,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 
 		/**
-		 * @param o
+		 * @param o node
 		 * @return true if o is present.
 		 */
 		@Override
@@ -321,7 +318,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 
 		/**
-		 * @param node
+		 * @param node Node to enqueue
 		 */
 		@Override
 		public final void enqueue(LabeledNode node) {
@@ -568,11 +565,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	int maxWeight = Constants.INT_NULL;
 
 	/**
-	 * Output stream to fOutput
-	 */
-	PrintStream output = null;
-
-	/**
 	 * Check using full set of rules R0, qR0, R3, qR3, LP, qLP or the reduced set qR0, qR3, LP.
 	 */
 	boolean propagationOnlyToZ = false;
@@ -779,11 +771,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 		StaticLayout<E> layout = new StaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
-		try (Writer out = new BufferedWriter(new FileWriter(this.fOutput))) {
-			graphWriter.save(g1, out);
-		} catch (final Exception e) {
-			System.err.println("Something is wrong and it is not possible to save the result. The program does not stop. Error: " + e.getMessage());
-		}
+		graphWriter.save(g1, this.fOutput);
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 
@@ -792,6 +780,13 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 */
 	public void setfOutput(File fileOutput) {
 		this.fOutput = fileOutput;
+		if (!this.fOutput.getName().endsWith(".cstn")) {
+			this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
+		}
+		if (this.fOutput.exists()) {
+			this.fOutput.delete();
+		}
+
 	}
 
 	/**
@@ -819,7 +814,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * @param withNodeLabels1
+	 * @param withNodeLabels1 true if node labels have to be considered.
 	 */
 	public void setWithNodeLabels(boolean withNodeLabels1) {
 		this.withNodeLabels = withNodeLabels1;
@@ -829,7 +824,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * If true, the propagations are made for edges ending to Z.
 	 * 
-	 * @param propagationOnlyToZ1
+	 * @param propagationOnlyToZ1 true if propagations have to be done only to Z
 	 */
 	public void setPropagationOnlyToZ(boolean propagationOnlyToZ1) {
 		this.propagationOnlyToZ = propagationOnlyToZ1;
@@ -1155,7 +1150,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			this.withNodeLabels = foundLabel;
 		}
 		// Checks well definiteness of edges and determine maxWeight
-		int minNegWeight = 0;
+		int minNegWeight = 0, maxWeight1 = 0;
 		for (final E e : this.g.getEdges()) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -1165,8 +1160,13 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			// Determines the absolute max weight value
 			for (Object2IntMap.Entry<Label> entry : e.getLabeledValueSet()) {
 				int v = entry.getIntValue();
-				if (v < minNegWeight)
+				if (v < minNegWeight) {
 					minNegWeight = v;
+				} else {
+					if (v > maxWeight1) {
+						maxWeight1 = v;
+					}
+				}
 			}
 
 			final LabeledNode s = this.g.getSource(e);
@@ -1207,7 +1207,11 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 
 		// manage maxWeight value
-		this.maxWeight = -minNegWeight;
+		if (this.propagationOnlyToZ) {
+			this.maxWeight = -minNegWeight;
+		} else {
+			this.maxWeight = (-minNegWeight > maxWeight1) ? -minNegWeight : maxWeight1;
+		}
 		// Determine horizon value
 		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product >= Constants.INT_POS_INFINITE) {
@@ -1690,22 +1694,13 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 				throw new CmdLineException(parser, "Input file does not exist.");
 
 			if (this.fOutput != null) {
-				if (this.fOutput.isDirectory())
-					throw new CmdLineException(parser, "Output file is a directory.");
-				if (!this.fOutput.getName().endsWith(".cstn")) {
-					this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
-				}
-				if (this.fOutput.exists()) {
-					this.fOutput.delete();
-				}
-				try {
-					this.fOutput.createNewFile();
-					this.output = new PrintStream(this.fOutput);
-				} catch (final IOException e) {
-					throw new CmdLineException(parser, "Output file cannot be created.");
-				}
-			} else {
-				this.output = System.out;
+				this.setfOutput(this.fOutput);
+				// try {
+				// this.fOutput.createNewFile();
+				// new OutputStreamWriter(new FileOutputStream(this.fOutput));
+				// } catch (final IOException e) {
+				// throw new CmdLineException(parser, "Output file cannot be created.");
+				// }
 			}
 		} catch (final CmdLineException e) {
 			// if there's a problem in the command line, you'll get this exception. this will report an error message.
