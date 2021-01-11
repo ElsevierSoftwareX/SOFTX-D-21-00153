@@ -6,7 +6,6 @@ package it.univr.di.cstnu.algorithms;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -67,6 +66,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
+		@SuppressWarnings("javadoc")
 		public int zEsclamationRuleCalls = 0,
 				lowerCaseRuleCalls = 0, crossCaseRuleCalls = 0, letterRemovalRuleCalls = 0;
 
@@ -89,7 +89,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		/**
 		 * Set the controllability value!
 		 * 
-		 * @param controllability
+		 * @param controllability true if it is controllable
 		 */
 		public void setControllability(boolean controllability) {
 			this.consistency = controllability;
@@ -142,6 +142,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @throws IOException
 	 * @throws FileNotFoundException
 	 */
+	@SuppressWarnings("javadoc")
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
@@ -205,11 +206,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 		if (cstnu.fOutput != null) {
 			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new StaticLayout<>(cstnu.g));
-			try {
-				graphWriter.save(cstnu.g, new PrintWriter(cstnu.output));
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
+			graphWriter.save(cstnu.g, cstnu.fOutput);
 		}
 	}
 
@@ -300,7 +297,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * 
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check in seconds
-	 * @param givenPropagationOnlyToZ
+	 * @param givenPropagationOnlyToZ true if it must propagate only to Z
 	 */
 	public CSTNU(TNGraph<CSTNUEdge> graph, int givenTimeOut, boolean givenPropagationOnlyToZ) {
 		this(graph);
@@ -325,7 +322,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * Wrapper method for {@link #dynamicControllabilityCheck()}
 	 * 
 	 * @return an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException when the instance is not well-defined.
 	 */
 	@Override
 	public CSTNUCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
@@ -612,9 +609,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 						 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right lower bound w.r.t. Z!
 						 * 2018-02-21 initialValue = minLabeledValue.getIntValue() allows the reduction of # propagations.
 						 */
-						if (!this.contingentAlsoAsOrdinary)
-							e.removeLabeledValue(conjunctedLabel);
-
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
 								LOG.log(Level.FINER, "Inserted the lower label value: " + lowerCaseValueAsString(sourceALabel, lowerCaseValue, conjunctedLabel)
@@ -630,9 +624,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 							 * 2017-12-22 If activation t.p. is Z, then removing initial value the contingent t.p. has not a right upper bound w.r.t. Z!
 							 * 2018-02-21 Upper bound are not necessary for the completeness, we ignore it.
 							 */
-							if (!this.contingentAlsoAsOrdinary)
-								eInverted.removeLabeledValue(conjunctedLabel);
-
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
@@ -677,9 +668,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 						/**
 						 * @see comment "History for upper bound." above.
 						 */
-						if (!this.contingentAlsoAsOrdinary)
-							e.removeLabeledValue(conjunctedLabel);
-
 						if (eInvertedInitialValue != Constants.INT_NULL) {
 							lowerCaseValue = -eInvertedInitialValue;
 							e.setLowerCaseValue(conjunctedLabel, destALabel, lowerCaseValue);
@@ -690,9 +678,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 							/**
 							 * @see comment "History for lower bound." above.
 							 */
-							if (!this.contingentAlsoAsOrdinary)
-								eInverted.removeLabeledValue(conjunctedLabel);
-
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
@@ -714,12 +699,21 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					if (!sourceALabel.equals(s.getALabel()))
 						s.setALabel(sourceALabel);// to speed up DC checking!
 				}
+				if (!eInverted.getLowerCaseValue().isEmpty()) {
+					this.activationNode.put(s, d);
+					this.lowerContingentEdge.put(s, eInverted);
+				}
 				if (eInverted.upperCaseValueSize() > 0) {
 					ALabel destALabel = new ALabel(d.getName(), this.g.getALabelAlphabet());
 					if (!destALabel.equals(d.getALabel()))
 						d.setALabel(destALabel);// to speed up DC checking!
 				}
 			}
+			if (!this.contingentAlsoAsOrdinary) {
+				e.removeLabeledValue(conjunctedLabel);
+				eInverted.removeLabeledValue(conjunctedLabel);
+			}
+
 			// it is necessary to check max value
 			int m = e.getMinUpperCaseValue().getValue().getIntValue();
 			// LOG.warning("m value: " + m);
@@ -741,9 +735,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		if (maxWeightContingent > this.maxWeight) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.WARNING)) {
-					LOG.warning("-" + maxWeightContingent
-							+ " is the most negative found in contingent "
-							+ "while -" + this.maxWeight + " is the most negative found in normal constraint.");
+					LOG.warning(maxWeightContingent
+							+ " is the greatest unsigned value found in contingent "
+							+ "while " + this.maxWeight + " is the greates unsigned value found in normal constraint.");
 				}
 			}
 			// it is necessary to recalculate horizon
@@ -1926,7 +1920,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * 
 	 * @see CSTN#mainConditionForRestrictedLP(int, int)
 	 */
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	final boolean mainConditionForRestrictedLP(final int u, final int v) {
 		// Table 1 ICAPS paper for standard DC
 		// u must be < 0
