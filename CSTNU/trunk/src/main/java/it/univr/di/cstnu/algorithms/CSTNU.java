@@ -126,7 +126,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	// static final public String VERSIONandDATE = "Version 6.0 - February, 21 2018";// zUCore added
 	// static final public String VERSIONandDATE = "Version 6.1 - March, 12 2019";// full propagation option added
 	// static final public String VERSIONandDATE = "Version 6.2 - June, 9 2019";// Edge refactoring
-	static final public String VERSIONandDATE = "Version 6.3 - June, 9 2019";// CSTN Refactoring
+	// static final public String VERSIONandDATE = "Version 6.3 - June, 9 2019";// CSTN Refactoring
+	static final public String VERSIONandDATE = "Version 6.4 - January, 12 2021";// Fixed an error in initialization
 	/**
 	 * logger
 	 */
