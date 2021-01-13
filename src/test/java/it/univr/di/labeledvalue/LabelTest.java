@@ -21,9 +21,8 @@ import it.unimi.dsi.fastutil.objects.ObjectSortedSet;
 public class LabelTest {
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#allComponentsOfBaseGenerator(Literal[])}.
 	 */
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void testAllComponentsOfBaseGenerator() {
 		Label ab = Label.parse("a¬b");
@@ -103,7 +102,7 @@ public class LabelTest {
 		Label b1 = Label.parse("¬b");
 		assertEquals("¬b", b.conjunction(b1).toString());
 		assertTrue(1 == b.conjunction(b1).size());
-		
+
 		assertNull("Empty label conunct with an unkwown is null", Label.emptyLabel.conjunction(Label.parse("¿p")));
 	}
 
@@ -146,9 +145,8 @@ public class LabelTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#getAllAsStraight()}.
 	 */
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void testGetAllStraight() {
 		Label ab = Label.parse("a¬b");
@@ -159,9 +157,8 @@ public class LabelTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#getLiteralWithSameName(it.univr.di.labeledvalue.Literal)}.
 	 */
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void testGetLiteralWithSameName() {
 		Label ab = Label.parse("a¬b");
@@ -267,9 +264,8 @@ public class LabelTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#removeAllLiteralsWithSameName(it.univr.di.labeledvalue.Literal)}.
 	 */
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void testRemoveLiteralBoolean() {
 		Label abc = Label.parse("a¬bc");
@@ -292,9 +288,8 @@ public class LabelTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.Label#removeAllLiteralsWithSameName(it.univr.di.labeledvalue.Literal)}.
 	 */
-	@SuppressWarnings({ "static-method", "javadoc" })
+	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void testRemoveLabel() {
 		Label abc = Label.parse("a¬bc");
@@ -604,6 +599,9 @@ public class LabelTest {
 				+ ((endTime - startTime) * msNorm));
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	public final void longTest() {
 		System.out.println("-2: " + Long.toBinaryString(1 << 63));
@@ -616,6 +614,9 @@ public class LabelTest {
 		System.out.println(Long.compareUnsigned(-1, 1 << 60));
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void comparatorOrder() {

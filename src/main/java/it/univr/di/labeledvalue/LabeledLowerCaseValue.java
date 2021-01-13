@@ -16,16 +16,9 @@ import it.univr.di.Debug;
 
 /**
  * Represents an immutable Labeled Lower Case value.<br>
- * 
- * @implSpec
- * 			For speeding up the DC checking algorithms, such class is very basic.
- *           No integrity controls are done.
- *           Such class admit an empty object (where all field are empty).
- *           For checking if an object is empty, use isEmpty().
- *           <br>
- *           Be aware: the internal node name is represented as {@link ALabel}!<br>
- *           Since lower-case value are few in any CSTNU, this imolementation does not provide a cache of created object.
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class LabeledLowerCaseValue {
 	/**
@@ -42,7 +35,7 @@ public class LabeledLowerCaseValue {
 	 * Parses a string representing a labeled lower-case value and returns an object containing the labeled values represented by the string.<br>
 	 * The format of the string is given by the method {@link #toString()}:<code>\{{(&lang;label&rang;, &lang;Alabel&rang;, &lang;value&rang;) }*\}</code><br>
 	 * It also parse the old format: <code>\{{(&lang;Alabel&rang;, &lang;value&rang;, &lang;label&rang;) }*\}</code>
-	 * 
+	 *
 	 * @param arg a {@link java.lang.String} object.
 	 * @param alphabet the alphabet to use for building a new labeled lower-case value. If null, a new alphabet is generated and insert into the created labeled
 	 *            value.
@@ -140,7 +133,7 @@ public class LabeledLowerCaseValue {
 
 	/**
 	 * Creates a lower-case value.
-	 * 
+	 *
 	 * @param nodeName not null node name
 	 * @param value not null value
 	 * @param label not null label
@@ -158,8 +151,8 @@ public class LabeledLowerCaseValue {
 	 * Copy constructor.
 	 * The new object is distinct from input.<br>
 	 * No null check is done!
-	 * 
-	 * @param input
+	 *
+	 * @param input a {@link it.univr.di.labeledvalue.LabeledLowerCaseValue} object.
 	 * @return a new LabeledLowerCaseValue object with equals fields of input
 	 */
 	static public LabeledLowerCaseValue create(LabeledLowerCaseValue input) {
@@ -216,6 +209,8 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
+	 * <p>Getter for the field <code>label</code>.</p>
+	 *
 	 * @return the label
 	 */
 	public Label getLabel() {
@@ -223,6 +218,8 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
+	 * <p>Getter for the field <code>nodeName</code>.</p>
+	 *
 	 * @return the node name
 	 */
 	public ALabel getNodeName() {
@@ -230,12 +227,15 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
+	 * <p>Getter for the field <code>value</code>.</p>
+	 *
 	 * @return the value
 	 */
 	public int getValue() {
 		return this.value;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(Object o) {
 		if (o == this)
@@ -246,6 +246,7 @@ public class LabeledLowerCaseValue {
 		return this.value == v.value && this.label.equals(v.label) && this.nodeName.equals(v.nodeName);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		int result = this.hashCode;
@@ -257,6 +258,8 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return true if the object is empty
 	 * @implSpec it is empty when at least one of its fields is null
 	 */
@@ -264,15 +267,18 @@ public class LabeledLowerCaseValue {
 		return (this.nodeName == null || this.value == Constants.INT_NULL || this.label == null);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return this.toString(false);
 	}
 
 	/**
-	 * @param nodeN
-	 * @param v
-	 * @param l
+	 * <p>entryAsString.</p>
+	 *
+	 * @param nodeN a {@link it.univr.di.labeledvalue.ALabel} object.
+	 * @param v a int.
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @param lower true if the node name has to be written lower case
 	 * @return the string representation of this lower-case value.
 	 */
@@ -291,6 +297,8 @@ public class LabeledLowerCaseValue {
 	}
 
 	/**
+	 * <p>toString.</p>
+	 *
 	 * @param lower true if the node name has to be written lower case
 	 * @return the string representation of this lower-case value
 	 */

@@ -18,7 +18,7 @@ import it.univr.di.cstnu.graph.TNGraph;
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming instantaneous reaction semantics (cf. ICAPS 2016 paper, table 1) and using LP, qR0, and
  * qR3* rules.<br>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -43,18 +43,18 @@ public class CSTNIR3R extends CSTNIR {
 
 	/**
 	 * Just for using this class also from a terminal.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNIR3R(), "Instantaneous Reaction DC based on 3 Rules");
 	}
 
 	/**
-	 * 
+	 * <p>Constructor for CSTNIR3R.</p>
 	 */
 	public CSTNIR3R() {
 		super();
@@ -62,7 +62,9 @@ public class CSTNIR3R extends CSTNIR {
 	}
 
 	/**
-	 * @param g1
+	 * <p>Constructor for CSTNIR3R.</p>
+	 *
+	 * @param g1 a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 */
 	public CSTNIR3R(TNGraph<CSTNEdge> g1) {
 		super(g1);
@@ -70,8 +72,10 @@ public class CSTNIR3R extends CSTNIR {
 	}
 
 	/**
-	 * @param g1
-	 * @param timeOut1
+	 * <p>Constructor for CSTNIR3R.</p>
+	 *
+	 * @param g1 a {@link it.univr.di.cstnu.graph.TNGraph} object.
+	 * @param timeOut1 a int.
 	 */
 	public CSTNIR3R(TNGraph<CSTNEdge> g1, int timeOut1) {
 		super(g1, timeOut1);

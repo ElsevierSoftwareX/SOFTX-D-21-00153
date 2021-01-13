@@ -24,14 +24,27 @@ import it.univr.di.cstnu.graph.TNGraphMLReader;
  */
 public class STNUTest {
 
+	/**
+	 * 
+	 */
 	String fileName = "src/test/resources/testGraphML.stnu";
 
+	/**
+	 * 
+	 */
 	TNGraphMLReader<STNUEdge> readerSTNU;
 
+	/**
+	 * 
+	 */
 	TNGraph<STNUEdge> stnuGraph;
 
+	/**
+	 * 
+	 */
 	STNU stnu;
 
+	@SuppressWarnings("javadoc")
 	LabeledNode X, Ω, Y, Z;
 
 	/**
@@ -136,6 +149,9 @@ public class STNUTest {
 		assertEquals("Upper case edge", 1, this.stnu.getLowerContingentEdge().size());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void testGraph() {
 		String graph = "%TNGraph: src/test/resources/testGraphML.stnu\n" +

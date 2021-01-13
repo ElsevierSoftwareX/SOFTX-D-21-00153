@@ -52,7 +52,7 @@ import it.univr.di.labeledvalue.Literal;
 
 /**
  * Allows one to translate a CSTNU instance into a UppaalTiga Time Game Automa schema.
- * 
+ *
  * @author posenato
  * @version $Id: $Id
  */
@@ -63,7 +63,8 @@ public class CSTNU2UppaalTiga {
 	// static final String VERSIONandDATE = "1.6.1, April, 30 2014";
 	// static final String VERSIONandDATE = "1.6.2, April, 30 2015";
 	// static final String VERSIONandDATE = "1.6.3, December, 30 2015";
-	static final String VERSIONandDATE = "1.64, June, 09 2019";// Edge refactoring
+	// static final String VERSIONandDATE = "1.64, June, 09 2019";// Edge refactoring
+	static final String VERSIONandDATE = "1.65, January, 13 2021";// Fixed file encoding
 
 	/**
 	 * Utility class to represent a contingent link parameters.
@@ -289,9 +290,9 @@ public class CSTNU2UppaalTiga {
 	 * Reads a CSTNU file and converts it into <a href="http://people.cs.aau.dk/~adavid/tiga/index.html">UPPAAL TIGA</a> format.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 		LOG.finest("Start...");
@@ -427,9 +428,10 @@ public class CSTNU2UppaalTiga {
 
 	/**
 	 * parameter ignore
+	 * 
+	 * @Option(required = false, name = "-ignore", usage = "")
+	 *                  private String ignore = "";
 	 */
-	@Option(required = false, name = "-ignore", usage = "")
-	private String ignore = "";
 
 	/**
 	 * To verify if a cstn has syntax ok!
@@ -495,7 +497,8 @@ public class CSTNU2UppaalTiga {
 		// For each free time-point X there is a non controllable transaction (agnes, !xX, set_X, xX:=true, tX:=0, agnes)
 		for (final LabeledNode n : this.freeNode) {
 			String exec = getExecutedName(n);
-			template.appendChild(buildTransitionElement(this.AGNES, "!" + exec, "set_" + exec, exec + " := true," + getClockName(n) + " := 0", this.AGNES, false));
+			template.appendChild(
+					buildTransitionElement(this.AGNES, "!" + exec, "set_" + exec, exec + " := true," + getClockName(n) + " := 0", this.AGNES, false));
 		}
 
 		template.appendChild(this.doc.createComment("Transitions for proposition setting"));
@@ -510,12 +513,15 @@ public class CSTNU2UppaalTiga {
 			String prop = getPropositionName(n);
 			template.appendChild(buildTransitionElement(this.AGNES, "!" + exec + AND + prop + " == 0", "set_" + prop, exec + " := true, " + getClockName(n)
 					+ " := 0", this.AGNES, false));
-			template.appendChild(buildTransitionElement(this.VERA, exec + AND + prop + " == 0", "set_" + prop + "_false", prop + " := -1, " + this.tDelta + " := 0",
-					this.VERA,
-					true));
-			template.appendChild(buildTransitionElement(this.VERA, exec + AND + prop + " == 0", "set_" + prop + "_true", prop + " := 1, " + this.tDelta + " := 0", this.VERA,
-					true));
-			template.appendChild(buildTransitionElement(this.AGNES, exec + AND + prop + " == 0" + AND + this.tDelta + " > 0", prop + "not_set", "", this.GOAL, false));
+			template.appendChild(
+					buildTransitionElement(this.VERA, exec + AND + prop + " == 0", "set_" + prop + "_false", prop + " := -1, " + this.tDelta + " := 0",
+							this.VERA,
+							true));
+			template.appendChild(
+					buildTransitionElement(this.VERA, exec + AND + prop + " == 0", "set_" + prop + "_true", prop + " := 1, " + this.tDelta + " := 0", this.VERA,
+							true));
+			template.appendChild(
+					buildTransitionElement(this.AGNES, exec + AND + prop + " == 0" + AND + this.tDelta + " > 0", prop + "not_set", "", this.GOAL, false));
 		}
 
 		template.appendChild(this.doc.createComment("Transitions for contingent-constraint setting"));
@@ -533,7 +539,8 @@ public class CSTNU2UppaalTiga {
 			String xC = getExecutedName(c.dest);
 
 			String sigma = xA + AND + "!" + xC + AND + "(" + tA + " >= " + c.lower + ")" + AND + "(" + tA + " <= " + c.upper + ")";
-			template.appendChild(buildTransitionElement(this.VERA, sigma, "set_" + xC, xC + " := true, " + tC + " := 0, " + this.tDelta + " := 0", this.VERA, true));
+			template.appendChild(
+					buildTransitionElement(this.VERA, sigma, "set_" + xC, xC + " := true, " + tC + " := 0, " + this.tDelta + " := 0", this.VERA, true));
 
 			String phi = xA + AND + "!" + xC + AND + "(" + tA + " > " + c.upper + ")";
 			template.appendChild(buildTransitionElement(this.AGNES, phi, "cv_" + tC, "", this.GOAL, false));
@@ -670,7 +677,7 @@ public class CSTNU2UppaalTiga {
 				// while "!`l`" to "(l == -1)"
 				psi2DnfJbool = psi2DnfJbool.replaceAll("`(" + Literal.PROPOSITION_RANGE + ")`", "\\($1 == 1\\)");// tutto a 1
 				psi2DnfJbool = psi2DnfJbool.replaceAll("!\\((" + Literal.PROPOSITION_RANGE + ") == 1", "\\($1 == -1");// mentre si mette a -1 chi è
-																																// negato!
+																														// negato!
 
 				psi2DNF = jbool2TigaExpr(psi2DnfJbool, null, null, " | ");
 				LOG.finest("psi2DNF= " + psi2DNF);
@@ -894,7 +901,7 @@ public class CSTNU2UppaalTiga {
 				}
 				try {
 					this.fOutput.createNewFile();
-					this.output = new PrintStream(this.fOutput);
+					this.output = new PrintStream(this.fOutput, "UTF-8");
 				} catch (IOException e) {
 					throw new CmdLineException(parser, "Output file cannot be created.");
 				}
@@ -943,7 +950,8 @@ public class CSTNU2UppaalTiga {
 					this.contingentNode.add(d);
 					upper = -this.cstnu.findEdge(d, s).getMinUpperCaseValue().getValue().getIntValue();
 					if (upper == Constants.INT_NULL)
-						throw new IllegalArgumentException("There is no a companion upper case value in edge " + this.cstnu.findEdge(d, s) + " w.r.t. the edge" + e);
+						throw new IllegalArgumentException(
+								"There is no a companion upper case value in edge " + this.cstnu.findEdge(d, s) + " w.r.t. the edge" + e);
 					LOG.fine("Add contingent edge: (" + s.getName() + ", " + lower + ", " + upper + ", " + d.getName() + ").");
 					this.contingentEdge.add(new Contingent(s, lower, upper, d));
 				}
@@ -1030,7 +1038,7 @@ public class CSTNU2UppaalTiga {
 			if (this.fOutput != null) {
 				this.output.close();
 				String name = this.fOutput.getAbsolutePath().replace(".xml", ".q");
-				this.output = new PrintStream(name);
+				this.output = new PrintStream(name, "UTF-8");
 			}
 			this.output.println("control: A[] not _processMain." + this.GOAL);
 		} catch (ParserConfigurationException pce) {

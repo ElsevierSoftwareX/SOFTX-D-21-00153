@@ -11,7 +11,10 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 
 /**
+ * <p>STNUEdgeInt class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 
@@ -31,7 +34,7 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 	Pair nodeLabel;
 
 	/**
-	 * 
+	 * <p>Constructor for STNUEdgeInt.</p>
 	 */
 	public STNUEdgeInt() {
 		super();
@@ -48,7 +51,9 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 	 */
 
 	/**
-	 * @param e
+	 * <p>Constructor for STNUEdgeInt.</p>
+	 *
+	 * @param e a {@link it.univr.di.cstnu.graph.Edge} object.
 	 */
 	public STNUEdgeInt(Edge e) {
 		super(e);
@@ -60,7 +65,9 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 	}
 
 	/**
-	 * @param n
+	 * <p>Constructor for STNUEdgeInt.</p>
+	 *
+	 * @param n a {@link java.lang.String} object.
 	 */
 	public STNUEdgeInt(String n) {
 		super(n);
@@ -68,8 +75,10 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 	}
 
 	/**
-	 * @param n
-	 * @param v
+	 * <p>Constructor for STNUEdgeInt.</p>
+	 *
+	 * @param n a {@link java.lang.String} object.
+	 * @param v a int.
 	 */
 	public STNUEdgeInt(String n, int v) {
 		super(n);
@@ -77,6 +86,7 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 		this.setValue(v);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		super.clear();
@@ -84,16 +94,19 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 		this.nodeLabel = null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getLabeledValue() {
 		return this.labeledValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Pair getNodeLabel() {
 		return this.nodeLabel;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean hasSameValues(Edge e) {
 		if (e == null || !(e instanceof STNUEdge))
@@ -107,21 +120,25 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public STNUEdgeInt newInstance() {
 		return new STNUEdgeInt();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public STNUEdgeInt newInstance(Edge edge) {
 		return new STNUEdgeInt(edge);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public STNUEdgeInt newInstance(String name1) {
 		return new STNUEdgeInt(name1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int setLabeledValue(ALetter nodeALetter, int w, boolean upperCase) {
 		int old = this.labeledValue;
@@ -138,6 +155,7 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 		return old;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		if (e == null)
@@ -150,24 +168,25 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return this.getValue() == Constants.INT_NULL && this.getLabeledValue() == Constants.INT_NULL;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSTNUEdge() {
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSTNEdge() {
 		return false;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return Constants.OPEN_TUPLE

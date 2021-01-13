@@ -5,7 +5,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.logging.Level;
@@ -32,7 +31,7 @@ import it.univr.di.labeledvalue.Literal;
 
 /**
  * Simple class to represent and check Conditional Simple Temporal Network with Uncertainty (CSTNU) reducing it to a CSTNIR3R
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -54,10 +53,14 @@ public class CSTNU2CSTN extends CSTNU {
 	static final String VERSIONandDATE = "Version 1.4 - January, 21 2019";// fixed an error on timeOut
 
 	/**
+	 * <p>
+	 * main.
+	 * </p>
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		LOG.finest("Start...");
@@ -95,16 +98,16 @@ public class CSTNU2CSTN extends CSTNU {
 
 		if (cstnu2cstn.fOutput != null) {
 			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
-			try {
-				graphWriter.save(cstnu2cstn.getG(), new PrintWriter(cstnu2cstn.output));
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
+			graphWriter.save(cstnu2cstn.getG(), cstnu2cstn.fOutput);
 		}
 	}
 
 	/**
-	 * @param graph
+	 * <p>
+	 * Constructor for CSTNU2CSTN.
+	 * </p>
+	 *
+	 * @param graph a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 */
 	public CSTNU2CSTN(TNGraph<CSTNUEdge> graph) {
 		super(graph);
@@ -112,7 +115,7 @@ public class CSTNU2CSTN extends CSTNU {
 
 	/**
 	 * Constructor for CSTNU
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check
 	 */
@@ -128,6 +131,7 @@ public class CSTNU2CSTN extends CSTNU {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Checks the controllability of a CSTNU instance.
 	 * This method transform the given CSTNU instance into a corresponding CSTN instance such that
 	 * the original instance is dynamic <em>controllable</em> iff the corresponding CSTN is dynamic <em>consistent</em>.
@@ -191,8 +195,8 @@ public class CSTNU2CSTN extends CSTNU {
 	 * link).
 	 * 
 	 * <pre>
-	 * A ---(c:x, alpha)---> C is transformed to A ---(x,alpha)---> K? ---(0, alpha k) (y-x,alpha) ---> C
-	 *   <---(C:-y, alpha)--                       <---(-x,alpha)--    <---(0,alpha) (x-y,alpha¬k)--
+	 * A ---(c:x, alpha) &longrightarrow; C is transformed to A ---(x,alpha) &longrightarrow; K? ---(0, alpha k) (y-x,alpha) &longrightarrow; C
+	 *   &longleftarrow; (C:-y, alpha)--                       &longleftarrow;(-x,alpha)--    &longleftarrow;(0,alpha) (x-y,alpha¬k)--
 	 * </pre>
 	 * 
 	 * @return g represented as a CSTN

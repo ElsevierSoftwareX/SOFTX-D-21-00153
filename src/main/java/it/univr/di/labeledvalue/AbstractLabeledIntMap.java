@@ -75,6 +75,8 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	}
 
 	/**
+	 * <p>entryAsString.</p>
+	 *
 	 * @param value an int
 	 * @param label must be not null!
 	 * @return string representing the labeled value, i.e., "(value, label)"
@@ -162,6 +164,8 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 	}
 
 	/**
+	 * <p>parse.</p>
+	 *
 	 * @param inputMap the string representing a set of labeled values
 	 * @return a new labeledintmap object
 	 * @see AbstractLabeledIntMap#parse(String, Class)
@@ -188,11 +192,13 @@ public abstract class AbstractLabeledIntMap implements LabeledIntMap, Serializab
 		return this.entrySet().equals(lvm.entrySet());// The internal representation is not important!.
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		return this.entrySet().hashCode();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int size() {
 		return this.count;

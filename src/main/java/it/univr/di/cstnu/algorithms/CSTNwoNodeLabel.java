@@ -19,7 +19,7 @@ import it.univr.di.cstnu.graph.TNGraph;
  * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
  * In this class, an input CSTN tNGraph is transformed into an equivalent CSTN instance where node labels are empty.<br>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -43,11 +43,11 @@ public class CSTNwoNodeLabel extends CSTN {
 
 	/**
 	 * Just for using this class also from a terminal.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNwoNodeLabel(), "Standard DC without node labels");
@@ -63,7 +63,7 @@ public class CSTNwoNodeLabel extends CSTN {
 
 	/**
 	 * Constructor for
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTNwoNodeLabel(TNGraph<CSTNEdge> graph) {
@@ -72,8 +72,10 @@ public class CSTNwoNodeLabel extends CSTN {
 	}
 
 	/**
-	 * @param graph
-	 * @param givenTimeOut
+	 * <p>Constructor for CSTNwoNodeLabel.</p>
+	 *
+	 * @param graph a {@link it.univr.di.cstnu.graph.TNGraph} object.
+	 * @param givenTimeOut a int.
 	 */
 	public CSTNwoNodeLabel(TNGraph<CSTNEdge> graph, int givenTimeOut) {
 		super(graph, givenTimeOut);

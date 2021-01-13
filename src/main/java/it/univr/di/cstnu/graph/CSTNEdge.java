@@ -21,55 +21,75 @@ import it.univr.di.labeledvalue.LabeledIntMap;
  */
 public interface CSTNEdge extends Edge {
 	/**
+	 * <p>getLabeledIntMapImplClass.</p>
+	 *
 	 * @return the implementing class to represent labeled values
 	 */
 	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass();
 
 	/**
+	 * <p>getLabeledValueMap.</p>
+	 *
 	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
 	 */
 	public LabeledIntMap getLabeledValueMap();
 
 	/**
+	 * <p>getLabeledValueSet.</p>
+	 *
 	 * @return the labeled values as a set
 	 */
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet();
 
 	/**
-	 * @param setToReuse
+	 * <p>getLabeledValueSet.</p>
+	 *
+	 * @param setToReuse a {@link it.unimi.dsi.fastutil.objects.ObjectSet} object.
 	 * @return the labeled values as a set
 	 */
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse);
 
 	/**
+	 * <p>getMinLabeledValue.</p>
+	 *
 	 * @return the minimal value among all ordinary labeled values if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public Entry<Label> getMinLabeledValue();
 
 	/**
+	 * <p>getMinValue.</p>
+	 *
 	 * @return the minimal value among all ordinary labeled values if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getMinValue();
 
 	/**
+	 * <p>getMinValueAmongLabelsWOUnknown.</p>
+	 *
 	 * @return the minimal value among all ordinary labeled values having label without unknown literals, if there are some;
 	 *         {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getMinValueAmongLabelsWOUnknown();
 
 	/**
+	 * <p>getMinValueConsistentWith.</p>
+	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the value of label l or the minimal value of labels consistent with l if it exists, null otherwise.
 	 */
 	public int getMinValueConsistentWith(final Label l);
 
 	/**
+	 * <p>getMinValueSubsumedBy.</p>
+	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the value of label l or the minimal value of labels subsumed by <code>l</code> if it exists, null otherwise.
 	 */
 	public int getMinValueSubsumedBy(final Label l);
 
 	/**
+	 * <p>getValue.</p>
+	 *
 	 * @param label label
 	 * @return the value associated to label it it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
@@ -85,6 +105,8 @@ public interface CSTNEdge extends Edge {
 	public boolean mergeLabeledValue(final Label l, final int i);
 
 	/**
+	 * <p>mergeLabeledValue.</p>
+	 *
 	 * @param map a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
 	 */
 	public void mergeLabeledValue(final LabeledIntMap map);
@@ -126,6 +148,8 @@ public interface CSTNEdge extends Edge {
 	public void setLabeledValueMap(final LabeledIntMap inputLabeledValue);
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return the number of labeled values associated to this edge.
 	 */
 	public int size();

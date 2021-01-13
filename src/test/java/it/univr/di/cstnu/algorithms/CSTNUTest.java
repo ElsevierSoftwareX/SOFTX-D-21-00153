@@ -133,13 +133,11 @@ public class CSTNUTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.attic.CSTNU_NodeSet#crossCaseRule(it.univr.di.cstnu.graph.TNGraph, it.univr.di.cstnu.graph.TNGraph, CSTNUCheckStatus)}
 	 * 
 	 * <pre>
 	 * A &lt;--- -3,D,b¬c--- C &lt;-----3,c,ab---- D
 	 * </pre>
 	 */
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testCrossCaseRule() {
 		// System.out.printf("CROSS CASE\n");
@@ -168,11 +166,8 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTNU_NodeSet#labelModificationR0R2R4(TNGraph, boolean))}.
-	 * 
 	 * @throws WellDefinitionException
 	 */
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationR0() throws WellDefinitionException {
 		LabeledNode P = this.g.getNodeFactory().get("P", 'p');
@@ -219,11 +214,8 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTNU_NodeSet#labelModificationR0R2R4(TNGraph, boolean))}.
-	 * 
 	 * @throws WellDefinitionException
 	 */
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationQR0() throws WellDefinitionException {
 		LabeledNode P = this.g.getNodeFactory().get("P?", 'p');
@@ -265,12 +257,9 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTNU_NodeSet#labelModificationR1R3R5(TNGraph, TNGraph, CSTNUCheckStatus)))}.
-	 * 
 	 * <pre>
 	 * P ----[0, ,¬b][-10, ,ab][-11,C,ab]--&gt; X &lt;--------- Y
 	 */
-	@SuppressWarnings({ "javadoc" })
 	@Test
 	public final void testLabelModificationR3() {
 		// System.out.printf("R1-R3 CASE\n");
@@ -380,12 +369,9 @@ public class CSTNUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTNU_NodeSet#labelModificationR1R3R5(TNGraph, TNGraph, CSTNUCheckStatus)))}.
-	 * 
 	 * <pre>
 	 * P ----[0, ,¬b][-10, ,ab][-11,C,ab]--&gt; Z &lt;--------- Y
 	 */
-	@SuppressWarnings({ "javadoc" })
 	@Test
 	public final void testLabelModificationQR3() {
 		// System.out.printf("R1-R3 CASE\n");
@@ -540,10 +526,8 @@ public class CSTNUTest {
 	 */
 
 	/**
-	 * Test method for {@link it.univr.di.attic.CSTNU_NodeSet#upperCaseRule(TNGraph, TNGraph, CSTNUCheckStatus)}.
 	 * A &lt;---[3,B,ab]--- C &lt;----[-13,,b][11,,c]----D
 	 */
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testUpperCaseRule() {
 		// System.out.printf("UPPER CASE\n");

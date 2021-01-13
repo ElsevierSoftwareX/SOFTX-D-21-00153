@@ -18,11 +18,8 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URL;
 import java.time.Instant;
 import java.util.logging.Level;
@@ -50,6 +47,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.plaf.metal.MetalMenuBarUI;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
@@ -106,7 +104,7 @@ import it.univr.di.labeledvalue.Constants;
 /**
  * A simple graphical application for creating/loading/modifying/saving/checking CSTNs.
  * It is based on EdgePluggable.
- * 
+ *
  * @author posenato
  * @version $Id: $Id
  */
@@ -1583,6 +1581,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	private static final String VERSION = "Version  $Rev$";
 
 	/**
+	 * <p>
+	 * main.
+	 * </p>
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
 	 */
 	public static void main(final String[] args) {
@@ -1665,6 +1667,9 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	boolean contingentAlsoAsOrdinary = false;
 
+	/**
+	 * 
+	 */
 	JPanel controlSouthPanel;
 
 	/**
@@ -1772,10 +1777,19 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	int reactionTime = 1;
 
+	/**
+	 * 
+	 */
 	JPanel rowForAppButtons;
 
+	/**
+	 * 
+	 */
 	JPanel rowForSTNButtons;
 
+	/**
+	 * 
+	 */
 	JPanel rowForSTNUButtons;
 
 	/**
@@ -1813,6 +1827,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 */
 	STNU.CheckAlgorithm stnuCheckAlg = STNU.CheckAlgorithm.Morris2014;
 
+	@SuppressWarnings("javadoc")
 	ValidationPanel validationPanelCSTN, validationPanelCSTNU;
 
 	/**
@@ -1833,7 +1848,11 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Mode box for the editor and the viewer
 	 */
-	int modeBoxIndex, modeBoxViewerIndex;
+	int modeBoxIndex;
+	/**
+	 * 
+	 */
+	int modeBoxViewerIndex;
 
 	/**
 	 * with unknown literal
@@ -2123,9 +2142,17 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		rowForCSTNUButtons.add(buttonCheck);
 
 		NewNetworkActivation newNetAct = new NewNetworkActivation();
+
 		// MENU
+		final JMenuBar menuBar = new JMenuBar();
+		menuBar.setBackground(Color.LIGHT_GRAY);
+		menuBar.setOpaque(true);
+		menuBar.setUI(new MetalMenuBarUI());
+
 		CSTNEditor.default_dir = (new JFileChooser()).getCurrentDirectory() + CSTNEditor.default_dir;
 		final JMenu menu = new JMenu("File");
+		menu.setOpaque(false);
+
 		final JMenu newFile = new JMenu("New network");
 		final JMenuItem newStn = new JMenuItem("STN");
 		newStn.setActionCommand("STN");
@@ -2157,7 +2184,6 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		saveItem.addActionListener(new SaveFileListener());
 		menu.add(saveItem);
 
-		final JMenuBar menuBar = new JMenuBar();
 		menuBar.add(menu);
 		this.setJMenuBar(menuBar);
 
@@ -2318,11 +2344,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	void saveGraphToFile(final TNGraph<? extends Edge> graphToSave, final File file) {
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(this.layoutEditor);
 		graphToSave.setName(file.getName());
-		try (Writer out = new BufferedWriter(new FileWriter(file))) {
-			graphWriter.save(graphToSave, out);
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
+		graphWriter.save(graphToSave, file);
 	}
 
 	/**

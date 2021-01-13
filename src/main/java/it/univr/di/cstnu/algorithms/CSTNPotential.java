@@ -36,7 +36,7 @@ import it.univr.di.labeledvalue.Literal;
  * The dynamic consistency check (DC check) is done assuming standard IR semantics (cf. ICAPS 2016 paper, table 1).
  * and that the instance is streamlined (cf TIME 2018 paper).
  * In this class the DC checking is solved using the Single-Sink Shortest-Paths algorithm (SSSP), and R0-R3 rules.<br>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -63,22 +63,26 @@ public class CSTNPotential extends CSTNIR {
 
 	/**
 	 * Just for using this class also from a terminal.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNPotential(), "Potential DC");
 	}
 
 	/**
-	 * TNGraph<CSTNEdge> order
+	 * TNGraph&lt;CSTNEdge&gt; order
 	 */
 	int numberOfNodes;
 
 	/**
+	 * <p>
+	 * Constructor for CSTNPotential.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTNPotential(TNGraph<CSTNEdge> graph) {
@@ -87,6 +91,10 @@ public class CSTNPotential extends CSTNIR {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for CSTNPotential.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check
 	 */
@@ -104,10 +112,8 @@ public class CSTNPotential extends CSTNIR {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Calls {@link CSTN#initAndCheck()} and, if everything is ok, it determined all possible -∞ potentials in negative q-loops.
-	 * 
-	 * @return true if the graph is a well formed
-	 * @throws WellDefinitionException if the initial graph is not well defined.
 	 */
 	@Override
 	public boolean initAndCheck() throws WellDefinitionException {
@@ -139,6 +145,7 @@ public class CSTNPotential extends CSTNIR {
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	@Deprecated
 	public CSTNCheckStatus oneStepDynamicConsistencyByNode() throws WellDefinitionException {
@@ -149,10 +156,10 @@ public class CSTNPotential extends CSTNIR {
 	 * Executes one step of the single-sink BellmanFord algorithm.
 	 * 
 	 * <pre>
-	 * A[u,α]<---(v,β)---B
+	 * A[u,α]&longleftarrow;(v,β)---B
 	 * adds
 	 * B[(u+v),γ]
-	 * where γ=α*β if v<0, γ=αβ otherwise and (u+v) < possibly previous value.
+	 * where γ=α*β if v&lt;0, γ=αβ otherwise and (u+v) &lt; possibly previous value.
 	 * Instantaneous reaction semantics is assumed.
 	 * </pre>
 	 * 

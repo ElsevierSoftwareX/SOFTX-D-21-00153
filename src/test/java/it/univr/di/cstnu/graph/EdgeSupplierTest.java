@@ -17,12 +17,30 @@ import org.junit.Test;
  */
 public class EdgeSupplierTest {
 
+	/**
+	 * 
+	 */
 	static EdgeSupplier<STNEdge> stnEdgeFactory = new EdgeSupplier<>(STNEdgeInt.class);
+	/**
+	 * 
+	 */
 	static EdgeSupplier<CSTNEdge> cstnEdgeFactory = new EdgeSupplier<>(CSTNEdgePluggable.class);
+	/**
+	 * 
+	 */
 	static EdgeSupplier<CSTNUEdge> cstnuEdgeFactory = new EdgeSupplier<>(CSTNUEdgePluggable.class);
 
+	/**
+	 * 
+	 */
 	STNEdge stnEdge;
+	/**
+	 * 
+	 */
 	CSTNEdge cstnEdge;
+	/**
+	 * 
+	 */
 	CSTNUEdge cstnuEdge;
 
 	/**

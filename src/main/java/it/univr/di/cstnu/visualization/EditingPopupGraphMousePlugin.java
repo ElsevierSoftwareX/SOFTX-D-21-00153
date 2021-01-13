@@ -31,24 +31,48 @@ import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * 2017-10-23 I added a menu item to manage the export of a graph.
- * 
+ *
  * @author Roberto Posenato
- * @param <V>
- * @param <E>
+ * @param <V> generic type extending for Node
+ * @param <E> generic type extending for Edge
+ * @version $Id: $Id
  */
 public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge> extends AbstractPopupGraphMousePlugin {
 
+	/**
+	 * 
+	 */
 	Supplier<V> vertexFactory;
+	/**
+	 * 
+	 */
 	Supplier<E> edgeFactory;
+
+	/**
+	 * <p>
+	 * Constructor for EditingPopupGraphMousePlugin.
+	 * </p>
+	 *
+	 * @param vertexFactory1 a {@link com.google.common.base.Supplier} object.
+	 * @param edgeFactory1 a {@link com.google.common.base.Supplier} object.
+	 */
 	public EditingPopupGraphMousePlugin(Supplier<V> vertexFactory1, Supplier<E> edgeFactory1) {
 		this.vertexFactory = vertexFactory1;
 		this.edgeFactory = edgeFactory1;
 	}
 
+	/**
+	 * <p>
+	 * Setter for the field <code>edgeFactory</code>.
+	 * </p>
+	 *
+	 * @param edgeFactory1 a {@link com.google.common.base.Supplier} object.
+	 */
 	public void setEdgeFactory(Supplier<E> edgeFactory1) {
 		this.edgeFactory = edgeFactory1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	@SuppressWarnings({ "unchecked", "serial" })
 	protected void handlePopup(MouseEvent e) {

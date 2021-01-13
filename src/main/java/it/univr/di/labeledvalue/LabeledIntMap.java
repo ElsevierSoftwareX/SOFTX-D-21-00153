@@ -78,8 +78,10 @@ public interface LabeledIntMap {
 	}
 
 	/**
-	 * @param newLabel
-	 * @param newValue
+	 * <p>alreadyRepresents.</p>
+	 *
+	 * @param newLabel a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param newValue a int.
 	 * @return true if the current map can represent the value. In positive case, an add of the element does not change the map.
 	 *         If returns false, then the adding of the value to the map would modify the map.
 	 */
@@ -94,14 +96,14 @@ public interface LabeledIntMap {
 
 	/**
 	 * Factory
-	 * 
+	 *
 	 * @return an object of type LabeledIntMap.
 	 */
 	public LabeledIntMap newInstance();
 
 	/**
 	 * Factory
-	 * 
+	 *
 	 * @param lim an object to clone.
 	 * @return an object of type LabeledIntMap.
 	 */
@@ -111,7 +113,7 @@ public interface LabeledIntMap {
 	 * The set of all entries of the map. The set can be a view of the map,
 	 * so any modification of the map can be reflected on the returned entrySet.<br>
 	 * In other word, don't modify the map during the use of this returned set.
-	 * 
+	 *
 	 * @see java.util.Map#entrySet()
 	 * @see ObjectSet
 	 * @see it.unimi.dsi.fastutil.objects.Object2IntMap.Entry
@@ -124,8 +126,8 @@ public interface LabeledIntMap {
 	 * The set of all entries of the map. The set can be a view of the map,
 	 * so any modification of the map can be reflected on the returned entrySet().<br>
 	 * In other word, don't modify the map during the use of this returned set.
-	 * 
-	 * @param setToReuse
+	 *
+	 * @param setToReuse a {@link it.unimi.dsi.fastutil.objects.ObjectSet} object.
 	 * @see java.util.Map#entrySet()
 	 * @see ObjectSet an containter for the returned set
 	 * @see it.unimi.dsi.fastutil.objects.Object2IntMap.Entry
@@ -134,13 +136,17 @@ public interface LabeledIntMap {
 	public ObjectSet<Entry<Label>> entrySet(ObjectSet<Entry<Label>> setToReuse);
 
 	/**
+	 * <p>get.</p>
+	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @return the value associated to <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise.
+	 * @return the value associated to <code>l</code> if it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int get(final Label l);
 
 	/**
-	 * @return the maximum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 * <p>getMaxValue.</p>
+	 *
+	 * @return the maximum int value present in the set if the set is not empty; {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	default public int getMaxValue() {
 		if (this.size() == 0)
@@ -156,9 +162,9 @@ public interface LabeledIntMap {
 	/**
 	 * Returns the value associated to the <code>l</code> if it exists, otherwise the maximal value among all labels consistent with <code>l</code>.
 	 *
-	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
+	 * @param l If it is null, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
 	 * @return the value associated to the <code>l</code> if it exists or the maximal value among values associated to labels consistent with <code>l</code>. If
-	 *         no labels are consistent by <code>l</code>, {@link Constants#INT_NULL} is returned.
+	 *         no labels are consistent by <code>l</code>, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
 	 */
 	default public int getMaxValueSubsumedBy(final Label l) {
 		if (l == null)
@@ -184,7 +190,9 @@ public interface LabeledIntMap {
 
 
 	/**
-	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 * <p>getMinLabeledValue.</p>
+	 *
+	 * @return the minimum int value present in the set if the set is not empty; {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	default public Entry<Label> getMinLabeledValue() {
 		if (this.size() == 0)
@@ -202,7 +210,9 @@ public interface LabeledIntMap {
 	}
 
 	/**
-	 * @return the minimum int value present in the set if the set is not empty; {@link Constants#INT_NULL} otherwise.
+	 * <p>getMinValue.</p>
+	 *
+	 * @return the minimum int value present in the set if the set is not empty; {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	default public int getMinValue() {
 		if (this.size() == 0)
@@ -217,6 +227,8 @@ public interface LabeledIntMap {
 	}
 
 	/**
+	 * <p>getMinValueAmongLabelsWOUnknown.</p>
+	 *
 	 * @return the min value among all labeled value having label without unknown literals.
 	 */
 	default public int getMinValueAmongLabelsWOUnknown() {
@@ -238,9 +250,9 @@ public interface LabeledIntMap {
 	/**
 	 * Returns the value associated to the <code>l</code> if it exists, otherwise the minimal value among all labels consistent with <code>l</code>.
 	 *
-	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
+	 * @param l If it is null, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
 	 * @return the value associated to the <code>l</code> if it exists or the minimal value among values associated to labels consistent with <code>l</code>. If
-	 *         no labels are consistent by <code>l</code>, {@link Constants#INT_NULL} is returned.
+	 *         no labels are consistent by <code>l</code>, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
 	 */
 	default public int getMinValueConsistentWith(final Label l) {
 		if (l == null)
@@ -266,10 +278,10 @@ public interface LabeledIntMap {
 
 	
 	/**
-	 * Returns the minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
+	 * Returns the minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 *
-	 * @param l If it is null, {@link Constants#INT_NULL} is returned.
-	 * @return minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link Constants#INT_NULL} otherwise. 
+	 * @param l If it is null, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
+	 * @return minimal value among those associated to labels subsumed by <code>l</code> if it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	default public int getMinValueSubsumedBy(final Label l) {
 		if (l == null)
@@ -294,18 +306,22 @@ public interface LabeledIntMap {
 	}
 		
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return true if the map has no elements.
 	 */
 	public boolean isEmpty();
 
 	/**
 	 * A a copy of all labels in the map. The set must not be connected with the map.
-	 * 
+	 *
 	 * @return a copy of all labels in the map.
 	 */
 	public ObjectSet<Label> keySet();
 
 	/**
+	 * <p>keySet.</p>
+	 *
 	 * @param setToReuse a set to be reused for filling with the copy of labels
 	 * @return a copy of all labels in the map. The set must not be connected with the map.
 	 */
@@ -319,7 +335,7 @@ public interface LabeledIntMap {
 	 * is lost.
 	 *
 	 * @param l a not null label.
-	 * @param i a not {@link Constants#INT_NULL} value.
+	 * @param i a not {@link it.univr.di.labeledvalue.Constants#INT_NULL} value.
 	 * @return true if <code>(l,i)</code> has been inserted. Since an insertion can remove more than one redundant labeled values, it is nonsensical to return
 	 *         "the old value" as expected from a classical put method.
 	 */
@@ -343,23 +359,29 @@ public interface LabeledIntMap {
 	 * Remove the label <code>l</code> from the map. If the <code>l</code> is not present, it does nothing.
 	 *
 	 * @param l a not null label.
-	 * @return the previous value associated with <code>l</code>, or {@link Constants#INT_NULL} if there was no mapping for <code>l</code>.
+	 * @return the previous value associated with <code>l</code>, or {@link it.univr.di.labeledvalue.Constants#INT_NULL} if there was no mapping for <code>l</code>.
 	 * @see Map#remove(Object)
 	 */
 	public int remove(Label l);
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return the number of labeled value (value with empty label included).
 	 * @see Map#size()
 	 */
 	public int size();
 
 	/**
+	 * <p>values.</p>
+	 *
 	 * @return the set of all integer present in the map as an ordered list.
 	 */
 	public IntSet values();
 
 	/**
+	 * <p>unmodifiable.</p>
+	 *
 	 * @return a read-only view of this.
 	 */
 	public LabeledIntMapView unmodifiable();

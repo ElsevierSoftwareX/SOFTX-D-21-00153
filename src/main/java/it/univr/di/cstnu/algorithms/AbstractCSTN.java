@@ -45,7 +45,7 @@ import it.univr.di.labeledvalue.Label;
  * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
  * This class is the base class for some other specialized in which DC semantics is defined in a different way.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  * @param <E> kind of edges
@@ -400,12 +400,12 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * Suffix for file name
 	 */
-	public static String FILE_NAME_SUFFIX = ".cstn";
+	public final static String FILE_NAME_SUFFIX = ".cstn";
 
 	/**
 	 * The name for the initial node.
 	 */
-	public static String ZeroNodeName = "Z";
+	public final static String ZERO_NODE_NAME = "Z";
 
 	/**
 	 * logger
@@ -424,6 +424,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * @param g the graph
 	 * @return true if the graph is consistent, false otherwise.
 	 *         If the response is false, the edges do not represent the minimal distance between nodes.
+	 * @param <E> a E object.
 	 */
 	static public <E extends CSTNEdge> boolean getMinimalDistanceGraph(final TNGraph<E> g) {
 		final int n = g.getVertexCount();
@@ -570,6 +571,11 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	boolean propagationOnlyToZ = false;
 
 	/**
+	 * Check using also R2
+	 */
+	boolean propagationFromZ = false;
+
+	/**
 	 * WD2.2 epsilon value called also reaction time in ICAPS 18.
 	 * It is > 0 in standard CSTN, >= 0 in IR, > epsilon in Epsilon CSTN.
 	 * Even when it is 0, the dynamic consistency def. excludes that a t.p. X having p in its label can be executed at the same time of t.p. P?.
@@ -605,6 +611,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	LabeledNode Z = null;
 
 	/**
+	 * <p>
+	 * Constructor for AbstractCSTN.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public AbstractCSTN(TNGraph<E> graph) {
@@ -613,6 +623,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for AbstractCSTN.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check
 	 */
@@ -633,14 +647,17 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
 	 * <br>
 	 * After a check, {@link #getGChecked} returns the graph resulting after the check.
-	 * 
+	 *
 	 * @return the final status of the checking with some statistics.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph<E> is not well defined (does not observe all well definition
-	 *             properties).
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	abstract public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException;
 
 	/**
+	 * <p>
+	 * Getter for the field <code>checkStatus</code>.
+	 * </p>
+	 *
 	 * @return the checkStatus
 	 */
 	public CSTNCheckStatus getCheckStatus() {
@@ -649,6 +666,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>fOutput</code>.
+	 * </p>
+	 *
 	 * @return the fOutput
 	 */
 	public File getfOutput() {
@@ -656,6 +677,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>g</code>.
+	 * </p>
+	 *
 	 * @return the g
 	 */
 	final public TNGraph<E> getG() {
@@ -663,6 +688,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * getGChecked.
+	 * </p>
+	 *
 	 * @return the resulting graph of a check. It is up to the called to be sure the the returned graph is the result of a check.
 	 *         It can be used also by subclasses with a proper cast.
 	 * @see #setOutputCleaned(boolean)
@@ -674,6 +703,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>maxWeight</code>.
+	 * </p>
+	 *
 	 * @return the maxWeight
 	 */
 	final public int getMaxWeight() {
@@ -681,6 +714,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>reactionTime</code>.
+	 * </p>
+	 *
 	 * @return the reactionTime
 	 */
 	final public int getReactionTime() {
@@ -688,6 +725,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * getVersionAndCopyright.
+	 * </p>
+	 *
 	 * @return version and copyright string
 	 */
 	public String getVersionAndCopyright() {
@@ -705,12 +746,11 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Initializes the CSTN instance represented by graph g.
-	 * 
+	 *
 	 * @return true if the graph is a well formed
-	 * @throws WellDefinitionException if the initial graph is not well defined.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the initial graph is not well defined.
 	 * @see #coreCSTNInitAndCheck()
 	 */
-	@SuppressWarnings("javadoc")
 	public boolean initAndCheck() throws WellDefinitionException {
 		boolean status = coreCSTNInitAndCheck();
 		if (status)
@@ -719,6 +759,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * isOutputCleaned.
+	 * </p>
+	 *
 	 * @return the fOutputCleaned
 	 */
 	public boolean isOutputCleaned() {
@@ -726,6 +770,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * isWithNodeLabels.
+	 * </p>
+	 *
 	 * @return the withNodeLabels
 	 */
 	public final boolean isWithNodeLabels() {
@@ -734,7 +782,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Stores the graph after a check to the file {@link #getfOutput()}.
-	 * 
+	 *
 	 * @see #getGChecked()
 	 */
 	public void saveGraphToFile() {
@@ -776,23 +824,26 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * Setter for the field <code>fOutput</code>.
+	 *
 	 * @param fileOutput the file where to save the result.
 	 */
 	public void setfOutput(File fileOutput) {
+		if (fileOutput == null)
+			return;
+		if (!fileOutput.getName().endsWith(FILE_NAME_SUFFIX)) {
+			fileOutput.renameTo(new File(fileOutput.getAbsolutePath() + FILE_NAME_SUFFIX));
+		}
+		if (fileOutput.exists()) {
+			fileOutput.delete();
+		}
 		this.fOutput = fileOutput;
-		if (!this.fOutput.getName().endsWith(".cstn")) {
-			this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
-		}
-		if (this.fOutput.exists()) {
-			this.fOutput.delete();
-		}
-
 	}
 
 	/**
 	 * Considers the given graph as the graph to check (graph will be modified).
 	 * Clear all auxiliary variables.
-	 * 
+	 *
 	 * @param graph set internal TNGraph to g. It cannot be null.
 	 */
 	public void setG(TNGraph<E> graph) {
@@ -806,7 +857,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Set to true for having the result graph cleaned of empty edges and labeled values having unknown literals.
-	 * 
+	 *
 	 * @param clean the resulting graph
 	 */
 	public void setOutputCleaned(boolean clean) {
@@ -814,6 +865,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>withNodeLabels</code>.
+	 * </p>
+	 *
 	 * @param withNodeLabels1 true if node labels have to be considered.
 	 */
 	public void setWithNodeLabels(boolean withNodeLabels1) {
@@ -823,7 +878,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * If true, the propagations are made for edges ending to Z.
-	 * 
+	 *
 	 * @param propagationOnlyToZ1 true if propagations have to be done only to Z
 	 */
 	public void setPropagationOnlyToZ(boolean propagationOnlyToZ1) {
@@ -1115,16 +1170,16 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		// Checks the presence of Z node!
 		// this.Z = this.g.getZ(); already done in setG()
 		if (this.Z == null) {
-			this.Z = this.g.getNode(AbstractCSTN.ZeroNodeName);
+			this.Z = this.g.getNode(AbstractCSTN.ZERO_NODE_NAME);
 			if (this.Z == null) {
 				// We add by authority!
-				this.Z = this.g.getNodeFactory().get(AbstractCSTN.ZeroNodeName);
+				this.Z = this.g.getNodeFactory().get(AbstractCSTN.ZERO_NODE_NAME);
 				this.Z.setX(10);
 				this.Z.setY(10);
 				this.g.addVertex(this.Z);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
-						LOG.log(Level.WARNING, "No " + AbstractCSTN.ZeroNodeName + " node found: added!");
+						LOG.log(Level.WARNING, "No " + AbstractCSTN.ZERO_NODE_NAME + " node found: added!");
 				}
 			}
 			this.g.setZ(this.Z);
@@ -1268,7 +1323,8 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING,
-									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs after '" + AbstractCSTN.ZeroNodeName
+									"It is necessary to add a constraint to guarantee that '" + node.getName() + "' occurs after '"
+											+ AbstractCSTN.ZERO_NODE_NAME
 											+ "'.");
 						}
 					}
@@ -1516,6 +1572,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * @return alphaBetaGamma' if all conditions are satisfied. null otherwise.
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
+	// Visibility is package because there is Junit Class test that checks this method.
 	Label makeAlphaBetaGammaPrime4R3(final LabeledNode nS, final LabeledNode nD, final LabeledNode nObs, final char observed,
 			final Label labelFromObs, Label labelToClean) {
 		StringBuilder slog;
@@ -1600,6 +1657,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * @return α'
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
+	// Visibility is package because there is Junit Class test that checks this method.
 	Label makeAlphaPrime(final LabeledNode nX, final LabeledNode nObs, final char observed, final Label labelFromObs) {
 		if (this.withNodeLabels && !this.propagationOnlyToZ) {
 			if (nX.getLabel().contains(observed))
@@ -1630,6 +1688,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * @param labelToClean
 	 * @return αβγ'
 	 */
+	// Visibility is package because there is Junit Class test that checks this method.
 	// Visibility is package because there is Junit Class test that checks this method.
 	Label makeBetaGammaDagger4qR3(final LabeledNode nS, final LabeledNode nObs, final char observed, final Label labelFromObs, Label labelToClean) {
 		if (this.withNodeLabels) {

@@ -18,9 +18,11 @@ package it.univr.di.labeledvalue;
  * <p>
  * A literal object is immutable and must have a propositional letter.
  * <p>
- * Lastly, for efficiency reasons, this class allows to represent literal using at most {@link Label#NUMBER_OF_POSSIBLE_PROPOSITIONS} propositions in the range
+ * Lastly, for efficiency reasons, this class allows to represent literal using at most {@link it.univr.di.labeledvalue.Label#NUMBER_OF_POSSIBLE_PROPOSITIONS}
+ * propositions in the range
  * {@link #PROPOSITION_ARRAY}.
- * {@link Label#NUMBER_OF_POSSIBLE_PROPOSITIONS} is given by the fact that {@link Label} represents propositional labels using integer (32 bits), so labels with
+ * {@link it.univr.di.labeledvalue.Label#NUMBER_OF_POSSIBLE_PROPOSITIONS} is given by the fact that {@link it.univr.di.labeledvalue.Label} represents
+ * propositional labels using integer (32 bits), so labels with
  * at most 32 different propositions.
  *
  * @author Roberto Posenato
@@ -36,10 +38,19 @@ public class Literal implements Comparable<Literal> {
 	 * So, don't change them without revising all the class.<br>
 	 * {@link #ABSENT} is useful only for internal methods. It is not admitted for defining a literal.
 	 */
-	public static final char ABSENT = '\u0000',
-			STRAIGHT = '\u0001',
-			NEGATED = Constants.NOT,
-			UNKNONW = Constants.UNKNOWN;
+	public static final char ABSENT = '\u0000';
+	/**
+	 * Constant <code>STRAIGHT='\u0001'</code>
+	 */
+	public static final char STRAIGHT = '\u0001';
+	/**
+	 * Constant <code>NEGATED=Constants.NOT</code>
+	 */
+	public static final char NEGATED = Constants.NOT;
+	/**
+	 * Constant <code>UNKNONW=Constants.UNKNOWN</code>
+	 */
+	public static final char UNKNONW = Constants.UNKNOWN;
 
 	/**
 	 * Literal object cache
@@ -89,13 +100,17 @@ public class Literal implements Comparable<Literal> {
 	/**
 	 * @param i a positive value smaller than {@value Label#NUMBER_OF_POSSIBLE_PROPOSITIONS}.
 	 * @return char at position i in {@link Literal#PROPOSITION_ARRAY}
-	 * @impleSpec No parameter integrity-check is done
+	 * @implSpec No parameter integrity-check is done
 	 */
 	static final char charValue(final int i) {
 		return PROPOSITION_ARRAY[i];
 	}
 
 	/**
+	 * <p>
+	 * check.
+	 * </p>
+	 *
 	 * @param c the char to check
 	 * @return true if the char represents a valid literal identifier
 	 */
@@ -179,7 +194,7 @@ public class Literal implements Comparable<Literal> {
 	 * 
 	 * @param c
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is done.
-	 * @return an integer that is surely unique when 'a'<=c<='z'.
+	 * @return an integer that is surely unique when 'a' &le; c &le; 'z'.
 	 */
 	static final int hashCode(char c, char state) {
 		return index(c) * 3 + getStateOrdinal(state) - 1;// -1 because ABSENT is not admissible.
@@ -202,8 +217,8 @@ public class Literal implements Comparable<Literal> {
 	/**
 	 * Parses the string {@code s} returning the literal represented.
 	 *
-	 * @param s It can be a single char ({@value #PROPOSITION_ARRAY}) or one of characters [{@value Constants#NOT} {@value Constants#UNKNOWN}]
-	 *            followed by a char of {@value #PROPOSITION_ARRAY}. No spaces are allowed
+	 * @param s It can be a single char ({@link #PROPOSITION_ARRAY}) or one of characters [{@value Constants#NOT} {@value Constants#UNKNOWN}]
+	 *            followed by a char of {@link #PROPOSITION_ARRAY}. No spaces are allowed
 	 * @return the literal represented by {@code s} if {@code s} is a valid representation of a literal, null otherwise
 	 */
 	public static final Literal parse(final String s) {
@@ -300,9 +315,7 @@ public class Literal implements Comparable<Literal> {
 		this.state = state1;
 	}
 
-	/**
-	 * @implSpec When the two literals have the same name, it returns a different value than 0 if this and {@code o} have different state.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int compareTo(final Literal o) {
 		if (this.name < o.name)
@@ -314,6 +327,7 @@ public class Literal implements Comparable<Literal> {
 		return getStateOrdinal(this.state) - getStateOrdinal(o.state);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean equals(final Object o) {
 		if (o == this)
@@ -384,6 +398,7 @@ public class Literal implements Comparable<Literal> {
 		return valueOf(this, UNKNONW);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int hashCode() {
 		if (this.hashCodeCached == 0) {
@@ -393,7 +408,11 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * @param l
+	 * <p>
+	 * isComplement.
+	 * </p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Literal} object.
 	 * @return true if it is a complement literal of the given one
 	 */
 	public final boolean isComplement(Literal l) {
@@ -403,6 +422,10 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
+	 * <p>
+	 * isNegated.
+	 * </p>
+	 *
 	 * @return true if it is a negated literal
 	 */
 	public final boolean isNegated() {
@@ -410,6 +433,10 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
+	 * <p>
+	 * isStraight.
+	 * </p>
+	 *
 	 * @return true if it is a straight literal
 	 */
 	public final boolean isStraight() {
@@ -417,16 +444,17 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
+	 * <p>
+	 * isUnknown.
+	 * </p>
+	 *
 	 * @return true if it is a literal in the unknown state
 	 */
 	public final boolean isUnknown() {
 		return this.state == UNKNONW;
 	}
 
-	/**
-	 * @return the string representation of this. If the literal is a negated one, the propositional letter is prefixed by {@link Constants#NOT}.
-	 *         If the literal is an unknown one, the propositional letter is prefixed by {@link Constants#UNKNOWN}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final String toString() {
 		return stateAsString(this.state) + this.name;

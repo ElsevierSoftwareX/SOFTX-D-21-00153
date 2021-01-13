@@ -17,7 +17,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  * Simple implementation of {@link it.univr.di.labeledvalue.LabeledIntMap} interface without minimization.
  * This class is provided only to give an evidence that without minimization of labeled value sets, any CSTN algorithm
  * can be very slowly.
- * 
+ *
  * @author Roberto Posenato
  * @see LabeledIntMap
  * @version $Id: $Id
@@ -96,12 +96,7 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 		}
 	}
 
-	/**
-	 * @param newLabel
-	 * @param newValue
-	 * @return true if the current map can represent the value. In positive case, an addition of the element does not change the map.
-	 *         If returns false, then an addition of the value to the map would modify the map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean alreadyRepresents(Label newLabel, int newValue) {
 		for ( Entry<Label> entry:this.mainMap.object2IntEntrySet()) {
@@ -118,19 +113,19 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 		this.updateCount.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntSimpleMap newInstance() {
 		return new LabeledIntSimpleMap();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntSimpleMap newInstance(LabeledIntMap lim) {
 		return new LabeledIntSimpleMap(lim);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Entry<Label>> entrySet() {
 		ObjectSet<Entry<Label>> coll = new ObjectArraySet<>();
@@ -160,18 +155,14 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 		return this.mainMap.hashCode();
 	}
 
-	/**
-	 * @return a set view of all labels present into this map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Label> keySet() {
 		ObjectSet<Label> coll = new ObjectArraySet<>();
 		return this.keySet(coll);
 	}
 
-	/**
-	 * @return a set view of all labels present into this map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
@@ -179,9 +170,7 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 		return setToReuse;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean put(final Label newLabel, int newValue) {
 		if ((newLabel == null) || (newValue == Constants.INT_NULL))
@@ -202,11 +191,13 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 		return this.mainMap.removeInt(l);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int size() {
 		return this.mainMap.size();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntMapView unmodifiable() {
 		return new LabeledIntNotMinMapView(this);

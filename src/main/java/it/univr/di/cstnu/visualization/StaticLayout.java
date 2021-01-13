@@ -5,7 +5,6 @@
 package it.univr.di.cstnu.visualization;
 
 /**
- * 
  * [07/02/2012] Made serializable by Posenato
  */
 
@@ -22,9 +21,10 @@ import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
  * Extends StaticLayout retrieving initial node positions from node attributes.
- * 
+ *
  * @param <E> edge type
  * @version $Id: $Id
+ * @author posenato
  */
 public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements Serializable, IterativeContext {
 
@@ -42,7 +42,7 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
 	 */
-	static public Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
+	static public final Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
 		@Override
 		public Point2D apply(final LabeledNode v) {
 			final Point2D p = new Point2D.Double(v.getX(), v.getY());
@@ -70,34 +70,47 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	}
 
 	/**
+	 * <p>
+	 * getLocations.
+	 * </p>
+	 *
 	 * @return the position of all vertices.
 	 */
 	public LoadingCache<LabeledNode, Point2D> getLocations() {
 		return this.locations;
 	}
 
-	/** It has been erased. */
+	/**
+	 * {@inheritDoc}
+	 * It has been erased.
+	 */
 	@Override
 	public void initialize() {
 		// empty
 	}
 
-	/** It has been erased. */
+	/**
+	 * {@inheritDoc}
+	 * It has been erased.
+	 */
 	@Override
 	public void reset() {
 		// empty
 	}
-	
+
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return StaticLayout.VERSIONandDATE;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void step() {
 		// TODO Auto-generated method stub
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean done() {
 		// TODO Auto-generated method stub

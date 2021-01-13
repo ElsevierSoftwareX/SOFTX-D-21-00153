@@ -56,10 +56,14 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		LOG = Logger.getLogger(CSTNPSUEdgePluggable.class.getName());
 	}
 
-	/**
+	/*
 	 * <C extends LabeledIntMap> CSTNUEdgePluggable(Class<C> labeledIntMapImpl) {
 	 * this((String) null, labeledIntMapImpl);
 	 * }
+	 */
+
+	/**
+	 * @param <C>
 	 */
 	<C extends LabeledIntMap> CSTNPSUEdgePluggable() {
 		this((String) null);
@@ -102,6 +106,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		super.clear();
@@ -109,11 +114,13 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		this.consideredLowerCaseValue.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clearLowerCaseValues() {
 		this.lowerCaseValue.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final LabeledALabelIntTreeMap getAllLowerCaseAndLabeledValuesMaps() {
 		LabeledALabelIntTreeMap union = new LabeledALabelIntTreeMap();
@@ -125,23 +132,28 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		return union;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledLowerCaseValue getLowerCaseValue() {
 		Entry<Label, Object2IntMap.Entry<ALabel>> entry = this.lowerCaseValue.getMinValue();
-		return (entry != null) ? LabeledLowerCaseValue.create(entry.getValue().getKey(), entry.getValue().getIntValue(), entry.getKey())
+		return (entry.getValue().getIntValue() != Constants.INT_NULL)
+				? LabeledLowerCaseValue.create(entry.getValue().getKey(), entry.getValue().getIntValue(), entry.getKey())
 				: LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getLowerCaseValue(Label l, ALabel name1) {
 		return this.lowerCaseValue.getValue(l, name1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledALabelIntTreeMap getLowerCaseValueMap() {
 		return this.lowerCaseValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean hasSameValues(Edge e) {
 		if (e == null || !(e instanceof CSTNPSUEdge))
@@ -154,26 +166,31 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		return (this.getLowerCaseValueMap().equals(e1.getLowerCaseValueMap()));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCSTNPSUEdge() {
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return super.isEmpty() && this.lowerCaseValue.isEmpty();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String lowerCaseValuesAsString() {
 		return this.lowerCaseValue.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int lowerCaseValueSize() {
 		return this.lowerCaseValue.size();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean mergeLabeledValue(final Label l, final int i) {
 		boolean added = super.mergeLabeledValue(l, i);
@@ -199,6 +216,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		return added;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean mergeLowerCaseValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
@@ -238,6 +256,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		return added;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean putLowerCaseValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
@@ -260,37 +279,38 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 		return this.lowerCaseValue.mergeTriple(l, nodeName, i, true);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNPSUEdgePluggable newInstance() {
 		return new CSTNPSUEdgePluggable();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNPSUEdgePluggable newInstance(Edge edge) {
 		return new CSTNPSUEdgePluggable(edge);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNPSUEdgePluggable newInstance(String name1) {
 		return new CSTNPSUEdgePluggable(name1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int removeLowerCaseValue(final Label l, final ALabel n) {
 		// this.consideredLowerCaseValue.removeInt(new InternalEntry(l, n));
 		return this.lowerCaseValue.remove(l, n);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setLowerCaseValue(LabeledALabelIntTreeMap lowerCaseValue1) {
 		this.lowerCaseValue = (lowerCaseValue1 == null) ? new LabeledALabelIntTreeMap() : lowerCaseValue1;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param e
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		if (e == null)

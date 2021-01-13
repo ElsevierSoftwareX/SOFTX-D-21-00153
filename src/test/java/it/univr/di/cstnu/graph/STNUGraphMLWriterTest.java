@@ -2,18 +2,16 @@ package it.univr.di.cstnu.graph;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 
 import org.junit.Test;
 
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 
+@SuppressWarnings("javadoc")
 public class STNUGraphMLWriterTest {
 
 	String fileName = "src/test/resources/testGraphML.stnu";
@@ -40,11 +38,7 @@ public class STNUGraphMLWriterTest {
 		g.addEdge(yx, Y, X);
 
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
-		try (Writer out = new PrintWriter(new BufferedWriter(new FileWriter(this.fileName)))) {
-			graphWriter.save(g, out);
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
+		graphWriter.save(g, new File(this.fileName));
 		try (FileReader input = new FileReader(this.fileName)) {
 			char[] fileAsChar = new char[4200];
 			input.read(fileAsChar);

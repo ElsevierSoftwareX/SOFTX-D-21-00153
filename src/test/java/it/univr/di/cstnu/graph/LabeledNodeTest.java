@@ -18,6 +18,9 @@ import it.univr.di.labeledvalue.Label;
  */
 public class LabeledNodeTest {
 
+	/**
+	 * 
+	 */
 	static LabeledNodeSupplier nodeFactory = new LabeledNodeSupplier();
 
 	/**

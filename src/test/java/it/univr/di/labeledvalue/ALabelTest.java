@@ -19,7 +19,11 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  */
 public class ALabelTest {
 
+	@SuppressWarnings("javadoc")
 	ALabel a, b, c, e;
+	/**
+	 * 
+	 */
 	ALabelAlphabet alpha;
 
 	/**
@@ -34,6 +38,9 @@ public class ALabelTest {
 		this.e = ALabel.emptyLabel;
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void creation() {
 		assertEquals("A", this.a.toString());
@@ -42,6 +49,9 @@ public class ALabelTest {
 		assertEquals("◇", this.e.toString());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void conjunction() {
 		this.a = this.a.conjunction(this.b);
@@ -55,6 +65,9 @@ public class ALabelTest {
 		assertEquals("A∙b∙C", this.a.toString());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void conjunct() {
 		this.a.conjunct(new ALetter("x"));
@@ -64,6 +77,9 @@ public class ALabelTest {
 		assertEquals("A∙x∙y", this.a.toString());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void remove() {
 		this.a = this.a.conjunction(this.b).conjunction(this.c);
@@ -73,6 +89,9 @@ public class ALabelTest {
 		assertEquals("◇", this.e.toString());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void contains() {
 		this.a = this.a.conjunction(this.b);
@@ -86,6 +105,9 @@ public class ALabelTest {
 
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void compare() {
 		assertTrue(this.a.compareTo(this.c) < 0);
@@ -93,6 +115,9 @@ public class ALabelTest {
 		assertTrue(this.c.compareTo(this.a) > 0);
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void array() {
 		this.a = this.a.conjunction(this.c);
@@ -105,6 +130,9 @@ public class ALabelTest {
 		assertEquals("C", a1[1].toString());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public void intersect() {
 		this.a = this.a.conjunction(this.c);
@@ -146,16 +174,16 @@ public class ALabelTest {
 		this.alpha.clear();
 
 		Assert.assertEquals(0, ALabel.emptyLabel.size());
-		
+
 		ALabel n9 = ALabel.parse("N9" + ALabel.ALABEL_SEPARATORstring + "N12" + ALabel.ALABEL_SEPARATORstring + "N13", this.alpha);
 		Assert.assertEquals(3, n9.size());
 
 		n9.remove(new ALetter("N9"));
 		Assert.assertEquals(2, n9.size());
-		
+
 		n9 = n9.conjunction(new ALabel("N9", this.alpha));
 		Assert.assertEquals(3, n9.size());
-		
+
 		n9 = n9.conjunction(new ALabel("N9", this.alpha));
 		Assert.assertEquals(3, n9.size());
 

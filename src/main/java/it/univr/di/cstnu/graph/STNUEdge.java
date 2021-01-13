@@ -20,8 +20,11 @@ import it.univr.di.labeledvalue.Constants;
  */
 public interface STNUEdge extends STNEdge {
 
+	/** Constant <code>SEP_CASE=":"</code> */
 	public final String SEP_CASE = ":";
+	/** Constant <code>UC_LABEL="UC"</code> */
 	public final String UC_LABEL = "UC";
+	/** Constant <code>LC_LABEL="LC"</code> */
 	public final String LC_LABEL = "LC";
 
 	/**
@@ -43,6 +46,9 @@ public interface STNUEdge extends STNEdge {
 			}
 		}
 
+		/**
+		 * @param pair
+		 */
 		public Pair(Pair pair) {
 			this(pair.getFirst(), pair.getSecond());
 		}
@@ -57,26 +63,44 @@ public interface STNUEdge extends STNEdge {
 			return sb.toString();
 		}
 
+		/**
+		 * @return true if it upper case edge
+		 */
 		boolean isUpper() {
 			return this.getSecond();
 		}
 
+		/**
+		 * @return true if it lower case edge
+		 */
 		boolean isLower() {
 			return !this.getSecond();
 		}
 	}
 
 	/**
-	 * @return the labeled weight if it is a contingent edge, {@link Constants#INT_NULL} otherwise.
+	 * <p>
+	 * getLabeledValue.
+	 * </p>
+	 *
+	 * @return the labeled weight if it is a contingent edge, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getLabeledValue();
 
 	/**
+	 * <p>
+	 * getNodeLabel.
+	 * </p>
+	 *
 	 * @return the node label associated to this edge when it is a contingent one and its nature (true for upper-case, false for lower-case), null otherwise.
 	 */
 	public Pair getNodeLabel();
 
 	/**
+	 * <p>
+	 * isOrdinaryEdge.
+	 * </p>
+	 *
 	 * @return true if the edge contains an ordinary value; false otherwise
 	 */
 	public default boolean isOrdinaryEdge() {
@@ -84,6 +108,10 @@ public interface STNUEdge extends STNEdge {
 	}
 
 	/**
+	 * <p>
+	 * isLowerCase.
+	 * </p>
+	 *
 	 * @return true if the edge is a lower-case one; false otherwise
 	 */
 	public default boolean isLowerCase() {
@@ -94,6 +122,10 @@ public interface STNUEdge extends STNEdge {
 	}
 
 	/**
+	 * <p>
+	 * isUpperCase.
+	 * </p>
+	 *
 	 * @return true if the edge is a lower-case one; false otherwise
 	 */
 	public default boolean isUpperCase() {
@@ -106,7 +138,7 @@ public interface STNUEdge extends STNEdge {
 	/**
 	 * Representation of the labeled value as a string.
 	 * It is important to have a reference method because in many parts the string representation is used.
-	 * 
+	 *
 	 * @return a string representing the labeled value. If there is no labeled value, returns an empty string.
 	 */
 	public default String getLabeledValueFormatted() {
@@ -118,21 +150,21 @@ public interface STNUEdge extends STNEdge {
 
 	/**
 	 * Sets the labeled weight to w. It must set the type of this edge to {@link it.univr.di.cstnu.graph.Edge.ConstraintType#contingent}.
-	 * If nodeLabel == null or w = {@link Constants#INT_NULL}, the possible labeled value is removed.
-	 * 
+	 * If nodeLabel == null or w = {@link it.univr.di.labeledvalue.Constants#INT_NULL}, the possible labeled value is removed.
+	 *
 	 * @param nodeLabel the name of the contingent node as ALetter.
 	 * @param w the new weight value
 	 * @param upperCase true if the edge is a upper-case edge, false it it is a lower-case edge. In case of lower-case edge, w must be positive.
 	 * @return the old weight associated to the edge.
-	 *         If the weight was not set, it returns {@link Constants#INT_NULL}.
+	 *         If the weight was not set, it returns {@link it.univr.di.labeledvalue.Constants#INT_NULL}.
 	 */
 	public int setLabeledValue(ALetter nodeLabel, int w, boolean upperCase);
 
 	/**
 	 * Parse a upper/case labeled value for determining the new value for this.
 	 * This method must be aligned with {@link #getLabeledValueFormatted()}.
-	 * 
-	 * @param labeledValueAsString
+	 *
+	 * @param labeledValueAsString a {@link java.lang.String} object.
 	 * @return true if the labeled value was set, false otherwise.
 	 */
 	public default boolean setLabeledValue(String labeledValueAsString) {

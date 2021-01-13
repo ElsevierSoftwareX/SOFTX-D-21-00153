@@ -33,42 +33,56 @@ public interface BasicCSTNUEdge extends CSTNEdge {
 	public void clearUpperCaseValues();
 
 	/**
+	 * <p>getAllUpperCaseAndLabeledValuesMaps.</p>
+	 *
 	 * @return the set of maps of labeled values and labeled upper-case ones.
 	 *         The maps of labeled values has ALabel empty.
 	 */
 	public LabeledALabelIntTreeMap getAllUpperCaseAndLabeledValuesMaps();
 
 	/**
-	 * @return the labeled lower-Case value object. Use {@link LabeledLowerCaseValue#isEmpty()} to check if it contains or not a significant value.
+	 * <p>getLowerCaseValue.</p>
+	 *
+	 * @return the labeled lower-Case value object. Use {@link it.univr.di.labeledvalue.LabeledLowerCaseValue#isEmpty()} to check if it contains or not a significant value.
 	 *         In case that there is more lower-case values (extensions of CSTNU), it returns the minimal one. In there is no lower-case value, it returns an
 	 *         empty LabeledLowerCaseValue object.
 	 */
 	public LabeledLowerCaseValue getLowerCaseValue();
 
 	/**
+	 * <p>getMinUpperCaseValue.</p>
+	 *
 	 * @return the minimal value (with the ALabel) among all Upper Case Label if there are some values, {@link it.univr.di.labeledvalue.Constants#INT_NULL}
 	 *         otherwise.
 	 */
 	public Object2ObjectMap.Entry<Label, Entry<ALabel>> getMinUpperCaseValue();
 
 	/**
+	 * <p>getUpperCaseValue.</p>
+	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param name a {@link ALabel} node name.
+	 * @param name a {@link it.univr.di.labeledvalue.ALabel} node name.
 	 * @return the value associated to the upper label of the occurrence of node n if it exists, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getUpperCaseValue(final Label l, final ALabel name);
 
 	/**
+	 * <p>getUpperCaseValueMap.</p>
+	 *
 	 * @return the Upper-Case labeled Value
 	 */
 	public LabeledALabelIntTreeMap getUpperCaseValueMap();
 
 	/**
+	 * <p>lowerCaseValuesAsString.</p>
+	 *
 	 * @return the representation of all Lower-Case Labels of the edge.
 	 */
 	public String lowerCaseValuesAsString();
 
 	/**
+	 * <p>lowerCaseValueSize.</p>
+	 *
 	 * @return the number of Lower-Case Labels of the edge.
 	 */
 	public int lowerCaseValueSize();
@@ -99,7 +113,7 @@ public interface BasicCSTNUEdge extends CSTNEdge {
 	 * If a upper label with label l for node n is already present, it is overwritten.
 	 * If the new value makes other already present values redundant, such values are removed.
 	 * If the new value is redundant, it is ignored.
-	 * 
+	 *
 	 * @param l It cannot be null or empty.
 	 * @param nodeName the node name. It cannot be null. It must be the unmodified name of the node.
 	 * @param i It cannot be nullInt.
@@ -111,7 +125,7 @@ public interface BasicCSTNUEdge extends CSTNEdge {
 	 * Put a upper label constraint with delay i for the node name n with label l.<br>
 	 * If a upper label with label l for node n is already present, it is overwritten.<br>
 	 * There is no optimization of the labeled values present after the insertion of this one.
-	 * 
+	 *
 	 * @param l It cannot be null or empty.
 	 * @param nodeName the node name. It cannot be null. It must be the unmodified name of the node.
 	 * @param i It cannot be nullInt.
@@ -123,23 +137,29 @@ public interface BasicCSTNUEdge extends CSTNEdge {
 	 * Remove the upper label for node name n with label l.
 	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param n a {@link ALabel} node name
+	 * @param n a {@link it.univr.di.labeledvalue.ALabel} node name
 	 * @return the old value
 	 */
 	public int removeUpperCaseValue(final Label l, final ALabel n);
 
 
 	/**
+	 * <p>setUpperCaseValueMap.</p>
+	 *
 	 * @param labeledValue the upper case labeled value map to use for initializing the set
 	 */
 	public void setUpperCaseValueMap(final LabeledALabelIntTreeMap labeledValue);
 
 	/**
+	 * <p>upperCaseValuesAsString.</p>
+	 *
 	 * @return the representation of all Upper Case Labels of the edge.
 	 */
 	public String upperCaseValuesAsString();
 
 	/**
+	 * <p>upperCaseValueSize.</p>
+	 *
 	 * @return the number of Upper Case Labels of the edge.
 	 */
 	public int upperCaseValueSize();

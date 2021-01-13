@@ -48,7 +48,6 @@ import it.univr.di.cstnu.graph.LabeledNode;
  * @see edu.uci.ics.jung.visualization.control.EditingModalGraphMouse
  * @author posenato
  */
-@SuppressWarnings("javadoc")
 public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> extends AbstractModalGraphMouse {
 
 	/**
@@ -66,13 +65,37 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 */
 	boolean editor;
 
+	/**
+	 * 
+	 */
 	Supplier<V> vertexFactory;
+	/**
+	 * 
+	 */
 	Supplier<E> edgeFactory;
+	/**
+	 * 
+	 */
 	EditingGraphMousePlugin<V, E> editingPlugin;
+	/**
+	 * 
+	 */
 	LabelEditingGraphMousePlugin<V, E> labelEditingPlugin;
+	/**
+	 * 
+	 */
 	EditingPopupGraphMousePlugin<V, E> popupEditingPlugin;
+	/**
+	 * 
+	 */
 	AnnotatingGraphMousePlugin<V, E> annotatingPlugin;
+	/**
+	 * 
+	 */
 	MultiLayerTransformer basicTransformer;
+	/**
+	 * 
+	 */
 	RenderContext<V, E> rc;
 
 	/**
@@ -81,6 +104,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 * @param rc1 a render contest.
 	 * @param vertexFactory1 a vertex factory.
 	 * @param edgeFactory1 an edge factory.
+	 * @param cstnEditor1 reference to the editor
 	 * @param editor1 true for having 'editing' function in modeComboBox.
 	 */
 	public EditingModalGraphMouse(final RenderContext<V, E> rc1, final Supplier<V> vertexFactory1, final Supplier<E> edgeFactory1, CSTNEditor cstnEditor1,
@@ -97,6 +121,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * create the plugins, and load the plugins for TRANSFORMING mode
 	 */
 	@Override
@@ -145,16 +170,35 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		}
 	}
 
+	/**
+	 * <p>
+	 * setEdgeEditingPlugin.
+	 * </p>
+	 *
+	 * @param edgeSupp edge factory
+	 */
 	public void setEdgeEditingPlugin(EdgeSupplier<E> edgeSupp) {
 		this.edgeFactory = edgeSupp;
 		this.editingPlugin.setEdgeFactory(edgeSupp);
 		this.popupEditingPlugin.setEdgeFactory(edgeSupp);
 	}
 
+	/**
+	 * <p>
+	 * getEdgeEditingPlugin.
+	 * </p>
+	 *
+	 * @return the edge factory
+	 */
 	public Supplier<E> getEdgeEditingPlugin() {
 		return this.edgeFactory;
 	}
 
+	/**
+	 * <p>
+	 * setEditingMode.
+	 * </p>
+	 */
 	protected void setEditingMode() {
 		remove(this.translatingPlugin);
 		remove(this.rotatingPlugin);
@@ -168,6 +212,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		add(this.editingPlugin);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	protected void setTransformingMode() {
 		remove(this.pickingPlugin);
@@ -193,9 +238,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	// add(this.annotatingPlugin);
 	// }
 
-	/**
-	 * @return the modeBox.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public JComboBox<Mode> getModeComboBox() {
 		if (this.modeBox == null) {
@@ -207,10 +250,9 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * create (if necessary) and return a menu that will change
 	 * the mode
-	 * 
-	 * @return the menu
 	 */
 	@Override
 	public JMenu getModeMenu() {
@@ -278,18 +320,34 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		return this.modeMenu;
 	}
 
+	/**
+	 * @author posenato
+	 */
 	@SuppressWarnings("hiding")
 	public static class ModeKeyAdapter extends KeyAdapter {
 		private char t = 't';
 		// private char p = 'p';
 		private char e = 'e';
 		// private char a = 'a';
+		/**
+		 * 
+		 */
 		protected ModalGraphMouse graphMouse;
 
+		/**
+		 * @param graphMouse
+		 */
 		public ModeKeyAdapter(ModalGraphMouse graphMouse) {
 			this.graphMouse = graphMouse;
 		}
 
+		/**
+		 * @param t
+		 * @param p
+		 * @param e
+		 * @param a
+		 * @param graphMouse
+		 */
 		public ModeKeyAdapter(char t, char p, char e, char a, ModalGraphMouse graphMouse) {
 			this.t = t;
 			// this.p = p;
@@ -326,6 +384,10 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	// }
 	//
 	/**
+	 * <p>
+	 * Getter for the field <code>editingPlugin</code>.
+	 * </p>
+	 *
 	 * @return the editingPlugin
 	 */
 	public EditingGraphMousePlugin<V, E> getEditingPlugin() {
@@ -333,6 +395,10 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>labelEditingPlugin</code>.
+	 * </p>
+	 *
 	 * @return the labelEditingPlugin
 	 */
 	public LabelEditingGraphMousePlugin<V, E> getLabelEditingPlugin() {
@@ -340,6 +406,10 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>popupEditingPlugin</code>.
+	 * </p>
+	 *
 	 * @return the popupEditingPlugin
 	 */
 	public EditingPopupGraphMousePlugin<V, E> getPopupEditingPlugin() {

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.Random;
 import java.util.logging.Level;
@@ -38,7 +39,7 @@ import it.univr.di.labeledvalue.Constants;
 
 /**
  * Allows one to build random STNU instances specifying:
- * 
+ *
  * <pre>
  * - # of wanted DC/NOT DC instances
  * And the following parameters that characterize each generated instance:
@@ -50,10 +51,11 @@ import it.univr.di.labeledvalue.Constants;
  * - max out-degree for each node
  * - probability to have an edge between any pair of nodes
  * </pre>
- * 
+ *
  * The class generates the wanted instances, building each one randomly and, then, DC checking it for stating its DC property.
  *
  * @author posenato
+ * @version $Id: $Id
  */
 public class STNURandomGenerator {
 
@@ -158,9 +160,13 @@ public class STNURandomGenerator {
 	static final double Y_SHIFT = 150d;
 
 	/**
+	 * <p>
+	 * main.
+	 * </p>
+	 *
 	 * @param args input args
-	 * @throws IOException if results cannot be stored
-	 * @throws FileNotFoundException if a file is not found
+	 * @throws java.io.IOException if results cannot be stored
+	 * @throws java.io.FileNotFoundException if a file is not found
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 
@@ -201,10 +207,8 @@ public class STNURandomGenerator {
 			String indexNumber = String.format(numberFormat, (dcInstancesDone + generator.startingIndex));
 			String fileName = "dc" + fileNamePrefix + "_" + indexNumber + ".stnu";
 			File outputFile = getNewFile(generator.dcSubDir, fileName);
-			try (PrintWriter writer = new PrintWriter(outputFile)) {
-				stnuWriter.save(instances.getFirst(), writer);
-				System.out.println("DC instance " + fileName + " saved.");
-			}
+			stnuWriter.save(instances.getFirst(), outputFile);
+			System.out.println("DC instance " + fileName + " saved.");
 			// plain format
 			fileName = "dc" + fileNamePrefix + "_" + indexNumber + ".plainStnu";
 			outputFile = getNewFile(generator.dcSubDir, fileName);
@@ -215,10 +219,8 @@ public class STNURandomGenerator {
 				TNGraph<STNUEdge> denseInstance = generator.makeDenseInstance(instances.getFirst());
 				fileName = "dc" + fileNamePrefix + "_dense_" + indexNumber + ".stnu";
 				outputFile = getNewFile(generator.dcSubDir, fileName);
-				try (PrintWriter writer = new PrintWriter(outputFile)) {
-					stnuWriter.save(denseInstance, writer);
-					System.out.println("DC instance " + fileName + " saved.");
-				}
+				stnuWriter.save(denseInstance, outputFile);
+				System.out.println("DC instance " + fileName + " saved.");
 				fileName = "dc" + fileNamePrefix + "_dense_" + indexNumber + ".plainStnu";
 				outputFile = getNewFile(generator.dcSubDir, fileName);
 				stnuPlainWriter(denseInstance, outputFile);
@@ -229,10 +231,8 @@ public class STNURandomGenerator {
 				// save the NOT DC instance
 				fileName = "notDC" + fileNamePrefix + "_" + indexNumber + ".stnu";
 				outputFile = getNewFile(generator.notDCSubDir, fileName);
-				try (PrintWriter writer = new PrintWriter(outputFile)) {
-					stnuWriter.save(instances.getSecond(), writer);
-					System.out.println("NOT DC instance " + fileName + " saved.");
-				}
+				stnuWriter.save(instances.getSecond(), outputFile);
+				System.out.println("NOT DC instance " + fileName + " saved.");
 				notDCinstancesDone++;
 				fileName = "notDC" + fileNamePrefix + "_" + indexNumber + ".plainStnu";
 				outputFile = getNewFile(generator.notDCSubDir, fileName);
@@ -243,10 +243,8 @@ public class STNURandomGenerator {
 					TNGraph<STNUEdge> denseInstance = generator.makeDenseInstance(instances.getSecond());
 					fileName = "notDC" + fileNamePrefix + "_dense_" + indexNumber + ".stnu";
 					outputFile = getNewFile(generator.notDCSubDir, fileName);
-					try (PrintWriter writer = new PrintWriter(outputFile)) {
-						stnuWriter.save(denseInstance, writer);
-						System.out.println("NOT DC instance " + fileName + " saved.");
-					}
+					stnuWriter.save(denseInstance, outputFile);
+					System.out.println("NOT DC instance " + fileName + " saved.");
 					fileName = "notDC" + fileNamePrefix + "_dense_" + indexNumber + ".plainStnu";
 					outputFile = getNewFile(generator.notDCSubDir, fileName);
 					stnuPlainWriter(denseInstance, outputFile);
@@ -425,7 +423,7 @@ public class STNURandomGenerator {
 			return false;
 		LOG.finest("Start to save the instance in a plain format");
 
-		try (PrintWriter writer = new PrintWriter(outputFile)) {
+		try (PrintWriter writer = new PrintWriter(outputFile, "UTF-8")) {
 			writer.println("# Nodes and contingent links saved in random order.");
 			writer.println("# KIND OF NETWORK\nSTNU");
 			writer.println("# Num Time-Points\n" + graph.getVertexCount());
@@ -458,7 +456,7 @@ public class STNURandomGenerator {
 				STNUEdge lower = graph.findEdge(contingent, activation);
 				writer.println("'" + activation.getName() + "' " + (-lower.getValue()) + " " + (e.getValue()) + " '" + contingent.getName() + "'");
 			}
-		} catch (FileNotFoundException e) {
+		} catch (FileNotFoundException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -612,14 +610,18 @@ public class STNURandomGenerator {
 	private File tmpNetwork;
 
 	/**
-	 * @param givenDcInstances
-	 * @param givenNotDCInstances
-	 * @param nodes
-	 * @param nCtgNodes1
-	 * @param givenMaxContingentWeight
-	 * @param edgeProbability
-	 * @param givenMaxWeight
-	 * @throws IllegalArgumentException if one or more parameters has/have not valid value/s.
+	 * <p>
+	 * Constructor for STNURandomGenerator.
+	 * </p>
+	 *
+	 * @param givenDcInstances a int.
+	 * @param givenNotDCInstances a int.
+	 * @param nodes a int.
+	 * @param nCtgNodes1 a int.
+	 * @param givenMaxContingentWeight a int.
+	 * @param edgeProbability a double.
+	 * @param givenMaxWeight a int.
+	 * @throws java.lang.IllegalArgumentException if one or more parameters has/have not valid value/s.
 	 */
 	public STNURandomGenerator(int givenDcInstances, int givenNotDCInstances, int nodes, int nCtgNodes1, double edgeProbability, int givenMaxWeight,
 			int givenMaxContingentWeight) throws IllegalArgumentException {
@@ -646,6 +648,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * getDcInstanceNumber.
+	 * </p>
+	 *
 	 * @return the dcInstances
 	 */
 	public int getDcInstanceNumber() {
@@ -653,6 +659,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>edgeProb</code>.
+	 * </p>
+	 *
 	 * @return the edgeProb
 	 */
 	public double getEdgeProb() {
@@ -660,6 +670,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>maxWeight</code>.
+	 * </p>
+	 *
 	 * @return the maxWeight
 	 */
 	public int getMaxWeight() {
@@ -667,6 +681,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * getNodeNumber.
+	 * </p>
+	 *
 	 * @return the nNodes
 	 */
 	public int getNodeNumber() {
@@ -674,6 +692,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * getNotDCInstanceNumber.
+	 * </p>
+	 *
 	 * @return the notDCInstances
 	 */
 	public int getNotDCInstanceNumber() {
@@ -681,6 +703,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>notDCSubDir</code>.
+	 * </p>
+	 *
 	 * @return the notDCSubDir
 	 */
 	public File getNotDCSubDir() {
@@ -688,6 +714,10 @@ public class STNURandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * getObsQLoopNumber.
+	 * </p>
+	 *
 	 * @return the nObsQLoop
 	 */
 	public int getObsQLoopNumber() {
@@ -906,18 +936,14 @@ public class STNURandomGenerator {
 		STNU stnu = new STNU(randomGraph, this.timeOut);
 		stnu.setDefaultConsistencyCheckAlg(CheckAlgorithm.RUL2020);
 
-		STNUCheckStatus status = new STNUCheckStatus();
+		STNUCheckStatus status;
 
 		while (true) {
 			stnu.reset();
 			stnu.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_STNU_EDGE_CLASS));
 			if (LOG.isLoggable(Level.FINER)) {
-				try (PrintWriter writer = new PrintWriter(this.tmpNetwork)) {
-					cstnWriter.save(stnu.getG(), writer);
-					LOG.finer("Current cstn saved as 'current.stnu' before checking.");
-				} catch (IOException ex) {
-					LOG.finer("Problem to save 'current.stnu' " + ex.getMessage() + ".\nProgram continues anyway.");
-				}
+				cstnWriter.save(stnu.getG(), this.tmpNetwork);
+				LOG.finer("Current cstn saved as 'current.stnu' before checking.");
 			}
 			try {
 				LOG.fine("DC Check started.");
@@ -1441,11 +1467,11 @@ public class STNURandomGenerator {
 		readmeText += "\n";
 
 		String readmeStr = "README";
-		try (PrintWriter writer = new PrintWriter(getNewFile(this.dcSubDir, readmeStr))) {
+		try (PrintWriter writer = new PrintWriter(getNewFile(this.dcSubDir, readmeStr), "UTF-8")) {
 			writer.format(readmeText, this.dcInstances, "dynamic controllable (DC)");
 			writer.close();
 		}
-		try (PrintWriter writer = new PrintWriter(getNewFile(this.notDCSubDir, readmeStr))) {
+		try (PrintWriter writer = new PrintWriter(getNewFile(this.notDCSubDir, readmeStr), "UTF-8")) {
 			writer.format(readmeText, this.notDCInstances, "NOT dynamic controllable (NOTDC)");
 			writer.close();
 		}

@@ -10,10 +10,9 @@ package it.univr.di.cstnu.graph;
 import java.awt.Dimension;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -31,8 +30,9 @@ import it.univr.di.labeledvalue.LabeledIntMap;
 
 /**
  * Utility class for converting CSTN file in Luke format to GraphML format.
- * 
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class Luke2GraphML {
 	/**
@@ -45,11 +45,13 @@ public class Luke2GraphML {
 	 */
 	static final String VERSIONandDATE = "1.1, March, 11 2016";
 
-
 	/**
-	 * @param args
-	 *            a CSTN file in Luke's format.
-	 * @throws Exception
+	 * <p>
+	 * main.
+	 * </p>
+	 *
+	 * @param args a CSTN file in Luke's format.
+	 * @throws java.lang.Exception
 	 */
 	public static void main(String[] args) throws Exception {
 
@@ -74,13 +76,12 @@ public class Luke2GraphML {
 			return;
 		}
 
-
 		TNGraph<CSTNEdge> g = new TNGraph<>(EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS);
 
 		Int2ObjectMap<LabeledNode> int2Node = new Int2ObjectOpenHashMap<>();
 		int2Node.defaultReturnValue(null);
 
-		try (BufferedReader reader = new BufferedReader(new FileReader(converter.inputCSTNFile))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(converter.inputCSTNFile), "UTF8"))) {
 			while (reader.ready()) {
 				String line = reader.readLine();
 				LOG.finest("Line:" + line);
@@ -107,10 +108,8 @@ public class Luke2GraphML {
 		layout.initialize();
 		TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
 
-		try (PrintWriter writer = new PrintWriter(converter.output)) {
-			graphWriter.save(g, writer);
-			System.out.println("TNGraph saved into file " + converter.fOutput);
-		}
+		graphWriter.save(g, converter.fOutput);
+		System.out.println("TNGraph saved into file " + converter.fOutput);
 	}
 
 	/**
@@ -126,8 +125,8 @@ public class Luke2GraphML {
 		String[] nodeParts = line.split(patternEdge);
 		// nodeParts[0] is empty!
 
-		int sI = Integer.valueOf(nodeParts[1]);
-		int dI = Integer.valueOf(nodeParts[2]);
+		int sI = Integer.parseInt(nodeParts[1]);
+		int dI = Integer.parseInt(nodeParts[2]);
 		LabeledNode sourceNode = int2Node.get(sI);
 		LabeledNode destNode = int2Node.get(dI);
 		CSTNEdge edge = g.getEdgeFactory().get(sourceNode.name + "-" + destNode.name);
@@ -221,11 +220,6 @@ public class Luke2GraphML {
 	private File inputCSTNFile;
 
 	/**
-	 * Output stream to fOutput
-	 */
-	private PrintStream output = null;
-
-	/**
 	 * Software Version.
 	 */
 	@Option(required = false, name = "-v", aliases = "--version", usage = "Version")
@@ -282,17 +276,6 @@ public class Luke2GraphML {
 				this.fOutput.renameTo(new File(this.fOutput.getAbsoluteFile() + ".old"));
 				this.fOutput.delete();
 			}
-			try {
-				this.fOutput.createNewFile();
-				this.output = new PrintStream(this.fOutput);
-			} catch (IOException e) {
-				System.err.println("Output file cannot be created: " + e.getMessage());
-				parser.printUsage(System.err);
-				System.err.println();
-				return false;
-			}
-		} else {
-			this.output = System.out;
 		}
 		return true;
 	}

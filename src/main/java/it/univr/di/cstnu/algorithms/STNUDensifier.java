@@ -7,7 +7,6 @@ package it.univr.di.cstnu.algorithms;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -53,6 +52,7 @@ import net.openhft.affinity.AffinityThreadFactory;
  * For now, it works only on instance made of lanes.
  *
  * @author posenato
+ * @version $Id: $Id
  */
 public class STNUDensifier {
 
@@ -103,11 +103,11 @@ public class STNUDensifier {
 	 * So, if it is possible to reserve some CPU modifying the kernel as explained in <a href="https://github.com/OpenHFT/Java-Thread-Affinity">thread affinity
 	 * page</a>.
 	 * it is possible to run the parallel thread in the better conditions.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException if instances contains syntax errors
-	 * @throws ParserConfigurationException if input parameters contains errors
-	 * @throws IOException if files are not readable
+	 * @throws org.xml.sax.SAXException if instances contains syntax errors
+	 * @throws javax.xml.parsers.ParserConfigurationException if input parameters contains errors
+	 * @throws java.io.IOException if files are not readable
 	 */
 	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
@@ -584,12 +584,8 @@ public class STNUDensifier {
 			}
 
 			if (LOG.isLoggable(Level.FINER)) {
-				try (PrintWriter writer = new PrintWriter(this.tmpNetwork)) {
-					cstnWriter.save(stnu.getG(), writer);
-					LOG.finer("Current cstn saved as 'current.stnu' before checking.");
-				} catch (IOException ex) {
-					LOG.finer("Problem to save 'current.stnu' " + ex.getMessage() + ".\nProgram continues anyway.");
-				}
+				cstnWriter.save(stnu.getG(), this.tmpNetwork);
+				LOG.finer("Current cstn saved as 'current.stnu' before checking.");
 			}
 
 			try {
@@ -790,21 +786,12 @@ public class STNUDensifier {
 			// save the two instances.
 			String fileName = getNewFileName(file.getName());
 			File outputFile = new File(fileName);
-			try (PrintWriter writer = new PrintWriter(outputFile)) {
-				stnuWriter.save(pair.getFirst(), writer);
-				// System.out.println("DC instance " + fileName + " saved.");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			stnuWriter.save(pair.getFirst(), outputFile);
 			if (pair.getSecond() != null) {
 				fileName = "NOT" + fileName;
 				outputFile = new File(fileName);
-				try (PrintWriter writer = new PrintWriter(outputFile)) {
-					stnuWriter.save(pair.getSecond(), writer);
-					System.out.println("NOT DC instance " + fileName + " saved.");
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				stnuWriter.save(pair.getSecond(), outputFile);
+				System.out.println("NOT DC instance " + fileName + " saved.");
 			}
 			runState.printProgress();
 			return true;

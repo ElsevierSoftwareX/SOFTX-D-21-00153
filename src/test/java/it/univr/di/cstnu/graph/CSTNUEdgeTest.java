@@ -29,6 +29,9 @@ public class CSTNUEdgeTest {
 	 */
 	static Class<? extends CSTNUEdge> edgeClass = CSTNUEdgePluggable.class;
 
+	/**
+	 * 
+	 */
 	static EdgeSupplier<CSTNUEdge> edgeFactory = new EdgeSupplier<>(edgeClass);
 	/**
 	 * 
@@ -83,9 +86,7 @@ public class CSTNUEdgeTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.graph.CSTNUEdge#getAllUpperCaseAndOrdinaryLabeledValuesSet()}.
 	 */
-	@SuppressWarnings({ "javadoc" })
 	@Test()
 	public void testGetAllUpperCaseAndOrdinaryLabeledValuesSet() {
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
@@ -131,6 +132,7 @@ public class CSTNUEdgeTest {
 	}
 
 	/**
+	 * 
 	 */
 	@Test
 	public final void testMergeUpperLabeledValues() {
@@ -144,6 +146,9 @@ public class CSTNUEdgeTest {
 		assertEquals("{(C1_E∙C3_E, -2, a¿b) }", this.e.getUpperCaseValueMap().toString());
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public final void testMergeUpperLabeledValues1() {
 		this.alphabet.clear();
@@ -182,6 +187,9 @@ public class CSTNUEdgeTest {
 		assertTrue(this.e.hasSameValues(e1));
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public final void testMergeUpperLabeledValues2() {
 		this.alphabet.clear();
@@ -239,6 +247,9 @@ public class CSTNUEdgeTest {
 
 	}
 
+	/**
+	 * 
+	 */
 	@Test
 	public final void testSimlificationUpperLabeledValues() {
 		this.alphabet.clear();
@@ -246,7 +257,6 @@ public class CSTNUEdgeTest {
 				.parse("{(D, -∞, ¿ab) (D, -30, ab) (D, -∞, a¿b) (D, -4, ¿b) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }",
 						this.alphabet);
 		LabeledIntMap map = AbstractLabeledIntMap.parse("{(0, a) (0, ¬a) }");
-
 
 		this.e.setLabeledValueMap(map);
 		this.e.setUpperCaseValueMap(mapUC);

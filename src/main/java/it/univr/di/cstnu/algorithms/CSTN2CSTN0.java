@@ -27,7 +27,7 @@ import it.univr.di.labeledvalue.Label;
  * Simple class to represent and check Conditional Simple Temporal Network assuming epsilon semantics and reducing an instance to an appropriate CSTN where DC
  * checking is
  * made assuming instantaneous reaction semantics.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -46,10 +46,12 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	static final String VERSIONandDATE = "Version  1.1 - November, 20 2017";// It derives from CSTNEpsilonwoNodeLabels
 
 	/**
+	 * <p>main.</p>
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTN2CSTN0(), "Reduction to CSTN IR DC");
@@ -62,23 +64,29 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	}
 
 	/**
-	 * @param givenReactionTime
-	 * @param graph
+	 * <p>Constructor for CSTN2CSTN0.</p>
+	 *
+	 * @param givenReactionTime a int.
+	 * @param graph a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 */
 	public CSTN2CSTN0(int givenReactionTime, TNGraph<CSTNEdge> graph) {
 		super(givenReactionTime, graph);
 	}
 
 	/**
-	 * @param givenReactionTime
-	 * @param graph
-	 * @param givenTimeOut
+	 * <p>Constructor for CSTN2CSTN0.</p>
+	 *
+	 * @param givenReactionTime a int.
+	 * @param graph a {@link it.univr.di.cstnu.graph.TNGraph} object.
+	 * @param givenTimeOut a int.
 	 */
 	public CSTN2CSTN0(int givenReactionTime, TNGraph<CSTNEdge> graph, int givenTimeOut) {
 		super(givenReactionTime, graph, givenTimeOut);
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Checks the controllability of a CSTNU instance.
 	 * This method transform the given CSTNU instance into a corresponding CSTN instance such that
 	 * the original instance is dynamic <em>controllable</em> iff the corresponding CSTN is dynamic <em>consistent</em>.

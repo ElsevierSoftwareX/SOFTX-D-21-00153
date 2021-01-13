@@ -27,8 +27,10 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  * <p>
  * This class provides additional methods that implement a <em>dequeue</em>
  * (double-ended queue).
- * 
+ *
  * @param <K>
+ * @author posenato
+ * @version $Id: $Id
  */
 public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K>, Serializable {
 	/**
@@ -91,6 +93,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public K dequeue() {
 		if (this.start == this.end)
@@ -108,8 +111,6 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	 * Dequeues the {@linkplain PriorityQueue#last() last} element from the queue.
 	 *
 	 * @return the dequeued element.
-	 * @throws NoSuchElementException
-	 *             if the queue is empty.
 	 */
 	public K dequeueLast() {
 		if (this.start == this.end)
@@ -159,6 +160,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			resize(size, this.length / 2);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void enqueue(K x) {
 		if (this.contains(x))
@@ -174,7 +176,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	/**
 	 * Enqueues a new element as the first element (in dequeuing order) of the
 	 * queue.
-	 * 
+	 *
 	 * @param x the element to enqueue.
 	 */
 	public void enqueueFirst(K x) {
@@ -188,6 +190,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 			expand();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public K first() {
 		if (this.start == this.end)
@@ -195,6 +198,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return this.backingArray[this.start];
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public K last() {
 		if (this.start == this.end)
@@ -202,6 +206,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return this.backingArray[(this.end == 0 ? this.length : this.end) - 1];
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		if (this.start <= this.end)
@@ -213,7 +218,9 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		this.start = this.end = 0;
 	}
 
-	/** Trims the queue to the smallest possible size. */
+	/**
+	 * Trims the queue to the smallest possible size.
+	 */
 	@SuppressWarnings("unchecked")
 	public void trim() {
 		final int size = size();
@@ -229,16 +236,14 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		this.backingArray = newArray;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int size() {
 		final int apparentLength = this.end - this.start;
 		return apparentLength >= 0 ? apparentLength : this.length + apparentLength;
 	}
 
-	/**
-	 * @param o
-	 * @return true if the queue contains o.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean contains(Object o) {
 		if (o == null || (this.start == this.end))
@@ -262,9 +267,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return -1;
 	}
 
-	/**
-	 * @return a copy of the queue as an array.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public K[] toArray() {
 		final int size = size();
@@ -273,6 +276,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return copyArray(newArray);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
@@ -300,9 +304,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return newArray;
 	}
 
-	/**
-	 * @return an iterator on the current queue. If the queue is modified during the use of the iterator, then the iterator behavior is undefined.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectIterator<K> iterator() {
 		return new ObjectIterator<K>() {
@@ -327,6 +329,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		};
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean add(K e) {
 		if (this.contains(e))
@@ -335,6 +338,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean remove(Object o) {
 		if (o == null || this.start == this.end)
@@ -358,6 +362,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean containsAll(Collection<?> c) {
 		for (Object o : c) {
@@ -367,6 +372,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean addAll(Collection<? extends K> c) {
 		for (K o : c) {
@@ -375,6 +381,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean removeAll(Collection<?> c) {
 		for (Object o : c) {
@@ -383,6 +390,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException("retainAll");
@@ -403,6 +411,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		int size = size();
@@ -434,6 +443,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return this.start == this.end;

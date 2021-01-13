@@ -2,12 +2,9 @@ package it.univr.di.cstnu.graph;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 
 import org.junit.Test;
 
@@ -17,6 +14,7 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
 
+@SuppressWarnings("javadoc")
 public class CSTNUGraphMLWriterTest {
 
 	String fileName = "src/test/resources/testGraphML.cstnu";
@@ -52,11 +50,7 @@ public class CSTNUGraphMLWriterTest {
 		// CSTNU cstnu = new CSTNU(g);
 		// cstnu.initAndCheck();
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
-		try (Writer out = new PrintWriter(new BufferedWriter(new FileWriter(this.fileName)))) {
-			graphWriter.save(g, out);
-		} catch (final Exception e) {
-			e.printStackTrace();
-		}
+		graphWriter.save(g, new File(this.fileName));
 		try (FileReader input = new FileReader(this.fileName)) {
 			char[] fileAsChar = new char[4200];
 			input.read(fileAsChar);

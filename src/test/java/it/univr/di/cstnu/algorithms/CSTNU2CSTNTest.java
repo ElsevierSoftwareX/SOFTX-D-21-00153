@@ -14,14 +14,17 @@ import it.univr.di.cstnu.graph.TNGraph;
 
 /**
  * @author posenato
- *
  */
 public class CSTNU2CSTNTest {
+	/**
+	 * 
+	 */
 	static final Class<? extends CSTNUEdge> edgeImplClass = CSTNUEdgePluggable.class;
 	/**
 	 * 
 	 */
 	TNGraph<CSTNUEdge> g;
+
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -35,7 +38,7 @@ public class CSTNU2CSTNTest {
 	 */
 	@Test
 	public void testCSTNU2CSTNLabeledIntGraphInt() {
-		
+
 		CSTNU2CSTN checker = new CSTNU2CSTN(this.g, 100);
 
 		assertEquals(checker.timeOut, 100);

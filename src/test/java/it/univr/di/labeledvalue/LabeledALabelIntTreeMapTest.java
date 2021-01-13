@@ -24,9 +24,7 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  */
 public class LabeledALabelIntTreeMapTest {
 
-	/**
-	 *
-	 */
+	@SuppressWarnings("javadoc")
 	LabeledALabelIntTreeMap map,
 			result;
 
@@ -34,7 +32,7 @@ public class LabeledALabelIntTreeMapTest {
 	 * 
 	 */
 	ALabelAlphabet alpha;
-	
+
 	/**
 	 * @throws Exception
 	 */
@@ -61,7 +59,7 @@ public class LabeledALabelIntTreeMapTest {
 		this.map.mergeTriple(Label.parse("¬ba"), new ALabel("N9", this.alpha), 15);
 		this.map.mergeTriple(Label.parse("ab"), new ALabel("N6", this.alpha), 1);
 
-		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> set = new ObjectArraySet<>(); 
+		final ObjectSet<Object2IntMap.Entry<Entry<Label, ALabel>>> set = new ObjectArraySet<>();
 		for (ALabel aleph : this.map.keySet()) {
 			for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entry : this.map.get(aleph).entrySet()) {
 				set.add(new AbstractObject2IntMap.BasicEntry<Entry<Label, ALabel>>((new SimpleEntry<>(entry.getKey(), aleph)), entry.getIntValue()));
@@ -186,7 +184,6 @@ public class LabeledALabelIntTreeMapTest {
 		Assert.assertEquals("Check of merge with two different node\n", this.result, this.map);
 	}
 
-
 	/**
 	 *
 	 */
@@ -262,7 +259,6 @@ public class LabeledALabelIntTreeMapTest {
 
 		Assert.assertEquals("Check of merge with two nodes\n", this.result, this.map);
 	}
-
 
 	/**
 	 * 
@@ -349,7 +345,7 @@ public class LabeledALabelIntTreeMapTest {
 
 		this.map = LabeledALabelIntTreeMap
 				.parse("{(¬a, N9, -12) (¬a, N9" + ALabel.ALABEL_SEPARATORstring + "N12" + ALabel.ALABEL_SEPARATORstring
-				+ "N13, -20) (a, N10, -11) (" + Label.emptyLabel + ", N9, -12)}", this.alpha);
+						+ "N13, -20) (a, N10, -11) (" + Label.emptyLabel + ", N9, -12)}", this.alpha);
 
 		// System.out.printf("Map da parse: %s\n", map);
 
@@ -400,7 +396,7 @@ public class LabeledALabelIntTreeMapTest {
 	@Test
 	public final void minValue() {
 		this.map.clear();
-		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
+		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }", this.alpha);
 
 		assertTrue(this.map.getMinValue().getValue().getIntValue() == -14);
 		this.map.clear();
@@ -414,13 +410,13 @@ public class LabeledALabelIntTreeMapTest {
 	@Test
 	public final void minValueConsisntenWithTest() {
 		this.map.clear();
-		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }",this.alpha);
-//		System.out.println(this.map);
+		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14) }", this.alpha);
+		// System.out.println(this.map);
 		assertTrue(this.map.getMinValue().getValue().getIntValue() == -14);
 		this.map.clear();
 		assertTrue(this.map.getMinValue().getValue().getIntValue() == Constants.INT_NULL);
 
-		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}",this.alpha);
+		this.map = LabeledALabelIntTreeMap.parse("{(¬a, N9, -12) (a, N10, -11) (" + Label.emptyLabel + ", N9, -14)}", this.alpha);
 		// System.out.println(map.getMinValueConsistentWith(Label.parse("¬a"), new ALabel("N9", alpha)) );
 		assertTrue(this.map.getMinValueConsistentWith(Label.parse("¬a"), new ALabel("N9", this.alpha)) == -14);
 		assertTrue(this.map.getMinValueConsistentWith(Label.parse("¬a"), new ALabel("N11", this.alpha)) == Constants.INT_NULL);

@@ -7,7 +7,13 @@
  */
 package it.univr.di.cstnu.graph;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
 import com.google.common.base.Function;
@@ -24,7 +30,7 @@ import it.univr.di.labeledvalue.Literal;
  * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
  * under CstnuTool one.<br>
  * It assumes that nodes are {@linkplain LabeledNode} and edges are {@linkplain Edge}.
- * 
+ *
  * @author posenato
  * @version $Id: $Id
  */
@@ -126,7 +132,7 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 	/**
 	 * Constructor for TNGraphMLWriter.
 	 *
-	 * @param lay a {@link AbstractLayout} object. If it is null, vertex coordinates are determined from the property of the vertex.
+	 * @param lay a {@link edu.uci.ics.jung.algorithms.layout.AbstractLayout} object. If it is null, vertex coordinates are determined from the property of the vertex.
 	 */
 	public TNGraphMLWriter(final AbstractLayout<LabeledNode, ? extends Edge> lay) {
 		super();
@@ -135,18 +141,26 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 	}
 
 	/**
-	 * @param graph
-	 * @param w
-	 * @throws IOException
+	 * <p>save.</p>
+	 *
+	 * @param graph the network to save
+	 * @param outputFile the name of outfile.
 	 */
 	@SuppressWarnings("unchecked")
-	public void save(TNGraph<? extends Edge> graph, Writer w) throws IOException {
+	public void save(TNGraph<? extends Edge> graph, File outputFile) {
 		this.networkType = graph.getType();
 		this.addMetaData();
-		super.save((TNGraph<Edge>) graph, w);
+		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF8"))) {
+			super.save((TNGraph<Edge>) graph, writer);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	@SuppressWarnings("javadoc")
 	private void addMetaData() {
 		/*
 		 * TNGraph attributes

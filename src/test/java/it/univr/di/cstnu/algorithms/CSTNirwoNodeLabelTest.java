@@ -14,7 +14,6 @@ import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Label;
 
@@ -42,7 +41,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#makeAlphaBetaGammaPrime(TNGraph, LabeledNode, LabeledNode, LabeledNode, LabeledNode, char, Label, Label)
 	 * 
 	 * <pre>
 	 * P? &lt;--- X &lt;---- Y
@@ -53,7 +51,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	 * </pre>
 	 */
 	@Override
-	@SuppressWarnings({ "javadoc" })
+
 	@Test
 	public final void testAlphaBetaGamaPrime() {
 		LabeledNode Y = this.g.getNodeFactory().get("Y");
@@ -69,7 +67,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(G);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
@@ -90,50 +87,47 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 		wellDefinition();
 
-
 		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("pbg")).toString());
 		assertEquals("¬abg",
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("¬ab"), Label.parse("¬pbg")).toString());
 
-//		assertEquals("bg", //if children are considered
-//				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
+		// assertEquals("bg", //if children are considered
+		// this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
 
-		assertEquals("¬abg", //if children are not considered
+		assertEquals("¬abg", // if children are not considered
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("bp¬ag")).toString());
 
-//		assertEquals("bg",//if children are considered
-//				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
-		assertEquals("¬abg",//if children are not considered
+		// assertEquals("bg",//if children are considered
+		// this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
+		assertEquals("¬abg", // if children are not considered
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("b¬pg¬a")).toString());
 		/*
 		 * 'a' in 'ba' is a children supposed not to be present.
 		 */
 		B.setLabel(Label.parse("a"));
-//		assertEquals("¿bg",//if children are considered
-//				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
-		assertEquals("¬a¿bg",//if children are not considered
+		// assertEquals("¿bg",//if children are considered
+		// this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
+		assertEquals("¬a¿bg", // if children are not considered
 				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("p¬b¬ag")).toString());
 
-//		assertEquals("bg",//if children are considered
-//				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
-		assertEquals("¬abg",//if children are not considered
+		// assertEquals("bg",//if children are considered
+		// this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
+		assertEquals("¬abg", // if children are not considered
 				this.cstn.makeAlphaBetaGammaPrime4R3(Y, this.X, this.P, this.P.getPropositionObserved(), Label.parse("b"), Label.parse("¬pbg¬a")).toString());
 
-//		assertEquals("¿bg",//if children are considered
-//				this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
-		assertEquals("¬a¿bg",//if children are not considered
+		// assertEquals("¿bg",//if children are considered
+		// this.cstn.makeBetaGammaDagger4qR3(Y, this.Z, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
+		assertEquals("¬a¿bg", // if children are not considered
 				this.cstn.makeBetaGammaDagger4qR3(Y, this.P, this.P.getPropositionObserved(), Label.parse("¬b"), Label.parse("b¬apg")).toString());
 		// assertEquals("bg", CSTN.makeAlphaBetaGammaPrime(g, Y, X, P, Z, P.getPropositionObserved(), Label.parse("b"), Label.parse("bg¬a")).toString());
 	}
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation() {
 
@@ -146,7 +140,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 
-
 		CSTNEdge XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
 		XP.mergeLabeledValue(Label.parse("¬a"), 8);
@@ -158,7 +151,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		PY.mergeLabeledValue(Label.parse("b"), -10);
 
 		CSTNEdge XY = this.g.getEdgeFactory().get("XY");
-		
+
 		this.g.addEdge(XP, this.X, this.P);
 		this.g.addEdge(PY, this.P, Y);
 		this.g.addEdge(XY, this.X, Y);
@@ -214,11 +207,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation1() {
 
@@ -227,7 +218,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 		this.g.addVertex(this.Z);
-
 
 		// Ricostruisco i passi di un caso di errore
 		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
@@ -267,11 +257,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation2() {
 
@@ -280,7 +268,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 		this.g.addVertex(this.Z);
-
 
 		ObjectAVLTreeSet<String> nodeSet = new ObjectAVLTreeSet<>();
 		nodeSet.add(this.X.getName());
@@ -310,11 +297,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	/**
 	 * Test method for creating a -infty loop
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation3() {
 
@@ -353,7 +338,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		assertEquals("XY: ", AbstractLabeledIntMap.parse("{(3, ¬p) (-2, p) (-5, ¿p) }"), XY.getLabeledValueMap());
 		assertEquals("YX: ", AbstractLabeledIntMap.parse("{(-1, ¬p) (3, p) }"), YX.getLabeledValueMap());
 		assertEquals("XX: ", AbstractLabeledIntMap.parse("{}"), XX.getLabeledValueMap());
-		
+
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
 		// Remember that not negative value on self loop are never stored!
 		assertEquals("XX: ", "{(-∞, ¿p) }", XX.getLabeledValueMap().toString());
@@ -366,11 +351,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	/**
 	 * Test method for checking that all propagations are done
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation4() {
 
@@ -437,10 +420,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
+	 * Test method for
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationR0() {
 
@@ -465,10 +447,9 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
+	 * Test method for
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationR0Z() {
 
@@ -496,7 +477,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	@Override
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationR3(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
+	 * Test method for
 	 */
 	@Test
 	public final void testLabelModificationR3() {
@@ -513,7 +494,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(C);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge px = this.g.getEdgeFactory().get("PX");
 		px.mergeLabeledValue(Label.parse("¬b"), 0);
@@ -566,7 +546,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
 
-
 		CSTNEdge pz = this.g.getEdgeFactory().get("PZ");
 		pz.mergeLabeledValue(Label.parse("¬b"), -1);
 		pz.mergeLabeledValue(Label.parse("ab"), -10);
@@ -588,8 +567,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		assertEquals("R3: yx labeled values.", AbstractLabeledIntMap.parse("{(-11, abc¬p) (-11, ab¿c) (-15, ab¿p) (-10, ab) }"), xz.getLabeledValueMap());
 	}
 
-
-	
 	/**
 	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 
@@ -605,7 +582,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(Q);
 		this.g.addVertex(R);
-
 
 		// Ricostruisco i passi di un caso di errore
 		CSTNEdge RZ = this.g.getEdgeFactory().get("RZ");
@@ -648,7 +624,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#removeChildrenOfUnknown(Label)
 	 * 
 	 * <pre>
 	 * P? &lt;--- X &lt;---- Y
@@ -659,7 +634,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 	 * </pre>
 	 */
 	@Override
-	@SuppressWarnings({ "javadoc" })
+
 	@Test
 	public final void testRemoveChildren() {
 
@@ -676,7 +651,6 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addVertex(G);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);

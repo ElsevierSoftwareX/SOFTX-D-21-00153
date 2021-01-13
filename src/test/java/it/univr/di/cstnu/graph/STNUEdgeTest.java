@@ -20,6 +20,9 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  */
 public class STNUEdgeTest {
 
+	/**
+	 * 
+	 */
 	static EdgeSupplier<STNUEdgeInt> edgeFactory = new EdgeSupplier<>(STNUEdgeInt.class);
 
 	/**
@@ -73,6 +76,9 @@ public class STNUEdgeTest {
 		assertTrue(this.e.isLowerCase());
 	}
 
+	/**
+	 * 
+	 */
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 

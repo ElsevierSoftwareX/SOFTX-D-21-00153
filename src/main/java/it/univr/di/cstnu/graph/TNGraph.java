@@ -47,14 +47,14 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Represents (dense) temporal network graphs where nodes are {@link LabeledNode} and edges are (an extension of) {@link Edge}.
- * This class implements the interface {@link DirectedGraph} in order to allow the representation of Graph by Jung library.
+ * Represents (dense) temporal network graphs where nodes are {@link it.univr.di.cstnu.graph.LabeledNode} and edges are (an extension of)
+ * {@link it.univr.di.cstnu.graph.Edge}.
+ * This class implements the interface {@link edu.uci.ics.jung.graph.DirectedGraph} in order to allow the representation of Graph by Jung library.
  *
  * @author posenato
  * @version $Id: $Id
  * @param <E> type of edge
  */
-
 public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> implements DirectedGraph<LabeledNode, E>, Observer {
 
 	/**
@@ -65,26 +65,41 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * <pre>
 	 * Edge Interface      Network Type
 	 * STNEdge             STN
-	 * STNUEdge			   STNU
+	 * STNUEdge            STNU
 	 * CSTNEdge            CSTN
 	 * CSTNUEdge           CSTNU
 	 * CSTNPSUEdge		   CSTPSU
 	 * </pre>
 	 * 
-	 * <b>This is not a correct design-choice but it allows the written of classes that can use TNGraph<Edge> objects and make only different operations
+	 * <b>This is not a correct design-choice but it allows the written of classes that can use TNGraph&lt;Edge&gt; objects and make only different operations
 	 * according with the type of the network.</b>
 	 * 
 	 * @author posenato
 	 */
 	public enum NetworkType {
+		/**
+		 * 
+		 */
 		STN,
 
+		/**
+		 * 
+		 */
 		STNU,
 
+		/**
+		 * 
+		 */
 		CSTN,
 
+		/**
+		 * 
+		 */
 		CSTNU,
 
+		/**
+		 * 
+		 */
 		CSTNPSU
 	}
 
@@ -241,7 +256,12 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private LabeledNode Z;
 
 	/**
-	 * @param inputEdgeImplClass
+	 * <p>
+	 * Constructor for TNGraph.
+	 * </p>
+	 *
+	 * @param inputEdgeImplClass a {@link java.lang.Class} object.
+	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(Class<E1> inputEdgeImplClass) {// , Class<M1> inputLabeledValueMapImplClass
 		super(EdgeType.DIRECTED);
@@ -271,8 +291,13 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * @param edgeImplClass
+	 * <p>
+	 * Constructor for TNGraph.
+	 * </p>
+	 *
+	 * @param edgeImplClass a {@link java.lang.Class} object.
 	 * @param alphabet Alphabet to use for naming Upper Case label
+	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(Class<E1> edgeImplClass, ALabelAlphabet alphabet) {
 		this(edgeImplClass);
@@ -286,6 +311,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 *
 	 * @param g the graph to be cloned
 	 * @param edgeImplClass class
+	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(final TNGraph<E> g, Class<E1> edgeImplClass) {
 		this(edgeImplClass);
@@ -319,6 +345,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 *
 	 * @param graphName a name for the graph
 	 * @param inputEdgeImplClass type of edges
+	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(final String graphName, Class<E1> inputEdgeImplClass) {
 		this(inputEdgeImplClass);
@@ -331,6 +358,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * @param graphName a name for the graph
 	 * @param inputEdgeImplClass type of edges
 	 * @param alphabet alphabet for upper case letter used to label values in the edges.
+	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, ALabelAlphabet alphabet) {
 		this(inputEdgeImplClass);
@@ -342,9 +370,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * Add child to obs.
 	 * It is user responsibility to assure that 'child' is a children in CSTN sense of 'obs'.
 	 * No validity check is made by the method.
-	 * 
-	 * @param obs
-	 * @param child
+	 *
+	 * @param obs a {@link it.univr.di.cstnu.graph.LabeledNode} object.
+	 * @param child a char.
 	 */
 	public void addChildToObserverNode(LabeledNode obs, char child) {
 		if (this.childrenOfObserver == null)
@@ -387,6 +415,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return addEdge(e, v1.name, v2.name);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean addEdge(E edge, Pair<? extends LabeledNode> endpoints, EdgeType edgeType) {
 		if (edge == null || endpoints == null)
@@ -396,7 +425,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Optimized method for adding edge. It exploits internal structure of the class.
-	 * 
+	 *
 	 * @param e not null
 	 * @param v1Name not null
 	 * @param v2Name not null
@@ -433,6 +462,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean addVertex(LabeledNode vertex) {
 		if (vertex == null || this.nodeName2index.containsKey(vertex.name)) {
@@ -479,7 +509,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	/**
 	 * Clear all internal structures.
 	 * The graph will be erased.
-	 * 
+	 *
 	 * @param initialAdjSize initial number of vertices.
 	 */
 	public void clear(int initialAdjSize) {
@@ -503,6 +533,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		this.observer2Z = null;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean containsEdge(E edge) {
 		if (edge == null || edge.getName() == null)
@@ -510,6 +541,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return this.edge2index.containsKey(edge.getName());
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean containsVertex(LabeledNode vertex) {
 		if (vertex == null || vertex.name == null)
@@ -640,6 +672,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return this.hasSameEdgesOf(g1) && this.hasSameVerticesOf(g1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public E findEdge(LabeledNode s, LabeledNode d) {
 		if (s == null || s.getName() == null || d == null || d.getName() == null)
@@ -649,9 +682,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Find the edge given the name of source node and destination one.
-	 * 
-	 * @param s
-	 * @param d
+	 *
+	 * @param s a {@link java.lang.String} object.
+	 * @param d a {@link java.lang.String} object.
 	 * @return null if any parameter is null or there not exists at least one of two nodes or the edge does not exist.
 	 */
 	public E findEdge(String s, String d) {
@@ -667,6 +700,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>aLabelAlphabet</code>.
+	 * </p>
+	 *
 	 * @return the aLabelAlphabet
 	 */
 	public ALabelAlphabet getALabelAlphabet() {
@@ -711,6 +748,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getContingentNodeCount.
+	 * </p>
+	 *
 	 * @return the number of contingent nodes.
 	 */
 	public int getContingentNodeCount() {
@@ -722,6 +763,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return c / 2;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledNode getDest(E directedEdge) {
 		EdgeIndex ei = this.edge2index.get(directedEdge.getName());
@@ -733,8 +775,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Wrapper {@link #getDest(Edge)}
+	 *
+	 * @param edgeName a {@link java.lang.String} object.
+	 * @return a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 */
-	@SuppressWarnings("javadoc")
 	public LabeledNode getDest(String edgeName) {
 		if (edgeName == null)
 			return null;
@@ -761,21 +805,24 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return ei.edge;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getEdgeCount() {
 		return this.edge2index.size();
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>edgeFactory</code>.
+	 * </p>
+	 *
 	 * @return the edgeFactory
 	 */
 	public EdgeSupplier<E> getEdgeFactory() {
 		return this.edgeFactory;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public Collection<E> getEdges() {
 		ObjectArrayList<E> coll = new ObjectArrayList<>();
@@ -788,13 +835,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * getEdgesArray.
-	 *
-	 * @return the set of edges as an array.
-	 *         public E[] getEdgesArray() {
-	 *         final E[] edgesA = this.getEdges().toArray(EdgeSupplier.get(this.edgeFactory.getEdgeImplClass(), this.getEdgeCount()));
-	 *         return edgesA;
-	 *         }
 	 */
 
 	@Override
@@ -809,12 +851,17 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getFileName.
+	 * </p>
+	 *
 	 * @return the name of the file that contains this graph.
 	 */
 	public File getFileName() {
 		return this.inputFile;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public ObjectList<E> getIncidentEdges(LabeledNode vertex) {
 		int index;
@@ -837,6 +884,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Collection<E> getInEdges(LabeledNode vertex) {
 		int nodeIndex;
@@ -860,6 +908,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 */
 
 	/**
+	 * <p>
+	 * getEdgeImplClass.
+	 * </p>
+	 *
 	 * @return the edgeImplementationClass
 	 */
 	public Class<? extends E> getEdgeImplClass() {
@@ -867,6 +919,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getLowerLabeledEdges.
+	 * </p>
+	 *
 	 * @return the set of edges containing Lower Case Labels (when type of network is CSTNU/CSTPSU). If there is no such edges, it returns an empty list.
 	 */
 	public ObjectList<BasicCSTNUEdge> getLowerLabeledEdges() {
@@ -895,6 +951,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return this.name;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Collection<LabeledNode> getNeighbors(LabeledNode vertex) {
 		int nodeIndex;
@@ -923,6 +980,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>nodeFactory</code>.
+	 * </p>
+	 *
 	 * @return the nodeFactory
 	 */
 	public LabeledNodeSupplier getNodeFactory() {
@@ -939,6 +1000,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getObservedAndObserver.
+	 * </p>
+	 *
 	 * @return the map of propositions and their observers (nodes). If there is no observer node, it returns an empty map. The key is the literal observed.
 	 */
 	public Char2ObjectMap<LabeledNode> getObservedAndObserver() {
@@ -955,6 +1020,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getObserver.
+	 * </p>
+	 *
 	 * @param c the request proposition
 	 * @return the node that observes the proposition l if it exists, null otherwise.
 	 */
@@ -972,7 +1041,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Be careful! The returned value is not a copy as the edges contained!
-	 * 
+	 *
 	 * @return the set of edges from observers to Z if Z is defined, empty set otherwise.
 	 */
 	public ObjectList<E> getObserver2ZEdges() {
@@ -983,6 +1052,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getObserverCount.
+	 * </p>
+	 *
 	 * @return the number of observers.
 	 */
 	public int getObserverCount() {
@@ -990,6 +1063,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getObservers.
+	 * </p>
+	 *
 	 * @return the set of observator time-points.
 	 */
 	public Collection<LabeledNode> getObservers() {
@@ -999,6 +1076,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return this.proposition2Observer.values();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public ObjectList<E> getOutEdges(LabeledNode vertex) {
 		int nodeIndex;
@@ -1014,10 +1092,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return outEdges;
 	}
 
-	/**
-	 * @param vertex
-	 * @return the number of outgoing edges, {@link Constants#INT_NULL} if vertex is null or not present.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int outDegree(LabeledNode vertex) {
 		int nodeIndex;
@@ -1031,10 +1106,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return count;
 	}
 
-	/**
-	 * @param vertex
-	 * @return the number of ingoing edges, {@link Constants#INT_NULL} if vertex is null or not present.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int inDegree(LabeledNode vertex) {
 		int nodeIndex;
@@ -1048,10 +1120,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return count;
 	}
 
-	/**
-	 * @param vertex
-	 * @return the number of ingoing edges, {@link Constants#INT_NULL} if vertex is null or not present.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int degree(LabeledNode vertex) {
 		int nodeIndex;
@@ -1067,6 +1136,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return count;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Collection<LabeledNode> getPredecessors(LabeledNode vertex) {
 		ObjectArrayList<LabeledNode> predecessor = new ObjectArrayList<>();
@@ -1088,6 +1158,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return this.proposition2Observer.keySet();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledNode getSource(E edge) {
 		if (edge == null)
@@ -1097,10 +1168,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Wrapper of {@link #getSource(Edge)}
-	 * 
-	 * @param edgeName
+	 *
+	 * @param edgeName a {@link java.lang.String} object.
+	 * @return a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 */
-	@SuppressWarnings("javadoc")
 	public LabeledNode getSource(String edgeName) {
 		if (edgeName == null)
 			return null;
@@ -1112,6 +1183,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return this.index2node.get(ei.rowAdj);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Collection<LabeledNode> getSuccessors(LabeledNode vertex) {
 		ObjectArrayList<LabeledNode> successors = new ObjectArrayList<>();
@@ -1122,6 +1194,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>type</code>.
+	 * </p>
+	 *
 	 * @return the type of network
 	 */
 	public NetworkType getType() {
@@ -1129,6 +1205,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getUpperLabeledEdges.
+	 * </p>
+	 *
 	 * @return the set of edges containing Upper Case Label only for TNGraphs that contain BasicCSTNEdge or derived.
 	 */
 	public Set<BasicCSTNUEdge> getUpperLabeledEdges() {
@@ -1142,14 +1222,13 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return es1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getVertexCount() {
 		return this.nodeName2index.size();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public Collection<LabeledNode> getVertices() {
 		return this.index2node.values();
@@ -1167,6 +1246,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * getZ.
+	 * </p>
+	 *
 	 * @return the Z node
 	 */
 	public LabeledNode getZ() {
@@ -1216,6 +1299,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * hasSameVerticesOf.
+	 * </p>
+	 *
 	 * @param g1 a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 * @return true if this graph contains vertices equal to g1 vertices w.r.t. their name and their values. The check DOES NOT USE edge
 	 *         {@link #equals(Object)}.
@@ -1238,6 +1325,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return sameNodes;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isDest(LabeledNode vertex, E edge) {
 		if (vertex == null || edge == null)
@@ -1253,6 +1341,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSource(LabeledNode vertex, E edge) {
 		if (vertex == null || edge == null)
@@ -1268,6 +1357,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean removeEdge(E edge) {
 		if (edge == null)
@@ -1275,6 +1365,14 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return removeEdge(edge.getName());
 	}
 
+	/**
+	 * <p>
+	 * removeEdge.
+	 * </p>
+	 *
+	 * @param edgeName a {@link java.lang.String} object.
+	 * @return a boolean.
+	 */
 	public boolean removeEdge(String edgeName) {
 		EdgeIndex ei;
 		if (edgeName == null || (ei = this.edge2index.get(edgeName)) == null)
@@ -1288,7 +1386,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Removes all empty edges in the graph.
-	 * 
+	 *
 	 * @return true if at least one edge was removed.
 	 */
 	public boolean removeEmptyEdges() {
@@ -1302,6 +1400,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return removed;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean removeVertex(LabeledNode removingNode) {
 		/**
@@ -1388,7 +1487,11 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * @param file
+	 * <p>
+	 * Setter for the field <code>inputFile</code>.
+	 * </p>
+	 *
+	 * @param file a {@link java.io.File} object.
 	 */
 	public void setInputFile(File file) {
 		this.inputFile = file;
@@ -1404,6 +1507,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>
+	 * setZ.
+	 * </p>
+	 *
 	 * @param z the node to be set as Z node of the graph.
 	 */
 	public void setZ(final LabeledNode z) {
@@ -1462,6 +1569,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		return sb.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void update(Observable o, Object arg) {
 		if (arg == null)
@@ -1488,7 +1596,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 					node.name = oldValue;
 					return;
 				}
-				if (this.nodeName2index.removeInt(oldValue)!= oldI) {
+				if (this.nodeName2index.removeInt(oldValue) != oldI) {
 					LOG.severe("It is not possible to remove the node " + oldValue);
 				}
 				this.nodeName2index.put(node.getName(), oldI);

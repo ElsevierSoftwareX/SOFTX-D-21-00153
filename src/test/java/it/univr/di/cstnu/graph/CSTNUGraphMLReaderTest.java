@@ -27,17 +27,34 @@ public class CSTNUGraphMLReaderTest {
 	 * 
 	 */
 	static File fileCSTNU = new File("src/test/resources/testGraphML.cstnu");
+	/**
+	 * 
+	 */
 	static File fileSTN = new File("src/test/resources/testGraphML.stn");
 	/**
 	 * 
 	 */
 	TNGraphMLReader<CSTNUEdge> readerCSTNU;
+	/**
+	 * 
+	 */
 	TNGraphMLReader<STNEdge> readerSTN;
 
+	/**
+	 * 
+	 */
 	TNGraph<CSTNUEdge> cstnu;
 
+	/**
+	 * 
+	 */
 	TNGraph<STNEdge> stn;
 
+	/**
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
 		this.readerCSTNU = new TNGraphMLReader<>(fileCSTNU, CSTNUEdgePluggable.class);
@@ -47,6 +64,11 @@ public class CSTNUGraphMLReaderTest {
 		Assert.assertEquals(2, this.cstnu.getEdgeCount());
 	}
 
+	/**
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	@Test
 	public void testSTN() throws IOException, ParserConfigurationException, SAXException {
 		this.readerSTN = new TNGraphMLReader<>(fileSTN, STNEdgeInt.class);
