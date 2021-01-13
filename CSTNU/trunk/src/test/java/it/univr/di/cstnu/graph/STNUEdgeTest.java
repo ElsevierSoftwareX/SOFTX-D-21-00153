@@ -5,12 +5,11 @@ package it.univr.di.cstnu.graph;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
@@ -77,20 +76,11 @@ public class STNUEdgeTest {
 	}
 
 	/**
-	 * 
-	 */
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
-
-	/**
 	 */
 	@Test
 	public final void testLowerCaseNonValid() {
-		this.exceptionRule.expect(IllegalArgumentException.class);
-		this.exceptionRule.expectMessage("A lower-case value cannot be negative. Details: ");
-		this.e.setLabeledValue(new ALetter("Caa"), -1, false);
-		assertFalse(this.e.isUpperCase());
-		assertTrue(this.e.isLowerCase());
+		IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> this.e.setLabeledValue(new ALetter("Caa"), -1, false));
+		assertEquals("A lower-case value cannot be negative. Details: Caa: -1.", ex.getMessage());
 	}
 
 	/**
