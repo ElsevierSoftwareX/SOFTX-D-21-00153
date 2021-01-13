@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.sql.Time;
 import java.text.SimpleDateFormat;
@@ -65,7 +64,7 @@ import net.openhft.affinity.AffinityThreadFactory;
 /**
  * Simple class to determine the average execution time (and std dev) of the (C)STN(U) DC checking algorithm on a given set of (C)STN(U)s.
  * It lacks to check STN network because the class is not present yet (2019-06-13).
- * 
+ *
  * @author posenato
  * @version $Id: $Id
  */
@@ -152,13 +151,27 @@ public class Checker {
 
 	}
 
-	@SuppressWarnings({ "javadoc" })
+	/**
+	 * @author posenato
+	 */
 	static class RunMeter {
 
-		static final int maxMeterSize = 50;// [0--100]
+		/**
+		 * A value between 0 and 100
+		 */
+		static final int maxMeterSize = 50;
 
+		/**
+		 * 
+		 */
 		long current;
+		/**
+		 * 
+		 */
 		long startTime;
+		/**
+		 * 
+		 */
 		long total;
 
 		/**
@@ -172,6 +185,9 @@ public class Checker {
 			this.startTime = inputStartTime;
 		}
 
+		/**
+		 * 
+		 */
 		void printProgress() {
 			if (this.current < this.total)
 				this.current++;
@@ -180,6 +196,8 @@ public class Checker {
 
 		/**
 		 * Each call of method, advance this.current and print the meter.
+		 * 
+		 * @param givenCurrent
 		 */
 		void printProgress(long givenCurrent) {
 
@@ -363,7 +381,8 @@ public class Checker {
 	// static final String VERSIONandDATE = "2.27, June, 9 2019";// Refactoring Edge
 	// static final String VERSIONandDATE = "2.5, November, 09 2019";// Removed all potential counters
 	// static final String VERSIONandDATE = "3, June, 29 2020";// Add check for STN and STNU
-	static final String VERSIONandDATE = "3.1, July, 28 2020";// Refined stats for STNU
+	// static final String VERSIONandDATE = "3.1, July, 28 2020";// Refined stats for STNU
+	static final String VERSIONandDATE = "3.2, January, 13 2021";// Fixed file encoding
 
 	/**
 	 * Allows to check the execution time of DC checking algorithm giving a set of instances.
@@ -372,11 +391,11 @@ public class Checker {
 	 * So, if it is possible to reserve some CPU modifying the kernel as explained in <a href="https://github.com/OpenHFT/Java-Thread-Affinity">thread affinity
 	 * page</a>.
 	 * it is possible to run the parallel thread in the better conditions.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException if instances contains syntax errors
-	 * @throws ParserConfigurationException if input parameters contains errors
-	 * @throws IOException if files are not readable
+	 * @throws org.xml.sax.SAXException if instances contains syntax errors
+	 * @throws javax.xml.parsers.ParserConfigurationException if input parameters contains errors
+	 * @throws java.io.IOException if files are not readable
 	 */
 	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
@@ -500,7 +519,7 @@ public class Checker {
 					groupAddedEdgeStatistics.get(globalStatisticsKey).getMean(),
 					groupAddedEdgeStatistics.get(globalStatisticsKey).getStandardDeviation());
 		}
-		tester.output.printf("\n\n\n");
+		tester.output.printf("%n%n%n");
 
 		if (nCPUs > 0) {
 			// executor shutdown!
@@ -518,9 +537,7 @@ public class Checker {
 				System.out.println(getNow() + ": Shutdown finished.\nExecution finished.");
 			}
 		}
-		if (tester.output != null) {
-			tester.output.close();
-		}
+		tester.output.close();
 	}
 
 	/**
@@ -670,7 +687,7 @@ public class Checker {
 	 * @param file
 	 * @param executor
 	 */
-	@SuppressWarnings({ "javadoc", "unchecked", "rawtypes", "null" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private CSTNCheckStatus DCChecker(CSTN cstn, CSTNU cstnu, RunMeter runState) {
 		String msg;
 		boolean checkInterrupted = false;
@@ -684,6 +701,8 @@ public class Checker {
 		} else if (isCSTN()) {
 			status = new CSTNCheckStatus();
 			graphToCheck = cstn.g;
+		} else {
+			return null;// we check only cstn o cstnu
 		}
 
 		SummaryStatistics localSummaryStat = new SummaryStatistics();
@@ -742,7 +761,7 @@ public class Checker {
 	 * @param file
 	 * @param executor
 	 */
-	@SuppressWarnings({ "javadoc", "unchecked", "rawtypes", "null" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private STNCheckStatus STNUDCChecker(STN stn, STNU stnu, RunMeter runState) {
 		String msg;
 		boolean checkInterrupted = false;
@@ -756,6 +775,8 @@ public class Checker {
 		} else if (isSTNU()) {
 			status = new STNUCheckStatus();
 			graphToCheck = stnu.g;
+		} else {
+			return null;// check only STN o STNU
 		}
 
 		SummaryStatistics localSummaryStat = new SummaryStatistics();
@@ -981,7 +1002,7 @@ public class Checker {
 				this.outputFile.renameTo(new File(this.outputFile.getAbsolutePath() + ".csv"));
 			}
 			try {
-				this.output = new PrintStream(new FileOutputStream(this.outputFile, true), true);
+				this.output = new PrintStream(new FileOutputStream(this.outputFile, true), true, "UTF-8");
 			} catch (IOException e) {
 				System.err.println("Output file cannot be created: " + e.getMessage());
 				parser.printUsage(System.err);
@@ -1131,13 +1152,7 @@ public class Checker {
 			}
 			String suffix = "_cutted";
 			TNGraphMLWriter graphWrite = new TNGraphMLWriter(null);
-
-			try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(file.getAbsolutePath() + suffix));) {
-				graphWrite.save(graphToCheck, writer);
-			} catch (Exception e) {
-				LOG.warning("File " + file.getAbsolutePath() + suffix + " cannot be written. Details: " + e.getMessage());
-				return false;
-			}
+			graphWrite.save(graphToCheck, new File(file.getAbsolutePath() + suffix));
 		}
 
 		// In order to start with well-defined cstn, we preliminary make a check.

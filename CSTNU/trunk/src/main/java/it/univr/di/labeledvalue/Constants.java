@@ -135,8 +135,13 @@ public final class Constants implements Serializable {
 	public static final String UNKNOWNstring = String.valueOf(Constants.UNKNOWN);
 
 	/**
+	 * <p>
+	 * formatInt.
+	 * </p>
+	 *
 	 * @param n a integer
-	 * @return the value of {@code n} as a String using {@link Constants#INFINITY_SYMBOL} for the infinitive and {@code NaN} for not valid integer
+	 * @return the value of {@code n} as a String using {@link it.univr.di.labeledvalue.Constants#INFINITY_SYMBOL} for the infinitive and {@code NaN} for not
+	 *         valid integer
 	 */
 	static public final String formatInt(int n) {
 		switch (n) {
@@ -158,6 +163,7 @@ public final class Constants implements Serializable {
 	 * @param b an integer
 	 * @return the controlled sum
 	 * @throws java.lang.ArithmeticException if the sum of two inputs is greater/lesser than the maximum/minimum integer representable by a {@code int}
+	 * @throws java.lang.ArithmeticException if any.
 	 */
 	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {
 		int max, min;
@@ -179,8 +185,6 @@ public final class Constants implements Serializable {
 			return Constants.INT_NEG_INFINITE;
 		}
 		if (max == Constants.INT_POS_INFINITE) {
-			if (min == Constants.INT_NEG_INFINITE)
-				throw new ArithmeticException("Integer overflow in a sum of labeled values: " + Constants.formatInt(a) + " + " + Constants.formatInt(b));
 			if (Debug.ON)
 				LOG.warning("Sum of " + formatInt(a) + " and " + formatInt(b) + " =" + formatInt(INT_POS_INFINITE));
 			return Constants.INT_POS_INFINITE;

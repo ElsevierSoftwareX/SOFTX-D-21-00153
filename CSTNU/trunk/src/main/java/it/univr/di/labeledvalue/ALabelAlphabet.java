@@ -19,10 +19,12 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  * rules), but it must be a set of upper-case letters.<br>
  * Moreover, such upper-case letters represent node name and, therefore, they should be strings instead of letters.
  * <p>
- * Class {@link ALabel} represents an A-Label. Such class needs an alphabet for building labels, {@link ALabelAlphabet}.
- * A user can build a proper alphabet that can be used by {@link ALabel} for building A-Label(s).
- * 
+ * Class {@link it.univr.di.labeledvalue.ALabel} represents an A-Label. Such class needs an alphabet for building labels,
+ * {@link it.univr.di.labeledvalue.ALabelAlphabet}.
+ * A user can build a proper alphabet that can be used by {@link it.univr.di.labeledvalue.ALabel} for building A-Label(s).
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class ALabelAlphabet {
 
@@ -87,7 +89,7 @@ public class ALabelAlphabet {
 	/**
 	 * Default value for not found index.
 	 */
-	public static ALetter DEFAULT_ALETTER_RET_VALUE = null;
+	public static final ALetter DEFAULT_ALETTER_RET_VALUE = null;
 
 	/**
 	 * Default value for not found name.
@@ -138,6 +140,10 @@ public class ALabelAlphabet {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for ALabelAlphabet.
+	 * </p>
+	 *
 	 * @param size1 initial size of alphabet
 	 */
 	public ALabelAlphabet(int size1) {
@@ -161,6 +167,10 @@ public class ALabelAlphabet {
 	}
 
 	/**
+	 * <p>
+	 * containsValue.
+	 * </p>
+	 *
 	 * @param v the input letter
 	 * @return true if v is present, false otherwise
 	 */
@@ -169,6 +179,10 @@ public class ALabelAlphabet {
 	}
 
 	/**
+	 * <p>
+	 * get.
+	 * </p>
+	 *
 	 * @param k the index of the wanted a-letter
 	 * @return the a-letter associated to index k, {@link #DEFAULT_ALETTER_RET_VALUE} it it does not exist
 	 */
@@ -179,6 +193,10 @@ public class ALabelAlphabet {
 	}
 
 	/**
+	 * <p>
+	 * index.
+	 * </p>
+	 *
 	 * @param name the input a-letter
 	 * @return the index associated to name if it exists, {@link #DEFAULT_BYTE_RET_VALUE} otherwise
 	 */
@@ -187,6 +205,10 @@ public class ALabelAlphabet {
 	}
 
 	/**
+	 * <p>
+	 * isEmpty.
+	 * </p>
+	 *
 	 * @return true is this does not contain a-letter
 	 */
 	public boolean isEmpty() {
@@ -195,10 +217,10 @@ public class ALabelAlphabet {
 
 	/**
 	 * Puts the element v in the map if not present.
-	 * 
+	 *
 	 * @param v a non-null a-letter
 	 * @return the index associate to the element v if {@code v} is present, {@value #DEFAULT_BYTE_RET_VALUE} if {@code v} is null
-	 * @throws IllegalArgumentException if there are already {@link #MAX_ALABELALPHABET_SIZE} elements in the map
+	 * @throws java.lang.IllegalArgumentException if there are already {@link #MAX_ALABELALPHABET_SIZE} elements in the map
 	 */
 	public byte put(ALetter v) {
 		if (v == null)
@@ -224,12 +246,17 @@ public class ALabelAlphabet {
 	}
 
 	/**
+	 * <p>
+	 * size.
+	 * </p>
+	 *
 	 * @return the current size of this alphabet
 	 */
 	public int size() {
 		return this.size;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return Arrays.toString(this.value);

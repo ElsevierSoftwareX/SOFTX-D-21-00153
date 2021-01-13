@@ -46,6 +46,8 @@ public class  ObservableValidator implements Validator<String> {
 	LabeledNode node;
 
 	/**
+	 * <p>Constructor for ObservableValidator.</p>
+	 *
 	 * @param g a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 * @param n a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 */

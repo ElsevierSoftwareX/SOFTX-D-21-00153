@@ -24,7 +24,10 @@ import it.univr.di.cstnu.graph.STNUEdge;
 import it.univr.di.labeledvalue.Constants;
 
 /**
+ * <p>EdgeRendering class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class EdgeRendering {
 
@@ -76,7 +79,7 @@ public class EdgeRendering {
 		}
 
 		/**
-		 * @param bold1
+		 * @param bold1 true if it must be rendered in bold
 		 */
 		@SuppressWarnings("unused")
 		public void setBold(boolean bold1) {
@@ -155,9 +158,8 @@ public class EdgeRendering {
 
 	/**
 	 * Returns a transformer to select the color that is used to draw the edge. This transformer uses the type and the state of the edge to select the color.
-	 * 
-	 * @param <K>
-	 * @param pi a {@link PickedInfo} object.
+	 *
+	 * @param pi a {@link edu.uci.ics.jung.visualization.picking.PickedInfo} object.
 	 * @param pickedPaint a {@link java.awt.Paint} object.
 	 * @param normalPaint a {@link java.awt.Paint} object.
 	 * @param contingentPaint a {@link java.awt.Paint} object.

@@ -91,6 +91,8 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * Clear (remove) all labeled values associated to this edge.
 	 */
 	@Override
@@ -100,64 +102,49 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		this.consideredLabeledValue.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Class<? extends LabeledIntMap> getLabeledIntMapImplClass() {
 		return labeledValueMapImpl;
 	}
 
-	/**
-	 * @return the labeledValueMap. If there is no labeled values, return an empty map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntMap getLabeledValueMap() {
 		return this.labeledValue;
 	}
 
-	/**
-	 * @return the labeled values as a set
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet() {
 		return this.labeledValue.entrySet();
 	}
 
-	/**
-	 * @return the labeled values as a set
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Object2IntMap.Entry<Label>> getLabeledValueSet(ObjectSet<Object2IntMap.Entry<Label>> setToReuse) {
 		return this.labeledValue.entrySet(setToReuse);
 	}
 
-	/**
-	 * @return the minimal value among all ordinary labeled values if there are some values, {@link Constants#INT_NULL} otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public Entry<Label> getMinLabeledValue() {
 		return this.labeledValue.getMinLabeledValue();
 	}
 
-	/**
-	 * @return the minimal value among all ordinary labeled values if there are some values, {@link Constants#INT_NULL} otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int getMinValue() {
 		return this.labeledValue.getMinValue();
 	}
 
-	/**
-	 * @return the minimal value among all ordinary labeled values having label without unknown literals, if there are some; {@link Constants#INT_NULL}
-	 *         otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int getMinValueAmongLabelsWOUnknown() {
 		return this.labeledValue.getMinValueAmongLabelsWOUnknown();
 	}
 
-	/**
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @return the value of label l or the minimal value of labels consistent with l if it exists, null otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int getMinValueConsistentWith(final Label l) {
 		return this.labeledValue.getMinValueConsistentWith(l);
@@ -169,15 +156,13 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return this.labeledValue.getMinValueSubsumedBy(l);
 	}
 
-	/**
-	 * @param label label
-	 * @return the value associated to label it it exists, {@link Constants#INT_NULL} otherwise.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int getValue(final Label label) {
 		return this.labeledValue.get(label);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean hasSameValues(Edge e) {
 		if (e == null || !(e instanceof CSTNEdge))
@@ -188,25 +173,22 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return (this.getLabeledValueMap().equals(((CSTNEdge) e).getLabeledValueMap()));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCSTNEdge() {
 		return true;
 	}
 
-	/**
-	 * 
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return this.labeledValue.isEmpty();
 	}
 
 	/**
-	 * Merges the labeled value i to the set of labeled values of this edge.
+	 * {@inheritDoc}
 	 *
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param i a integer.
-	 * @return true if the operation was successful, false otherwise.
+	 * Merges the labeled value i to the set of labeled values of this edge.
 	 */
 	@Override
 	public boolean mergeLabeledValue(final Label l, final int i) {
@@ -227,6 +209,7 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return this.labeledValue.put(l, i);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void mergeLabeledValue(LabeledIntMap map) {
 		for (Object2IntMap.Entry<Label> entry : map.entrySet())
@@ -234,12 +217,10 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	}
 
 	/**
-	 * Wrapper method for {@link #mergeLabeledValue(Label, int)}.
+	 * {@inheritDoc}
 	 *
-	 * @param i an integer.
-	 * @return true if the operation was successful, false otherwise.
+	 * Wrapper method for {@link #mergeLabeledValue(Label, int)}.
 	 * @see #mergeLabeledValue(Label, int)
-	 * @param ls a {@link java.lang.String} object.
 	 */
 	@Override
 	public boolean mergeLabeledValue(final String ls, final int i) {
@@ -247,21 +228,25 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return this.mergeLabeledValue(Label.parse(ls), i);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNEdgePluggable newInstance() {
 		return new CSTNEdgePluggable();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNEdgePluggable newInstance(Edge edge) {
 		return new CSTNEdgePluggable(edge);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNEdgePluggable newInstance(String name1) {
 		return new CSTNEdgePluggable(name1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean putLabeledValue(final Label l, final int i) {
 		this.consideredLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again in the future.
@@ -269,10 +254,9 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	}
 
 	/**
-	 * Remove the label l from the map. If the label is not present, it does nothing.
+	 * {@inheritDoc}
 	 *
-	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @return the old value if it exists, null otherwise.
+	 * Remove the label l from the map. If the label is not present, it does nothing.
 	 */
 	@Override
 	public int removeLabeledValue(final Label l) {
@@ -285,6 +269,7 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		return this.labeledValue.remove(l);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setLabeledValueMap(LabeledIntMap inputLabeledValue) {
 		if (inputLabeledValue == null) {
@@ -294,16 +279,13 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int size() {
 		return this.labeledValue.size();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param e
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		if (e == null)
@@ -317,9 +299,7 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return Constants.OPEN_TUPLE + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "

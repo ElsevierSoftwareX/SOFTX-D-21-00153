@@ -18,7 +18,11 @@ import it.univr.di.cstnu.graph.LabeledNode;
  */
 public class NodePriorityHeapTest {
 
+	/**
+	 * 
+	 */
 	NodePriorityHeap heap;
+	@SuppressWarnings("javadoc")
 	LabeledNode A, B, C;
 
 	/**

@@ -9,7 +9,7 @@ package it.univr.di.cstnu.algorithms;
 
 /**
  * Some common types of unsatisfied property for well defined CSTN.
- * 
+ *
  * @author posenato
  * @version $Id: $Id
  */
@@ -17,16 +17,27 @@ public class WellDefinitionException extends Exception {
 
 	/**
 	 * @author posenato
-	 *
 	 */
 	public enum Type {
+		/**
+		 * 
+		 */
 		LabelInconsistent,
+		/**
+		 * 
+		 */
 		LabelNotSubsumes,
+		/**
+		 * 
+		 */
 		ObservationNodeDoesNotExist,
+		/**
+		 * 
+		 */
 		@Deprecated
 		ObservationNodeDoesNotOccurBefore
 	}
-	
+
 	/**
 	 * Type of exception.
 	 */
@@ -37,6 +48,9 @@ public class WellDefinitionException extends Exception {
 	private static final long serialVersionUID = 2L;
 
 	/**
+	 * <p>
+	 * Constructor for WellDefinitionException.
+	 * </p>
 	 */
 	public WellDefinitionException() {
 		super();
@@ -44,6 +58,10 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for WellDefinitionException.
+	 * </p>
+	 *
 	 * @param message a {@link java.lang.String} object.
 	 */
 	public WellDefinitionException(String message) {
@@ -52,7 +70,9 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * <p>Constructor for WellDefinitionException.</p>
+	 * <p>
+	 * Constructor for WellDefinitionException.
+	 * </p>
 	 *
 	 * @param message a {@link java.lang.String} object.
 	 * @param t a {@link it.univr.di.cstnu.algorithms.WellDefinitionException.Type} object.
@@ -63,6 +83,10 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for WellDefinitionException.
+	 * </p>
+	 *
 	 * @param cause a {@link java.lang.Throwable} object.
 	 */
 	public WellDefinitionException(Throwable cause) {
@@ -70,7 +94,9 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
-	 * <p>Constructor for WellDefinitionException.</p>
+	 * <p>
+	 * Constructor for WellDefinitionException.
+	 * </p>
 	 *
 	 * @param message a {@link java.lang.String} object.
 	 * @param cause a {@link java.lang.Throwable} object.
@@ -80,6 +106,10 @@ public class WellDefinitionException extends Exception {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for WellDefinitionException.
+	 * </p>
+	 *
 	 * @param message a {@link java.lang.String} object.
 	 * @param cause a {@link java.lang.Throwable} object.
 	 * @param enableSuppression a boolean.

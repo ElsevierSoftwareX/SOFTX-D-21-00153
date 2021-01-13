@@ -15,26 +15,26 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
 /**
  * @author posenato
  */
-@SuppressWarnings({ "deprecation", "javadoc" })
 public class LabeledIntSimpleMapTest {
 
 	/**
 	 * 
 	 */
+	@SuppressWarnings("deprecation")
 	LabeledIntSimpleMap map;
 
 	/**
 	 * @throws Exception
 	 */
+	@SuppressWarnings("deprecation")
 	@Before
 	public void setUp() throws Exception {
 		this.map = new LabeledIntSimpleMap();
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.LabeledIntSimpleMap#entrySet()}.
 	 */
-
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testEntrySet() {
 		this.map.put(Label.emptyLabel, 0);
@@ -55,8 +55,9 @@ public class LabeledIntSimpleMapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.labeledvalue.LabeledIntSimpleMap#keySet()}.
+	 * 
 	 */
+	@SuppressWarnings("deprecation")
 	@Test
 	public void testKeySet() {
 		this.map.put(Label.emptyLabel, 0);

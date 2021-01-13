@@ -24,11 +24,11 @@ import it.univr.di.Debug;
 
 /**
  * Allows to manage upper-case values that are also associated to propositional labels.
- * Labeled (by {@link Label}) values are grouped by alphabetic labels {@link ALabel}.
+ * Labeled (by {@link it.univr.di.labeledvalue.Label}) values are grouped by alphabetic labels {@link it.univr.di.labeledvalue.ALabel}.
  * Each labeled value group is represented as LabeledIntTreeMap.
  * Be careful!<br>
  * Since lower-case value are singular for each edge, it not convenient to represent it as TreeMap.
- * A specialized class has been developed to represent such values: {@link LabeledLowerCaseValue}.
+ * A specialized class has been developed to represent such values: {@link it.univr.di.labeledvalue.LabeledLowerCaseValue}.
  * <p>
  * At first time, I made some experiments for evaluating if it is better to use a Object2ObjectRBTreeMap or a ObjectArrayMap for representing the internal map.
  * The below table shows that for very small network, the two implementation are almost equivalent. So, ObjectArrayMap was chosen.
@@ -67,18 +67,18 @@ import it.univr.di.Debug;
  * It resulted that up to 1000 values, the two implementation show still almost equivalent performance, BUT when the keys are 5000, using ObjectArrayMap
  * retrieve the keys requires more than ONE hour, while using Object2ObjectRBTreeMap it requires almost 96. ms!!!
  * Details using Object2ObjectRBTreeMap:
- * 
+ *
  * <pre>
  * Time to retrieve 50 elements using entrySet(): ---
  * Time to retrieve 50 elements using keySet(): 0.012000000000000004ms
- * 
+ *
  * Time to retrieve 100 elements using entrySet(): ---
  * Time to retrieve 100 elements using keySet(): 0.006000000000000003ms
  *
  * Time to retrieve 1000 elements using entrySet(): 0.045ms
  * Time to retrieve 1000 elements using keySet(): 0.034ms
  * The difference is 0.025000000000000015 ms. It is better to use: keySet() approach.
- * 
+ *
  * Time to retrieve 5000 elements using entrySet(): 0.9623700000000001ms
  * Time to retrieve 5000 elements using keySet(): 0.352ms
  * The difference is 0.6139400000000002 ms. It is better to use: keySet() approach.
@@ -86,18 +86,18 @@ import it.univr.di.Debug;
  * Time to retrieve 10000 elements using entrySet(): --
  * Time to retrieve 10000 elements using keySet(): 1.292ms
  * </pre>
- * 
+ *
  * Considering then, RB Tree instead of RB Tree:
- * 
+ *
  * <pre>
  * Time to retrieve 50 elements using keySet(): 0.012000000000000002ms
- * 
+ *
  * Time to retrieve 100 elements using keySet(): 0.007ms
  *
  * Time to retrieve 1000 elements using entrySet(): ---
  * Time to retrieve 1000 elements using keySet(): 0.038ms
  * The difference is 0.025000000000000015 ms. It is better to use: keySet() approach.
- * 
+ *
  * Time to retrieve 5000 elements using entrySet(): ---
  * Time to retrieve 5000 elements using keySet(): 0.388ms
  * The difference is 0.6139400000000002 ms. It is better to use: keySet() approach.
@@ -105,10 +105,9 @@ import it.univr.di.Debug;
  * Time to retrieve 10000 elements using entrySet(): --
  * Time to retrieve 10000 elements using keySet(): 1.314ms
  * </pre>
- * 
- * <pre>
+ *
  * <b>All code for testing is in LabeledALabelIntTreeMapTest class (not public available).</b>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -211,11 +210,15 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	private static final long serialVersionUID = 2L;
 
 	/**
+	 * <p>
+	 * entryAsString.
+	 * </p>
+	 *
 	 * @param label the input label
 	 * @param value the input value
 	 * @param nodeName this name is printed as it is. This method is necessary for saving the values of the map in a file.
 	 * @return the canonical representation of the triple (as stated in ICAPS/ICAART papers), i.e.
-	 *         {@link Constants#OPEN_PAIR}Alabel, value, label{@link Constants#CLOSE_PAIR}
+	 *         {@link it.univr.di.labeledvalue.Constants#OPEN_PAIR}Alabel, value, label{@link it.univr.di.labeledvalue.Constants#CLOSE_PAIR}
 	 */
 	static final public String entryAsString(Label label, int value, ALabel nodeName) {
 		StringBuffer s = new StringBuffer();
@@ -235,7 +238,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * For historical reasons, the method is capable to parse two different map
 	 * format:<code>"{[(&lang;label&rang;, &lang;Alabel&rang;, &lang;value&rang;) ]*}</code>
 	 * or <code>"{[(&lang;Alabel&rang;, &lang;value&rang;, &lang;label&rang;) ]*}"</code>, where [a]* is a meta constructor for saying zero o more 'a'.
-	 * 
+	 *
 	 * @param arg a {@link java.lang.String} object.
 	 * @param alphabet the alphabet to use to code the labels
 	 * @return a LabeledPairMap object if args represents a valid map, null otherwise.
@@ -392,6 +395,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 */
 
 	/**
+	 * <p>
+	 * alreadyRepresents.
+	 * </p>
+	 *
 	 * @param newLabel it must be not null
 	 * @param newAlabel it must be not null
 	 * @param newValue the new value
@@ -419,7 +426,9 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * 
+	 * <p>
+	 * clear.
+	 * </p>
 	 */
 	public void clear() {
 		this.map.clear();
@@ -438,6 +447,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * get.
+	 * </p>
+	 *
 	 * @param alabel the input label
 	 * @return the value to which the specified key is mapped, or null if this map contains no mapping for the key
 	 */
@@ -446,7 +459,13 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @return the minimal value of this map not considering upper/lower case label (node label), {@link Constants#INT_NULL} if the map is empty.
+	 * <p>
+	 * getMinValue.
+	 * </p>
+	 *
+	 * @return the minimal value of this map not considering upper/lower case label (node label).
+	 *         If the map is null, returns the entry ({@link Label#emptyLabel}, ({@link ALabel#emptyLabel},
+	 *         {@link it.univr.di.labeledvalue.Constants#INT_NULL})).
 	 */
 	public Object2ObjectMap.Entry<Label, Entry<ALabel>> getMinValue() {
 		if (this.size() == 0)
@@ -473,10 +492,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * Returns the value associated to <code>(l, p)</code> if it exists,
 	 * otherwise the minimal value among all labels consistent with <code>(l, p)</code>.
 	 *
-	 * @param l if it is null, {@link Constants#INT_NULL} is returned.
-	 * @param p if it is null or empty, {@link Constants#INT_NULL} is returned.
+	 * @param l if it is null, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
+	 * @param p if it is null or empty, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
 	 * @return the value associated to the <code>(l, p)</code> if it exists or the minimal value among values associated to labels consistent by <code>l</code>.
-	 *         If no labels are subsumed by <code>l</code>, {@link Constants#INT_NULL} is returned.
+	 *         If no labels are subsumed by <code>l</code>, {@link it.univr.di.labeledvalue.Constants#INT_NULL} is returned.
 	 */
 	public int getMinValueConsistentWith(final Label l, final ALabel p) {
 		if ((l == null) || (p == null))// || p.isEmpty())
@@ -488,9 +507,13 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * getValue.
+	 * </p>
+	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param p a {@link ALabel} representing the upper/lower case label (node label).
-	 * @return the value associate to the key (label, p) if it exits, {@link Constants#INT_NULL} otherwise.
+	 * @param p a {@link it.univr.di.labeledvalue.ALabel} representing the upper/lower case label (node label).
+	 * @return the value associate to the key (label, p) if it exits, {@link it.univr.di.labeledvalue.Constants#INT_NULL} otherwise.
 	 */
 	public int getValue(final Label l, final ALabel p) {
 		if ((l == null) || (p == null))// || p.isEmpty())
@@ -508,6 +531,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * unmodifiable.
+	 * </p>
+	 *
 	 * @return a read-only view of this.
 	 */
 	public LabeledALabelIntTreeMapView unmodifiable() {
@@ -515,6 +542,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * isEmpty.
+	 * </p>
+	 *
 	 * @return true if the map does not contain any labeled value.
 	 */
 	public final boolean isEmpty() {
@@ -522,6 +553,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * keySet.
+	 * </p>
+	 *
 	 * @return a set view of all a-labels present into this map.
 	 */
 	public ObjectSet<ALabel> keySet() {
@@ -529,6 +564,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * labelSet.
+	 * </p>
+	 *
 	 * @return a set of all labels present into this map.
 	 */
 	public ObjectSet<Label> labelSet() {
@@ -539,6 +578,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * mergeTriple.
+	 * </p>
+	 *
 	 * @param l the {@link it.univr.di.labeledvalue.Label} object.
 	 * @param p the {@link java.lang.String} object.
 	 * @param i the value to merge.
@@ -661,7 +704,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	/**
 	 * Put a map associate to key alabel.
 	 * Possible previous map will be replaced.
-	 * 
+	 *
 	 * @param alabel the input label
 	 * @param labeledValueMap its map
 	 * @return the old map if one was associated to alabel, null otherwise
@@ -689,8 +732,12 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * remove.
+	 * </p>
+	 *
 	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
-	 * @param p a {@link ALabel} object.
+	 * @param p a {@link it.univr.di.labeledvalue.ALabel} object.
 	 * @return the old value if it exists, null otherwise.
 	 */
 	public int remove(final Label l, final ALabel p) {
@@ -710,7 +757,11 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
-	 * @param aleph a {@link ALabel} object.
+	 * <p>
+	 * remove.
+	 * </p>
+	 *
+	 * @param aleph a {@link it.univr.di.labeledvalue.ALabel} object.
 	 * @return true if removed, false otherwise.
 	 */
 	public boolean remove(final ALabel aleph) {
@@ -720,6 +771,10 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * <p>
+	 * size.
+	 * </p>
+	 *
 	 * @return the number of elements of the map.
 	 */
 	public final int size() {
@@ -732,10 +787,9 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Returns a string representing the content of the map, i.e., "{[&langle;entry&rangle; ]*}", where each &langle;entry&rangle; is written by
 	 * {@link #entryAsString(Label, int, ALabel)}.
-	 * 
-	 * @return a string.
 	 */
 	@Override
 	public String toString() {

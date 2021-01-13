@@ -7,11 +7,14 @@
  */
 package it.univr.di.cstnu.graph;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,7 +45,7 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  * GraphML format allows the definition of different attributes for the graph, vertices and edges.<br>
  * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
  * under CstnuTool one.
- * 
+ *
  * @author posenato
  * @version $Id: $Id
  * @param <E> the type of edge
@@ -155,16 +158,20 @@ public class TNGraphMLReader<E extends Edge> {
 	 * GraphML format allows the definition of different attributes for a TNGraph, vertices and edges.<br>
 	 * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
 	 * under CstnuTool one.
-	 * 
-	 * @param graphFile
-	 * @param edgeImplClass
-	 * @throws FileNotFoundException if the graphFile is not found
+	 *
+	 * @param graphFile a {@link java.io.File} object.
+	 * @param edgeImplClass a {@link java.lang.Class} object.
+	 * @throws java.io.FileNotFoundException if the graphFile is not found
 	 */
 	public TNGraphMLReader(final File graphFile, Class<? extends E> edgeImplClass) throws FileNotFoundException {
 		if (graphFile == null) {
 			throw new FileNotFoundException("The given file does not exist.");
 		}
-		this.fileReader = new FileReader(graphFile);
+		try {
+			this.fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(graphFile), "UTF8"));
+		} catch (UnsupportedEncodingException | FileNotFoundException e) {
+			throw new FileNotFoundException("There is a problem to read the file containing the network. Details: " + e.getMessage());
+		}
 		this.aLabelAlphabet = new ALabelAlphabet();
 		this.edgeImpl = edgeImplClass;
 
@@ -175,10 +182,14 @@ public class TNGraphMLReader<E extends Edge> {
 	}
 
 	/**
+	 * <p>
+	 * readGraph.
+	 * </p>
+	 *
 	 * @return the graphML as TNGraph.
-	 * @throws IOException
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
+	 * @throws java.io.IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
 	 */
 	public TNGraph<E> readGraph() throws IOException, ParserConfigurationException, SAXException {
 		/*
@@ -200,7 +211,7 @@ public class TNGraphMLReader<E extends Edge> {
 			@Override
 			public void accept(LabeledNode n, String s) {
 				n.setName(s);
-				if (s.equals(AbstractCSTN.ZeroNodeName)) {
+				if (s.equals(AbstractCSTN.ZERO_NODE_NAME)) {
 					TNGraphMLReader.this.tnGraph.setZ(n);
 				}
 			}

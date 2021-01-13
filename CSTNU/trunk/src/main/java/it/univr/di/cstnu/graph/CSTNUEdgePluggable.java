@@ -45,9 +45,6 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 	}
 
 	/**
-	 * <C extends LabeledIntMap> CSTNUEdgePluggable(Class<C> labeledIntMapImpl) {
-	 * this((String) null, labeledIntMapImpl);
-	 * }
 	 */
 	<C extends LabeledIntMap> CSTNUEdgePluggable() {
 		this((String) null);
@@ -76,22 +73,26 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		super.clear();
 		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clearLowerCaseValues() {
 		this.removeLowerCaseValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledLowerCaseValue getLowerCaseValue() {
 		return this.lowerCaseValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean hasSameValues(Edge e) {
 		if (e == null || !(e instanceof CSTNUEdge))
@@ -104,41 +105,49 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		return (this.getLowerCaseValue().equals(e1.getLowerCaseValue()));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCSTNUEdge() {
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return super.isEmpty() && this.lowerCaseValue.isEmpty();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String lowerCaseValuesAsString() {
 		return this.lowerCaseValue.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int lowerCaseValueSize() {
 		return this.lowerCaseValue.isEmpty() ? 0 : 1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNUEdgePluggable newInstance() {
 		return new CSTNUEdgePluggable();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNUEdgePluggable newInstance(Edge edge) {
 		return new CSTNUEdgePluggable(edge);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public CSTNUEdgePluggable newInstance(String name1) {
 		return new CSTNUEdgePluggable(name1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int removeLowerCaseValue() {
 		if (this.lowerCaseValue.isEmpty())
@@ -152,17 +161,20 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		return i;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setLowerCaseValue(final Label l, final ALabel nodeName, final int i) {
 		this.setLowerCaseValue(LabeledLowerCaseValue.create(nodeName, i, l));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean mergeLowerCaseValue(Label l, ALabel nodeName, int i) {
 		this.setLowerCaseValue(l, nodeName, i);
 		return true;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setLowerCaseValue(final LabeledLowerCaseValue inputLabeledValue) {
 		this.lowerCaseValue = inputLabeledValue;
@@ -173,11 +185,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param e
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		if (e == null)
@@ -189,6 +197,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		}
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean putLowerCaseValue(final Label l, ALabel nodeName, final int i) {
 		return this.mergeLowerCaseValue(l, nodeName, i);

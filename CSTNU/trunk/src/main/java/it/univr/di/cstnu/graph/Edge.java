@@ -51,17 +51,23 @@ public interface Edge extends Component {
 	}
 
 	/**
+	 * <p>getConstraintType.</p>
+	 *
 	 * @return the type
 	 */
 	public ConstraintType getConstraintType();
 
 	/**
+	 * <p>hasSameValues.</p>
+	 *
 	 * @param e the other edge
 	 * @return true if it has the same values.
 	 */
 	public boolean hasSameValues(Edge e);
 
 	/**
+	 * <p>isContingentEdge.</p>
+	 *
 	 * @return true if the constraint is a contingent one.
 	 */
 	public default boolean isContingentEdge() {
@@ -70,31 +76,35 @@ public interface Edge extends Component {
 
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
-	 * 
+	 *
 	 * @return true if the edge is CSTN edge
 	 */
 	public boolean isCSTNEdge();
 
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
-	 * 
+	 *
 	 * @return true if the edge is CSTNPSU edge
 	 */
 	public boolean isCSTNPSUEdge();
 
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
-	 * 
+	 *
 	 * @return true if the edge is CSTNU edge
 	 */
 	public boolean isCSTNUEdge();
 
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return true is it does not contain any values
 	 */
 	public boolean isEmpty();
 
 	/**
+	 * <p>isRequirementEdge.</p>
+	 *
 	 * @return true if the edge is a normal edge or similar (it is not contingent).
 	 */
 	public default boolean isRequirementEdge() {
@@ -103,28 +113,28 @@ public interface Edge extends Component {
 
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
-	 * 
+	 *
 	 * @return true if the edge is STN edge
 	 */
 	public boolean isSTNEdge();
 
 	/**
 	 * This method is inappropriate here, but it helps to speed up the code.
-	 * 
+	 *
 	 * @return true if the edge is STNU edge
 	 */
 	public boolean isSTNUEdge();
 
 	/**
 	 * Factory
-	 * 
+	 *
 	 * @return an object of type Edge.
 	 */
 	public Edge newInstance();
 
 	/**
 	 * Any super-interfaces/implementing classes should assure that such method has Edge edge as argument!
-	 * 
+	 *
 	 * @param edge an object to clone.
 	 * @return an object of type Edge.
 	 */
@@ -132,7 +142,7 @@ public interface Edge extends Component {
 
 	/**
 	 * Factory
-	 * 
+	 *
 	 * @param name of the edge
 	 * @return an object of type Edge.
 	 */

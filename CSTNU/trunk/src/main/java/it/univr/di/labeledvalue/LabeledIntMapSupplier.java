@@ -15,9 +15,10 @@ import com.google.common.base.Supplier;
 /**
  * Basic factory of LabeledIntMap objects.
  * A implementation C must provide
- * 
+ *
  * @author posenato
  * @param <C> implementation class of LabeledIntMap interface.
+ * @version $Id: $Id
  */
 public final class LabeledIntMapSupplier<C extends LabeledIntMap> implements Supplier<C> {
 
@@ -43,7 +44,9 @@ public final class LabeledIntMapSupplier<C extends LabeledIntMap> implements Sup
 	private Class<C> generatorClass;
 
 	/**
-	 * @param implementationClass
+	 * <p>Constructor for LabeledIntMapSupplier.</p>
+	 *
+	 * @param implementationClass a {@link java.lang.Class} object.
 	 */
 	public LabeledIntMapSupplier(Class<C> implementationClass) {
 		super();
@@ -56,27 +59,33 @@ public final class LabeledIntMapSupplier<C extends LabeledIntMap> implements Sup
 		}
 	}
 
-	/**
-	 * @return a new LabeledIntMap concrete object.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public C get() {
 		return this.generatorClass.cast(this.generator.newInstance());
 	}
 
 	/**
-	 * @param lim
+	 * <p>get.</p>
+	 *
+	 * @param lim a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
 	 * @return a new LabeledIntMap concrete object.
 	 */
 	public C get(LabeledIntMap lim) {
 		return this.generatorClass.cast(this.generator.newInstance(lim));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return this.generatorClass.getSimpleName();
 	}
 	
+	/**
+	 * <p>getReturnedObjectClass.</p>
+	 *
+	 * @return a {@link java.lang.Class} object.
+	 */
 	public Class<C> getReturnedObjectClass() {
 		return this.generatorClass;
 	}

@@ -19,7 +19,7 @@ import it.univr.di.cstnu.graph.TNGraph;
  * The dynamic consistency check (DC check) is done assuming epsilon DC semantics (cf. ICAPS 2016 paper, table 2) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
  * In this class, an input CSTN tNGraph is transformed into an equivalent CSTN instance where node labels are empty.<br>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -39,11 +39,11 @@ public class CSTNEpsilonwoNodeLabels extends CSTNEpsilon {
 
 	/**
 	 * Just for using this class also from a terminal.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNEpsilonwoNodeLabels(), "Epsilon DC without node labels");
@@ -59,7 +59,7 @@ public class CSTNEpsilonwoNodeLabels extends CSTNEpsilon {
 
 	/**
 	 * Constructor for CSTN with reaction time at least epsilon and without node labels.
-	 * 
+	 *
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check
 	 */
@@ -70,7 +70,7 @@ public class CSTNEpsilonwoNodeLabels extends CSTNEpsilon {
 
 	/**
 	 * Constructor for CSTN with reaction time at least epsilon and without node labels.
-	 * 
+	 *
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check
 	 * @param timeOut1 time out for the check

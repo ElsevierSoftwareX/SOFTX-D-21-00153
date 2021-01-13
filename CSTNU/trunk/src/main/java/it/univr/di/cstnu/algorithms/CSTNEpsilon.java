@@ -21,7 +21,7 @@ import it.univr.di.labeledvalue.Constants;
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming epsilon DC semantics (cf. ICAPS 2016 paper, table 2) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -42,11 +42,11 @@ public class CSTNEpsilon extends CSTN {
 
 	/**
 	 * Just for using this class also from a terminal.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNEpsilon(), "Epsilon DC");
@@ -60,7 +60,7 @@ public class CSTNEpsilon extends CSTN {
 
 	/**
 	 * Constructor for CSTN.
-	 * 
+	 *
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check
 	 */
@@ -74,7 +74,7 @@ public class CSTNEpsilon extends CSTN {
 
 	/**
 	 * Constructor for CSTN.
-	 * 
+	 *
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check
 	 * @param timeOut1 timeout for the check
@@ -92,6 +92,10 @@ public class CSTNEpsilon extends CSTN {
 	}
 
 	/**
+	 * <p>
+	 * getEspsilonReactionTime.
+	 * </p>
+	 *
 	 * @return the reactionTime
 	 */
 	public int getEspsilonReactionTime() {

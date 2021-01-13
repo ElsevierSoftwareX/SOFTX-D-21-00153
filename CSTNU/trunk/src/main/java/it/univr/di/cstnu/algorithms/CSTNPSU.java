@@ -4,9 +4,7 @@
 
 package it.univr.di.cstnu.algorithms;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -48,8 +46,8 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * Therefore, the input graph HAS to have defined guarded links explicitly: upper bound edge must contain also the lower guard as lower case contingent value,
  * and lower bound edge must contain also the upper case negative value.
  * <br>
- * This class is an extension of {@link AbstractCSTN} class.
- * 
+ * This class is an extension of {@link it.univr.di.cstnu.algorithms.AbstractCSTN} class.
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -71,10 +69,9 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * Reads a CSTNPSU file and checks it.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 * @throws FileNotFoundException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON) {
@@ -138,11 +135,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 		if (cstnpsu.fOutput != null) {
 			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new StaticLayout<>(cstnpsu.g));
-			try {
-				graphWriter.save(cstnpsu.g, new PrintWriter(cstnpsu.output));
-			} catch (final IOException e) {
-				e.printStackTrace();
-			}
+			graphWriter.save(cstnpsu.g, cstnpsu.fOutput);
 		}
 	}
 
@@ -159,7 +152,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * Constructor for CSTNPSU
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTNPSU(TNGraph<CSTNPSUEdge> graph) {
@@ -169,7 +162,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * Constructor for CSTNPSU
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check in seconds
 	 */
@@ -204,10 +197,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Wrapper method for {@link #dynamicControllabilityCheck()}
-	 * 
-	 * @return an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws WellDefinitionException
 	 */
 	@Override
 	public CSTNUCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
@@ -218,9 +209,9 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * Checks the controllability of a CSTNPSU instance and, if the instance is controllable, determines all the minimal ranges for the constraints. <br>
 	 * All propositions that are redundant at run time are removed: therefore, all labels contains only the necessary and sufficient propositions.
 	 *
-	 * @return an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException
-	 *             if the nextGraph is not well defined (does not observe all well definition properties).
+	 * @return an {@link it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus} object containing the final status and some statistics about the executed
+	 *         checking.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public CSTNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {
 		if (Debug.ON) {
@@ -344,20 +335,16 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		return getCheckStatus();
 	}
 
-	/**
-	 * @return the checkStatus
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final CSTNUCheckStatus getCheckStatus() {
 		return ((CSTNUCheckStatus) this.checkStatus);
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Calls {@link CSTN#initAndCheck()} and, then, check all guarded links.
 	 * This method works only with streamlined instances!
-	 * 
-	 * @return true if the check is successful. The input g results to be modified by the method.
-	 * @throws WellDefinitionException if the graph is null or it is not well formed.
 	 */
 	@Override
 	public boolean initAndCheck() throws WellDefinitionException {
@@ -643,11 +630,12 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	/**
 	 * Executes one step of the dynamic controllability check.<br>
 	 * Before the first execution of this method, it is necessary to execute {@link #initAndCheck()}.
-	 * 
+	 *
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If
+	 *             this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
 	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNPSUEdge> edgesToCheck, Instant timeoutInstant)
@@ -898,8 +886,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * adds 
 	 *     u+v,ℵ,α★β
 	 * Z &lt;------------------------------X
-	 * when u+v<0 and u<0.
-	 * If u>=0, α★β must be αβ
+	 * when u+v &lt; 0 and u &lt; 0.
+	 * If u &ge; 0, α★β must be αβ
 	 * ℵ can be empty. 
 	 * 
 	 * 2) rG3
@@ -908,7 +896,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * adds 
 	 *     u+v,Xℵ,α★β
 	 * Z &lt;------------------------------X
-	 * when u+v < 0 and X ∉ ℵ
+	 * when u+v &lt; 0 and X ∉ ℵ
 	 * ℵ can be empty.
 	 * </pre>
 	 * 
@@ -1091,7 +1079,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	}
 
 	/**
-	 * <h1>rG2</h1>
+	 * <b>rG2</b>
 	 * 
 	 * <pre>
 	 *     v,ℵ,β           u,c,α            
@@ -1100,7 +1088,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 *             u+v,ℵ,α★β
 	 * Z &lt;----------------------------A
 	 * 
-	 * if C ∉ ℵ and v+u<0.
+	 * if C ∉ ℵ and v+u &lt; 0.
 	 * </pre>
 	 * 
 	 * @param nA
@@ -1506,7 +1494,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * adds
 	 *      u+v,ד,α★β
 	 * Z ------------------------------&gt; Y
-	 * when u+v >= 0. If (u<0), α★β must be αβ
+	 * when u+v &ge; 0. If (u &lt; 0), α★β must be αβ
 	 * ד can be empty.
 	 * 
 	 * 2) rG6
@@ -1515,7 +1503,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * adds
 	 *     u+v,yד,α★β
 	 * Z ------------------------------&gt; Y
-	 * when u+v >= 0.
+	 * when u+v &ge; 0.
 	 * ד can be empty. If not empty, y not in ד.
 	 * 
 	 * 2) rG7
@@ -1524,7 +1512,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * adds
 	 *     -u+v,xד,α★β
 	 * Z ------------------------------&gt; Y
-	 * when u+v >= 0, ד can be empty and X not in ד
+	 * when u+v &ge; 0, ד can be empty and X not in ד
 	 * </pre>
 	 * 
 	 * @param nX
@@ -2077,9 +2065,9 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * <pre>
-	 * A ---(u, alpha)---> C ---(v, beta) --->A
+	 * A ---(u, alpha)&longrightarrow; C ---(v, beta)&longrightarrow; A
 	 * 
-	 * If u+v<0, raise uncontrollability of the guarded link.
+	 * If u+v &lt; 0, raise uncontrollability of the guarded link.
 	 * </pre>
 	 * 
 	 * @param nA

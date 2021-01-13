@@ -25,8 +25,14 @@ public class CSTNGraphTest {
 	 */
 	static Class<? extends CSTNEdge> edgeImplClass = CSTNEdgePluggable.class;
 
+	/**
+	 * 
+	 */
 	static EdgeSupplier<CSTNEdge> edgeFactory = new EdgeSupplier<>(edgeImplClass);
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void enlarge() {
@@ -75,6 +81,9 @@ public class CSTNGraphTest {
 				Arrays.deepToString(adjacency));
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void create() {
@@ -89,6 +98,9 @@ public class CSTNGraphTest {
 		assertEquals(g.getEdgeCount(), 2);
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void removeNode() {
@@ -109,6 +121,9 @@ public class CSTNGraphTest {
 
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void addManyNodes() {
@@ -212,6 +227,9 @@ public class CSTNGraphTest {
 
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public final void cloneTest() {
@@ -256,6 +274,9 @@ public class CSTNGraphTest {
 		assertTrue(g1.hasSameEdgesOf(g));
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void managinDifferentEdges() {
@@ -326,6 +347,9 @@ public class CSTNGraphTest {
 		assertEquals(g.getEdgeCount(), 6);
 	}
 
+	/**
+	 * 
+	 */
 	@SuppressWarnings({ "static-method" })
 	@Test
 	public void reverse() {

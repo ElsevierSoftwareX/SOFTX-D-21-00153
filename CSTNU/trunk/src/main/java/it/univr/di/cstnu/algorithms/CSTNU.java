@@ -4,7 +4,6 @@
 
 package it.univr.di.cstnu.algorithms;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -48,7 +47,7 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  * It is based on instantaneous reaction and uses only rules qR0, and qR3 as label modification rules.
  * <br>
  * The input network is transformed into its streamlined version and, then, checked.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -138,12 +137,10 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * Reads a CSTNU file and checks it.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
-	 * @throws FileNotFoundException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
-	@SuppressWarnings("javadoc")
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
@@ -274,7 +271,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 	/**
 	 * Constructor for CSTNU
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTNU(TNGraph<CSTNUEdge> graph) {
@@ -284,7 +281,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 	/**
 	 * Constructor for CSTNU
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check in seconds
 	 */
@@ -295,7 +292,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 	/**
 	 * Constructor for CSTNU
-	 * 
+	 *
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check in seconds
 	 * @param givenPropagationOnlyToZ true if it must propagate only to Z
@@ -320,10 +317,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Wrapper method for {@link #dynamicControllabilityCheck()}
-	 * 
-	 * @return an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws WellDefinitionException when the instance is not well-defined.
 	 */
 	@Override
 	public CSTNUCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
@@ -334,9 +329,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * Checks the controllability of a CSTNU instance and, if the instance is controllable, determines all the minimal ranges for the constraints. <br>
 	 * All propositions that are redundant at run time are removed: therefore, all labels contains only the necessary and sufficient propositions.
 	 *
-	 * @return an {@link CSTNUCheckStatus} object containing the final status and some statistics about the executed checking.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException
-	 *             if the nextGraph is not well defined (does not observe all well definition properties).
+	 * @return an {@link it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus} object containing the final status and some statistics about the executed
+	 *         checking.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public CSTNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {
 		if (Debug.ON) {
@@ -486,20 +481,16 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		return getCheckStatus();
 	}
 
-	/**
-	 * @return the checkStatus
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public final CSTNUCheckStatus getCheckStatus() {
 		return ((CSTNUCheckStatus) this.checkStatus);
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Calls {@link CSTN#initAndCheck()} and, then, check all contingent links.
 	 * This method works only with streamlined instances!
-	 * 
-	 * @return true if the check is successful. The input g results to be modified by the method.
-	 * @throws WellDefinitionException if the graph is null or it is not well formed.
 	 */
 	@Override
 	public boolean initAndCheck() throws WellDefinitionException {
@@ -765,6 +756,10 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
+	 * <p>
+	 * isContingentAlsoAsOrdinary.
+	 * </p>
+	 *
 	 * @return the contingentAlsoAsOrdinary
 	 */
 	public boolean isContingentAlsoAsOrdinary() {
@@ -774,11 +769,12 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * Executes one step of the dynamic controllability check.<br>
 	 * Before the first execution of this method, it is necessary to execute {@link #initAndCheck()}.
-	 * 
+	 *
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If
+	 *             this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
 	public CSTNUCheckStatus oneStepDynamicControllability(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant) throws WellDefinitionException {
@@ -983,11 +979,12 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * Executes one step of the dynamic controllability check.<br>
 	 * Before the first execution of this method, it is necessary to execute {@link #initAndCheck()}.
-	 * 
+	 *
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If this exception occurs, then
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If
+	 *             this exception occurs, then
 	 *             there is a problem in the rules coding.
 	 */
 	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant)
@@ -1129,6 +1126,10 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>contingentAlsoAsOrdinary</code>.
+	 * </p>
+	 *
 	 * @param givenContingentAlsoAsOrdinary the contingentAlsoAsOrdinary to set
 	 */
 	public void setContingentAlsoAsOrdinary(boolean givenContingentAlsoAsOrdinary) {
@@ -1267,7 +1268,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * <h1>Labeled Cross-Lower Case (zLc/CC)</h1>
+	 * <b>Labeled Cross-Lower Case (zLc/CC)</b>
 	 * 
 	 * <pre>
 	 *     v,ℵ,β           u,c,α            
@@ -1276,7 +1277,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 *             u+v,ℵ,αβ
 	 * X &lt;----------------------------A
 	 * 
-	 * if αβ∈P*, C ∉ ℵ, and v<0. If |ℵ|>1, then X must be Z.
+	 * if αβ∈P*, C ∉ ℵ, and v &lt; 0. If |ℵ| &gt; 1, then X must be Z.
 	 * </pre>
 	 * 
 	 * Since it is assumed that L(C)=L(A)=α, there is only ONE lower-case labeled value u,c,α!
@@ -1567,6 +1568,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @return true if a rule has been applied.
 	 */
 	// Visibility is package because there is Junit Class test that checks this method.
+	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationqR3(final LabeledNode nS, final CSTNUEdge eSZ) {
 
 		if (Debug.ON) {
@@ -1697,6 +1699,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param eXW CANNOT BE NULL
 	 * @return true if a reduction is applied at least
 	 */
+	// Don't rename such method because it has to overwrite the CSTN one!
 	// Don't rename such method because it has to overwrite the CSTN one!
 	boolean labelPropagation(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final CSTNUEdge eXY, final CSTNUEdge eYW,
 			final CSTNUEdge eXW) {
@@ -1919,7 +1922,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * IR Semantics
 	 * 
-	 * @see CSTN#mainConditionForRestrictedLP(int, int)
+	 * @param u
+	 * @param v
+	 * @return true if a restricted LP can be applied
 	 */
 	@SuppressWarnings({ "static-method" })
 	final boolean mainConditionForRestrictedLP(final int u, final int v) {
@@ -2146,7 +2151,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 *         
 	 * Y ---(m,ℵℵ1,β*α)---&gt; Z
 	 *  
-	 * m=max(v, w-x)
+	 * m = max(v, w-x)
 	 * </pre>
 	 * 
 	 * zLr*
@@ -2158,7 +2163,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 *         
 	 * Y ---(v,ℵ,β)---&gt; Z
 	 *  
-	 * if v < 0
+	 * if v &lt; 0
 	 * </pre>
 	 * 
 	 * @param nY

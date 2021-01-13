@@ -20,13 +20,12 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  * Simple class to represent a <em>A-label</em> in the CSTNU framework.<br>
  * A A-label is a conjunction of zero or more <em>A-Letters</em> in the alphabet ({@link it.univr.di.labeledvalue.ALabelAlphabet}).<br>
  * A label without letters is called <em>empty label</em> and it is represented graphically as
- * {@link it.univr.di.labeledvalue.Constants#EMPTY_UPPER_CASE_LABEL}.<br>
- * <p>
+ * {@link it.univr.di.labeledvalue.Constants#EMPTY_UPPER_CASE_LABEL}.
  * <h2>Design assumptions</h2>
  * Since in CSTNU project the memory footprint of a label is an important aspect, after some experiments, I have found that the best way
  * to represent a A-label is to limit the possible A-letters to 64 distinct strings and to use one int for representing the state of A-letters composing a
  * A-label: present/absent.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -261,7 +260,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 	/**
 	 * In order to have a correct copy of a a-label.
-	 * 
+	 *
 	 * @param label the input value
 	 * @return a distinct equal copy of label
 	 */
@@ -276,7 +275,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * The regular expression syntax for a label is specified in {@link it.univr.di.labeledvalue.Label#LABEL_RE}.
 	 *
 	 * @param s a {@link java.lang.String} object.
-	 * @param alphabet A {@link ALabelAlphabet} to use. If null, it will be generated and added to the return label.
+	 * @param alphabet A {@link it.univr.di.labeledvalue.ALabelAlphabet} to use. If null, it will be generated and added to the return label.
 	 * @return a Label object corresponding to the label string representation.
 	 */
 	public static final ALabel parse(String s, ALabelAlphabet alphabet) {
@@ -377,7 +376,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 	/**
 	 * Default constructor using a given alphabet.
-	 * 
+	 *
 	 * @param alphabet1 the input alphabet. It cannot be null.
 	 */
 	public ALabel(ALabelAlphabet alphabet1) {
@@ -390,7 +389,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Builds an a-label using the a-letter 'l' and 'alphabet'.
 	 * Be aware that if 'l' is not present into alphabet, it will be added.
-	 * 
+	 *
 	 * @param l first a-letter of label
 	 * @param alphabet1 alphabet of a-letters. It may be empty!
 	 */
@@ -402,7 +401,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Helper constructor. It calls ALabel(ALetter, ALabelAlphabet).
 	 * Be aware that if 's' is not present into alphabet as a-letter, it will be added as a-letter.
-	 * 
+	 *
 	 * @param s the string to add.
 	 * @param alphabet1 alphabet of a-letters. It may be empty!
 	 */
@@ -420,6 +419,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 *
 	 * In order to speed up this method and considering that the {@link ALabelAlphabet} order may be not the expected alphabetic one,
 	 * (first letter in an {@link ALabelAlphabet} can be 'nodeZ' and the last one 'aNode'), the order of labels is given w.r.t. their indexes in
 	 * the their {@link ALabelAlphabet}.
@@ -504,6 +505,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>contains.</p>
+	 *
 	 * @param name the proposition to check.
 	 * @return true if this contains proposition in any state: straight, negated or unknown.
 	 */
@@ -515,7 +518,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 
 	/**
 	 * Compare the letter with an a-letter name.
-	 * 
+	 *
 	 * @param name the input aletter
 	 * @return true if the label is equal to the a-letter name.
 	 */
@@ -525,9 +528,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		return this.size() == 1 && this.getState(getIndex(name)) == State.present;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean equals(final Object obj) {
 		if (this == obj)
@@ -541,6 +542,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>Getter for the field <code>alphabet</code>.</p>
+	 *
 	 * @return the alphabet
 	 */
 	public ALabelAlphabet getAlphabet() {
@@ -586,9 +589,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 		return ((this.bit0 & mask) != 0) ? State.present : State.absent;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		// It is impossible to guarantee a unique hashCode for each possible label.
@@ -596,6 +597,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>intersect.</p>
+	 *
 	 * @param label the input label
 	 * @return the label containing common ALetter between this and label.
 	 */
@@ -616,18 +619,23 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return true if the label contains no literal.
 	 */
 	public boolean isEmpty() {
 		return this.bit0 == 0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public Iterator<ALetter> iterator() {
 		return new ALabelItr();
 	}
 
 	/**
+	 * <p>put.</p>
+	 *
 	 * @param l the letter to add
 	 * @return true if a-letter is added, false otherwise.
 	 */
@@ -722,6 +730,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return Return the number of literals of the label
 	 */
 	public int size() {
@@ -739,6 +749,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>toLowerCase.</p>
+	 *
 	 * @return lower case version
 	 */
 	public String toLowerCase() {
@@ -765,6 +777,8 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	}
 
 	/**
+	 * <p>toUpperCase.</p>
+	 *
 	 * @return upper case version
 	 */
 	public String toUpperCase() {

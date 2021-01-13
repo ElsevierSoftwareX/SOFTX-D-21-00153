@@ -28,8 +28,8 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
  * composing a label:
  * the two <code>int</code> are used in pair; each position of them is associated to a possible literal (position 0 to 'a',...,position 32 to 'F'); given a
  * position,
- * the two corresponding bits in the two long can represent all possible four states ({@link Literal#ABSENT},
- * {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW}) of the literal associated to the position.<br>
+ * the two corresponding bits in the two long can represent all possible four states ({@link it.univr.di.labeledvalue.Literal#ABSENT},
+ * {@link it.univr.di.labeledvalue.Literal#STRAIGHT}, {@link it.univr.di.labeledvalue.Literal#NEGATED}, {@link it.univr.di.labeledvalue.Literal#UNKNONW}) of the literal associated to the position.<br>
  * Using only 32 possible propositions, it is possible to cache the two <code>int</code> of a label as a long and, therefore, to cache the label for reusing it.
  * </p>
  * <p>
@@ -136,7 +136,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
  * </tr>
  * </table>
  * <b>All code for performance tests is in LabelTest class .</b>
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -397,6 +397,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>valueOf.</p>
+	 *
 	 * @param proposition the input proposition as chat
 	 * @param state its state
 	 * @return the label initialized with literal represented by the proposition and its state.
@@ -438,7 +440,6 @@ public class Label implements Comparable<Label> {
 	 * unknown              1   1
 	 * </pre>
 	 */
-	@SuppressWarnings("javadoc")
 	private final int bit1, bit0;
 
 	/**
@@ -520,10 +521,10 @@ public class Label implements Comparable<Label> {
 	 * It returns a new label conjunction of <code>proposition</code> and <code>this</code> if <code>this</code> is consistent with <code>proposition</code> and
 	 * its
 	 * <code>propositionState</code>.
-	 * If propositionState is {@link Literal#ABSENT}, the effect is reset the <code>proposition</code> in the new label.
-	 * 
+	 * If propositionState is {@link it.univr.di.labeledvalue.Literal#ABSENT}, the effect is reset the <code>proposition</code> in the new label.
+	 *
 	 * @param proposition the proposition to conjunct.
-	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED} or {@link Literal#ABSENT}.
+	 * @param propositionState a possible state of the proposition: {@link it.univr.di.labeledvalue.Literal#STRAIGHT}, {@link it.univr.di.labeledvalue.Literal#NEGATED} or {@link it.univr.di.labeledvalue.Literal#ABSENT}.
 	 * @return the new label if proposition can be conjuncted, null otherwise.
 	 */
 	public Label conjunction(final char proposition, final char propositionState) {
@@ -561,7 +562,7 @@ public class Label implements Comparable<Label> {
 
 	/**
 	 * Helper method for {@link it.univr.di.labeledvalue.Label#conjunction(char, char)}
-	 * 
+	 *
 	 * @param literal a literal
 	 * @return the new Label if literal has been added, null otherwise.
 	 */
@@ -575,11 +576,11 @@ public class Label implements Comparable<Label> {
 	 * It returns the conjunction of <code>proposition</code> to <code>this</code>. If <code>proposition</code> state <code>literalState</code> is opposite to
 	 * the corresponding literal in <code>this</code>, the opposite literal in <code>this</code> is substituted with <code>proposition</code> but with unknown
 	 * state. If <code>proposition</code> has unknown state, it is add to <code>this</code> as unknown.
-	 * If propositionState is {@link Literal#ABSENT}, the effect is reset the proposition in the label.
+	 * If propositionState is {@link it.univr.di.labeledvalue.Literal#ABSENT}, the effect is reset the proposition in the label.
 	 *
 	 * @param proposition the literal to conjunct.
-	 * @param propositionState a possible state of the proposition: {@link Literal#STRAIGHT}, {@link Literal#NEGATED}, {@link Literal#UNKNONW} or
-	 *            {@link Literal#ABSENT}.
+	 * @param propositionState a possible state of the proposition: {@link it.univr.di.labeledvalue.Literal#STRAIGHT}, {@link it.univr.di.labeledvalue.Literal#NEGATED}, {@link it.univr.di.labeledvalue.Literal#UNKNONW} or
+	 *            {@link it.univr.di.labeledvalue.Literal#ABSENT}.
 	 * @return Label if proposition is added, false otherwise.
 	 */
 	public Label conjunctionExtended(final char proposition, char propositionState) {
@@ -593,11 +594,11 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * Create a new label that represents the conjunction of <code>this</code> and <code>label</code> using also {@link Literal#UNKNONW} literals.
-	 * A {@link Literal#UNKNONW} literal represent the fact that in the two input labels a proposition letter is present as straight state in
+	 * Create a new label that represents the conjunction of <code>this</code> and <code>label</code> using also {@link it.univr.di.labeledvalue.Literal#UNKNONW} literals.
+	 * A {@link it.univr.di.labeledvalue.Literal#UNKNONW} literal represent the fact that in the two input labels a proposition letter is present as straight state in
 	 * one label and in negated state in the other.<br>
 	 * For a detail about the conjunction of unknown literals, see {@link #conjunctionExtended(char, char)}.
-	 * 
+	 *
 	 * @param label the input label.
 	 * @return a new label with the conjunction of <code>this</code> and <code>label</code>.<br>
 	 *         <code>this</code> is not altered by this method.
@@ -612,7 +613,7 @@ public class Label implements Comparable<Label> {
 
 	/**
 	 * Helper method {@link #conjunctionExtended(char, char)}
-	 * 
+	 *
 	 * @param literal a literal
 	 * @return Label where literal has been added.
 	 */
@@ -623,6 +624,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>contains.</p>
+	 *
 	 * @param proposition the proposition to check.
 	 * @return true if this contains proposition in any state: straight, negated or unknown.
 	 */
@@ -631,6 +634,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>getState.</p>
+	 *
 	 * @param proposition the proposition to check.
 	 * @return the state of the proposition in this label: straight, negated, unknown or absent.
 	 */
@@ -639,6 +644,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>contains.</p>
+	 *
 	 * @param l the input literal
 	 * @return true if the literal <code>l</code> is present into the label.
 	 */
@@ -649,6 +656,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>containsUnknown.</p>
+	 *
 	 * @return true if the label contains one unknown literal at least.
 	 */
 	public boolean containsUnknown() {
@@ -679,6 +688,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>getAllUnknown.</p>
+	 *
 	 * @return The array of propositions (char) that have unknown status in this label.
 	 */
 	public char[] getAllUnknown() {
@@ -695,6 +706,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>getLiterals.</p>
+	 *
 	 * @return An array containing a copy of literals in this label. The array may be empty.
 	 */
 	public Literal[] getLiterals() {
@@ -710,6 +723,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>getPropositions.</p>
+	 *
 	 * @return The array of proposition of present literals in this label in alphabetic order.
 	 */
 	public char[] getPropositions() {
@@ -724,8 +739,10 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>getStateLiteralWithSameName.</p>
+	 *
 	 * @param c the name of literal
-	 * @return the state of literal with name c if it is present, {@link Literal#ABSENT} otherwise.
+	 * @return the state of literal with name c if it is present, {@link it.univr.di.labeledvalue.Literal#ABSENT} otherwise.
 	 */
 	public final char getStateLiteralWithSameName(final char c) {
 		return get(Literal.index(c));
@@ -849,9 +866,7 @@ public class Label implements Comparable<Label> {
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public int hashCode() {
 		// It is impossible to guarantee a unique hashCode for each possible label.
@@ -890,7 +905,7 @@ public class Label implements Comparable<Label> {
 	 * L<sub>1</sub> &#x2605; L<sub>2</sub>, where ¿p are used for represent the conjunction of opposite literals p and ¬p or literals like ¿p and p/¬p.<br>
 	 * Now, it holds ¿p &#x2605; p = ¿p is satisfiable.
 	 * </p>
-	 * 
+	 *
 	 * @param label the label to check
 	 * @return true if the label is consistent with this label.
 	 */
@@ -938,7 +953,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
-	 * @see Label#isConsistentWith(byte, char)
+	 * <p>isConsistentWith.</p>
+	 *
 	 * @param lit the input literal
 	 * @return true if lit is consistent with this label.
 	 */
@@ -947,6 +963,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return true if the label contains no literal.
 	 */
 	public boolean isEmpty() {
@@ -1019,6 +1037,8 @@ public class Label implements Comparable<Label> {
 	}
 
 	/**
+	 * <p>size.</p>
+	 *
 	 * @return the number of literals of the label.
 	 */
 	public int size() {

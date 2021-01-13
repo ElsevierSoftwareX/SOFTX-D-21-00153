@@ -39,6 +39,7 @@ import it.univr.di.labeledvalue.Constants;
  * So, it is not general and it cannot be used in other contexts.
  *
  * @version $Id: $Id
+ * @author posenato
  */
 public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, CSTNEdge> implements IterativeContext {
 
@@ -55,7 +56,7 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
 	 */
-	static public Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
+	static public final Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
 		@Override
 		public Point2D apply(final LabeledNode v) {
 			final Point2D p = new Point2D.Double(v.getX(), v.getY());
@@ -139,11 +140,15 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
-	 * @param firstNode
-	 * @param firstNodeX
-	 * @param firstNodeY
-	 * @param g
-	 * @param nSplits
+	 * <p>
+	 * draw.
+	 * </p>
+	 *
+	 * @param firstNode first node
+	 * @param firstNodeX x coordinate of first node
+	 * @param firstNodeY y coordinate of first node
+	 * @param g the network where node is presente
+	 * @param nSplits the {@link #apply(LabeledNode)}of open split
 	 * @return the set of nodes that have been laid out.
 	 */
 	public ObjectSet<LabeledNode> draw(LabeledNode firstNode, double firstNodeX, double firstNodeY, it.univr.di.cstnu.graph.TNGraph<CSTNEdge> g, int nSplits) {
@@ -233,7 +238,7 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 								}
 							}
 							double newX = ((adjacent.getX() <= xNode) ? xNode + this.xShift : adjacent.getX());
-							if (adjacent.getY() == newY && adjacent.getX() == newX)
+							if (Double.compare(adjacent.getY(), newY) == 0 && Double.compare(adjacent.getX(), newX) == 0)
 								continue;
 							if (newX > this.maxX)
 								this.maxX = newX;
@@ -349,6 +354,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>initialX</code>.
+	 * </p>
+	 *
 	 * @return the initialX
 	 */
 	public double getInitialX() {
@@ -356,6 +365,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>initialY</code>.
+	 * </p>
+	 *
 	 * @return the initialY
 	 */
 	public double getInitialY() {
@@ -363,6 +376,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>xShift</code>.
+	 * </p>
+	 *
 	 * @return the xShift
 	 */
 	public double getxShift() {
@@ -370,12 +387,17 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>yShift</code>.
+	 * </p>
+	 *
 	 * @return the yShift
 	 */
 	public double getyShift() {
 		return this.yShift;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void initialize() {
 		it.univr.di.cstnu.graph.TNGraph<CSTNEdge> g = (it.univr.di.cstnu.graph.TNGraph<CSTNEdge>) this.graph;
@@ -401,7 +423,7 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 		this.maxY = this.initialY;
 
 		Collection<LabeledNode> allNodes = g.getVertices();
-		if (this.currentLayout!=null) {
+		if (this.currentLayout != null) {
 			for (LabeledNode node : allNodes) {
 				node.setX(this.currentLayout.getX(node));
 				node.setY(this.currentLayout.getY(node));
@@ -467,6 +489,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>initialX</code>.
+	 * </p>
+	 *
 	 * @param initialX1 the initialX to set
 	 */
 	public void setInitialX(int initialX1) {
@@ -474,6 +500,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>initialY</code>.
+	 * </p>
+	 *
 	 * @param initialY1 the initialY to set
 	 */
 	public void setInitialY(int initialY1) {
@@ -481,6 +511,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>xShift</code>.
+	 * </p>
+	 *
 	 * @param xShift1 the xShift to set
 	 */
 	public void setxShift(int xShift1) {
@@ -488,6 +522,10 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>yShift</code>.
+	 * </p>
+	 *
 	 * @param yShift1 the yShift to set
 	 */
 	public void setyShift(int yShift1) {
@@ -496,22 +534,29 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>currentLayout</code>.
+	 * </p>
+	 *
 	 * @param currentLayout1 the currentLayout to set
 	 */
 	public void setCurrentLayout(AbstractLayout<LabeledNode, ? extends Edge> currentLayout1) {
 		this.currentLayout = currentLayout1;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return CSTNLayout.VERSIONandDATE;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void step() {
 		// no action
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean done() {
 		return false;

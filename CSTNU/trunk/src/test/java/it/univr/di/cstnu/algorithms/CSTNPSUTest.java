@@ -135,13 +135,12 @@ public class CSTNPSUTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.attic.CSTPSU_NodeSet#crossCaseRule(it.univr.di.cstnu.graph.TNGraph, it.univr.di.cstnu.graph.TNGraph, CSTPSUCheckStatus)}
 	 * 
 	 * <pre>
 	 * Z &lt;--- -3,D,b¬c--- C &lt;-----3,c,ab---- A
 	 * </pre>
 	 */
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testCrossCaseRule() {
 		// System.out.printf("CROSS CASE\n");
@@ -183,11 +182,11 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTPSU_NodeSet#labelModificationR0R2R4(TNGraph, boolean))}.
+	 * Test method for
 	 * 
 	 * @throws WellDefinitionException
 	 */
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabelModificationR0() throws WellDefinitionException {
 		LabeledNode P = this.g.getNodeFactory().get("P", 'p');
@@ -234,11 +233,11 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTPSU_NodeSet#labelModificationR0R2R4(TNGraph, boolean))}.
+	 * Test method for
 	 * 
 	 * @throws WellDefinitionException
 	 */
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabelModificationQR0() throws WellDefinitionException {
 		LabeledNode P = this.g.getNodeFactory().get("P?", 'p');
@@ -280,12 +279,12 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTPSU_NodeSet#labelModificationR1R3R5(TNGraph, TNGraph, CSTPSUCheckStatus)))}.
+	 * Test method for
 	 * 
 	 * <pre>
 	 * P ----[0, ,¬b][-10, ,ab][-11,C,ab]--&gt; X &lt;--------- Y
 	 */
-	@SuppressWarnings({ "javadoc" })
+
 	@Test
 	public final void testLabelModificationR3() {
 		// System.out.printf("R1-R3 CASE\n");
@@ -397,12 +396,12 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTPSU_NodeSet#labelModificationR1R3R5(TNGraph, TNGraph, CSTPSUCheckStatus)))}.
+	 * Test method for
 	 * 
 	 * <pre>
 	 * P ----[0, ,¬b][-10, ,ab][-11,C,ab]--&gt; Z &lt;--------- Y
 	 */
-	@SuppressWarnings({ "javadoc" })
+
 	@Test
 	public final void testLabelModificationQR3() {
 		// System.out.printf("R1-R3 CASE\n");
@@ -448,7 +447,7 @@ public class CSTNPSUTest {
 		// yxOK.mergeUpperCaseValue(Label.parse("abg"), new ALabel("C", this.alpha), -7);// if streamlined
 		yxOK.mergeUpperCaseValue(Label.parse("ab"), new ALabel("C", this.alphabeth), -7);// if not streamlined
 		yxOK.mergeUpperCaseValue(Label.parse("abc"), new ALabel("C", this.alphabeth), -10);// it could not be present because there is the labeled value
-																						// (-10,abc)... it depends in which
+																							// (-10,abc)... it depends in which
 		// order it is inserted.
 		yxOK.mergeUpperCaseValue(Label.parse("bgp"), new ALabel("C", this.alphabeth), -7);//
 		yxOK.mergeUpperCaseValue(Label.parse("ab¿c"), new ALabel("C", this.alphabeth), -11);//
@@ -465,13 +464,11 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.attic.CSTPSU_NodeSet#lowerCaseRule(TNGraph, TNGraph, CSTPSUCheckStatus)}.
+	 * Test method for
 	 * 
 	 * <pre>
 	 * A &lt;----[1,,b][0,,c][-11,,d]--- C &lt;---[3,c,ab]--- D
 	 * </pre>
-	 * 
-	 * @SuppressWarnings("javadoc")
 	 * 
 	 * @Test
 	 *       public final void testLowerCaseRule() {
@@ -511,13 +508,11 @@ public class CSTNPSUTest {
 	 */
 
 	/**
-	 * Test method for {@link it.univr.di.attic.CSTPSU_NodeSet#lowerCaseRule(TNGraph, TNGraph, CSTPSUCheckStatus)}.
+	 * Test method for
 	 * 
 	 * <pre>
 	 * Z &lt;----[1,,b][0,,c][-11,,¬b]--- C &lt;---[3,c,ab]--- D
 	 * </pre>
-	 * 
-	 * @SuppressWarnings("javadoc")
 	 * 
 	 * @Test
 	 *       public final void testQLowerCaseRule() {
@@ -557,10 +552,10 @@ public class CSTNPSUTest {
 	 */
 
 	/**
-	 * Test method for {@link it.univr.di.attic.CSTPSU_NodeSet#upperCaseRule(TNGraph, TNGraph, CSTPSUCheckStatus)}.
+	 * Test method for
 	 * Z &lt;---[3,B,ab]--- C &lt;----[-13,,b][11,,c]----D
 	 */
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testUpperCaseRule() {
 		// System.out.printf("UPPER CASE\n");

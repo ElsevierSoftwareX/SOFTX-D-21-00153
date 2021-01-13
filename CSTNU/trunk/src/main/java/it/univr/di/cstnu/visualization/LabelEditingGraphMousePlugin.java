@@ -666,9 +666,9 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	CSTNEditor cstnEditor;
 
 	/**
-	 * create an instance with default settings
-	 * 
-	 * @param cstnEditor1
+	 * Create an instance with default settings
+	 *
+	 * @param cstnEditor1 reference to the editor object (useful for finding some part of its panels).
 	 */
 	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor1) {
 		super();
@@ -750,7 +750,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	 * Create an instance with overrides.
 	 *
 	 * @param selectionModifiers for primary selection
-	 * @param cstnEditor1
+	 * @param cstnEditor1 reference to the editor object (useful for finding some part of its panels).
 	 */
 	public LabelEditingGraphMousePlugin(final int selectionModifiers, CSTNEditor cstnEditor1) {
 		super(selectionModifiers);
@@ -901,6 +901,10 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>cstnEditor</code>.
+	 * </p>
+	 *
 	 * @return the cstnEditor
 	 */
 	public CSTNEditor getCstnEditor() {
@@ -908,6 +912,10 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>cstnEditor</code>.
+	 * </p>
+	 *
 	 * @param cstnEditor1 the cstnEditor to set
 	 */
 	public void setCstnEditor(CSTNEditor cstnEditor1) {

@@ -13,8 +13,9 @@ import com.google.common.base.Supplier;
 
 /**
  * LabeledIntEdgePluggabble supplier.
- * 
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class LabeledNodeSupplier implements Supplier<LabeledNode> {
 
@@ -30,22 +31,23 @@ public class LabeledNodeSupplier implements Supplier<LabeledNode> {
 	// private Class<C> labeledIntValueMapImpl;
 
 	/**
+	 * <p>Constructor for LabeledNodeSupplier.</p>
 	 */
 	public LabeledNodeSupplier() {// Class<C> labeledIntMapImplementation
 		super();
 		// this.labeledIntValueMapImpl = labeledIntMapImplementation;
 	}
 
-	/**
-	 * @return a new LabeledIntMap concrete object.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public LabeledNode get() {
 		return get("");
 	}
 
 	/**
-	 * @param name
+	 * <p>get.</p>
+	 *
+	 * @param name a {@link java.lang.String} object.
 	 * @return a new LabeledIntMap concrete object.
 	 */
 	@SuppressWarnings("static-method")
@@ -54,6 +56,8 @@ public class LabeledNodeSupplier implements Supplier<LabeledNode> {
 	}
 
 	/**
+	 * <p>get.</p>
+	 *
 	 * @param node the edge to clone.
 	 * @return a new edge
 	 */
@@ -63,8 +67,10 @@ public class LabeledNodeSupplier implements Supplier<LabeledNode> {
 	}
 
 	/**
-	 * @param n
-	 * @param proposition
+	 * <p>get.</p>
+	 *
+	 * @param n a {@link java.lang.String} object.
+	 * @param proposition a char.
 	 * @return a new edge
 	 */
 	@SuppressWarnings("static-method")

@@ -4,12 +4,8 @@
 
 package it.univr.di.cstnu.algorithms;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.Writer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -53,12 +49,15 @@ import it.univr.di.labeledvalue.Label;
 
 /**
  * Simple class to represent and consistency-check Simple Temporal Network (STN) where the edge weight are signed integer.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
 public class STN {
 
+	/**
+	 * @author posenato
+	 */
 	public static enum CheckAlgorithm {
 		/**
 		 * 
@@ -108,6 +107,7 @@ public class STN {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
+		@SuppressWarnings("javadoc")
 		public int cycles = 0, propagationCalls = 0;
 
 		/**
@@ -174,12 +174,12 @@ public class STN {
 	/**
 	 * Suffix for file name
 	 */
-	public static String FILE_NAME_SUFFIX = ".stn";
+	public final static String FILE_NAME_SUFFIX = ".stn";
 
 	/**
 	 * The name for the initial node.
 	 */
-	public static String ZeroNodeName = "Z";
+	public final static String ZERO_NODE_NAME = "Z";
 	/**
 	 * logger
 	 */
@@ -191,10 +191,14 @@ public class STN {
 	static final String VERSIONandDATE = "Version 1.0 - July, 15 2019";
 
 	/**
-	 * @param args
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * <p>
+	 * main.
+	 * </p>
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		STN stn = new STN();
@@ -380,7 +384,7 @@ public class STN {
 
 	/**
 	 * This method differs from {@link #dijkstra(TNGraph, LabeledNode, STNCheckStatus)} in the fact that distances are store on
-	 * a map <node, value> that is returned. Node potentials are not modified.
+	 * a map &lt;node, value&gt; that is returned. Node potentials are not modified.
 	 * 
 	 * @see #dijkstra(TNGraph, LabeledNode, STNCheckStatus)
 	 * @param g1 input graph
@@ -787,11 +791,6 @@ public class STN {
 	int maxWeight = Constants.INT_NULL;
 
 	/**
-	 * Output stream to fOutput
-	 */
-	PrintStream output = null;
-
-	/**
 	 * Timeout in seconds for the check.
 	 */
 	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
@@ -810,6 +809,10 @@ public class STN {
 	LabeledNode Z = null;
 
 	/**
+	 * <p>
+	 * Constructor for STN.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public STN(TNGraph<STNEdge> graph) {
@@ -818,6 +821,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for STN.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check
 	 */
@@ -836,7 +843,7 @@ public class STN {
 	 * Determines the minimal distance in this STN between any node and the sink one (node Z) using the BellmanFord algorithm.
 	 * The minimal distance is stored as potential value in each node.
 	 * If the graph contains a negative cycle, it returns false.
-	 * 
+	 *
 	 * @param backward true if the search has to be backward.
 	 * @return true if the graph is consistent, false otherwise.
 	 */
@@ -850,15 +857,23 @@ public class STN {
 	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
 	 * <br>
 	 * After a check, {@link #getGChecked} returns the graph resulting after the check.
-	 * 
+	 *
 	 * @return the final status of the checking with some statistics.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph<E> is not well defined (does not observe all well definition
-	 *             properties).
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public STNCheckStatus consistencyCheck() throws WellDefinitionException {
 		return consistencyCheck(this.defaultConsistencyCheckAlg);
 	}
 
+	/**
+	 * <p>
+	 * consistencyCheck.
+	 * </p>
+	 *
+	 * @param alg a {@link it.univr.di.cstnu.algorithms.STN.CheckAlgorithm} object.
+	 * @return a {@link it.univr.di.cstnu.algorithms.STN.STNCheckStatus} object.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
+	 */
 	public STNCheckStatus consistencyCheck(CheckAlgorithm alg) throws WellDefinitionException {
 		try {
 			initAndCheck();
@@ -931,7 +946,7 @@ public class STN {
 	 * Determines the minimal distance in this STN between source node and any node using the Dijkstra algorithm.
 	 * The minimal distance is stored as potential value in each node.
 	 * If the graph contains a negative edge, it returns false.
-	 * 
+	 *
 	 * @return true if the graph contains only positive edges, false otherwise.
 	 */
 	public boolean dijkstra() {
@@ -940,7 +955,7 @@ public class STN {
 
 	/**
 	 * Determines the minimal distance between all pair of vertexes modifying the current STN.
-	 * 
+	 *
 	 * @return true if the STN is consistent, false otherwise.
 	 *         If the response is false, the edges do not represent the minimal distance between nodes.
 	 */
@@ -949,6 +964,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>checkStatus</code>.
+	 * </p>
+	 *
 	 * @return the checkStatus
 	 */
 	public STNCheckStatus getCheckStatus() {
@@ -956,6 +975,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>defaultConsistencyCheckAlg</code>.
+	 * </p>
+	 *
 	 * @return the defaultConsistencyCheckAlg
 	 */
 	public CheckAlgorithm getDefaultConsistencyCheckAlg() {
@@ -963,6 +986,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>fOutput</code>.
+	 * </p>
+	 *
 	 * @return the fOutput
 	 */
 	public File getfOutput() {
@@ -970,6 +997,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>g</code>.
+	 * </p>
+	 *
 	 * @return the g
 	 */
 	final public TNGraph<STNEdge> getG() {
@@ -977,6 +1008,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * getGChecked.
+	 * </p>
+	 *
 	 * @return the resulting graph of a check. It is up to the called to be sure the the returned graph is the result of a check.
 	 *         It can be used also by subclasses with a proper cast.
 	 * @see #setOutputCleaned(boolean)
@@ -988,6 +1023,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>maxWeight</code>.
+	 * </p>
+	 *
 	 * @return the maxWeight
 	 */
 	final public int getMaxWeight() {
@@ -998,7 +1037,7 @@ public class STN {
 	 * Returns the Muscettola predecessor graph of source in the current STN.
 	 * Be aware that Muscettola predecessor graph is made by ALL shortest paths having source as origin node.
 	 * The returned graph is an independent graph with respect to the graph of this object.
-	 * 
+	 *
 	 * @param source a node of this STN
 	 * @return the predecessor graph of node X, if X belongs (object identity) to this STN, null otherwise.
 	 */
@@ -1067,7 +1106,7 @@ public class STN {
 	 * Determines all the Rigid Components (RC) using the linear time algorithm (w.r.t. the |edges|) proposed by Cormen et al. for Strongly Connected Components
 	 * of Z predecessor graphs.<br>
 	 * Be aware that Z must reach all nodes before calling this method.
-	 * 
+	 *
 	 * @return the list of possible RCs as a list of original nodes. If there is no RCs, the list is empty.
 	 */
 	public ObjectList<ObjectList<LabeledNode>> getSTNRigidComponents() {
@@ -1110,6 +1149,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * getVersionAndCopyright.
+	 * </p>
+	 *
 	 * @return version and copyright string
 	 */
 	public String getVersionAndCopyright() {
@@ -1128,15 +1171,19 @@ public class STN {
 	/**
 	 * Initializes the STN instance represented by graph g.
 	 * It calls {@link #coreSTNInitAndCheck()}.
-	 * 
+	 *
 	 * @return true if the graph is a well formed
-	 * @throws WellDefinitionException if the initial graph is not well defined.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the initial graph is not well defined.
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
 		return coreSTNInitAndCheck();
 	}
 
 	/**
+	 * <p>
+	 * isOutputCleaned.
+	 * </p>
+	 *
 	 * @return the fOutputCleaned
 	 */
 	public boolean isOutputCleaned() {
@@ -1145,7 +1192,7 @@ public class STN {
 
 	/**
 	 * Determines the minimal distance between all pair of vertexes modifying the current STN using Johnson's algorithm.
-	 * 
+	 *
 	 * @return true if the STN is consistent, false otherwise.
 	 *         If the response is false, the edges do not represent the minimal distance between nodes.
 	 */
@@ -1162,7 +1209,7 @@ public class STN {
 
 	/**
 	 * Makes the graph dispatchable applying Muscettola et al. 1998 algorithm.
-	 * 
+	 *
 	 * @return true if it was possible to make the graph dispatchable (i.e., the graph was consistent).
 	 */
 	public boolean makeDispatchable() {
@@ -1274,7 +1321,7 @@ public class STN {
 
 	/**
 	 * Stores the graph after a check to the file {@link #fOutput}.
-	 * 
+	 *
 	 * @see #getGChecked()
 	 */
 	public void saveGraphToFile() {
@@ -1311,15 +1358,15 @@ public class STN {
 
 		StaticLayout<STNEdge> layout = new StaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
-		try (Writer out = new BufferedWriter(new FileWriter(this.fOutput))) {
-			graphWriter.save(g1, out);
-		} catch (final Exception e) {
-			System.err.println("Something is wrong and it is not possible to save the result. The program does not stop. Error: " + e.getMessage());
-		}
+		graphWriter.save(g1, this.fOutput);
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>defaultConsistencyCheckAlg</code>.
+	 * </p>
+	 *
 	 * @param defaultConsistencyCheckAlg1 the defaultConsistencyCheckAlg to set
 	 */
 	public void setDefaultConsistencyCheckAlg(CheckAlgorithm defaultConsistencyCheckAlg1) {
@@ -1327,6 +1374,10 @@ public class STN {
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>fOutput</code>.
+	 * </p>
+	 *
 	 * @param fileOutput the file where to save the result.
 	 */
 	public void setfOutput(File fileOutput) {
@@ -1336,7 +1387,7 @@ public class STN {
 	/**
 	 * Considers the given graph as the graph to check (graph will be modified).
 	 * Clear all {@link #maxWeight}, {@link #horizon} and {@link #checkStatus}.
-	 * 
+	 *
 	 * @param graph set internal TNGraph to g. It cannot be null.
 	 */
 	public void setG(TNGraph<STNEdge> graph) {
@@ -1349,7 +1400,7 @@ public class STN {
 
 	/**
 	 * Set to true for having the result graph cleaned of empty edges and labeled values having unknown literals.
-	 * 
+	 *
 	 * @param clean the resulting graph
 	 */
 	public void setOutputCleaned(boolean clean) {
@@ -1361,7 +1412,7 @@ public class STN {
 	 * Implements Yen's algorithm presented in<br>
 	 * J. Y. Yen, “An algorithm for finding shortest routes from all source nodes to a given destination in general networks,”<br>
 	 * Q. Appl. Math., vol. 27, no. 4, pp. 526–530, Jan. 1970.<br>
-	 * 
+	 *
 	 * @param randomOrder true if nodes have to be ordered randomly. If false, nodes are ordered w.r.t. their name.
 	 *            In the case true, the algorithm is also known as Bannister and Eppstein
 	 * @param backward true if the search has to be done in backward way.
@@ -1538,16 +1589,16 @@ public class STN {
 		// Checks the presence of Z node!
 		// this.Z = this.g.getZ(); already done in setG()
 		if (this.Z == null) {
-			this.Z = this.g.getNode(STN.ZeroNodeName);
+			this.Z = this.g.getNode(STN.ZERO_NODE_NAME);
 			if (this.Z == null) {
 				// We add by authority!
-				this.Z = this.g.getNodeFactory().get(STN.ZeroNodeName);
+				this.Z = this.g.getNodeFactory().get(STN.ZERO_NODE_NAME);
 				this.Z.setX(10);
 				this.Z.setY(10);
 				this.g.addVertex(this.Z);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
-						LOG.log(Level.WARNING, "No " + STN.ZeroNodeName + " node found: added!");
+						LOG.log(Level.WARNING, "No " + STN.ZERO_NODE_NAME + " node found: added!");
 				}
 			}
 			this.g.setZ(this.Z);
@@ -1696,14 +1747,6 @@ public class STN {
 				if (this.fOutput.exists()) {
 					this.fOutput.delete();
 				}
-				try {
-					this.fOutput.createNewFile();
-					this.output = new PrintStream(this.fOutput);
-				} catch (final IOException e) {
-					throw new CmdLineException(parser, "Output file cannot be created.");
-				}
-			} else {
-				this.output = System.out;
 			}
 		} catch (final CmdLineException e) {
 			// if there's a problem in the command line, you'll get this exception. this will report an error message.

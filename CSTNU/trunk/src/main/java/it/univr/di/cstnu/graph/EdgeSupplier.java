@@ -13,16 +13,16 @@ import java.lang.reflect.InvocationTargetException;
 import com.google.common.base.Supplier;
 
 /**
- * This supplier <b>requires</b> as E a class that implements {@link Edge} interface and that contains the following 3 constructors:
- * 
- * <pre>
- * 1. E(Class<? extends LabeledIntMap>)
- * 2. E(E, Class<? extends LabeledIntMap>)
- * 3. E(String, Class<? extends LabeledIntMap>)
- * </pre>
- * 
+ * This supplier <b>requires</b> as E a class that implements {@link it.univr.di.cstnu.graph.Edge} interface and that contains the following 3 constructors:
+ * <ol>
+ * <li>E(Class&lt;? extends LabeledIntMap&gt;)
+ * <li>E(E, Class&lt;? extends LabeledIntMap&gt;)
+ * <li>E(String, Classv&lt;? extends LabeledIntMap&gt;)
+ * </ol>
+ *
  * @author posenato
  * @param <E> type of edge
+ * @version $Id: $Id
  */
 public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 
@@ -61,6 +61,10 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	private Class<? extends E> generatorClass;
 
 	/**
+	 * <p>
+	 * Constructor for EdgeSupplier.
+	 * </p>
+	 *
 	 * @param defaultStnEdgeClass vg
 	 */
 	public EdgeSupplier(Class<? extends E> defaultStnEdgeClass) {// , Class<? extends LabeledIntMap> labeledIntMapImplClass
@@ -80,15 +84,17 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 		}
 	}
 
-	/**
-	 * @return a new LabeledIntMap concrete object.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public E get() {
 		return this.generatorClass.cast(this.generator.newInstance());// this.labeledIntValueMapImpl
 	}
 
 	/**
+	 * <p>
+	 * get.
+	 * </p>
+	 *
 	 * @param edge the edge to clone.
 	 * @return a new edge
 	 */
@@ -97,6 +103,10 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	}
 
 	/**
+	 * <p>
+	 * get.
+	 * </p>
+	 *
 	 * @param name a name for the new edge
 	 * @return a new edge
 	 */
@@ -105,9 +115,14 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	}
 
 	/**
+	 * <p>
+	 * get.
+	 * </p>
+	 *
 	 * @param edgeClass dd
 	 * @param n dimension
 	 * @return a new LabeledIntEdge array of size n.
+	 * @param <K> a K object.
 	 */
 	@SuppressWarnings("unchecked")
 	public static <K extends Edge> K[] get(Class<K> edgeClass, int n) {
@@ -122,12 +137,17 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	 */
 
 	/**
+	 * <p>
+	 * getEdgeImplClass.
+	 * </p>
+	 *
 	 * @return the class chosen for creating new edge.
 	 */
 	public Class<? extends E> getEdgeImplClass() {
 		return this.generatorClass;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return "Edge type: " + this.generatorClass.toString();// + ". Labeled Value Set type: " + this.labeledIntValueMapImpl.toString();

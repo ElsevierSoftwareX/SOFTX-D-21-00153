@@ -524,11 +524,13 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		this.putHistory = "";
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntHierarchyMap newInstance() {
 		return new LabeledIntHierarchyMap();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntHierarchyMap newInstance(LabeledIntMap lim) {
 		return new LabeledIntHierarchyMap(lim);
@@ -585,18 +587,14 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		return this.entrySet().hashCode();
 	}
 
-	/**
-	 * @return a set view of all labels present into this map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Label> keySet() {
 		ObjectSet<Label> coll = new ObjectArraySet<>();
 		return keySet(coll);
 	}
 
-	/**
-	 * @return a set view of all labels present into this map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
@@ -1061,12 +1059,14 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 		return coll;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean alreadyRepresents(Label newLabel, int newValue) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntMapView unmodifiable() {
 		return new LabeledIntHierarchyMapView(this);

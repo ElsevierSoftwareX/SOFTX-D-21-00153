@@ -40,7 +40,7 @@ import it.univr.di.labeledvalue.Literal;
 
 /**
  * Allows one to build random CSTN instances specifying:
- * 
+ *
  * <pre>
  * - # of wanted DC/NOT DC instances
  * And the following parameters that characterize each generated instance:
@@ -52,10 +52,11 @@ import it.univr.di.labeledvalue.Literal;
  * - max weight for each edge
  * - probability to have an edge between any pair of nodes
  * </pre>
- * 
+ *
  * The class generates the wanted instances, building each one randomly and, then, DC checking it for stating its DC property.
  *
  * @author posenato
+ * @version $Id: $Id
  */
 public class CSTNRandomGenerator {
 
@@ -135,9 +136,13 @@ public class CSTNRandomGenerator {
 	static final double WEIGHT_MODIFICATION_FACTOR = .03d;
 
 	/**
-	 * @param args
-	 * @throws IOException if results cannot be stored
-	 * @throws FileNotFoundException
+	 * <p>
+	 * main.
+	 * </p>
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws java.io.FileNotFoundException if any.
+	 * @throws java.io.IOException if any.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 
@@ -175,18 +180,14 @@ public class CSTNRandomGenerator {
 
 			// save the dc instance
 			String fileName = "dc" + fileNamePrefix + "_" + String.format(numberFormat, dcInstancesDone) + ".cstn";
-			try (PrintWriter writer = new PrintWriter(new File(generator.dcSubDir, fileName))) {
-				cstnWriter.save(instances.getFirst(), writer);
-				System.out.println("DC instance " + fileName + " saved.");
-			}
+			cstnWriter.save(instances.getFirst(), new File(generator.dcSubDir, fileName));
+			System.out.println("DC instance " + fileName + " saved.");
 
 			if (notDCinstancesDone < generator.notDCInstances) {
 				// save the NOT DC instance
 				fileName = "notDC" + fileNamePrefix + "_" + String.format(numberFormat, dcInstancesDone) + ".cstn";
-				try (PrintWriter writer = new PrintWriter(new File(generator.notDCSubDir, fileName))) {
-					cstnWriter.save(instances.getSecond(), writer);
-					System.out.println("NOT DC instance " + fileName + " saved.");
-				}
+				cstnWriter.save(instances.getSecond(), new File(generator.notDCSubDir, fileName));
+				System.out.println("NOT DC instance " + fileName + " saved.");
 				notDCinstancesDone++;
 			}
 		}
@@ -298,11 +299,11 @@ public class CSTNRandomGenerator {
 				"#propInQLoop: number of propositions used for building labels in a q-loop.\n" +
 				"#obsInQLoop: number of observation time points present in each q-loop.\n";
 
-		try (PrintWriter writer = new PrintWriter(new File(generator.dcSubDir, "README"))) {
+		try (PrintWriter writer = new PrintWriter(new File(generator.dcSubDir, "README"), "UTF-8")) {
 			writer.format(readmeText, generator.dcInstances, "dynamic consistent (DC)");
 			writer.close();
 		}
-		try (PrintWriter writer = new PrintWriter(new File(generator.notDCSubDir, "README"))) {
+		try (PrintWriter writer = new PrintWriter(new File(generator.notDCSubDir, "README"), "UTF-8")) {
 			writer.format(readmeText, generator.notDCInstances, "NOT dynamic consistent (NOTDC)");
 			writer.close();
 		}
@@ -458,16 +459,20 @@ public class CSTNRandomGenerator {
 	private Random rnd = new Random(System.currentTimeMillis());
 
 	/**
-	 * @param givenDcInstances
-	 * @param givenNotDCInstances
-	 * @param nodes
-	 * @param propositions
-	 * @param qLoops
-	 * @param nodesInQloop
-	 * @param obsInQLoop
-	 * @param edgeProbability
-	 * @param givenMaxWeight
-	 * @throws IllegalArgumentException if one or more parameters has/have not valid value/s.
+	 * <p>
+	 * Constructor for CSTNRandomGenerator.
+	 * </p>
+	 *
+	 * @param givenDcInstances a int.
+	 * @param givenNotDCInstances a int.
+	 * @param nodes a int.
+	 * @param propositions a int.
+	 * @param qLoops a int.
+	 * @param nodesInQloop a int.
+	 * @param obsInQLoop a int.
+	 * @param edgeProbability a double.
+	 * @param givenMaxWeight a int.
+	 * @throws java.lang.IllegalArgumentException if one or more parameters has/have not valid value/s.
 	 */
 	public CSTNRandomGenerator(int givenDcInstances, int givenNotDCInstances, int nodes, int propositions, int qLoops, int nodesInQloop, int obsInQLoop,
 			double edgeProbability,
@@ -493,7 +498,7 @@ public class CSTNRandomGenerator {
 	/**
 	 * Builds a pair of DC and not DC of CSTN instances using the building parameters.
 	 * The not DC instance is build adding one or more constraints to the previous generated DC instance.
-	 * 
+	 *
 	 * @param alsoNotDcInstance false if the not DC instances is required. If false, the returned not DC instance is an empty tNGraph.
 	 * @return a pair of DC and not DC of CSTN instances. If the first member is null, it means that a generic error in the building
 	 *         has occurred. If alsoNotDcInstance is false, the returned not DC instance is null.
@@ -667,18 +672,15 @@ public class CSTNRandomGenerator {
 			throw new RuntimeException("The class " + CSTN_CLASS + " for the checker is not available: " + e2.getMessage());
 		}
 		cstn.withNodeLabels = false;
+		CSTNCheckStatus status;
 		while (true) {
 			cstn.reset();
 			cstn.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
 			if (LOG.isLoggable(Level.FINER)) {
-				try (PrintWriter writer = new PrintWriter(new File(this.dcSubDir.getParent(), "current.cstn"))) {
-					cstnWriter.save(cstn.getG(), writer);
-					LOG.finer("Current cstn saved as 'current.cstn' before checking.");
-				} catch (IOException e) {
-					LOG.finer("Problem to save 'current.cstn' " + e.getMessage() + ".\nProgram continues anyway.");
-				}
+				cstnWriter.save(cstn.getG(), new File(this.dcSubDir.getParent(), "current.cstn"));
+				LOG.finer("Current cstn saved as 'current.cstn' before checking.");
 			}
-			CSTNCheckStatus status = new CSTNCheckStatus();
+			status = new CSTNCheckStatus();
 			try {
 				LOG.fine("DC Check started.");
 				status = cstn.dynamicConsistencyCheck();
@@ -741,6 +743,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>dcInstances</code>.
+	 * </p>
+	 *
 	 * @return the dcInstances
 	 */
 	public int getDcInstances() {
@@ -748,6 +754,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>edgeProb</code>.
+	 * </p>
+	 *
 	 * @return the edgeProb
 	 */
 	public double getEdgeProb() {
@@ -755,6 +765,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>maxWeight</code>.
+	 * </p>
+	 *
 	 * @return the maxWeight
 	 */
 	public int getMaxWeight() {
@@ -762,6 +776,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>nNodes</code>.
+	 * </p>
+	 *
 	 * @return the nNodes
 	 */
 	public int getnNodes() {
@@ -769,6 +787,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>nNodesQLoop</code>.
+	 * </p>
+	 *
 	 * @return the nNodesQLoop
 	 */
 	public int getnNodesQLoop() {
@@ -776,6 +798,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>nObsQLoop</code>.
+	 * </p>
+	 *
 	 * @return the nObsQLoop
 	 */
 	public int getnObsQLoop() {
@@ -783,6 +809,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>notDCInstances</code>.
+	 * </p>
+	 *
 	 * @return the notDCInstances
 	 */
 	public int getNotDCInstances() {
@@ -790,6 +820,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>notDCSubDir</code>.
+	 * </p>
+	 *
 	 * @return the notDCSubDir
 	 */
 	public File getNotDCSubDir() {
@@ -797,6 +831,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>nPropositions</code>.
+	 * </p>
+	 *
 	 * @return the nPropositions
 	 */
 	public int getnPropositions() {
@@ -804,6 +842,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>nQLoops</code>.
+	 * </p>
+	 *
 	 * @return the nQLoops
 	 */
 	public int getnQLoops() {
@@ -918,7 +960,7 @@ public class CSTNRandomGenerator {
 				LOG.finer("Last weight is big: " + weight);
 				// weight is greater than the allowed value.
 				// all other edge values in the qLoop must be adjusted.
-				int adjustment = Math.round((Math.abs(weight) - this.maxWeight) / (lastIndex - firstIndex)) + 1;// +1 is for a safety margin
+				int adjustment = (int) Math.round(((double) Math.abs(weight) - this.maxWeight) / (lastIndex - firstIndex)) + 1;// +1 is for a safety margin
 				LOG.finer("Edge values will be adjusted by " + adjustment);
 
 				sum = 0;

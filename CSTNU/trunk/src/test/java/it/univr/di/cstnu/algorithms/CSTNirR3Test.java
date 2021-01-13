@@ -15,7 +15,6 @@ import it.unimi.dsi.fastutil.objects.ObjectAVLTreeSet;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.labeledvalue.AbstractLabeledIntMap;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -42,17 +41,15 @@ public class CSTNirR3Test extends CSTNTest {
 		super.setUp();
 	}
 
-
 	@Override
 	public void testLabelModificationR3() {
 		// no sense here!
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabelModificationR0() {
 
@@ -68,24 +65,24 @@ public class CSTNirR3Test extends CSTNTest {
 		this.cstn.labelModificationR0qR0(this.P, this.X, pz);
 
 		CSTNEdge pzOK = this.g.getEdgeFactory().get("XY");
-		//if R0 is applied!
+		// if R0 is applied!
 		pzOK.mergeLabeledValue(Label.parse("AB"), -10);
 		pzOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);// ir semantics
 		pzOK.mergeLabeledValue(Label.parse("C¬p"), 1);
-		//if only qR0 is applied!
-//		pxOK.mergeLabeledValue(Label.parse("ABp"), -10);
-//		pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
-//		pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
-//		pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
+		// if only qR0 is applied!
+		// pxOK.mergeLabeledValue(Label.parse("ABp"), -10);
+		// pxOK.mergeLabeledValue(Label.parse("AB¬p"), 0);
+		// pxOK.mergeLabeledValue(Label.parse("¬A¬B¬p"), 0);
+		// pxOK.mergeLabeledValue(Label.parse("C¬p"), 1);
 
 		assertEquals("R0: p?X labeled values.", pzOK.getLabeledValueMap(), pz.getLabeledValueMap());
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR0(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
+	 * 
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabelModificationR0Z() {
 
@@ -115,11 +112,8 @@ public class CSTNirR3Test extends CSTNTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.CSTN#labelModificationqR3(TNGraph, LabeledNode, LabeledNode, CSTNEdge, CSTNCheckStatus)}.
-	 * 
 	 * @throws WellDefinitionException
 	 */
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabelModificationqR3() throws WellDefinitionException {
 
@@ -135,7 +129,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(C);
 		this.g.addVertex(Y);
 
-
 		CSTNEdge pz = this.g.getEdgeFactory().get("PZ");
 		pz.mergeLabeledValue(Label.parse("¬b"), -1);
 		pz.mergeLabeledValue(Label.parse("¬cab"), -10);
@@ -147,7 +140,6 @@ public class CSTNirR3Test extends CSTNTest {
 
 		this.g.addEdge(pz, this.P, this.Z);
 		this.g.addEdge(yz, Y, this.Z);
-
 
 		this.cstn.initAndCheck();
 		this.cstn.labelModificationR3qR3(Y, this.Z, yz);
@@ -168,12 +160,8 @@ public class CSTNirR3Test extends CSTNTest {
 	}
 
 	/**
-	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
-	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation() {
 
@@ -251,11 +239,8 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
-	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation1() {
 
@@ -263,7 +248,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		// Ricostruisco i passi di un caso di errore
 		CSTNEdge XZ = this.g.getEdgeFactory().get("XZ");
@@ -302,11 +286,8 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for creating a -infty loop
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
-	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
 	@Test
 	public final void testLabeledPropagation3() {
 
@@ -341,7 +322,6 @@ public class CSTNirR3Test extends CSTNTest {
 		// Remember that not negative value on self loop are never stored!
 		assertEquals("XX: ", "{}", XX.getLabeledValueMap().toString());
 
-
 		XY.mergeLabeledValue(Label.parse("¬p"), 1);
 		// reaction time is 1
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
@@ -351,11 +331,10 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for checking that all propagations are done
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabeledPropagation4() {
 
@@ -423,7 +402,6 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#makeAlphaBetaGammaPrime(TNGraph, LabeledNode, LabeledNode, LabeledNode, LabeledNode, char, Label, Label)
 	 * 
 	 * <pre>
 	 * P? &lt;--- X &lt;---- Y
@@ -434,7 +412,6 @@ public class CSTNirR3Test extends CSTNTest {
 	 * </pre>
 	 */
 	@Override
-	@SuppressWarnings({ "javadoc" })
 	@Test
 	public final void testAlphaBetaGamaPrime() {
 
@@ -448,7 +425,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(B);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge XP = this.g.getEdgeFactory().get("XP");
 		XP.mergeLabeledValue(Label.emptyLabel, 10);
@@ -479,11 +455,10 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabeledPropagation2() {
 
@@ -491,7 +466,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		ObjectAVLTreeSet<String> nodeSet = new ObjectAVLTreeSet<>();
 		nodeSet.add(this.X.getName());
@@ -519,11 +493,10 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabeledPropagationForwardOfInfty() {
 
@@ -531,7 +504,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
@@ -553,7 +525,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addEdge(XZ, this.X, this.Z);
 		this.g.addEdge(XX, this.X, this.X);
 		this.g.addEdge(YY, Y, Y);
-
 
 		this.cstn.labelPropagation(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) }", XZ.getLabeledValueMap().toString());
@@ -571,11 +542,10 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabeledPropagationForwardOfInfty1() {
 
@@ -583,7 +553,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
@@ -605,7 +574,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addEdge(XZ, this.X, this.Z);
 		this.g.addEdge(XX, this.X, this.X);
 		this.g.addEdge(YY, Y, Y);
-
 
 		this.cstn.labelPropagation(this.X, Y, this.Z, XY, YZ, XZ);
 		assertEquals("XZ", "{(0, ⊡) }", XZ.getLabeledValueMap().toString());
@@ -625,11 +593,10 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 * .
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public final void testLabeledPropagationBackwardOfInfty() {
 
@@ -637,7 +604,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(this.X);
 		this.g.addVertex(Y);
-
 
 		CSTNEdge YZ = this.g.getEdgeFactory().get("YZ");
 		YZ.mergeLabeledValue(Label.emptyLabel, 0);
@@ -664,7 +630,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.cstn.labelPropagation(this.X, Y, this.X, XY, YX, XX);
 		assertEquals("XX", "{}", XX.getLabeledValueMap().toString());// 2017-10-10: qLabels are not more generated.
 
-
 		this.cstn.labelPropagation(Y, this.X, this.X, YX, XX, YX);
 		assertEquals("", "{(-2, ¬p) }", YX.getLabeledValueMap().toString());
 	}
@@ -684,7 +649,6 @@ public class CSTNirR3Test extends CSTNTest {
 		this.g.addVertex(this.P);
 		this.g.addVertex(Q);
 		this.g.addVertex(R);
-
 
 		// Ricostruisco i passi di un caso di errore
 		CSTNEdge RZ = this.g.getEdgeFactory().get("RZ");
@@ -727,10 +691,9 @@ public class CSTNirR3Test extends CSTNTest {
 
 	/**
 	 * Test method for
-	 * {@link it.univr.di.cstnu.algorithms.CSTN#labelPropagation(LabeledNode, LabeledNode, LabeledNode, CSTNEdge, CSTNEdge, LabeledIntEdge)}
 	 */
 	@Override
-	@SuppressWarnings("javadoc")
+
 	@Test
 	public void testLabeledPropagationBackwardOfInfty1() {
 		LabeledNode Y = this.g.getNodeFactory().get("Y");

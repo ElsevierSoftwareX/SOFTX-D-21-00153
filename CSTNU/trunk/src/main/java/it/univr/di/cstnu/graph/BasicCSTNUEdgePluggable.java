@@ -36,7 +36,14 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 	 */
 	final static class InternalEntry implements Object2ObjectMap.Entry<Label, ALabel>, Comparable<Object2ObjectMap.Entry<Label, ALabel>> {
 
+		/**
+		 * 
+		 */
 		ALabel aLabel;
+
+		/**
+		 * 
+		 */
 		Label label;
 
 		/**
@@ -125,6 +132,9 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		LOG = Logger.getLogger(BasicCSTNUEdgePluggable.class.getName());
 	}
 
+	/**
+	 * @param <C>
+	 */
 	<C extends LabeledIntMap> BasicCSTNUEdgePluggable() {
 		this((String) null);
 	}
@@ -156,6 +166,7 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		this.consideredUpperCaseValue.defaultReturnValue(Constants.INT_NULL);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		super.clear();
@@ -163,11 +174,13 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		this.consideredUpperCaseValue.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final void clearUpperCaseValues() {
 		this.upperCaseValue.clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final LabeledALabelIntTreeMap getAllUpperCaseAndLabeledValuesMaps() {
 		LabeledALabelIntTreeMap union = new LabeledALabelIntTreeMap();
@@ -179,21 +192,25 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		return union;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final Object2ObjectMap.Entry<Label, Object2IntMap.Entry<ALabel>> getMinUpperCaseValue() {
 		return this.upperCaseValue.getMinValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int getUpperCaseValue(final Label l, final ALabel name1) {
 		return this.upperCaseValue.getValue(l, name1);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final LabeledALabelIntTreeMap getUpperCaseValueMap() {
 		return this.upperCaseValue;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean hasSameValues(Edge e) {
 		if (e == null || !(e instanceof BasicCSTNUEdge))
@@ -206,11 +223,13 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		return (this.getUpperCaseValueMap().equals(e1.getUpperCaseValueMap()));
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return super.isEmpty() && this.upperCaseValue.isEmpty();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean mergeLabeledValue(final Label l, final int i) {
 		boolean added = super.mergeLabeledValue(l, i);
@@ -266,6 +285,7 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		return added;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean mergeUpperCaseValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
@@ -299,6 +319,7 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		return this.upperCaseValue.mergeTriple(l, nodeName, i, false);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean putUpperCaseValue(final Label l, ALabel nodeName, final int i) {
 		if ((l == null) || (nodeName == null) || (i == Constants.INT_NULL))
@@ -321,28 +342,27 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		return this.upperCaseValue.mergeTriple(l, nodeName, i, true);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final boolean putLabeledValue(final Label l, final int i) {
 		this.consideredLabeledValue.put(l, i); // once a value has been inserted, it is useless to insert it again in the future.
 		return this.labeledValue.put(l, i);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int removeUpperCaseValue(final Label l, final ALabel n) {
 		// this.consideredUpperCaseValue.removeInt(new InternalEntry(l, n));
 		return this.upperCaseValue.remove(l, n);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final void setUpperCaseValueMap(final LabeledALabelIntTreeMap inputLabeledValue) {
 		this.upperCaseValue = (inputLabeledValue == null) ? new LabeledALabelIntTreeMap() : inputLabeledValue;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * 
-	 * @param e
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		if (e == null)
@@ -370,11 +390,13 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		return superS.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final String upperCaseValuesAsString() {
 		return this.upperCaseValue.toString();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final int upperCaseValueSize() {
 		return this.upperCaseValue.size();

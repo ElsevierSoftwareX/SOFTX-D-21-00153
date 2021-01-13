@@ -42,7 +42,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Transformer object to show the tooltip of node: the label is print.
 	 */
-	public static Function<LabeledNode, String> vertexToolTipTransformer = new Function<LabeledNode, String>() {
+	public static final Function<LabeledNode, String> vertexToolTipTransformer = new Function<LabeledNode, String>() {
 		@Override
 		public String apply(final LabeledNode v) {
 			return "Label: " + v.getLabel().toString();
@@ -152,6 +152,7 @@ public class LabeledNode extends AbstractComponent {
 	 *
 	 * @param n name of the node.
 	 * @param proposition proposition observed by this node.
+	 * @param <C> a C object.
 	 */
 	public <C extends LabeledIntMap> LabeledNode(final String n, final char proposition) {// , Class<C> labeledIntMapImplementation
 		this(n);
@@ -160,6 +161,7 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Clears all fields but name of <code>this</code>.
 	 */
 	@Override
@@ -176,6 +178,10 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>aLabel</code>.
+	 * </p>
+	 *
 	 * @return the alabel
 	 */
 	public ALabel getALabel() {
@@ -191,11 +197,22 @@ public class LabeledNode extends AbstractComponent {
 		return this.label;
 	}
 
+	/**
+	 * <p>
+	 * getUpperCaseLabeledPotential.
+	 * </p>
+	 *
+	 * @return a {@link it.univr.di.labeledvalue.LabeledALabelIntTreeMap} object.
+	 */
 	public LabeledALabelIntTreeMap getUpperCaseLabeledPotential() {
 		return this.labeledPotential.unmodifiable();
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>labeledPotential</code>.
+	 * </p>
+	 *
 	 * @return an unmodifiable view of the labeled potential values
 	 */
 	public LabeledIntMap getLabeledPotential() {
@@ -203,6 +220,10 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * <p>
+	 * removeLabeledPotential.
+	 * </p>
+	 *
 	 * @param l the label to remove
 	 * @return the old value
 	 */
@@ -211,7 +232,11 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
-	 * @param l
+	 * <p>
+	 * Getter for the field <code>labeledPotential</code>.
+	 * </p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
 	 * @return the labeled value getPotential(ALabel.emptyLabel, Label).
 	 */
 	public int getLabeledPotential(Label l) {
@@ -219,7 +244,11 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
-	 * @return the proposition under the control of this node. {@link Constants#UNKNOWN}, if no observation is made.
+	 * <p>
+	 * Getter for the field <code>propositionObserved</code>.
+	 * </p>
+	 *
+	 * @return the proposition under the control of this node. {@link it.univr.di.labeledvalue.Constants#UNKNOWN}, if no observation is made.
 	 */
 	public char getPropositionObserved() {
 		return this.propositionObserved;
@@ -244,6 +273,10 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * <p>
+	 * isContingent.
+	 * </p>
+	 *
 	 * @return true if this point represents a contingent time point.
 	 *         It is assumed that a node representing a contingent time point has its field 'alabel' not null.
 	 */
@@ -252,6 +285,10 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * <p>
+	 * isObserver.
+	 * </p>
+	 *
 	 * @return true if this node is an observator one (it is associated to a proposition letter), false otherwise;
 	 */
 	public boolean isObserver() {
@@ -259,7 +296,11 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
-	 * @param inputPotential
+	 * <p>
+	 * isPotentialEqual.
+	 * </p>
+	 *
+	 * @param inputPotential a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
 	 * @return true if node potential is equal to inputPotential
 	 */
 	public boolean isPotentialEqual(LabeledIntMap inputPotential) {
@@ -268,9 +309,9 @@ public class LabeledNode extends AbstractComponent {
 
 	/**
 	 * Puts the labeled value (value, l) into the potential map.
-	 * 
-	 * @param l
-	 * @param value
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param value a int.
 	 * @return true if the pair has been merged.
 	 */
 	final public boolean putLabeledPotential(Label l, int value) {
@@ -281,7 +322,7 @@ public class LabeledNode extends AbstractComponent {
 	 * Sets the ALabel of the node.
 	 * The contingent status is updated as side-effect: contingent = inputALabel!=null.<br>
 	 * It is responsibility of programmer to maintain the correspondence between name and alabel.
-	 * 
+	 *
 	 * @param inputAlabel the alabel to set
 	 */
 	public void setALabel(ALabel inputAlabel) {
@@ -291,7 +332,7 @@ public class LabeledNode extends AbstractComponent {
 
 	/**
 	 * Set contingent property.<br>
-	 * 
+	 *
 	 * @param b the new state.
 	 */
 	public void setContingent(boolean b) {
@@ -301,7 +342,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Setter for the field <code>label</code>.
 	 *
-	 * @param inputLabel the label to set. If it is null, this.label is set to {@value Label#emptyLabel}.
+	 * @param inputLabel the label to set. If it is null, this.label is set to {@link Label#emptyLabel}.
 	 */
 	public void setLabel(@Nullable final Label inputLabel) {
 		String old = this.label.toString();
@@ -320,10 +361,8 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Set the name of the node. Cannot be null or empty.
-	 *
-	 * @param nodeName the not-null not-empty new name
-	 * @return the old name
 	 */
 	@Override
 	public String setName(final String nodeName) {
@@ -339,7 +378,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Set the proposition to be observed.
 	 *
-	 * @param c the proposition to observe. If {@link Constants#UNKNOWN}, the node became not observable node.
+	 * @param c the proposition to observe. If {@link it.univr.di.labeledvalue.Constants#UNKNOWN}, the node became not observable node.
 	 */
 	public void setObservable(final char c) {
 		char old = this.propositionObserved;
@@ -352,8 +391,8 @@ public class LabeledNode extends AbstractComponent {
 	 * Setter for the potential.
 	 * If potential is not null, it is used (not copied) as new potential of the node.
 	 * If potential is null, it does nothing.
-	 * 
-	 * @param potentialMap
+	 *
+	 * @param potentialMap a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
 	 */
 	public void setLabeledPotential(LabeledIntMap potentialMap) {
 		if (potentialMap == null)
@@ -405,13 +444,21 @@ public class LabeledNode extends AbstractComponent {
 	}
 
 	/**
-	 * @return the potential. If {@link Constants#INT_NULL}, it means that it was not determined.
+	 * <p>
+	 * Getter for the field <code>potential</code>.
+	 * </p>
+	 *
+	 * @return the potential. If {@link it.univr.di.labeledvalue.Constants#INT_NULL}, it means that it was not determined.
 	 */
 	public int getPotential() {
 		return this.potential;
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>potential</code>.
+	 * </p>
+	 *
 	 * @param potential1 the potential to set
 	 */
 	public void setPotential(int potential1) {

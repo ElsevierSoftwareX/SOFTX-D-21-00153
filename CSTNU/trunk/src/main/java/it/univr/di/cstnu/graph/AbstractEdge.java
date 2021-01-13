@@ -67,42 +67,50 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 		this.setConstraintType(ConstraintType.normal);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public final ConstraintType getConstraintType() {
 		return this.constraintType;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCSTNEdge() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCSTNPSUEdge() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isCSTNUEdge() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSTNEdge() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSTNUEdge() {
 		return false;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void setConstraintType(final ConstraintType type) {
 		this.constraintType = type;
 		notifyObservers("Type:" + type);
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		super.takeIn(e);
@@ -110,10 +118,9 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	}
 
 	/**
-	 * Set the name of the edge. Cannot be null or empty.
+	 * {@inheritDoc}
 	 *
-	 * @param edgeName the not-null not-empty new name
-	 * @return the old name
+	 * Set the name of the edge. Cannot be null or empty.
 	 */
 	@Override
 	public String setName(final String edgeName) {

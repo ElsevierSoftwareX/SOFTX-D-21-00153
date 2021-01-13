@@ -59,7 +59,7 @@ import it.univr.di.Debug;
  * </tr>
  * </table>
  * <b>All code for performance tests is in LabeledIntTreeMapTest class (not public available).</b>
- * 
+ *
  * @author Roberto Posenato
  * @see LabeledIntMap
  * @version $Id: $Id
@@ -161,12 +161,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		}
 	}
 
-	/**
-	 * @param newLabel
-	 * @param newValue
-	 * @return true if the current map can represent the value. In positive case, an addition of the element does not change the map.
-	 *         If returns false, then an addition of the value to the map would modify the map.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public boolean alreadyRepresents(Label newLabel, int newValue) {
 		int valuePresented = get(newLabel);
@@ -202,11 +197,13 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		this.count = 0;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntTreeMap newInstance() {
 		return new LabeledIntTreeMap();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntTreeMap newInstance(LabeledIntMap lim) {
 		return new LabeledIntTreeMap(lim);
@@ -227,7 +224,6 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	/**
 	 * {@inheritDoc}<br>
 	 * <br>
-	 * 
 	 * @see LabeledIntTreeMap#entrySet()
 	 */
 	@Override
@@ -313,18 +309,14 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		return this.mainInt2SetMap.hashCode();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Label> keySet() {
 		ObjectSet<Label> coll = new ObjectArraySet<>();
 		return keySet(coll);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public ObjectSet<Label> keySet(ObjectSet<Label> setToReuse) {
 		setToReuse.clear();
@@ -364,8 +356,10 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	}
 
 	/**
-	 * @param l
-	 * @param i
+	 * <p>putForcibly.</p>
+	 *
+	 * @param l a {@link it.univr.di.labeledvalue.Label} object.
+	 * @param i a int.
 	 * @return previous value if present, Constants.INT_NULL otherwise;
 	 */
 	public int putForcibly(final Label l, final int i) {
@@ -403,9 +397,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		return oldValue;
 	}
 
-	/**
-	 * @return a read-only view of this.
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public LabeledIntTreeMapView unmodifiable() {
 		return new LabeledIntTreeMapView(this);

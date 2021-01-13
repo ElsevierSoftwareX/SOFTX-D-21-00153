@@ -18,6 +18,9 @@ import it.univr.di.labeledvalue.Label;
  */
 public class CSTNEdgeTest {
 
+	/**
+	 * 
+	 */
 	static EdgeSupplier<CSTNEdgePluggable> edgeFactory = new EdgeSupplier<>(CSTNEdgePluggable.class);
 
 	/**

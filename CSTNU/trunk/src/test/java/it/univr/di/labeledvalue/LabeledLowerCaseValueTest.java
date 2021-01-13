@@ -9,6 +9,9 @@ import org.junit.Test;
  */
 public class LabeledLowerCaseValueTest {
 
+	/**
+	 * 
+	 */
 	ALabelAlphabet alpha;
 
 	/**

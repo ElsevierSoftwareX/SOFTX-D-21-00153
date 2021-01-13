@@ -4,11 +4,8 @@
 
 package it.univr.di.cstnu.algorithms;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -52,7 +49,7 @@ import it.univr.di.labeledvalue.Label;
 
 /**
  * Simple class to represent and consistency-check Simple Temporal Network with Uncertainty (STNU) where the edge weight are signed integer.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -131,10 +128,12 @@ public class STNU {
 			return sb.toString();
 		}
 
+		@SuppressWarnings("javadoc")
 		public void setControllability(boolean state) {
 			this.consistency = state;
 		}
 
+		@SuppressWarnings("javadoc")
 		public boolean isControllability() {
 			return this.consistency;
 		}
@@ -155,11 +154,11 @@ public class STNU {
 	/**
 	 * Suffix for file name
 	 */
-	public static String FILE_NAME_SUFFIX = ".stnu";
+	public static final String FILE_NAME_SUFFIX = ".stnu";
 	/**
 	 * The name for the initial node.
 	 */
-	public static String ZeroNodeName = "Z";
+	public static final String ZERO_NODE_NAME = "Z";
 
 	/**
 	 * logger
@@ -172,10 +171,14 @@ public class STNU {
 	static final String VERSIONandDATE = "Version 1.0 - April, 08 2020";
 
 	/**
-	 * @param args
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * <p>
+	 * main.
+	 * </p>
+	 *
+	 * @param args an array of {@link java.lang.String} objects.
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		STNU stnu = new STNU();
@@ -359,6 +362,10 @@ public class STNU {
 	private LabeledNode Z = null;
 
 	/**
+	 * <p>
+	 * Constructor for STNU.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public STNU(TNGraph<STNUEdge> graph) {
@@ -367,6 +374,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for STNU.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check
 	 */
@@ -387,16 +398,23 @@ public class STNU {
 	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
 	 * <br>
 	 * After a check, {@link #getGChecked} returns the graph resulting after the check.
-	 * 
+	 *
 	 * @return the final status of the checking with some statistics.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph<E> is not well defined (does not observe all well definition
-	 *             properties).
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public STNUCheckStatus dynamicControllabilityCheck() throws WellDefinitionException {
 		return dynamicControllabilityCheck(this.defaultControllabilityCheckAlg);
 	}
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * <p>
+	 * dynamicControllabilityCheck.
+	 * </p>
+	 *
+	 * @param alg a {@link it.univr.di.cstnu.algorithms.STNU.CheckAlgorithm} object.
+	 * @return a {@link it.univr.di.cstnu.algorithms.STNU.STNUCheckStatus} object.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
+	 */
 	public STNUCheckStatus dynamicControllabilityCheck(CheckAlgorithm alg) throws WellDefinitionException {
 		try {
 			initAndCheck();
@@ -457,6 +475,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>checkStatus</code>.
+	 * </p>
+	 *
 	 * @return the checkStatus
 	 */
 	public STNUCheckStatus getCheckStatus() {
@@ -464,6 +486,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>defaultControllabilityCheckAlg</code>.
+	 * </p>
+	 *
 	 * @return the defaultConsistencyCheckAlg
 	 */
 	public CheckAlgorithm getDefaultControllabilityCheckAlg() {
@@ -471,6 +497,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>fOutput</code>.
+	 * </p>
+	 *
 	 * @return the fOutput
 	 */
 	public File getfOutput() {
@@ -478,6 +508,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>g</code>.
+	 * </p>
+	 *
 	 * @return the g
 	 */
 	final public TNGraph<STNUEdge> getG() {
@@ -485,6 +519,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * getGChecked.
+	 * </p>
+	 *
 	 * @return the resulting graph of a check. It is up to the called to be sure the the returned graph is the result of a check.
 	 *         It can be used also by subclasses with a proper cast.
 	 * @see #setOutputCleaned(boolean)
@@ -496,6 +534,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>maxWeight</code>.
+	 * </p>
+	 *
 	 * @return the maxWeight
 	 */
 	final public int getMaxWeight() {
@@ -503,6 +545,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * getVersionAndCopyright.
+	 * </p>
+	 *
 	 * @return version and copyright string
 	 */
 	public String getVersionAndCopyright() {
@@ -521,10 +567,10 @@ public class STNU {
 	 * Makes the STNU check and initialization. The STNU instance is represented by graph g.
 	 * If some constraints of the network does not observe well-definition properties AND they can be adjusted, then the method fixes them
 	 * and logs such fixes in log system at WARNING level. If the method cannot fix such not-well-defined constraints, it raises a
-	 * {@link WellDefinitionException}.
+	 * {@link it.univr.di.cstnu.algorithms.WellDefinitionException}.
 	 *
 	 * @return true if the graph is a well formed
-	 * @throws WellDefinitionException if the initial graph is not well defined.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the initial graph is not well defined.
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
 		if (Debug.ON) {
@@ -542,16 +588,16 @@ public class STNU {
 		// Checks the presence of Z node!
 		// this.Z = this.g.getZ(); already done in setG()
 		if (this.Z == null) {
-			this.Z = this.g.getNode(STNU.ZeroNodeName);
+			this.Z = this.g.getNode(STNU.ZERO_NODE_NAME);
 			if (this.Z == null) {
 				// We add by authority!
-				this.Z = this.g.getNodeFactory().get(STNU.ZeroNodeName);
+				this.Z = this.g.getNodeFactory().get(STNU.ZERO_NODE_NAME);
 				this.Z.setX(10);
 				this.Z.setY(10);
 				this.g.addVertex(this.Z);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
-						LOG.log(Level.WARNING, "No " + STNU.ZeroNodeName + " node found: added!");
+						LOG.log(Level.WARNING, "No " + STNU.ZERO_NODE_NAME + " node found: added!");
 				}
 			}
 			this.g.setZ(this.Z);
@@ -835,6 +881,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * isContingentAlsoAsOrdinary.
+	 * </p>
+	 *
 	 * @return the contingentAlsoAsOrdinary
 	 */
 	public final boolean isContingentAlsoAsOrdinary() {
@@ -842,6 +892,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * isOutputCleaned.
+	 * </p>
+	 *
 	 * @return the fOutputCleaned
 	 */
 	public boolean isOutputCleaned() {
@@ -851,7 +905,7 @@ public class STNU {
 	/**
 	 * The equivalent normal-form of the distance graph associated to a STNU.
 	 * In a normal-form distance-graph, each contingent link has a 0 lower bound.
-	 * 
+	 *
 	 * @return true if the current graph was made in normal form, false otherwise
 	 */
 	public boolean makeNormalForm() {
@@ -925,8 +979,8 @@ public class STNU {
 	}
 
 	/**
-	 * Stores the graph after a check to the file {@link #fOutput}.
-	 * 
+	 * Stores the graph after a check to the file.
+	 *
 	 * @see #getGChecked()
 	 */
 	public void saveGraphToFile() {
@@ -963,15 +1017,15 @@ public class STNU {
 
 		StaticLayout<STNUEdge> layout = new StaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
-		try (Writer out = new BufferedWriter(new FileWriter(this.fOutput))) {
-			graphWriter.save(g1, out);
-		} catch (final Exception e) {
-			System.err.println("Something is wrong and it is not possible to save the result. The program does not stop. Error: " + e.getMessage());
-		}
+		graphWriter.save(g1, this.fOutput);
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>contingentAlsoAsOrdinary</code>.
+	 * </p>
+	 *
 	 * @param contingentAlsoAsOrdinary1 the contingentAlsoAsOrdinary to set
 	 */
 	public final void setContingentAlsoAsOrdinary(boolean contingentAlsoAsOrdinary1) {
@@ -979,6 +1033,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * setDefaultConsistencyCheckAlg.
+	 * </p>
+	 *
 	 * @param defaultConsistencyCheckAlg1 the defaultConsistencyCheckAlg to set
 	 */
 	public void setDefaultConsistencyCheckAlg(CheckAlgorithm defaultConsistencyCheckAlg1) {
@@ -986,6 +1044,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>fOutput</code>.
+	 * </p>
+	 *
 	 * @param fileOutput the file where to save the result.
 	 */
 	public void setfOutput(File fileOutput) {
@@ -994,8 +1056,8 @@ public class STNU {
 
 	/**
 	 * Considers the given graph as the graph to check (graph will be modified).
-	 * Clear all {@link #maxWeight}, {@link #horizon} and {@link #checkStatus}.
-	 * 
+	 * Clear all internal parameter.
+	 *
 	 * @param graph set internal TNGraph to g. It cannot be null.
 	 */
 	public void setG(TNGraph<STNUEdge> graph) {
@@ -1008,7 +1070,7 @@ public class STNU {
 
 	/**
 	 * Set to true for having the result graph cleaned of empty edges and labeled values having unknown literals.
-	 * 
+	 *
 	 * @param clean the resulting graph
 	 */
 	public void setOutputCleaned(boolean clean) {
@@ -1976,7 +2038,6 @@ public class STNU {
 	 * @param deltaVC
 	 * @return a list of pair (node, int) obtained applying RELAX^- and LOWER^- rules to all LO-edges incoming to V, together with the edge (V,deltaVC,C).
 	 */
-	@SuppressWarnings("javadoc")
 	private ObjectList<BasicEntry<LabeledNode>> rul2020NewApplyRelaxLower(LabeledNode V, int DeltaC, int deltaVC) {
 
 		ObjectList<BasicEntry<LabeledNode>> edges = new ObjectArrayList<>();
@@ -2140,6 +2201,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * getFILE_NAME_SUFFIX.
+	 * </p>
+	 *
 	 * @return the fILE_NAME_SUFFIX
 	 */
 	public static final String getFILE_NAME_SUFFIX() {
@@ -2147,13 +2212,21 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * getZeroNodeName.
+	 * </p>
+	 *
 	 * @return the zeroNodeName
 	 */
 	public static final String getZeroNodeName() {
-		return ZeroNodeName;
+		return ZERO_NODE_NAME;
 	}
 
 	/**
+	 * <p>
+	 * getLOG.
+	 * </p>
+	 *
 	 * @return the lOG
 	 */
 	public static final Logger getLOG() {
@@ -2161,6 +2234,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * getVersionanddate.
+	 * </p>
+	 *
 	 * @return the version
 	 */
 	public static final String getVersionanddate() {
@@ -2168,6 +2245,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>activationNode</code>.
+	 * </p>
+	 *
 	 * @return the activationNode map if the network has been {@link #initAndCheck()}, null otherwise.
 	 */
 	public final Object2ObjectMap<LabeledNode, LabeledNode> getActivationNode() {
@@ -2177,6 +2258,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * isCleanCheckedInstance.
+	 * </p>
+	 *
 	 * @return the cleanCheckedInstance
 	 */
 	public final boolean isCleanCheckedInstance() {
@@ -2184,6 +2269,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>fInput</code>.
+	 * </p>
+	 *
 	 * @return the fInput
 	 */
 	public final File getfInput() {
@@ -2191,6 +2280,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>gCheckedCleaned</code>.
+	 * </p>
+	 *
 	 * @return the gCheckedCleaned
 	 */
 	public final TNGraph<STNUEdge> getgCheckedCleaned() {
@@ -2198,6 +2291,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>horizon</code>.
+	 * </p>
+	 *
 	 * @return the horizon
 	 */
 	public final int getHorizon() {
@@ -2206,7 +2303,7 @@ public class STNU {
 
 	/**
 	 * Given a contingent link is <code>(A, 1, 3, C)</code>, the returned map contains <code>C --&gt; (A, c(1), C)</code>.
-	 * 
+	 *
 	 * @return the lowerContingentEdge map
 	 */
 	public final Object2ObjectMap<LabeledNode, STNUEdge> getLowerContingentEdge() {
@@ -2215,7 +2312,7 @@ public class STNU {
 
 	/**
 	 * Given a contingent link is <code>(A, 1, 3, C)</code>, the returned map contains <code>C --&gt; (C, C:-3, A)</code>.
-	 * 
+	 *
 	 * @return the lowerContingentEdge map
 	 */
 	public final Object2ObjectMap<LabeledNode, STNUEdge> getUpperContingentEdge() {
@@ -2223,6 +2320,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Getter for the field <code>timeOut</code>.
+	 * </p>
+	 *
 	 * @return the timeOut
 	 */
 	public final int getTimeOut() {
@@ -2230,6 +2331,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * isVersionReq.
+	 * </p>
+	 *
 	 * @return the versionReq
 	 */
 	public final boolean isVersionReq() {
@@ -2237,6 +2342,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * getZ.
+	 * </p>
+	 *
 	 * @return the z
 	 */
 	public final LabeledNode getZ() {
@@ -2244,6 +2353,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * isSave.
+	 * </p>
+	 *
 	 * @return the save
 	 */
 	public final boolean isSave() {
@@ -2251,6 +2364,10 @@ public class STNU {
 	}
 
 	/**
+	 * <p>
+	 * Setter for the field <code>save</code>.
+	 * </p>
+	 *
 	 * @param s the save to set
 	 */
 	public final void setSave(boolean s) {

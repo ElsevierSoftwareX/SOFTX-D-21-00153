@@ -10,7 +10,10 @@ package it.univr.di.cstnu.graph;
 import it.univr.di.labeledvalue.Constants;
 
 /**
+ * <p>STNEdgeInt class.</p>
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class STNEdgeInt extends AbstractEdge implements STNEdge {
 
@@ -25,7 +28,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	int value;
 
 	/**
-	 * 
+	 * <p>Constructor for STNEdgeInt.</p>
 	 */
 	public STNEdgeInt() {
 		super();
@@ -42,7 +45,9 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	 */
 
 	/**
-	 * @param e
+	 * <p>Constructor for STNEdgeInt.</p>
+	 *
+	 * @param e a {@link it.univr.di.cstnu.graph.Edge} object.
 	 */
 	public STNEdgeInt(Edge e) {
 		super(e);
@@ -51,24 +56,29 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	}
 
 	/**
-	 * @param n
+	 * <p>Constructor for STNEdgeInt.</p>
+	 *
+	 * @param n a {@link java.lang.String} object.
 	 */
 	public STNEdgeInt(String n) {
 		super(n);
 		clear();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void clear() {
 		super.clear();
 		this.value = Constants.INT_NULL;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public int getValue() {
 		return this.value;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean hasSameValues(Edge e) {
 		if (e == null || !(e instanceof STNEdge))
@@ -76,11 +86,13 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 		return this.value == ((STNEdge) e).getValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isEmpty() {
 		return this.value == Constants.INT_NULL;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public STNEdgeInt newInstance() {
 		return new STNEdgeInt();
@@ -91,6 +103,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	// return newInstance();
 	// }
 
+	/** {@inheritDoc} */
 	@Override
 	public STNEdgeInt newInstance(Edge edge) {
 		return new STNEdgeInt(edge);
@@ -101,6 +114,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	// return new STNEdgeInt(edge);
 	// }
 
+	/** {@inheritDoc} */
 	@Override
 	public STNEdgeInt newInstance(String name1) {
 		return new STNEdgeInt(name1);
@@ -111,6 +125,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 	// return new STNEdgeInt(name1);
 	// }
 
+	/** {@inheritDoc} */
 	@Override
 	public int setValue(int w) {
 		int old = this.value;
@@ -118,6 +133,7 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 		return old;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public void takeIn(Edge e) {
 		if (e == null || !(e instanceof STNEdge))
@@ -126,14 +142,13 @@ public class STNEdgeInt extends AbstractEdge implements STNEdge {
 		this.value = ((STNEdge) e).getValue();
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isSTNEdge() {
 		return true;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public String toString() {
 		return Constants.OPEN_TUPLE + (this.getName().length() == 0 ? "<empty>" : this.getName()) + "; " + this.getConstraintType() + "; "

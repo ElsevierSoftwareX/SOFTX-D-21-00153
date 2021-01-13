@@ -22,10 +22,22 @@ public interface Component extends Serializable, Comparable<Object> {
 	 * Color of the component. Used in some algorithms for fixing the state of an edge/node.
 	 */
 	static enum Color {
-		black, gray, white
+		/**
+		 * 
+		 */
+		black,
+		/**
+		 * 
+		 */
+		gray,
+		/**
+		 * 
+		 */
+		white
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * In general, we assume that a component is equal to another if it has the same name and that a user can modify a name even after the creation of the
 	 * component.
 	 * Clearly, if there is a set of components, it is responsibility of the user/software to allow a change only if there is no conflict with the names of
@@ -50,6 +62,10 @@ public interface Component extends Serializable, Comparable<Object> {
 	public boolean equalsByName(final Component c);
 
 	/**
+	 * <p>
+	 * getColor.
+	 * </p>
+	 *
 	 * @return the color of the edge
 	 */
 	public Color getColor();
@@ -63,7 +79,7 @@ public interface Component extends Serializable, Comparable<Object> {
 
 	/**
 	 * {@inheritDoc}
-	 *
+	 * 
 	 * @see #equals(Object)
 	 */
 	@Override
@@ -71,7 +87,7 @@ public interface Component extends Serializable, Comparable<Object> {
 
 	/**
 	 * set color
-	 * 
+	 *
 	 * @param c the new color
 	 */
 	public void setColor(Color c);

@@ -5,7 +5,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.util.Comparator;
-import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import org.teneighty.heap.BinaryHeap;
@@ -19,17 +18,30 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.univr.di.cstnu.graph.LabeledNode;
-import it.univr.di.labeledvalue.Constants;
 
 /**
- * Simple implementation of the Fibonacci Heap data structure, where elements are {@link LabeledNode} and priorities are integers.
- * 
+ * Simple implementation of the Fibonacci Heap data structure, where elements are {@link it.univr.di.cstnu.graph.LabeledNode} and priorities are integers.
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public class NodePriorityHeap {
-	@SuppressWarnings("javadoc")
+	/**
+	 * @author posenato
+	 */
 	public enum NodeStatus {
-		isPresent, notPresent, wasPresent
+		/**
+		 * 
+		 */
+		isPresent,
+		/**
+		 * 
+		 */
+		notPresent,
+		/**
+		 * 
+		 */
+		wasPresent
 	}
 
 	/**
@@ -37,7 +49,6 @@ public class NodePriorityHeap {
 	 */
 	static Logger LOG = Logger.getLogger("it.univr.di.cstnu.algorithms.NodePriorityHeap");
 
-	@SuppressWarnings("javadoc")
 	private static NodeStatus getStatus(Entry<Integer, LabeledNode> entry) {
 		if (entry == null)
 			return NodeStatus.notPresent;
@@ -58,7 +69,11 @@ public class NodePriorityHeap {
 	 */
 	private Object2ObjectMap<LabeledNode, Entry<Integer, LabeledNode>> map = new Object2ObjectAVLTreeMap<>();
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * <p>
+	 * clear.
+	 * </p>
+	 */
 	public void clear() {
 		this.heap.clear();
 		this.map.clear();
@@ -80,9 +95,8 @@ public class NodePriorityHeap {
 
 	/**
 	 * Remove and return the item with minimum priority in this heap.
-	 * 
+	 *
 	 * @return the LabeledNode with minimum priority.
-	 * @throws NoSuchElementException - If this heap is empty.
 	 */
 	public LabeledNode extractMin() {
 		Entry<Integer, LabeledNode> entry = this.heap.extractMinimum();
@@ -93,9 +107,8 @@ public class NodePriorityHeap {
 
 	/**
 	 * Remove and return the minimum entry in this heap.
-	 * 
-	 * @return the entry <LabeledNode, int> with minimum priority.
-	 * @throws NoSuchElementException - If this heap is empty.
+	 *
+	 * @return the entry &lt;LabeledNode, int&gt; with minimum priority.
 	 */
 	public BasicEntry<LabeledNode> extractMinEntry() {
 		Entry<Integer, LabeledNode> entry = this.heap.extractMinimum();
@@ -105,6 +118,10 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>
+	 * getPriorities.
+	 * </p>
+	 *
 	 * @return the map (LabeledNode, priority) of all the elements that have been added in the queue.
 	 */
 	public Object2IntMap<LabeledNode> getPriorities() {
@@ -118,6 +135,10 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>
+	 * getPriority.
+	 * </p>
+	 *
 	 * @param node must be present.
 	 * @return the priority of the node if it is present.
 	 */
@@ -128,6 +149,10 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>
+	 * getPriorityRemovedElement.
+	 * </p>
+	 *
 	 * @param node must be present.
 	 * @return the priority of the node if it is present.
 	 */
@@ -137,7 +162,14 @@ public class NodePriorityHeap {
 		return this.map.get(node).getKey().intValue();
 	}
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * <p>
+	 * getStatus.
+	 * </p>
+	 *
+	 * @param node a {@link it.univr.di.cstnu.graph.LabeledNode} object.
+	 * @return a {@link it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus} object.
+	 */
 	public NodeStatus getStatus(LabeledNode node) {
 		Entry<Integer, LabeledNode> entry = this.map.get(node);
 		return getStatus(entry);
@@ -145,7 +177,7 @@ public class NodePriorityHeap {
 
 	/**
 	 * Insert or update the given node and its priority into this heap.
-	 * 
+	 *
 	 * @param node the labeled node
 	 * @param priority the value of priority
 	 * @return true if the operation was successful; false if a previous value was already removed and the new priority is lower than the previous value.
@@ -173,17 +205,30 @@ public class NodePriorityHeap {
 		return true;
 	}
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * <p>
+	 * isEmpty.
+	 * </p>
+	 *
+	 * @return a boolean.
+	 */
 	public boolean isEmpty() {
 		return this.heap.isEmpty();
 	}
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * <p>
+	 * size.
+	 * </p>
+	 *
+	 * @return a int.
+	 */
 	public int size() {
 		return this.heap.getSize();
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Return the ordered queue w.r.t. the priority
 	 */
 	@Override
@@ -202,14 +247,17 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>
+	 * value.
+	 * </p>
+	 *
 	 * @param item the element
-	 * @return the priority associated to item in the queue, {@link Constants#INT_NULL} if the item is not in the queue.
+	 * @return the priority associated to item in the queue, {@link it.univr.di.labeledvalue.Constants#INT_NULL} if the item is not in the queue.
 	 */
 	public int value(LabeledNode item) {
 		return this.getPriority(item);
 	}
 
-	@SuppressWarnings("javadoc")
 	private void setWasPresent(Entry<Integer, LabeledNode> entry) {
 		LabeledNode node = entry.getValue();
 		entry.setValue(null);

@@ -37,7 +37,7 @@ import it.univr.di.labeledvalue.Literal;
  * Using the option --limitedToZ, the DC checking algorithm is the one presented at IJCAI18.
  * Without --limitedToZ, the algorithm is the one presented at ICAPS19. This last version is not efficient as IJCAI18 one.
  * For a very efficient version, consider CSTNPotential class that make DC checking assuming IR semantics and node without labels.
- * 
+ *
  * @author Roberto Posenato
  * @version $Id: $Id
  */
@@ -68,11 +68,11 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 	/**
 	 * Just for using this class also from a terminal.
-	 * 
+	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @throws org.xml.sax.SAXException
+	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTN(), "Standard DC");
@@ -141,6 +141,10 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for CSTN.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTN(TNGraph<CSTNEdge> graph) {
@@ -149,6 +153,10 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	}
 
 	/**
+	 * <p>
+	 * Constructor for CSTN.
+	 * </p>
+	 *
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check
 	 */
@@ -164,9 +172,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		super();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException {
 		try {
@@ -183,11 +189,10 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * edge, all other rules, R0, R3 and potential ones, are also applied.<br>
 	 * <em>This method is offered for studying the propagation node by node. It is not efficient!<br>
 	 * {@link #dynamicConsistencyCheck()} uses a different propagation technique!</em>
-	 * 
+	 *
 	 * @return the update status (for convenience. The status is also stored in {@link #checkStatus}).
-	 * @throws WellDefinitionException if the nextGraph<E> is not well defined (does not observe all well definition properties). If this exception
-	 *             occurs, then
-	 *             there is a problem in the rules coding.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph&lt;E&gt; is not well defined (does not observe all well definition
+	 *             properties). If this exception occurs, then there is a problem in the rules coding.
 	 */
 	public CSTNCheckStatus oneStepDynamicConsistencyByNode() throws WellDefinitionException {
 		LabeledNode B, C;
@@ -433,7 +438,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	}
 
 	/**
-	 * <h1>Rule R3*</h1>
+	 * <b>Rule R3*</b><br>
 	 * <b>Standard DC semantics is assumed.</b><br>
 	 * <b>This method is also valid assuming Instantaneous Reaction semantics.</b>
 	 * 
@@ -448,7 +453,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * γ' is obtained by removing children of p from γ.
 	 * </pre>
 	 *
-	 * <h2>Rule qR3*</h2>
+	 * <b>Rule qR3*</b><br>
 	 * 
 	 * <pre>
 	 * if P? --[w, γ]--&gt; Z &lt;--[v, βθp']-- nS  and w &le; 0
@@ -590,13 +595,13 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * The rule implements 2018-11 qLP+, submitted to ICAPS19.
 	 * 
 	 * <pre>
-	 * if A ---(u,α)⟶ B ---(v,β)⟶ C and (u+v < 0 and u < 0) or (u+v < 0 and αβ in P*)
+	 * if A ---(u,α)⟶ B ---(v,β)⟶ C and (u+v &lt; 0 and u &lt; 0) or (u+v &lt; 0 and αβ in P*)
 	 * then A ---[(α★β)†, u+v]⟶ C 
 	 * 
 	 * α,β in Q*
 	 * (α★β)† is the label without children of unknown.
 	 *
-	 * If A==C and u+v < 0, then
+	 * If A==C and u+v &lt; 0, then
 	 * - if (α★β)† does not contain ¿ literals, the network is not DC
 	 * - if (α★β)† contains ¿ literals, the u+v becomes -∞
 	 * </pre>
