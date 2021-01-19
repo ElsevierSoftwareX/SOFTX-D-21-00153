@@ -163,12 +163,13 @@ public class STNU {
 	/**
 	 * logger
 	 */
-	private static Logger LOG = Logger.getLogger("it.univr.di.cstnu.algorithms.STNU");
+	private static Logger LOG = Logger.getLogger(STNU.class.getName());
 
 	/**
 	 * Version of the class
 	 */
-	static final String VERSIONandDATE = "Version 1.0 - April, 08 2020";
+	// static final String VERSIONandDATE = "Version 1.0 - April, 08 2020";
+	static final String VERSIONandDATE = "Version 1.1 - January 19, 2020";// fixed only the nome for the logger.
 
 	/**
 	 * <p>
