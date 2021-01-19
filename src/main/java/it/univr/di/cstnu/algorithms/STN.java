@@ -60,6 +60,10 @@ public class STN {
 	 */
 	public static enum CheckAlgorithm {
 		/**
+		 * All Pairs Shortest Paths
+		 */
+		AllPairsShortestPaths,
+		/**
 		 * 
 		 */
 		BannisterEppstein,
@@ -75,10 +79,6 @@ public class STN {
 		 * Dijkstra
 		 */
 		Dijkstra,
-		/**
-		 * Floyd-Warshall
-		 */
-		FloydWarshall,
 		/**
 		 * Johnson
 		 */
@@ -183,12 +183,13 @@ public class STN {
 	/**
 	 * logger
 	 */
-	static Logger LOG = Logger.getLogger("it.univr.di.cstnu.algorithms.STN");
+	static Logger LOG = Logger.getLogger(STN.class.getName());
 
 	/**
 	 * Version of the class
 	 */
-	static final String VERSIONandDATE = "Version 1.0 - July, 15 2019";
+	// static final String VERSIONandDATE = "Version 1.0 - July, 15 2019";
+	static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made a distinction between AllPairsShortestPaths and F-W algorithms
 
 	/**
 	 * <p>
@@ -450,7 +451,8 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance between all pair of vertexes modifying the given graph.
+	 * AllPairShortestPath(AllPairsShortestPaths)<br>
+	 * Determines the minimal distance between all pair of vertexes modifying the given using the Floyd-Warshall algorithm.
 	 * If the graph contains a negative cycle, it returns false and the graph contains the edges that
 	 * have determined the negative cycle.
 	 * 
@@ -459,7 +461,7 @@ public class STN {
 	 * @return true if the graph is consistent, false otherwise.
 	 *         If the response is false, the edges do not represent the minimal distance between nodes.
 	 */
-	static boolean floydWarshall(TNGraph<STNEdge> g1, STNCheckStatus checkStatus1) {
+	static boolean apsp(TNGraph<STNEdge> g1, STNCheckStatus checkStatus1) {
 		final int n = g1.getVertexCount();
 		final EdgeSupplier<STNEdge> edgeFactory = g1.getEdgeFactory();
 		final LabeledNode[] node = g1.getVerticesArray();
@@ -754,9 +756,9 @@ public class STN {
 	boolean cleanCheckedInstance = true;
 
 	/**
-	 * Which algorithm to use for consistency check. Default is Flowyd-Warshall
+	 * Which algorithm to use for consistency check. Default is AllPairsShortestPaths (AllPairsShortestPaths)
 	 */
-	CheckAlgorithm defaultConsistencyCheckAlg = CheckAlgorithm.FloydWarshall;
+	CheckAlgorithm defaultConsistencyCheckAlg = CheckAlgorithm.AllPairsShortestPaths;
 
 	/**
 	 * The input file containing the STN graph in GraphML format.
@@ -886,8 +888,8 @@ public class STN {
 		Instant startInstant = Instant.now();
 
 		switch (alg) {
-		case FloydWarshall:
-			this.checkStatus.consistency = floydWarshall();
+		case AllPairsShortestPaths:
+			this.checkStatus.consistency = allPairsShortestPaths();
 			break;
 		case Johnson:
 			this.checkStatus.consistency = johnson();
@@ -959,8 +961,8 @@ public class STN {
 	 * @return true if the STN is consistent, false otherwise.
 	 *         If the response is false, the edges do not represent the minimal distance between nodes.
 	 */
-	public boolean floydWarshall() {
-		return STN.floydWarshall(this.g, this.checkStatus);
+	public boolean allPairsShortestPaths() {
+		return STN.apsp(this.g, this.checkStatus);
 	}
 
 	/**
@@ -1214,7 +1216,7 @@ public class STN {
 	 */
 	public boolean makeDispatchable() {
 
-		if (!this.floydWarshall())
+		if (!this.allPairsShortestPaths())
 			return false;
 		for (STNEdge edge : this.g.getEdges()) {
 			edge.setColor(null);
