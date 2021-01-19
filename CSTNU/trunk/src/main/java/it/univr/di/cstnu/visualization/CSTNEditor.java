@@ -1810,7 +1810,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * Which check alg to use for STN
 	 */
-	STN.CheckAlgorithm stnCheckAlg = STN.CheckAlgorithm.FloydWarshall;
+	STN.CheckAlgorithm stnCheckAlg = STN.CheckAlgorithm.AllPairsShortestPaths;
 
 	/**
 	 * STN check status
