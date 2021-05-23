@@ -1480,10 +1480,10 @@ public class CSTNEditor extends JFrame implements Cloneable {
 						"Z");
 			}
 			jl.setBackground(Color.orange);
-			TNGraph<STNEdge> g1 = CSTNEditor.this.stn.getSTNPredecessorGraph(node);
+			TNGraph<STNEdge> g1 = CSTNEditor.this.stn.getSTNPredecessorSubGraph(node);
 			if (g1 != null) {
 				((TNGraph<STNEdge>) CSTNEditor.this.checkedGraph).takeIn(g1);
-				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>Predecessor graphs of " + node.getName() + ".");
+				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>Predecessor subgraph of " + node.getName() + ".");
 				jl.setBackground(Color.green);
 			} else {
 				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
@@ -2018,7 +2018,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		buttonCheck.addActionListener(new STNDispatchableListener());
 		this.rowForSTNButtons.add(buttonCheck);
 
-		buttonCheck = new JButton("PredecessorGraph");
+		buttonCheck = new JButton("PredecessorSubGraph");
 		buttonCheck.addActionListener(new STNPredecessorGraphListener());
 		this.rowForSTNButtons.add(buttonCheck);
 

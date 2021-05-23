@@ -32,7 +32,8 @@ import it.univr.di.labeledvalue.LabeledIntMap;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
+ * Represents a Conditional Simple Temporal Network (CSTN) and it contains a method to check the dynamic consistency of the instance.<br>
+ * Edge weights are signed integer.<br>
  * The dynamic consistency check (DC check) is done assuming standard IR semantics (cf. ICAPS 2016 paper, table 1).
  * and that the instance is streamlined (cf TIME 2018 paper).
  * In this class the DC checking is solved using the Single-Sink Shortest-Paths algorithm (SSSP), and R0-R3 rules.<br>
@@ -733,6 +734,7 @@ public class CSTNPotential extends CSTNIR {
 				// found a negative cycle!
 				this.checkStatus.consistency = false;
 				this.checkStatus.finished = true;
+				this.checkStatus.negativeLoopNode = node;
 			}
 			/**
 			 * The value of a potential is updated to Constants.INT_NEG_INFINITE only when there is more than n updates made by potential propagation only.

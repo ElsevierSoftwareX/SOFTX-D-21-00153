@@ -1,5 +1,14 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
+
+## v3.3
+	date: 2021-05-23
+	
+	CSTN(U)CheckStatus stores also the node having the negative loop when the network is NOT DC.
+	All DC checking methods save the resulting graph into a file before returning the status of a check.
+	Improved some Javadoc comments.
+
+
 ## v3.2
 	date: 2021-01-14
 	

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 /**
- * Contains all classes for viualization of CSTN(U) objects.
+ * Contains all classes for visualization of CSTN(U) objects.
  * 
  * @author posenato
  */

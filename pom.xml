@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>3.2</version><!--Aggiornare anche codemeta.json -->
+	<version>3.3</version><!--Aggiornare anche codemeta.json -->
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -91,9 +91,9 @@
 			<version>3.6.1</version>
 		</dependency>
 		<dependency>
-			<groupId>com.kenai</groupId>
+			<groupId>com.mastfrog</groupId>
 			<artifactId>simplevalidation-standalone</artifactId>
-			<version>1.6</version>
+			<version>1.14</version>
 		</dependency>
 		<dependency>
 			<groupId>org.freehep</groupId>
@@ -167,20 +167,11 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
-		<!--il seguente rep è per simplevalidation -->
-		<repository>
-			<id>timboudreau-builds</id>
-			<name>timboudreau.com builds</name>
-			<url>http://timboudreau.com/builds/plugin/repository/everything/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>never</updatePolicy>
-			</snapshots>
-		</repository>
+		<!--il seguente rep è per simplevalidation <repository> <id>timboudreau-builds</id> 
+			<name>timboudreau.com builds</name> <url>http://timboudreau.com/builds/plugin/repository/everything/</url> 
+			<releases> <enabled>true</enabled> <updatePolicy>never</updatePolicy> </releases> 
+			<snapshots> <enabled>true</enabled> <updatePolicy>never</updatePolicy> </snapshots> 
+			</repository> -->
 
 		<!-- il seguente rep è per freehep -->
 		<repository>
@@ -620,15 +611,38 @@
 				</executions>
 			</plugin>
 
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-javadoc-plugin</artifactId> 
-				<version>3.2.0</version> <configuration> <show>private</show> <source>8</source> 
-				<detectJavaApiLink>false</detectJavaApiLink> <doclint>all,-missing</doclint> 
-				cosa controllare <excludePackageNames>it.univr.di.attic.*</excludePackageNames> 
-				<sourceFileExcludes> <exclude>**/wf/*.java</exclude> <exclude>**/attic/*.java</exclude> 
-				<exclude>**/lazy/*.java</exclude> </sourceFileExcludes> <show>package</show> 
-				<keywords>true</keywords> <tags> <tag><name>implSpec</name><placement>a</placement><head>Implementation 
-				Requirements:</head></tag> <tag><name>implNote</name><placement>a</placement><head>Implementation 
-				Note:</head></tag> </tags> </configuration> </plugin> -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<show>private</show>
+					<source>8</source>
+<!-- 					<detectJavaApiLink>false</detectJavaApiLink>-->
+					<doclint>all,-missing</doclint>
+					<!-- cosa controllare-->
+					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
+					<sourceFileExcludes>
+						<exclude>**/wf/*.java</exclude>
+						<exclude>**/attic/*.java</exclude>
+						<exclude>**/lazy/*.java</exclude>
+					</sourceFileExcludes>
+					<show>package</show>
+					<keywords>true</keywords>
+					<tags>
+						<tag>
+							<name>implSpec</name>
+							<placement>a</placement>
+							<head>Implementation Requirements:</head>
+						</tag>
+						<tag>
+							<name>implNote</name>
+							<placement>a</placement>
+							<head>Implementation Note:</head>
+						</tag>
+					</tags>
+				</configuration>
+			</plugin>
 
 		</plugins>
 	</build>
@@ -709,7 +723,9 @@
 					<xmlOutput>true</xmlOutput>
 					<!-- Optional directory to put findbugs xdoc xml report -->
 					<xmlOutputDirectory>target/site</xmlOutputDirectory>
-			         <onlyAnalyze>it.univr.di.cstnu.algorithms.*, it.univr.di.cstnu.graph.*,it.univr.di.labeledvalue.*</onlyAnalyze><!-- it.univr.di.cstnu.visualization.*, -->
+					<onlyAnalyze>it.univr.di.cstnu.algorithms.*,
+						it.univr.di.cstnu.graph.*,it.univr.di.labeledvalue.*</onlyAnalyze><!-- 
+						it.univr.di.cstnu.visualization.*, -->
 				</configuration>
 			</plugin>
 		</plugins>

@@ -41,7 +41,7 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 
 /**
- * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
+ * Core class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
  * This class is the base class for some other specialized in which DC semantics is defined in a different way.
@@ -53,8 +53,10 @@ import it.univr.di.labeledvalue.Label;
 public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
-	 * Simple class to represent the status of the checking algorithm during an execution.
-	 *
+	 * Represents the status of a CSTN-checking algorithm during an execution.<br>
+	 * At the end of a CSTN-checking algorithm running, it contains the final status ({@link STNCheckStatus#consistency} or the node
+	 * {@link STNCheckStatus#negativeLoopNode} where a negative loop has been found).
+	 * 
 	 * @author Roberto Posenato
 	 */
 	public static class CSTNCheckStatus extends STNCheckStatus {
@@ -89,6 +91,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 				if (!this.consistency)
 					sb.append("NOT ");
 				sb.append("consistent.\n");
+			}
+			if (!this.consistency && this.negativeLoopNode != null) {
+				sb.append("The negative loop is on node " + this.negativeLoopNode + "\n");
 			}
 			sb.append("Some statistics:\nR0 has been applied ").append(this.r0calls).append(" times.\n");
 			sb.append("R3 has been applied ").append(this.r3calls).append(" times.\n");
@@ -418,8 +423,8 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Determines the minimal distance between all pair of vertexes modifying the given consistent graph.
-	 * If the graph contains a negative cycle, it returns false and the graph contains the edges that
-	 * have determined the negative cycle.
+	 * If the graph contains a negative cycle, it returns false and the graph contains the edge that
+	 * has determined the found negative loop.
 	 *
 	 * @param g the graph
 	 * @return true if the graph is consistent, false otherwise.
@@ -493,7 +498,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * Stops a computation if current instant is after the <code>timeoutInstant</code>
 	 * setting <code>status.timeout=true</code>.<br>
-	 * As courtesy, it sets also <code>status.consistency=status.finished=false</code>.
+	 * It sets also <code>status.consistency=status.finished=false</code>.
 	 * 
 	 * @param timeoutInstant
 	 * @param status
@@ -529,6 +534,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	CSTNCheckStatus checkStatus = new CSTNCheckStatus();
 
 	/**
+	 * If true, after a check, the reulting graph is cleaned: all empty edges or labeled values containing unknown literals are removed.
 	 */
 	@Option(required = false, name = "-cleaned", usage = "Output a cleaned result. A result cleaned graph does not contain empty edges or labeled values containing unknown literals.")
 	boolean cleanCheckedInstance = true;
@@ -540,7 +546,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	File fInput;
 
 	/**
-	 * Output file where to write the XML representing the minimal CSTN graph.
+	 * Output file where to write the XML representing the CSTN graph after a check.
 	 */
 	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output.", metaVar = "output_file_name")
 	File fOutput = null;
@@ -551,7 +557,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	TNGraph<E> g = null;
 
 	/**
-	 * TNGraph on which to operate.
+	 * The graph obtained by a check and the cleaning action.
 	 */
 	TNGraph<E> gCheckedCleaned = null;
 
@@ -642,23 +648,22 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * Checks the dynamic consistency of a CSTN instance within timeout seconds.
-	 * During the execution of this method, the given graph is modified. <br>
-	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
+	 * Checks the dynamic consistency (DC) of a CSTN instance within timeout seconds.
+	 * During the execution of this method, the given network is modified. <br>
+	 * If the check is successful, all constraints to node Z in the network are minimized; otherwise, the network contains a negative loop at least.
 	 * <br>
-	 * After a check, {@link #getGChecked} returns the graph resulting after the check.
-	 *
+	 * After a check, {@link #getGChecked()} returns the network determined by the check and {@link #getCheckStatus()} the result of the checking action with some
+	 * statistics and the node having the negative loop if the network is NOT DC.<br>
+	 * In any case, before returning, this method call {@link #saveGraphToFile()} for saving the computed graph.
+	 * 
 	 * @return the final status of the checking with some statistics.
 	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	abstract public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException;
 
 	/**
-	 * <p>
-	 * Getter for the field <code>checkStatus</code>.
-	 * </p>
-	 *
-	 * @return the checkStatus
+	 * Getter for the field <code>checkStatus</code>, the status of a checking algorithm. 
+	 * @return the status of a checking algorithm. At the end of the running, this contains the final status and some statistics. 
 	 */
 	public CSTNCheckStatus getCheckStatus() {
 		// CSTNU override this
@@ -666,9 +671,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * <p>
 	 * Getter for the field <code>fOutput</code>.
-	 * </p>
 	 *
 	 * @return the fOutput
 	 */
@@ -677,35 +680,35 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * <p>
-	 * Getter for the field <code>g</code>.
-	 * </p>
-	 *
-	 * @return the g
+	 * Getter for the field <code>g</code>, the input graph.
+	 * @return the input graph
 	 */
 	final public TNGraph<E> getG() {
 		return this.g;
 	}
 
 	/**
-	 * <p>
-	 * getGChecked.
-	 * </p>
-	 *
+	 * Getter for the resulting graph of a check.<br>
+	 * 
+	 * In order to obtain a resulting graph without redundant labels or labels having unknown literals, set output cleaned flag by {@link #setOutputCleaned(boolean)} before calling this method.  
+	 *         
 	 * @return the resulting graph of a check. It is up to the called to be sure the the returned graph is the result of a check.
 	 *         It can be used also by subclasses with a proper cast.
 	 * @see #setOutputCleaned(boolean)
 	 */
 	public TNGraph<E> getGChecked() {
-		if (this.cleanCheckedInstance && this.getCheckStatus().finished && this.getCheckStatus().consistency)
+		if (this.cleanCheckedInstance && this.getCheckStatus().finished && this.getCheckStatus().consistency) {
+			if (this.gCheckedCleaned == null) {
+				this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass());
+				this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
+			}
 			return this.gCheckedCleaned;
+		}
 		return this.g;
 	}
 
 	/**
-	 * <p>
 	 * Getter for the field <code>maxWeight</code>.
-	 * </p>
 	 *
 	 * @return the maxWeight
 	 */
@@ -714,9 +717,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * <p>
 	 * Getter for the field <code>reactionTime</code>.
-	 * </p>
 	 *
 	 * @return the reactionTime
 	 */
@@ -781,7 +782,13 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * Stores the graph after a check to the file {@link #getfOutput()}.
+	 * Stores the resulting graph of a check into the file {@link #fOutput} (see {@link #setfOutput(File)}) with a proper suffix according to the status of the check:
+	 * <ul>
+	 * <li> "_notFinishedCheck" if the check was interrupted
+	 * <li>  "_timeout_" if a timeout has occurred
+	 * <li> "_checked_DC" or "_checked_NOTDC" if the the check has finished corretly. DC/NOTDC stands for DynamicConsistent or DynamicControllable and NOTDC for Not DynamicConsistent or Not DynamicControllable.
+	 * </ul> 
+	 * If {@link #fOutput} is null, it tries to build a name from the input file name.
 	 *
 	 * @see #getGChecked()
 	 */
@@ -856,7 +863,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * Set to true for having the result graph cleaned of empty edges and labeled values having unknown literals.
+	 * Set to true for having the result graph cleaned of empty edges and of labeled values having unknown literals.
 	 *
 	 * @param clean the resulting graph
 	 */
@@ -865,10 +872,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * <p>
-	 * Setter for the field <code>withNodeLabels</code>.
-	 * </p>
-	 *
 	 * @param withNodeLabels1 true if node labels have to be considered.
 	 */
 	public void setWithNodeLabels(boolean withNodeLabels1) {
@@ -877,8 +880,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * If true, the propagations are made for edges ending to Z.
-	 *
 	 * @param propagationOnlyToZ1 true if propagations have to be done only to Z
 	 */
 	public void setPropagationOnlyToZ(boolean propagationOnlyToZ1) {

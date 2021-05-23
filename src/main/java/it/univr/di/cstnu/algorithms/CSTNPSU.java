@@ -2109,6 +2109,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 					}
 					checkStatus1.consistency = false;
 					checkStatus1.finished = true;
+					checkStatus1.negativeLoopNode = nC;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER))
 							LOG.log(Level.FINER, "checkBoundGuarded: end.");
