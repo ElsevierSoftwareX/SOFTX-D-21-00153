@@ -43,10 +43,11 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
 /**
- * Simple class to represent and check Conditional Simple Temporal Network with Uncertainty (CSTNU).
- * It is based on instantaneous reaction and uses only rules qR0, and qR3 as label modification rules.
+ * Represents a Conditional Simple Temporal Network with Uncertainty (CSTNU).<br>
+ * This class implementation considers instantaneous reactions and uses only rules qR0, and qR3 as label modification rules.<br>
+ * Edge values are integers.
  * <br>
- * The input network is transformed into its streamlined version and, then, checked.
+ * The input network is transformed into its streamlined version and, then, checked.<br>
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -61,7 +62,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	public static class CSTNUCheckStatus extends CSTNCheckStatus {
 
 		// controllability = super.consistency!
-
 		/**
 		 * Counters about the # of application of different rules.
 		 */
@@ -99,6 +99,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			return ("The check is" + (this.finished ? " " : " NOT") + " finished after " + this.cycles + " cycle(s).\n"
 					+ ((this.finished) ? "the controllability check has determined that given network is" + (this.consistency ? " " : " NOT ")
 							+ "dynamic controllable.\n" : "")
+					+ ((!this.consistency && this.negativeLoopNode != null) ?
+						"The negative loop is on node " + this.negativeLoopNode + "\n" : "")
 					+ "Some statistics:\nRule R0 has been applied " + this.r0calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
 					+ "Labeled Propagation Rule (zLp/Nc/Uc) has been applied " + this.labeledValuePropagationCalls + " times.\n"
@@ -228,6 +230,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			}
 			status.consistency = false;
 			status.finished = true;
+			status.negativeLoopNode = source;
 			return true;
 		}
 		return false;
@@ -317,7 +320,6 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * {@inheritDoc}
 	 * Wrapper method for {@link #dynamicControllabilityCheck()}
 	 */
 	@Override
@@ -326,9 +328,15 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * Checks the controllability of a CSTNU instance and, if the instance is controllable, determines all the minimal ranges for the constraints. <br>
-	 * All propositions that are redundant at run time are removed: therefore, all labels contains only the necessary and sufficient propositions.
-	 *
+	 * Checks the dynamic controllability (DC) of the given network (see {@link #CSTNU(TNGraph)} or  {@link #setG(TNGraph)}.<br>
+	 * If the network is DC, it determines all the minimal ranges for the constraints. <br>
+	 * During the execution of this method, the given network is modified. <br>
+	 * If the check is successful, all constraints to node Z in the network are minimized; otherwise, the network contains a negative loop at least.
+	 * <br>
+	 * After a check, {@link #getGChecked()} returns the graph resulting after the check and {@link #getCheckStatus()} the result of the checking action with some
+	 * statistics and the node with the negative loop is the network is NOT DC.<br>
+	 * In any case, before returning, this method call {@link #saveGraphToFile()} for saving the computed graph.
+
 	 * @return an {@link it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus} object containing the final status and some statistics about the executed
 	 *         checking.
 	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
@@ -390,6 +398,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 						}
 					}
 					this.checkStatus.executionTimeNS = ChronoUnit.NANOS.between(startInstant, Instant.now());
+					this.saveGraphToFile();
 					return getCheckStatus();
 				}
 				if (this.checkStatus.consistency) {
@@ -411,33 +420,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				}
 			}
 		}
-		//
-		// FOR HARD DEBUG
-		// if (this.checkStatus.consistency && this.checkStatus.finished && i <= maxCycles) {
-		// if (Debug.ON) {
-		// if (LOG.isLoggable(Level.INFO)) {
-		// LOG.log(Level.INFO, "After " + (i - 1) + " cycle, all possible propagations have done."
-		// + "\nNow it is necessary to check that AllMax Projection network is consistent.");
-		// LOG.info("AllMax Projection check starts...");
-		// }
-		// }
-		// TNGraph allMaxCSTN = makeAllMaxProjection();
-		// CSTNIR3R cstnChecker = new CSTNIR3R(allMaxCSTN);
-		// CSTNCheckStatus cstnStatus = cstnChecker.dynamicConsistencyCheck();
-		// if (Debug.ON) {
-		// if (LOG.isLoggable(Level.INFO))
-		// LOG.info("AllMax Projection network check done.\n");
-		// }
-		// if (!cstnStatus.consistency) {
-		// if (Debug.ON) {
-		// if (LOG.isLoggable(Level.INFO))
-		// LOG.info("The AllMax Projection network has at least one negative loop. The original network cannot be DC! Filename is "
-		// + this.g.getName());
-		// }
-		// this.checkStatus.consistency = false;
-		// this.checkStatus.finished = true;
-		// }
-		// }
+
 		Instant endInstant = Instant.now();
 		this.checkStatus.executionTimeNS = Duration.between(startInstant, endInstant).toNanos();
 
@@ -451,6 +434,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					}
 				}
 			}
+			this.saveGraphToFile();
 			return getCheckStatus();
 		}
 
@@ -464,6 +448,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				}
 			}
 			this.checkStatus.consistency = this.checkStatus.finished;
+			this.saveGraphToFile();
 			return getCheckStatus();
 		}
 
@@ -478,6 +463,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass());
 			this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
 		}
+		this.saveGraphToFile();
 		return getCheckStatus();
 	}
 

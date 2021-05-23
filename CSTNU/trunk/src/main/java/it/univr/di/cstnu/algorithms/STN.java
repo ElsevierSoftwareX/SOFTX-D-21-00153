@@ -48,7 +48,8 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 
 /**
- * Simple class to represent and consistency-check Simple Temporal Network (STN) where the edge weight are signed integer.
+ * Represents a Simple Temporal Network (STN) and it contains some methods to manipulate and to check a STN instance.
+ * In this class, edge weights are represented as signed integer.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -94,13 +95,15 @@ public class STN {
 	}
 
 	/**
-	 * Simple class to represent the status of the checking algorithm during an execution.
-	 *
+	 * Represents the status of a checking algorithm during its execution and the final result of a check.
+	 * At the end of a STN-checking algorithm running, it contains the final status ({@link STNCheckStatus#consistency} or the node
+	 * {@link STNCheckStatus#negativeLoopNode} where a negative loop has been found).
+	 * 
 	 * @author Roberto Posenato
 	 */
 	public static class STNCheckStatus {
 		/**
-		 * True if the network is consistent so far.
+		 * Consistency status (it is assumed true at the initialization).
 		 */
 		public boolean consistency = true;
 
@@ -116,24 +119,29 @@ public class STN {
 		public long executionTimeNS = Constants.INT_NULL;
 
 		/**
-		 * True if no rule can be applied anymore.
+		 * Becomes true if no rule can be applied anymore.
 		 */
 		public boolean finished = false;
 
 		/**
-		 * Standard Deviation of Execution time if this last one is a mean. In nanoseconds.
+		 * Standard Deviation of execution time if this last one is a mean. In nanoseconds.
 		 */
 		public long stdDevExecutionTimeNS = Constants.INT_NULL;
 
 		/**
-		 * True if check has been interrupted because a give time-out has occurred.
+		 * Becomes true if check has been interrupted because a given time-out has occurred.
 		 */
 		public boolean timeout = false;
 
 		/**
-		 * True if all data structured have been initialized.
+		 * Becomes true when all data structures have been initialized.
 		 */
 		boolean initialized = false;
+
+		/**
+		 * The node where the negative loop has been found (if the network is not consistent).
+		 */
+		public LabeledNode negativeLoopNode = null;
 
 		/**
 		 * Reset all indexes.
@@ -145,8 +153,12 @@ public class STN {
 			this.executionTimeNS = this.stdDevExecutionTimeNS = Constants.INT_NULL;
 			this.finished = this.timeout = false;
 			this.initialized = false;
+			this.negativeLoopNode = null;
 		}
 
+		/**
+		 * @return the status of a check with all determined index values.
+		 */
 		@Override
 		public String toString() {
 			StringBuffer sb = new StringBuffer();
@@ -162,8 +174,10 @@ public class STN {
 			}
 			sb.append("Propagation has been applied ").append(this.propagationCalls).append(" times.\n");
 			if (this.timeout)
-				sb.append("Checking has been interrupted because execution time exceeds the given time limit.\n");
-
+				sb.append("The checking has been interrupted because execution time exceeds the given time limit.\n");
+			if (!this.consistency && this.negativeLoopNode != null) {
+				sb.append("The negative loop is on node " + this.negativeLoopNode + "\n");
+			}
 			if (this.executionTimeNS != Constants.INT_NULL)
 				sb.append("The global execution time has been ").append(this.executionTimeNS).append(" ns (~").append((this.executionTimeNS / 1E9))
 						.append(" s.)");
@@ -189,7 +203,8 @@ public class STN {
 	 * Version of the class
 	 */
 	// static final String VERSIONandDATE = "Version 1.0 - July, 15 2019";
-	static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made a distinction between AllPairsShortestPaths and F-W algorithms
+	// static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made a distinction between AllPairsShortestPaths and F-W algorithms
+	static final String VERSIONandDATE = "Version 1.2 - April, 24 2021";// renamed getPredecessorGraph. Now it is getPredecessorSubGraph
 
 	/**
 	 * <p>
@@ -326,6 +341,7 @@ public class STN {
 				if (checkStatus1 != null) {
 					checkStatus1.consistency = false;
 					checkStatus1.finished = true;
+					checkStatus1.negativeLoopNode = d;
 				}
 				return false;
 			}
@@ -653,7 +669,7 @@ public class STN {
 	}
 
 	/**
-	 * Given the unweighed parent graph (assumed to be a tree) as parent vector, returns true if such a graph contains a cycle.
+	 * Given the unweighed parent graph (assumed to be a tree) as parent vector, returns true if such a graph contains a negative cycle.
 	 * It is assumed that the root of tree is the node with index 0 and parent[0] == 0, i.e., root ha itself as parent.
 	 * 
 	 * @param parent
@@ -1043,7 +1059,7 @@ public class STN {
 	 * @param source a node of this STN
 	 * @return the predecessor graph of node X, if X belongs (object identity) to this STN, null otherwise.
 	 */
-	public TNGraph<STNEdge> getSTNPredecessorGraph(LabeledNode source) {
+	public TNGraph<STNEdge> getSTNPredecessorSubGraph(LabeledNode source) {
 		if (!this.g.containsVertex(source)) {
 			STN.LOG.fine("This STN does not contain " + source.getName());
 			return null;
@@ -1121,7 +1137,7 @@ public class STN {
 			makeNodesReachableBy(this.g, this.Z, this.horizon);
 		}
 
-		TNGraph<STNEdge> g1 = getSTNPredecessorGraph(this.Z);
+		TNGraph<STNEdge> g1 = getSTNPredecessorSubGraph(this.Z);
 
 		// such nodes are different object w.r.t. the nodes of this object.
 		LabeledNode[] nodes = reversePostOrderVisit(g1, g1.getZ());

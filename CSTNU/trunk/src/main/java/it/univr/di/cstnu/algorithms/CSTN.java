@@ -30,13 +30,14 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
+ * Represents a Conditional Simple Temporal Network (CSTN) and it contains a method to check the dynamic consistency of the instance.<br>
+ * Edge weights are signed integer.<br>
  * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
- * This class is the base class for some other specialized in which DC semantics is defined in a different way.
- * Using the option --limitedToZ, the DC checking algorithm is the one presented at IJCAI18.
- * Without --limitedToZ, the algorithm is the one presented at ICAPS19. This last version is not efficient as IJCAI18 one.
- * For a very efficient version, consider CSTNPotential class that make DC checking assuming IR semantics and node without labels.
+ * This class is the base class for some other specialized ones in which DC semantics is defined in a different way.<br>
+ * Using the option --limitedToZ, the DC checking algorithm is the one presented at IJCAI18.<br>
+ * Without --limitedToZ, the algorithm is the one presented at ICAPS19. This last version is not efficient as IJCAI18 one.<br>
+ * For a very efficient version, consider CSTNPotential class that runs DC checking assuming IR semantics and node without labels.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -323,8 +324,11 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	/**
 	 * Checks the dynamic consistency of a CSTN instance without initialize the network.<br>
 	 * This method can be used ONLY when it is guaranteed that the network is already initialize by method {@link #initAndCheck()}.
+	 * <br>
+	 * See {@link #dynamicConsistencyCheck()} for a complete description.
 	 * 
 	 * @return the final status of the checking with some statistics.
+	 * @see CSTN#dynamicConsistencyCheck
 	 */
 	CSTNCheckStatus dynamicConsistencyCheckWOInit() {
 		if (!this.checkStatus.initialized) {
@@ -367,8 +371,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 							LOG.log(Level.INFO, msg);
 						}
 					}
-					this.saveGraphToFile();
 					this.checkStatus.executionTimeNS = ChronoUnit.NANOS.between(startInstant, Instant.now());
+					this.saveGraphToFile();
 					return this.checkStatus;
 				}
 				if (this.checkStatus.consistency) {
@@ -712,6 +716,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 						this.checkStatus.consistency = false;
 						this.checkStatus.finished = true;
 						this.checkStatus.labeledValuePropagationCalls++;
+						this.checkStatus.negativeLoopNode = nA;
 						return true;
 					}
 					sum = Constants.INT_NEG_INFINITE;

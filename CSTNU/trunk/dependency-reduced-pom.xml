@@ -4,7 +4,7 @@
   <groupId>it.univr.di</groupId>
   <artifactId>CSTNU</artifactId>
   <name>CSTNU</name>
-  <version>3.2</version>
+  <version>3.3</version>
   <url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
   <developers>
     <developer>
@@ -369,6 +369,35 @@
           </settings>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.2.0</version>
+        <configuration>
+          <show>private</show>
+          <source>8</source>
+          <doclint>all,-missing</doclint>
+          <excludePackageNames>it.univr.di.attic.*</excludePackageNames>
+          <sourceFileExcludes>
+            <exclude>**/wf/*.java</exclude>
+            <exclude>**/attic/*.java</exclude>
+            <exclude>**/lazy/*.java</exclude>
+          </sourceFileExcludes>
+          <show>package</show>
+          <keywords>true</keywords>
+          <tags>
+            <tag>
+              <name>implSpec</name>
+              <placement>a</placement>
+              <head>Implementation Requirements:</head>
+            </tag>
+            <tag>
+              <name>implNote</name>
+              <placement>a</placement>
+              <head>Implementation Note:</head>
+            </tag>
+          </tags>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <profiles>
@@ -408,17 +437,6 @@
       <id>central</id>
       <name>Central Repository</name>
       <url>https://repo1.maven.org/maven2</url>
-    </repository>
-    <repository>
-      <releases>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <updatePolicy>never</updatePolicy>
-      </snapshots>
-      <id>timboudreau-builds</id>
-      <name>timboudreau.com builds</name>
-      <url>http://timboudreau.com/builds/plugin/repository/everything/</url>
     </repository>
     <repository>
       <releases>
@@ -530,7 +548,8 @@
         <configuration>
           <xmlOutput>true</xmlOutput>
           <xmlOutputDirectory>target/site</xmlOutputDirectory>
-          <onlyAnalyze>it.univr.di.cstnu.algorithms.*, it.univr.di.cstnu.graph.*,it.univr.di.labeledvalue.*</onlyAnalyze>
+          <onlyAnalyze>it.univr.di.cstnu.algorithms.*,
+						it.univr.di.cstnu.graph.*,it.univr.di.labeledvalue.*</onlyAnalyze>
         </configuration>
       </plugin>
     </plugins>
