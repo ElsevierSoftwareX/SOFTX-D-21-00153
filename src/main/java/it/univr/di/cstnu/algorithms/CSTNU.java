@@ -135,6 +135,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	@SuppressWarnings("hiding")
 	static final Logger LOG = Logger.getLogger(CSTNU.class.getName());
 
+	
+	
+	
 	/**
 	 * Reads a CSTNU file and checks it.
 	 *
@@ -307,6 +310,12 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
+	 * Static initiliazer
+	 */
+	{ 
+		FILE_NAME_SUFFIX = ".cstnu";//ovverride suffix 
+	}
+	/**
 	 * Default constructor, package use only!
 	 */
 	CSTNU() {
@@ -315,7 +324,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		this.activationNode = new Object2ObjectOpenHashMap<>();
 		this.lowerContingentEdge = new Object2ObjectOpenHashMap<>();
 		this.propagationOnlyToZ = false;
-		this.contingentAlsoAsOrdinary = false;
+		this.contingentAlsoAsOrdinary = true;
 		this.reactionTime = 0;// IR semantics
 	}
 

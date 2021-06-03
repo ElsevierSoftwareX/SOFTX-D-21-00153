@@ -45,7 +45,6 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalMenuBarUI;
 import javax.xml.parsers.ParserConfigurationException;
@@ -1075,7 +1074,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 			this.chooser.setToolTipText(msg);
 			this.chooser.setApproveButtonToolTipText(msg);
 
-			FileFilter stnE = new FileNameExtensionFilter("(C)STN(PS)(U) file (.(c)stn(ps)(u))", "stn", "stnu", "cstn", "cstnu", "cstnpsu", "stnpsu");
+			FileNameExtensionFilter stnE = new FileNameExtensionFilter("(C)STN(PS)(U) file (.(c)stn(ps)(u))", "stn", "stnu", "cstn", "cstnu", "cstnpsu", "stnpsu");
 			this.chooser.addChoosableFileFilter(stnE);
 			this.chooser.setFileFilter(stnE);
 			this.chooser.setAcceptAllFileFilterUsed(false);
@@ -1665,7 +1664,7 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * True if contingent link as to be represented also as ordinary constraints.
 	 */
-	boolean contingentAlsoAsOrdinary = false;
+	boolean contingentAlsoAsOrdinary = true;
 
 	/**
 	 * 

@@ -405,7 +405,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * Suffix for file name
 	 */
-	public final static String FILE_NAME_SUFFIX = ".cstn";
+	public static String FILE_NAME_SUFFIX = ".cstn";
 
 	/**
 	 * The name for the initial node.
