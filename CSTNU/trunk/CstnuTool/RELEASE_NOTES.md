@@ -1,6 +1,12 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v3.4
+	date: 2021-06-03
+	
+	CSTNU Check propagates also the bounds of a contingent link as normal constraints in order to avoid that a contingent link can have upper case value different from the negated upper bound.
+	Fixed a graphical interface initialization error.
+
 ## v3.3
 	date: 2021-05-23
 	

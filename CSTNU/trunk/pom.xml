@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU</artifactId>
-	<version>3.3</version><!--Aggiornare anche codemeta.json -->
+	<version>3.4</version><!--Aggiornare anche codemeta.json -->
 	<name>CSTNU</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -152,6 +152,11 @@
 			<groupId>org.teneighty</groupId>
 			<artifactId>java-heaps</artifactId>
 			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.netbeans.external</groupId>
+			<artifactId>ValidationAPI</artifactId>
+			<version>RELEASE124</version>
 		</dependency>
 	</dependencies>
 
