@@ -70,9 +70,7 @@ public class NodePriorityHeap {
 	private Object2ObjectMap<LabeledNode, Entry<Integer, LabeledNode>> map = new Object2ObjectAVLTreeMap<>();
 
 	/**
-	 * <p>
-	 * clear.
-	 * </p>
+	 * Makes the queue empty.
 	 */
 	public void clear() {
 		this.heap.clear();
@@ -118,27 +116,18 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>
-	 * getPriorities.
-	 * </p>
-	 *
-	 * @return the map (LabeledNode, priority) of all the elements that have been added in the queue.
+	 * @return the map (LabeledNode, priority) of all the elements that have been in the queue.
 	 */
-	public Object2IntMap<LabeledNode> getPriorities() {
+	public Object2IntMap<LabeledNode> getAllDeterminedPriorities(){
 		Object2IntMap<LabeledNode> nodeDistance = new Object2IntLinkedOpenHashMap<>();
-		for (Entry<Integer, LabeledNode> entry : this.map.values()) {
-			if (entry.getValue() == null)
-				continue;
-			nodeDistance.put(entry.getValue(), entry.getKey().intValue());
+		for (LabeledNode node : this.map.keySet()) {
+			Entry<Integer, LabeledNode> entry =  this.map.get(node);
+			nodeDistance.put(node, entry.getKey().intValue());
 		}
 		return nodeDistance;
 	}
-
+	
 	/**
-	 * <p>
-	 * getPriority.
-	 * </p>
-	 *
 	 * @param node must be present.
 	 * @return the priority of the node if it is present.
 	 */
@@ -149,24 +138,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>
-	 * getPriorityRemovedElement.
-	 * </p>
-	 *
-	 * @param node must be present.
-	 * @return the priority of the node if it is present.
-	 */
-	public int getPriorityRemovedElement(LabeledNode node) {
-		if (getStatus(node) != NodeStatus.wasPresent)
-			throw new IllegalArgumentException("Node " + node + " was never removed.");
-		return this.map.get(node).getKey().intValue();
-	}
-
-	/**
-	 * <p>
-	 * getStatus.
-	 * </p>
-	 *
 	 * @param node a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 * @return a {@link it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus} object.
 	 */
@@ -206,10 +177,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>
-	 * isEmpty.
-	 * </p>
-	 *
 	 * @return a boolean.
 	 */
 	public boolean isEmpty() {
@@ -247,17 +214,18 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>
-	 * value.
-	 * </p>
-	 *
 	 * @param item the element
 	 * @return the priority associated to item in the queue, {@link it.univr.di.labeledvalue.Constants#INT_NULL} if the item is not in the queue.
 	 */
 	public int value(LabeledNode item) {
 		return this.getPriority(item);
 	}
-
+	
+	/**
+	 * Simulates the deletion of an entry.
+	 * 
+	 * @param entry
+	 */
 	private void setWasPresent(Entry<Integer, LabeledNode> entry) {
 		LabeledNode node = entry.getValue();
 		entry.setValue(null);

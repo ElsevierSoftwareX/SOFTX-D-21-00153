@@ -1,6 +1,12 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v3.5
+	date: 2021-06-14
+	
+	Fixed a small bug on Dijkstra method in STN class.
+	Class NodePriorityHeap refactored.
+	
 ## v3.4
 	date: 2021-06-03
 	

@@ -47,7 +47,7 @@ public class NodePriorityHeapTest {
 		this.heap.insertOrDecrease(this.B, 1);
 		this.heap.insertOrDecrease(this.C, -1);
 		assertEquals("Aggiunta elementi:", "[-1->❮C❯, 0->❮A❯, 1->❮B❯]", this.heap.toString());
-		assertEquals("Aggiunta elementi:", 0, this.heap.getPriorities().getInt(this.A));
+		assertEquals("Aggiunta elementi:", 0, this.heap.getAllDeterminedPriorities().getInt(this.A));
 		assertEquals("Aggiunta elementi:", "isPresent", this.heap.getStatus(this.A).toString());
 	}
 
@@ -59,7 +59,7 @@ public class NodePriorityHeapTest {
 		this.testAdd();
 		this.heap.clear();
 		assertEquals("Cancellazione elementi:", "[]", this.heap.toString());
-		assertEquals("Aggiunta elementi:", "{}", this.heap.getPriorities().toString());
+		assertEquals("Aggiunta elementi:", "{}", this.heap.getAllDeterminedPriorities().toString());
 		assertEquals("Aggiunta elementi:", "notPresent", this.heap.getStatus(this.A).toString());
 	}
 
@@ -111,14 +111,18 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#getPriorities()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#getAllDeterminedPriorities()}.
 	 */
 	@Test
-	public void testGetPriorities() {
+	public void testGetAllDeterminedPriorities() {
 		this.testAdd();
-		assertEquals("testGetPriorities", 0, this.heap.getPriorities().getInt(this.A));
+		assertEquals("testGetPriorities", 0, this.heap.getAllDeterminedPriorities().getInt(this.A));
 		this.heap.insertOrDecrease(this.B, -1);
-		assertEquals("testGetPriorities", "{❮A❯=>0, ❮B❯=>-1, ❮C❯=>-1}", this.heap.getPriorities().toString());
+		this.heap.extractMin();
+		this.heap.insertOrDecrease(this.B, -2);
+		this.heap.extractMin();
+		this.heap.insertOrDecrease(this.B, -3);
+		assertEquals("testGetPriorities", "{❮A❯=>0, ❮B❯=>-2, ❮C❯=>-1}", this.heap.getAllDeterminedPriorities().toString());
 	}
 
 	/**

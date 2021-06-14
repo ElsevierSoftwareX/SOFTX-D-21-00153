@@ -33,6 +33,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.NodesToCheck;
+import it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus;
 import it.univr.di.cstnu.graph.Component.Color;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
@@ -404,22 +405,23 @@ public class STN {
 	 * a map &lt;node, value&gt; that is returned. Node potentials are not modified.
 	 * 
 	 * @see #dijkstra(TNGraph, LabeledNode, STNCheckStatus)
-	 * @param g1 input graph
+	 * @param graph input graph
 	 * @param source the source node for the algorithm
 	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
 	 * @return a non empty map (node,integer) representing the distances of all nodes from the given source.
 	 *         Null if any error occurs like source not in graph, graph is empty, negative edge beyond source edges has been found, etc.
 	 */
-	static Object2IntMap<LabeledNode> dijkstraReadOnly(TNGraph<STNEdge> g1, LabeledNode source, STNCheckStatus checkStatus1) {
-		if (g1 == null)
+	static Object2IntMap<LabeledNode> dijkstraReadOnly(TNGraph<STNEdge> graph, LabeledNode source, STNCheckStatus checkStatus1) {
+		if (graph == null)
 			return null;
-		final Collection<LabeledNode> nodes = g1.getVertices();
+		final Collection<LabeledNode> nodes = graph.getVertices();
 		final int n = nodes.size();
 		if (source == null || !nodes.contains(source))
 			return null;
 		int v;
 
 		NodePriorityHeap nodeQueue = new NodePriorityHeap();
+		
 		for (LabeledNode node : nodes) {
 			nodeQueue.insertOrDecrease(node, Constants.INT_POS_INFINITE);
 		}
@@ -435,15 +437,15 @@ public class STN {
 			sValue = entry.getIntValue();
 
 			if (Debug.ON) {
-				STN.LOG.finer("Dijkstra node " + s.getName() + " with distance " + sValue);
+				STN.LOG.finer("Dijkstra. Considering node " + s.getName() + " having distance " + sValue);
 			}
-			for (STNEdge e : g1.getOutEdges(s)) {
-				d = g1.getDest(e);
+			for (STNEdge e : graph.getOutEdges(s)) {
+				d = graph.getDest(e);
 				eValue = e.getValue();
-				if (s != source && eValue < 0)
+				if (!s.equalsByName(source) && eValue < 0) //s != source is for allowing the use of Dijkstra when the edges from source are negative (it is a particular use od Dijkstra algorithm).  
 					return null;
 				v = Constants.sumWithOverflowCheck(sValue, eValue);
-				if (nodeQueue.value(d) > v) {
+				if (nodeQueue.getStatus(d) == NodeStatus.isPresent && nodeQueue.value(d) > v) {
 					if (Debug.ON) {
 						STN.LOG.finer(
 								"Dijkstra updates " + d.getName() + " potential adding edge value " + eValue + ": " + Constants.formatInt(nodeQueue.value(d))
@@ -461,9 +463,9 @@ public class STN {
 			checkStatus1.finished = true;
 		}
 		if (Debug.ON) {
-			LOG.finest("Determined node distances from the heap: " + nodeQueue.getPriorities().toString());
+			LOG.finer("Dijkstra: determined node distances: " + nodeQueue.getAllDeterminedPriorities().toString());
 		}
-		return nodeQueue.getPriorities();
+		return nodeQueue.getAllDeterminedPriorities();
 	}
 
 	/**
@@ -472,15 +474,15 @@ public class STN {
 	 * If the graph contains a negative cycle, it returns false and the graph contains the edges that
 	 * have determined the negative cycle.
 	 * 
-	 * @param g1 the graph to complete
+	 * @param graph the graph to complete
 	 * @param checkStatus1 possible status to fill during the computation. It can be null.
 	 * @return true if the graph is consistent, false otherwise.
 	 *         If the response is false, the edges do not represent the minimal distance between nodes.
 	 */
-	static boolean apsp(TNGraph<STNEdge> g1, STNCheckStatus checkStatus1) {
-		final int n = g1.getVertexCount();
-		final EdgeSupplier<STNEdge> edgeFactory = g1.getEdgeFactory();
-		final LabeledNode[] node = g1.getVerticesArray();
+	static boolean apsp(TNGraph<STNEdge> graph, STNCheckStatus checkStatus1) {
+		final EdgeSupplier<STNEdge> edgeFactory = graph.getEdgeFactory();
+		final LabeledNode[] node = graph.getVerticesArray();
+		final int n = node.length;
 		LabeledNode iV, jV, kV;
 		STNEdge ik, kj, ij;
 		int v;
@@ -495,8 +497,8 @@ public class STN {
 					}
 					jV = node[j];
 
-					ik = g1.findEdge(iV, kV);
-					kj = g1.findEdge(kV, jV);
+					ik = graph.findEdge(iV, kV);
+					kj = graph.findEdge(kV, jV);
 					if ((ik == null) || (kj == null)) {
 						continue;
 					}
@@ -516,24 +518,23 @@ public class STN {
 						continue;
 					}
 
-					ij = g1.findEdge(iV, jV);
+					ij = graph.findEdge(iV, jV);
 					int old = Constants.INT_POS_INFINITE;
 					if (ij == null) {
-						ij = edgeFactory.get("e" + node[i].getName() + node[j].getName());
+						ij = edgeFactory.get(node[i].getName() + "__"+ node[j].getName());
 						ij.setConstraintType(Edge.ConstraintType.derived);
-						g1.addEdge(ij, iV, jV);
+						graph.addEdge(ij, iV, jV);
 					} else {
 						old = ij.getValue();
 					}
 					if (old > v) {
 						ij.setValue(v);
-					}
-					if (old != v) {
 						if (checkStatus1 != null) {
 							checkStatus1.propagationCalls++;
 						}
 						if (Debug.ON) {
-							STN.LOG.fine("Edge " + ij.getName() + ": " + Constants.formatInt(old) + " --> " + Constants.formatInt(v));
+							STN.LOG.fine("Edge " + ij.getName() + ": " + Constants.formatInt(old) + " --> " + Constants.formatInt(v)
+							+ "\n\t\t"+ik+" + " +kj);
 						}
 					}
 				}
@@ -580,11 +581,17 @@ public class STN {
 		}
 		reweight(g1);
 
+		if (Debug.ON) {
+			LOG.finer("Re-weighted graph: " + g1);
+		}
+		
 		TNGraph<STNEdge> finalG = new TNGraph<>(g1, g1.getEdgeImplClass());
 
 		// Determine the distances from each node updating the edge in the finalG
 		for (LabeledNode source : g1.getVertices()) {
-
+			if (Debug.ON) {
+				LOG.finer("\nDetermining the distances considering node "+ source.getName() +" as source node using Dijkstra.");
+			}
 			// Dijkstra determines distances from source
 			Object2IntMap<LabeledNode> nodeDistanceFromSource = dijkstraReadOnly(g1, source, checkStatus1);
 			// for each other node, adjust the distance from source in finalG
@@ -603,7 +610,8 @@ public class STN {
 				int newEdgeValue = Constants.sumWithOverflowCheck(nodeDistanceFromSource.getInt(d),
 						Constants.sumWithOverflowCheck(d.getPotential(), -source.getPotential()));
 				if (Debug.ON) {
-					LOG.finer("Adjusting value of edge " + finalE + " in final graph --> " + newEdgeValue);
+					LOG.finer("Adjusting value of edge " + finalE + " in final graph " + newEdgeValue
+							+".\tDetails: -source potential (" + (-source.getPotential()+") + distance of destination ("+ nodeDistanceFromSource.getInt(d) +") + destination potential ("+d.getPotential()+")"));
 				}
 				finalE.setValue(newEdgeValue);
 			}
@@ -637,27 +645,26 @@ public class STN {
 	 * Re-weights all edge weights using potentials of nodes. If any node potential is undefined or infinite, it returns false.
 	 * This method is usually called after Bellman-Ford algorithm execution in order to make all edge values positive.
 	 * 
-	 * @param g1 input graph
+	 * @param graph input graph
 	 * @throws IllegalStateException it is not possible to reweighting because potential value are not corrects.
 	 */
-	static void reweight(TNGraph<STNEdge> g1) {
-		final Collection<STNEdge> edges = g1.getEdges();
+	static void reweight(TNGraph<STNEdge> graph) {
+		final Collection<STNEdge> edges = graph.getEdges();
 		LabeledNode s, d;
 		int sV, dV, eV, newV;
 		for (STNEdge e : edges) {
-			s = g1.getSource(e);
-			d = g1.getDest(e);
+			s = graph.getSource(e);
+			d = graph.getDest(e);
 			sV = s.getPotential();
 			dV = d.getPotential();
 			eV = e.getValue();
 			if (sV == Constants.INT_NULL || dV == Constants.INT_NULL || sV == Constants.INT_POS_INFINITE || dV == Constants.INT_POS_INFINITE) {
-				throw new IllegalStateException("At least one of the following nodes contains an illegal value: " + s + " or " + d);
+				throw new IllegalStateException("At least one of the following nodes contains an no valid value: " + s + " or " + d);
 			}
 			// new value is the value - the potential difference between destination and source: e - (d - s) = e + s -d
 			newV = Constants.sumWithOverflowCheck(eV, Constants.sumWithOverflowCheck(sV, -dV));
 			String log = "Re-weighting " + e.getName() + ": Source potential: " + Constants.formatInt(sV) + ", Dest potential: "
-					+ Constants.formatInt(dV) + ". Edge value: " + Constants.formatInt(eV) + ". New value: " + Constants.formatInt(newV);
-
+					+ Constants.formatInt(dV) + ". Edge value: " + Constants.formatInt(eV) + ". New value (source+edge-dest): " + Constants.formatInt(newV);
 			if (newV < 0) {
 				throw new IllegalStateException("Error in re-weighting. " + log);
 			}
@@ -730,25 +737,25 @@ public class STN {
 	/**
 	 * Make each node reachable by source.
 	 * 
-	 * @param g1
+	 * @param graph
 	 * @param source
 	 * @param horizon
 	 */
-	private static void makeNodesReachableBy(TNGraph<STNEdge> g1, LabeledNode source, int horizon) {
+	private static void makeNodesReachableBy(TNGraph<STNEdge> graph, LabeledNode source, int horizon) {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.log(Level.FINE, "Making all nodes reachable from " + source.getName());
 			}
 		}
-		EdgeSupplier<STNEdge> edgeFact = g1.getEdgeFactory();
-		for (final LabeledNode node : g1.getVertices()) {
-			// 3. Checks that each node different from Z has an edge to Z
+		EdgeSupplier<STNEdge> edgeFact = graph.getEdgeFactory();
+		for (final LabeledNode node : graph.getVertices()) {
+			// 3. Checks that each no-source node has an edge from source
 			if (node == source)
 				continue;
-			STNEdge edge = g1.findEdge(source, node);
+			STNEdge edge = graph.findEdge(source, node);
 			if (edge == null) {
 				edge = edgeFact.get(source.getName() + "__" + node.getName());
-				g1.addEdge(edge, source, node);
+				graph.addEdge(edge, source, node);
 				edge.setConstraintType(ConstraintType.internal);
 				edge.setValue(horizon);
 				if (Debug.ON) {
@@ -821,16 +828,6 @@ public class STN {
 	boolean versionReq = false;
 
 	/**
-	 * Z node of the graph.
-	 * Utility reference for many method. #initAndCheck sets this value.
-	 */
-	LabeledNode Z = null;
-
-	/**
-	 * <p>
-	 * Constructor for STN.
-	 * </p>
-	 *
 	 * @param graph TNGraph to check
 	 */
 	public STN(TNGraph<STNEdge> graph) {
@@ -897,9 +894,6 @@ public class STN {
 			initAndCheck();
 		} catch (final IllegalArgumentException e) {
 			throw new IllegalArgumentException("The STN graph has a problem and it cannot be initialize: " + e.getMessage());
-		}
-		if (!this.checkStatus.initialized) {
-			throw new IllegalStateException("The STN has not been initialized! Please, consider dynamicConsistencyCheck() method!");
 		}
 		Instant startInstant = Instant.now();
 
@@ -1134,10 +1128,10 @@ public class STN {
 			} catch (WellDefinitionException e) {
 				e.printStackTrace();
 			}
-			makeNodesReachableBy(this.g, this.Z, this.horizon);
+			makeNodesReachableBy(this.g, this.g.getZ(), this.horizon);
 		}
 
-		TNGraph<STNEdge> g1 = getSTNPredecessorSubGraph(this.Z);
+		TNGraph<STNEdge> g1 = getSTNPredecessorSubGraph(this.g.getZ());
 
 		// such nodes are different object w.r.t. the nodes of this object.
 		LabeledNode[] nodes = reversePostOrderVisit(g1, g1.getZ());
@@ -1413,7 +1407,6 @@ public class STN {
 			throw new IllegalArgumentException("Input graph is null!");
 		reset();
 		this.g = graph;
-		this.Z = graph.getZ();// Don't remove this assignment!
 	}
 
 	/**
@@ -1461,9 +1454,8 @@ public class STN {
 		} else {
 			orderedNodes = this.g.getVerticesArray();// already ordered but Z can be in the last positions
 			int i = n;
-			this.Z = this.g.getZ();
 			for (i = n; --i >= 0;) {
-				if (orderedNodes[i] == this.Z) {
+				if (orderedNodes[i] == this.g.getZ()) {
 					break;
 				}
 			}
@@ -1471,7 +1463,7 @@ public class STN {
 				for (int j = i; --j >= 0;) {
 					orderedNodes[j + 1] = orderedNodes[j];
 				}
-				orderedNodes[0] = this.Z;
+				orderedNodes[0] = this.g.getZ();
 			}
 		}
 		Object2IntMap<LabeledNode> nodeRdnIndex = new Object2IntLinkedOpenHashMap<>();
@@ -1482,7 +1474,7 @@ public class STN {
 			nodeRdnIndex.put(orderedNodes[i], i);
 			orderedNodes[i].setPotential(Constants.INT_POS_INFINITE);
 		}
-		this.Z.setPotential(0);
+		this.g.getZ().setPotential(0);
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -1491,7 +1483,7 @@ public class STN {
 		}
 
 		NodesToCheck nodesToCheck = new NodesToCheck();
-		nodesToCheck.add(this.Z);
+		nodesToCheck.add(this.g.getZ());
 		NodesToCheck nodesModified = new NodesToCheck();
 		LabeledNode s, d;
 		int sIndex, dIndex, dOldValue, value;
@@ -1602,31 +1594,29 @@ public class STN {
 		}
 		this.g.clearCache();
 		this.gCheckedCleaned = null;
-		this.Z = this.g.getZ();
 
 		// Checks the presence of Z node!
-		// this.Z = this.g.getZ(); already done in setG()
-		if (this.Z == null) {
-			this.Z = this.g.getNode(STN.ZERO_NODE_NAME);
-			if (this.Z == null) {
+		if (this.g.getZ() == null) {
+			LabeledNode Z = this.g.getNode(STN.ZERO_NODE_NAME);
+			if (Z == null) {
 				// We add by authority!
-				this.Z = this.g.getNodeFactory().get(STN.ZERO_NODE_NAME);
-				this.Z.setX(10);
-				this.Z.setY(10);
-				this.g.addVertex(this.Z);
+				Z = this.g.getNodeFactory().get(STN.ZERO_NODE_NAME);
+				Z.setX(10);
+				Z.setY(10);
+				this.g.addVertex(Z);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
 						LOG.log(Level.WARNING, "No " + STN.ZERO_NODE_NAME + " node found: added!");
 				}
 			}
-			this.g.setZ(this.Z);
+			this.g.setZ(Z);
 		} else {
-			if (!this.Z.getLabel().isEmpty()) {
+			if (!this.g.getZ().getLabel().isEmpty()) {
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
 						LOG.log(Level.WARNING, "In the graph, Z node has not empty label. Label removed!");
 				}
-				this.Z.setLabel(Label.emptyLabel);
+				this.g.getZ().setLabel(Label.emptyLabel);
 			}
 		}
 
@@ -1680,13 +1670,13 @@ public class STN {
 		final Collection<LabeledNode> nodeSet = this.g.getVertices();
 		for (final LabeledNode node : nodeSet) {
 			// 3. Checks that each node different from Z has an edge to Z
-			if (node == this.Z)
+			if (node == this.g.getZ())
 				continue;
 			boolean added = false;
-			STNEdge edge = this.g.findEdge(node, this.Z);
+			STNEdge edge = this.g.findEdge(node, this.g.getZ());
 			if (edge == null) {
-				edge = makeNewEdge(node.getName() + "_" + this.Z.getName(), ConstraintType.internal);
-				this.g.addEdge(edge, node, this.Z);
+				edge = makeNewEdge(node.getName() + "_" + this.g.getZ().getName(), ConstraintType.internal);
+				this.g.addEdge(edge, node, this.g.getZ());
 				edge.setValue(0);
 				added = true;
 			}
@@ -1698,7 +1688,7 @@ public class STN {
 				if (added) {
 					if (LOG.isLoggable(Level.FINE)) {
 						LOG.log(Level.FINE,
-								"Added " + edge.getName() + ": " + node.getName() + "--(0)-->" + this.Z.getName());
+								"Added " + edge.getName() + ": " + node.getName() + "--(0)-->" + this.g.getZ().getName());
 					}
 				}
 			}
@@ -1788,7 +1778,6 @@ public class STN {
 	 */
 	void reset() {
 		this.g = null;
-		this.Z = null;
 		this.maxWeight = 0;
 		this.horizon = 0;
 		this.checkStatus.reset();
