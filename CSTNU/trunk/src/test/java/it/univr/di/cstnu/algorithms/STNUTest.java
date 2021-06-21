@@ -52,8 +52,8 @@ public class STNUTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.readerSTNU = new TNGraphMLReader<>(new File(this.fileName), STNUEdgeInt.class);
-		this.stnuGraph = this.readerSTNU.readGraph();
+		this.readerSTNU = new TNGraphMLReader<>();
+		this.stnuGraph = this.readerSTNU.readGraph(new File(this.fileName), STNUEdgeInt.class);
 		this.X = this.stnuGraph.getNode("X");
 		this.Ω = this.stnuGraph.getNode("Ω");
 		this.Y = this.stnuGraph.getNode("Y");

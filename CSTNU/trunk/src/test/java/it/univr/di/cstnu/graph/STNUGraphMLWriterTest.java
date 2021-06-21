@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
@@ -16,13 +17,15 @@ public class STNUGraphMLWriterTest {
 
 	String fileName = "src/test/resources/testGraphML.stnu";
 
-	@Test
-	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws IOException {
-		TNGraph<STNUEdge> g = new TNGraph<>(STNUEdgeInt.class);
-		LabeledNode Z = g.getNodeFactory().get("Z");
-		LabeledNode Ω = g.getNodeFactory().get("Ω");
-		LabeledNode X = g.getNodeFactory().get("X");
-		LabeledNode Y = g.getNodeFactory().get("Y");
+	TNGraph<STNUEdge> g;
+	
+	@Before
+	public void setUp() throws Exception {
+		this.g = new TNGraph<>(STNUEdgeInt.class);
+		LabeledNode Z = this.g.getNodeFactory().get("Z");
+		LabeledNode Ω = this.g.getNodeFactory().get("Ω");
+		LabeledNode X = this.g.getNodeFactory().get("X");
+		LabeledNode Y = this.g.getNodeFactory().get("Y");
 		STNUEdge xy = new STNUEdgeInt("XY");
 		xy.setLabeledValue(new ALetter("Y"), 2, false);
 		xy.setConstraintType(ConstraintType.contingent);
@@ -30,15 +33,18 @@ public class STNUGraphMLWriterTest {
 		yx.setLabeledValue(new ALetter("Y"), -5, true);
 		yx.setConstraintType(ConstraintType.contingent);
 
-		g.addVertex(Z);
-		g.addVertex(Ω);
-		g.addVertex(X);
-		g.addVertex(Y);
-		g.addEdge(xy, X, Y);
-		g.addEdge(yx, Y, X);
+		this.g.addVertex(Z);
+		this.g.addVertex(Ω);
+		this.g.addVertex(X);
+		this.g.addVertex(Y);
+		this.g.addEdge(xy, X, Y);
+		this.g.addEdge(yx, Y, X);
+	}
 
+	@Test
+	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws IOException {
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
-		graphWriter.save(g, new File(this.fileName));
+		graphWriter.save(this.g, new File(this.fileName));
 		try (FileReader input = new FileReader(this.fileName)) {
 			char[] fileAsChar = new char[4200];
 			input.read(fileAsChar);
@@ -48,6 +54,14 @@ public class STNUGraphMLWriterTest {
 		}
 	}
 
+	@Test
+	public void testGraphMLStringWriter() {
+		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
+		String graphXML = graphWriter.save(this.g).trim();
+		assertEquals(this.fileOk, graphXML);
+	}
+
+	
 	String fileOk = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 			"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns/graphml\"\n" +
 			"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"  \n" +

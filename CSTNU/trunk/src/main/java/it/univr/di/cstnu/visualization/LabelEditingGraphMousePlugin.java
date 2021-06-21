@@ -766,7 +766,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	 * @param g graph
 	 * @return true if one attribute at least has been modified
 	 */
-	@SuppressWarnings({ "unchecked", "static-method", "null" })
+	@SuppressWarnings({  "static-method", "null" })
 	private boolean nodeAttributesEditor(final LabeledNode node, final String viewerName, final TNGraph<? extends Edge> g) {
 
 		// Planning a possible extension, a node could contains more labels with associated integers.

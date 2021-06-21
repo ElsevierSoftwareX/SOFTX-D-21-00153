@@ -942,7 +942,13 @@ public class STNURandomGenerator {
 			stnu.reset();
 			stnu.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_STNU_EDGE_CLASS));
 			if (LOG.isLoggable(Level.FINER)) {
-				cstnWriter.save(stnu.getG(), this.tmpNetwork);
+				try {
+					cstnWriter.save(stnu.getG(), this.tmpNetwork);
+				} catch (IOException e) {
+					System.err.println(
+							"It is not possible to save the result. File "+this.tmpNetwork +" cannot be created: " + e.getMessage()+". Computation continues.");
+				}
+				
 				LOG.finer("Current cstn saved as 'current.stnu' before checking.");
 			}
 			try {

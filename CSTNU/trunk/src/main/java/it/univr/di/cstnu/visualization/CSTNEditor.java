@@ -1133,11 +1133,20 @@ public class CSTNEditor extends JFrame implements Cloneable {
 		public void actionPerformed(final ActionEvent e) {
 			final JFileChooser chooser = new JFileChooser(CSTNEditor.default_dir);
 			// CSTNEditor.LOG.finest("Path wanted:" + path);
-			final int option = chooser.showSaveDialog(CSTNEditor.this);
-			if (option == JFileChooser.APPROVE_OPTION) {
-				final File file = chooser.getSelectedFile();
-				CSTNEditor.default_dir = file.getParent();
-				CSTNEditor.this.saveGraphToFile(CSTNEditor.this.inputGraph, file);
+			boolean saved= false;
+			while (!saved) {
+				final int option = chooser.showSaveDialog(CSTNEditor.this);
+				if (option == JFileChooser.APPROVE_OPTION) {
+					final File file = chooser.getSelectedFile();
+					CSTNEditor.default_dir = file.getParent();
+					try {
+						CSTNEditor.this.saveGraphToFile(CSTNEditor.this.inputGraph, file);
+						saved = true;
+					} catch (IOException e1) {
+						JOptionPane.showMessageDialog(CSTNEditor.this.vvViewer, "The selected file cannot be used for saving the graph");
+						saved = false;
+					}
+				}
 			}
 		}
 
@@ -2243,36 +2252,30 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	@SuppressWarnings({ "unchecked", "null" })
+	@SuppressWarnings({ "rawtypes", "unchecked"})
 	void loadGraphG(final File fileName) throws IOException, ParserConfigurationException, SAXException {
-		@SuppressWarnings("rawtypes")
-		TNGraphMLReader graphReader = null;
+		
 		String name = fileName.getName();
 		if (name.endsWith(".stn")) {
 			setDefaultParametersForNetwork(NetworkType.STN);
-			graphReader = new TNGraphMLReader<STNEdge>(fileName, (Class<? extends STNEdge>) this.currentEdgeImpl);
 		} else {
 			if (name.endsWith(".stnu")) {
 				setDefaultParametersForNetwork(NetworkType.STNU);
-				graphReader = new TNGraphMLReader<STNEdge>(fileName, (Class<? extends STNUEdge>) this.currentEdgeImpl);
 			} else {
 				if (name.endsWith(".cstn")) {
 					setDefaultParametersForNetwork(NetworkType.CSTN);
-					graphReader = new TNGraphMLReader<CSTNEdge>(fileName, (Class<? extends CSTNEdge>) this.currentEdgeImpl);
 				} else {
 					if (name.endsWith(".cstnu")) {
 						setDefaultParametersForNetwork(NetworkType.CSTNU);
-						graphReader = new TNGraphMLReader<CSTNUEdge>(fileName, (Class<? extends CSTNUEdge>) this.currentEdgeImpl);
 					} else {
 						if (name.endsWith(".stnpsu") || name.endsWith(".cstnpsu")) {
 							setDefaultParametersForNetwork(NetworkType.CSTNPSU);
-							graphReader = new TNGraphMLReader<CSTNPSUEdge>(fileName, (Class<? extends CSTNPSUEdge>) this.currentEdgeImpl);
 						}
 					}
 				}
 			}
 		}
-		CSTNEditor.this.inputGraph.takeIn(graphReader.readGraph());
+		CSTNEditor.this.inputGraph.takeIn((new TNGraphMLReader()).readGraph(fileName, this.currentEdgeImpl));
 		CSTNEditor.this.inputGraph.setInputFile(fileName);
 		CSTNEditor.this.mapInfoLabel.setText(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
 		// LOG.severe(CSTNEditor.this.inputGraph.getEdgeFactory().toString());
@@ -2339,8 +2342,9 @@ public class CSTNEditor extends JFrame implements Cloneable {
 	/**
 	 * @param graphToSave graph to save
 	 * @param file
+	 * @throws IOException  if file cannot be used for saving the graph.
 	 */
-	void saveGraphToFile(final TNGraph<? extends Edge> graphToSave, final File file) {
+	void saveGraphToFile(final TNGraph<? extends Edge> graphToSave, final File file) throws IOException {
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(this.layoutEditor);
 		graphToSave.setName(file.getName());
 		graphWriter.save(graphToSave, file);

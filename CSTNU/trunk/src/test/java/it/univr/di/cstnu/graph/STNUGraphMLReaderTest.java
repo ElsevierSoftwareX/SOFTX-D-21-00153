@@ -46,8 +46,14 @@ public class STNUGraphMLReaderTest {
 	 */
 	@Test
 	public void testSTNU() throws IOException, ParserConfigurationException, SAXException {
-		this.readerSTNU = new TNGraphMLReader<>(fileSTNU, STNUEdgeInt.class);
-		this.stnu = this.readerSTNU.readGraph();
+		this.readerSTNU = new TNGraphMLReader<>();
+		this.stnu = this.readerSTNU.readGraph(fileSTNU, STNUEdgeInt.class);
+		Assert.assertEquals(-5, this.stnu.getEdge("YX").getLabeledValue());
+		Assert.assertEquals(2, this.stnu.getEdge("XY").getLabeledValue());
+		TNGraphMLWriter writer = new TNGraphMLWriter(null);
+		String graphXML = writer.save(this.stnu);
+		this.readerSTNU = new TNGraphMLReader<>();
+		this.stnu = this.readerSTNU.readGraph(graphXML, STNUEdgeInt.class);
 		Assert.assertEquals(-5, this.stnu.getEdge("YX").getLabeledValue());
 		Assert.assertEquals(2, this.stnu.getEdge("XY").getLabeledValue());
 	}
@@ -59,8 +65,8 @@ public class STNUGraphMLReaderTest {
 	 */
 	@Test
 	public void testSTNU1() throws IOException, ParserConfigurationException, SAXException {
-		this.readerSTNU = new TNGraphMLReader<>(fileSTNU, STNUEdgeInt.class);
-		this.stnu = this.readerSTNU.readGraph();
+		this.readerSTNU = new TNGraphMLReader<>();
+		this.stnu = this.readerSTNU.readGraph(fileSTNU, STNUEdgeInt.class);
 		Assert.assertEquals(2, this.stnu.getEdgeCount());
 	}
 
@@ -71,8 +77,8 @@ public class STNUGraphMLReaderTest {
 	 */
 	@Test
 	public void testSTNU33() throws IOException, ParserConfigurationException, SAXException {
-		this.readerSTNU = new TNGraphMLReader<>(fileSTNU, STNUEdgeInt.class);
-		this.stnu = this.readerSTNU.readGraph();
+		this.readerSTNU = new TNGraphMLReader<>();
+		this.stnu = this.readerSTNU.readGraph(fileSTNU, STNUEdgeInt.class);
 		Assert.assertEquals(Constants.INT_NULL, this.stnu.getEdge("YX").getValue());
 		Assert.assertEquals(Constants.INT_NULL, this.stnu.getEdge("XY").getValue());
 	}

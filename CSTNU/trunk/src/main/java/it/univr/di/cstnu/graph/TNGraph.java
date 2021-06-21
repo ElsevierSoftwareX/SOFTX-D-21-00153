@@ -256,12 +256,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private LabeledNode Z;
 
 	/**
-	 * <p>
-	 * Constructor for TNGraph.
-	 * </p>
+	 * Creates a new object using inputEdgeImplClass class for representing the edges of the graph.
 	 *
 	 * @param inputEdgeImplClass a {@link java.lang.Class} object.
-	 * @param <E1> a E1 object.
+	 * @param <E1> For considering any class implementing the parameter type E
 	 */
 	public <E1 extends E> TNGraph(Class<E1> inputEdgeImplClass) {// , Class<M1> inputLabeledValueMapImplClass
 		super(EdgeType.DIRECTED);
@@ -291,13 +289,11 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * <p>
-	 * Constructor for TNGraph.
-	 * </p>
+	 * Creates a new object using inputEdgeImplClass class for representing the edges of the graph.
 	 *
 	 * @param edgeImplClass a {@link java.lang.Class} object.
 	 * @param alphabet Alphabet to use for naming Upper Case label
-	 * @param <E1> a E1 object.
+	 * @param <E1> For considering any class implementing the parameter type E
 	 */
 	public <E1 extends E> TNGraph(Class<E1> edgeImplClass, ALabelAlphabet alphabet) {
 		this(edgeImplClass);
@@ -311,7 +307,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 *
 	 * @param g the graph to be cloned
 	 * @param edgeImplClass class
-	 * @param <E1> a E1 object.
+	 * @param <E1> For considering any class implementing the parameter type E
 	 */
 	public <E1 extends E> TNGraph(final TNGraph<E> g, Class<E1> edgeImplClass) {
 		this(edgeImplClass);
@@ -1487,10 +1483,6 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * <p>
-	 * Setter for the field <code>inputFile</code>.
-	 * </p>
-	 *
 	 * @param file a {@link java.io.File} object.
 	 */
 	public void setInputFile(File file) {
@@ -1507,13 +1499,13 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * <p>
-	 * setZ.
-	 * </p>
-	 *
 	 * @param z the node to be set as Z node of the graph.
 	 */
 	public void setZ(final LabeledNode z) {
+		if (z==null) {
+			this.Z = null;
+			return;
+		}
 		if (getNode(z.getName()) == null)
 			addVertex(z);
 		this.Z = z;

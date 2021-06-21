@@ -301,7 +301,7 @@ public class CSTNirTest extends CSTNTest {
 		this.g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 
-		this.cstn.Z = this.Z;
+		this.g.setZ(this.Z);
 		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		assertEquals("R3: yx labeled values.", AbstractLabeledIntMap.parse("{(abc¬p, -11) (ab¿c, -11) (ab¿p, -15) (ab, -10) }"), xz.getLabeledValueMap());

@@ -561,7 +561,7 @@ public class CSTNirwoNodeLabelTest extends CSTNTest {
 		this.g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 		this.cstn.setG(this.g);
-		this.cstn.Z = this.Z;
+		this.g.setZ(this.Z);
 		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		assertEquals("R3: yx labeled values.", AbstractLabeledIntMap.parse("{(-11, abc¬p) (-11, ab¿c) (-15, ab¿p) (-10, ab) }"), xz.getLabeledValueMap());

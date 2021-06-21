@@ -64,8 +64,6 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	}
 
 	/**
-	 * <p>Constructor for CSTN2CSTN0.</p>
-	 *
 	 * @param givenReactionTime a int.
 	 * @param graph a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 */

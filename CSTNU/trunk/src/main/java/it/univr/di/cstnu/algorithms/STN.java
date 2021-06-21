@@ -242,8 +242,8 @@ public class STN {
 				LOG.finer("Loading graph...");
 			}
 		}
-		TNGraphMLReader<STNEdge> graphMLReader = new TNGraphMLReader<>(stn.fInput, STNEdgeInt.class);
-		stn.setG(graphMLReader.readGraph());
+		TNGraphMLReader<STNEdge> graphMLReader = new TNGraphMLReader<>();
+		stn.setG(graphMLReader.readGraph(stn.fInput, STNEdgeInt.class));
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -1332,7 +1332,7 @@ public class STN {
 	}
 
 	/**
-	 * Stores the graph after a check to the file {@link #fOutput}.
+	 * Stores the graph after a check into the file {@link #fOutput}.
 	 *
 	 * @see #getGChecked()
 	 */
@@ -1370,7 +1370,15 @@ public class STN {
 
 		StaticLayout<STNEdge> layout = new StaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
-		graphWriter.save(g1, this.fOutput);
+
+		try {
+			graphWriter.save(g1, this.fOutput);
+		} catch (IOException e) {
+			System.err.println(
+					"It is not possible to save the result. File "+this.fOutput +" cannot be created: " + e.getMessage());
+			return;
+		}
+		
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 

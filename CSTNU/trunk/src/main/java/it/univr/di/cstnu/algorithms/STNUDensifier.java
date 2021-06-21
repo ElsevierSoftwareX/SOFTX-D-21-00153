@@ -5,7 +5,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -584,7 +583,12 @@ public class STNUDensifier {
 			}
 
 			if (LOG.isLoggable(Level.FINER)) {
-				cstnWriter.save(stnu.getG(), this.tmpNetwork);
+				try {
+					cstnWriter.save(stnu.getG(), this.tmpNetwork);
+				} catch (IOException e) {
+					System.err.println(
+							"It is not possible to save the result. File "+this.tmpNetwork +" cannot be created: " + e.getMessage()+"\n Computation  continues.");
+				}
 				LOG.finer("Current cstn saved as 'current.stnu' before checking.");
 			}
 
@@ -755,18 +759,10 @@ public class STNUDensifier {
 	private boolean worker(File file, RunMeter runState) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
-		TNGraphMLReader<STNUEdge> graphMLReader;
-		try {
-			graphMLReader = new TNGraphMLReader<>(file, (Class<STNUEdge>) this.currentEdgeImplClass);
-		} catch (FileNotFoundException e2) {
-			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
-			LOG.warning(msg);
-			System.out.println(msg);
-			return false;
-		}
+		TNGraphMLReader<STNUEdge> graphMLReader = new TNGraphMLReader<>();
 		TNGraph<STNUEdge> graphToAdjust = null;
 		try {
-			graphToAdjust = graphMLReader.readGraph();
+			graphToAdjust = graphMLReader.readGraph(file, (Class<STNUEdge>) this.currentEdgeImplClass);
 		} catch (IOException | ParserConfigurationException | SAXException e2) {
 			String msg = "File " + file.getName() + " cannot be parsed. Details: " + e2.getMessage() + ".\nIgnored.";
 			LOG.warning(msg);
@@ -786,11 +782,24 @@ public class STNUDensifier {
 			// save the two instances.
 			String fileName = getNewFileName(file.getName());
 			File outputFile = new File(fileName);
-			stnuWriter.save(pair.getFirst(), outputFile);
+
+			try {
+				stnuWriter.save(pair.getFirst(), outputFile);
+			} catch (IOException e) {
+				System.err.println(
+						"It is not possible to save the result. File "+outputFile +" cannot be created: " + e.getMessage()+". Computation continues.");
+			}
+			
 			if (pair.getSecond() != null) {
 				fileName = "NOT" + fileName;
 				outputFile = new File(fileName);
-				stnuWriter.save(pair.getSecond(), outputFile);
+				
+				try {
+					stnuWriter.save(pair.getSecond(), outputFile);
+				} catch (IOException e) {
+					System.err.println(
+							"It is not possible to save the result. File " + outputFile + " cannot be created: " + e.getMessage() + ". Computation continues.");
+				}
 				System.out.println("NOT DC instance " + fileName + " saved.");
 			}
 			runState.printProgress();

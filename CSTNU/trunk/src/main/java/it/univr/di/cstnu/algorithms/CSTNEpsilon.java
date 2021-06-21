@@ -60,7 +60,7 @@ public class CSTNEpsilon extends CSTN {
 
 	/**
 	 * Constructor for CSTN.
-	 *
+	 * @see CSTN#CSTN(TNGraph)
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check
 	 */
@@ -75,6 +75,7 @@ public class CSTNEpsilon extends CSTN {
 	/**
 	 * Constructor for CSTN.
 	 *
+	 * @see CSTN#CSTN(TNGraph, int)
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check
 	 * @param timeOut1 timeout for the check

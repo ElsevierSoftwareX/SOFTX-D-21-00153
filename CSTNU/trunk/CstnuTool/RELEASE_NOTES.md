@@ -1,6 +1,15 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v3.6
+	date: 2021-06-20
+	
+	Fixed a weird bug in CSTNPotential class: the dynamichCheck() method worked right but, at the end, the edges in the checked graph were wrongly saved in reversed way. 
+	Refactored classes GraphMLReader and GraphMLWriter for making them more general. Now, GraphMLReader can build a TNGraph from a string representing it in GraphML format 
+	and GraphMLWriter can serialize a TNGraph in GraphML format.
+	In CSTNU class, added the constructor CSTNU(String) for building an instance from a GraphML string.
+	In AbstractCSTN, added the method String getGCheckedAsGraphML().
+	 
 ## v3.5
 	date: 2021-06-14
 	
