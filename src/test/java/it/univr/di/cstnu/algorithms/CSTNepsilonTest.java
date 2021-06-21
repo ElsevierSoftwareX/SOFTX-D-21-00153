@@ -185,7 +185,6 @@ public class CSTNepsilonTest extends CSTNTest {
 		this.g.addEdge(xz, this.X, this.Z);
 		// System.out.println(g);
 
-		this.cstn.Z = this.Z;
 		this.cstn.labelModificationR3qR3(this.X, this.Z, xz);
 
 		CSTNEdge xyOK = this.g.getEdgeFactory().get("XY");

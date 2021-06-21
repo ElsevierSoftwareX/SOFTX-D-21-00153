@@ -677,7 +677,12 @@ public class CSTNRandomGenerator {
 			cstn.reset();
 			cstn.setG(new TNGraph<>(randomGraph, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
 			if (LOG.isLoggable(Level.FINER)) {
-				cstnWriter.save(cstn.getG(), new File(this.dcSubDir.getParent(), "current.cstn"));
+				try {
+					cstnWriter.save(cstn.getG(), new File(this.dcSubDir.getParent(), "current.cstn"));
+				} catch (IOException e) {
+					LOG.severe("It is not possible to create a temporany file in directory "+this.dcSubDir.getParent()+". Please, change the permissions and re-run the app.");
+					System.exit(1);
+				}
 				LOG.finer("Current cstn saved as 'current.cstn' before checking.");
 			}
 			status = new CSTNCheckStatus();

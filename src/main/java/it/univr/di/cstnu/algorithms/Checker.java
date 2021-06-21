@@ -5,7 +5,6 @@
 package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -1088,18 +1087,10 @@ public class Checker {
 			Object2ObjectMap<GlobalStatisticKey, SummaryStatistics> globalAddedEdgeStatisticsMap) {
 		// System.out.println("Analyzing file " + file.getName() + "...");
 		LOG.finer("Loading " + file.getName() + "...");
-		TNGraphMLReader<E1> graphMLReader;
-		try {
-			graphMLReader = new TNGraphMLReader<>(file, (Class<E1>) this.currentEdgeImplClass);
-		} catch (FileNotFoundException e2) {
-			String msg = "File " + file.getName() + " cannot be loaded. Details: " + e2.getMessage() + ".\nIgnored.";
-			LOG.warning(msg);
-			System.out.println(msg);
-			return false;
-		}
+		TNGraphMLReader<E1> graphMLReader = new TNGraphMLReader<>();
 		TNGraph<E1> graphToCheck = null;
 		try {
-			graphToCheck = graphMLReader.readGraph();
+			graphToCheck = graphMLReader.readGraph(file, (Class<E1>) this.currentEdgeImplClass);
 		} catch (IOException | ParserConfigurationException | SAXException e2) {
 			String msg = "File " + file.getName() + " cannot be parsed. Details: " + e2.getMessage() + ".\nIgnored.";
 			LOG.warning(msg);
@@ -1152,7 +1143,14 @@ public class Checker {
 			}
 			String suffix = "_cutted";
 			TNGraphMLWriter graphWrite = new TNGraphMLWriter(null);
-			graphWrite.save(graphToCheck, new File(file.getAbsolutePath() + suffix));
+
+			File outputfile = new File(file.getAbsolutePath() + suffix);
+			try {
+				graphWrite.save(graphToCheck, outputfile);
+			} catch (IOException e) {
+				System.err.println(
+						"It is not possible to save the result. File " + outputfile + " cannot be created: " + e.getMessage() + ". Computation continues.");
+			}
 		}
 
 		// In order to start with well-defined cstn, we preliminary make a check.

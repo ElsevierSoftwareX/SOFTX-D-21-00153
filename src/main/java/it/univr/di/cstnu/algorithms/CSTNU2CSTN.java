@@ -71,8 +71,8 @@ public class CSTNU2CSTN extends CSTNU {
 		LOG.finest("Parameters ok!");
 
 		LOG.finest("Loading tNGraph...");
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-		cstnu2cstn.setG(graphMLReader.readGraph());
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>();
+		cstnu2cstn.setG(graphMLReader.readGraph(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
 		LOG.finest("TNGraph loaded!");
 
 		LOG.finest("DC Checking...");
@@ -245,10 +245,11 @@ public class CSTNU2CSTN extends CSTNU {
 
 		// Clone all nodes
 		LabeledNode newV;
+		LabeledNode Z = this.g.getZ();
 		for (final LabeledNode v : this.g.getVertices()) {
 			newV = this.g.getNodeFactory().get(v);
 			cstnGraph.addVertex(newV);
-			if (v.equalsByName(this.Z)) {
+			if (v.equalsByName(Z)) {
 				cstnGraph.setZ(newV);
 				continue;
 			}

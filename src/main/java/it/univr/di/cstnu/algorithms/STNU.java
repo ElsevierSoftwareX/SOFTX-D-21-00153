@@ -206,8 +206,8 @@ public class STNU {
 				LOG.finer("Loading graph...");
 			}
 		}
-		TNGraphMLReader<STNUEdge> graphMLReader = new TNGraphMLReader<>(stnu.fInput, STNUEdgeInt.class);
-		stnu.setG(graphMLReader.readGraph());
+		TNGraphMLReader<STNUEdge> graphMLReader = new TNGraphMLReader<>();
+		stnu.setG(graphMLReader.readGraph(stnu.fInput, STNUEdgeInt.class));
 		float initalEdgeN = stnu.getG().getEdgeCount();
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -1018,7 +1018,13 @@ public class STNU {
 
 		StaticLayout<STNUEdge> layout = new StaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
-		graphWriter.save(g1, this.fOutput);
+		try {
+			graphWriter.save(g1, this.fOutput);
+		} catch (IOException e) {
+			System.err.println(
+					"It is not possible to save the result. File "+this.fOutput +" cannot be created: " + e.getMessage());
+			return;
+		}
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 

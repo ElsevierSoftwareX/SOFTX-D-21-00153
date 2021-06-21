@@ -170,9 +170,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Loading graph...");
 		}
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(cstnu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>();
 
-		cstnu.setG(graphMLReader.readGraph());
+		cstnu.setG(graphMLReader.readGraph(cstnu.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
 		cstnu.g.setInputFile(cstnu.fInput);
 
 		if (Debug.ON) {
@@ -285,6 +285,21 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		this.setG(graph);
 	}
 
+	/**
+	 * Helper constructor for CSTNU.<br> 
+	 * This constructor is useful for making easier the use of this class in environment like Node.js-Java
+	 *
+	 * @param graphXML the TNGraph to check in GraphML format
+	 * @throws IOException if any error occurs during the graphXML reading
+	 * @throws ParserConfigurationException if graphXML contains character that cannot be parsed
+	 * @throws SAXException if graphXML is not valid
+	 */
+	public CSTNU(String graphXML) throws IOException, ParserConfigurationException, SAXException {
+		this();
+		this.setG((new TNGraphMLReader<CSTNUEdge>()).readGraph(graphXML, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
+	}
+
+	
 	/**
 	 * Constructor for CSTNU
 	 *
@@ -791,6 +806,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			if (LOG.isLoggable(Level.INFO))
 				LOG.log(Level.INFO, "Number of edges to analyze: " + n);
 		}
+		LabeledNode Z = this.g.getZ();
 		for (CSTNUEdge AB : edgesToCheck) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -802,7 +818,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			// initAndCheck does not resolve completely a possible qStar. So, it is necessary to check here the edge before to consider the second edge.
 			// The check has to be done in case B==Z and it consists in applying R0, R3 and zLabeledLetterRemovalRule!
 			edgeCopy = this.g.getEdgeFactory().get(AB);
-			if (B == this.Z) {
+			if (B == Z) {
 				if (A.isObserver()) {
 					// R0 on the resulting new values
 					labelModificationqR0(A, AB);
@@ -823,7 +839,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			}
 
 			if (!AB.hasSameValues(edgeCopy)) {
-				newEdgesToCheck.add(AB, A, B, this.Z, this.g, this.propagationOnlyToZ);
+				newEdgesToCheck.add(AB, A, B, Z, this.g, this.propagationOnlyToZ);
 			}
 
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -876,7 +892,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					add = true;
 				}
 				if (add) {
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(AC, A, C, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (!this.checkStatus.consistency) {
@@ -939,7 +955,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					add = true;
 				}
 				if (add) {
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(CB, C, B, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (!this.checkStatus.consistency) {
@@ -1004,8 +1020,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			if (LOG.isLoggable(Level.INFO))
 				LOG.log(Level.INFO, "Number of edges to analyze: " + n);
 		}
+		LabeledNode Z = this.g.getZ();
 		for (CSTNUEdge BZ : edgesToCheck) {
-			if (this.g.getDest(BZ) != this.Z)
+			if (this.g.getDest(BZ) != Z)
 				continue;
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -1034,7 +1051,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			zLabeledLetterRemovalRule(B, BZ);
 
 			if (!BZ.hasSameValues(edgeCopy)) {
-				newEdgesToCheck.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+				newEdgesToCheck.add(BZ, B, Z, Z, this.g, this.propagationOnlyToZ);
 			}
 
 			if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1059,36 +1076,36 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				}
 				A = this.g.getSource(AB);
 
-				AZ = this.g.findEdge(A, this.Z);
+				AZ = this.g.findEdge(A, Z);
 				// I need to preserve the old edge to compare below
 				if (AZ != null) {
 					edgeCopy = this.g.getEdgeFactory().get(AZ);
 				} else {
-					AZ = makeNewEdge(A.getName() + "_" + this.Z.getName(), CSTNUEdge.ConstraintType.derived);
+					AZ = makeNewEdge(A.getName() + "_" + Z.getName(), CSTNUEdge.ConstraintType.derived);
 					edgeCopy = null;
 				}
 
-				labelPropagation(A, B, this.Z, AB, BZ, AZ);
+				labelPropagation(A, B, Z, AB, BZ, AZ);
 
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
 					return getCheckStatus();
 				}
 
 				if (!AB.getLowerCaseValue().isEmpty()) {
-					labeledCrossLowerCaseRule(A, B, this.Z, AB, BZ, AZ);
+					labeledCrossLowerCaseRule(A, B, Z, AB, BZ, AZ);
 				}
 
 				boolean add = false;
 				if (edgeCopy == null && !AZ.isEmpty()) {
 					// the new CB has to be added to the graph!
-					this.g.addEdge(AZ, A, this.Z);
+					this.g.addEdge(AZ, A, Z);
 					add = true;
 				} else if (edgeCopy != null && !edgeCopy.hasSameValues(AZ)) {
 					// CB was already present and it has been changed!
 					add = true;
 				}
 				if (add) {
-					newEdgesToCheck.add(AZ, A, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(AZ, A, Z, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (!this.checkStatus.consistency) {
@@ -1507,6 +1524,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		 * making an union of them and analyzing then.
 		 */
 		LabeledALabelIntTreeMap mapOfAllValues = ePZ.getAllUpperCaseAndLabeledValuesMaps();
+		LabeledNode Z = this.g.getZ();
 		for (final ALabel aleph : mapOfAllValues.keySet()) {
 			boolean alephNOTEmpty = !aleph.isEmpty();
 			for (Label alpha : mapOfAllValues.get(aleph).keySet()) {
@@ -1519,7 +1537,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					continue;
 				}
 
-				final Label alphaPrime = makeAlphaPrime(this.Z, nObs, p, alpha);
+				final Label alphaPrime = makeAlphaPrime(Z, nObs, p, alpha);
 				if (alphaPrime == null) {
 					continue;
 				}
@@ -1529,8 +1547,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
 						logMessage = "zqR0 simplifies a label of edge " + ePZ.getName()
-								+ ":\nsource: " + nObs.getName() + " ---" + upperCaseValueAsString(aleph, w, alpha) + "---> " + this.Z.getName()
-								+ "\nresult: " + nObs.getName() + " ---" + upperCaseValueAsString(aleph, w, alphaPrime) + "---> " + this.Z.getName();
+								+ ":\nsource: " + nObs.getName() + " ---" + upperCaseValueAsString(aleph, w, alpha) + "---> " + Z.getName()
+								+ "\nresult: " + nObs.getName() + " ---" + upperCaseValueAsString(aleph, w, alphaPrime) + "---> " + Z.getName();
 					}
 				}
 
@@ -1572,8 +1590,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			}
 		}
 		boolean ruleApplied = false;
-
-		ObjectList<CSTNUEdge> Obs2ZEdges = this.getEdgeFromObserversToNode(this.Z);
+		LabeledNode Z = this.g.getZ();
+		ObjectList<CSTNUEdge> Obs2ZEdges = this.getEdgeFromObserversToNode(Z);
 
 		LabeledALabelIntTreeMap allValueMapSZ = eSZ.getAllUpperCaseAndLabeledValuesMaps();
 		if (allValueMapSZ.isEmpty())
@@ -1605,7 +1623,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			for (final ALabel aleph1 : allValueMapObsZ.keySet()) {
 				for (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry<Label> entryObsZ : allValueMapObsZ.get(aleph1).entrySet()) {// entrySet read-only
 					final int w = entryObsZ.getIntValue();
-					if (mainConditionForSkippingInR3qR3(w, this.Z)) { // Table 1 ICAPS
+					if (mainConditionForSkippingInR3qR3(w, Z)) { // Table 1 ICAPS
 						continue;
 					}
 
@@ -1640,9 +1658,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 									if (LOG.isLoggable(Level.FINER)) {
 										LOG.log(Level.FINER, "zqR3* adds a labeled value to edge " + eSZ.getName() + ":\n"
 												+ "source: " + nObs.getName() + " ---" + upperCaseValueAsString(aleph1, w, gamma) + "---> "
-												+ this.Z.getName()
+												+ Z.getName()
 												+ " <---" + upperCaseValueAsString(aleph, v, SZLabel) + "--- " + nS.getName()
-												+ "\nresult: add " + this.Z.getName() + " <---" + upperCaseValueAsString(newUpperCaseLetter, max, newLabel)
+												+ "\nresult: add " + Z.getName() + " <---" + upperCaseValueAsString(newUpperCaseLetter, max, newLabel)
 												+ "--- "
 												+ nS.getName());
 									}
@@ -1700,7 +1718,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			final CSTNUEdge eXW) {
 
 		boolean ruleApplied = false;
-		boolean nWisNotZ = nW != this.Z;
+		LabeledNode Z = this.g.getZ();
+		boolean nWisNotZ = nW != Z;
 		final LabeledALabelIntTreeMap YWAllLabeledValueMap = eYW.getAllUpperCaseAndLabeledValuesMaps();
 		if (YWAllLabeledValueMap.size() == 0)
 			return false;
@@ -2100,7 +2119,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	// secondValueInE = e.getUpperCaseValue(Label.emptyLabel, secondContingentName);
 	//
 	// LabeledNode secondContingentNode = this.g.getNode(secondContingentName.toString());
-	// CSTNUEdge e1 = this.g.findEdge(secondContingentNode, this.Z);
+	// CSTNUEdge e1 = this.g.findEdge(secondContingentNode, Z);
 	//
 	// int secondValueInE1 = e1.getUpperCaseValue(Label.emptyLabel, secondContingentName);// it must be present!
 	// int firstValueInE1 = Constants.INT_NULL;
@@ -2172,7 +2191,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "zLR: start.");
 		}
-
+		LabeledNode Z = this.g.getZ();
 		for (final ALabel aleph : eYZ.getUpperCaseValueMap().keySet()) {
 			if (aleph.isEmpty())
 				continue;
@@ -2188,7 +2207,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					if (nY == nC) // Z is the activation time point!
 						continue;
 					LabeledNode nA = this.getActivationNode(nC);
-					if (nA == this.Z)
+					if (nA == Z)
 						continue;
 
 					if (nA == nY) {
@@ -2228,7 +2247,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 					// Label l = lowerCaseEntry.getLabel();IT SHOULD BE empty!
 					int x = lowerCaseEntry.getValue();
 
-					CSTNUEdge AZ = this.g.findEdge(nA, this.Z);
+					CSTNUEdge AZ = this.g.findEdge(nA, Z);
 
 					for (ALabel aleph1 : AZ.getAllUpperCaseAndLabeledValuesMaps().keySet()) {
 						if (aleph1.contains(nodeLetter))

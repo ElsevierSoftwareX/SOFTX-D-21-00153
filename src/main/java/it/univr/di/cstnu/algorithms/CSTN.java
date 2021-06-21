@@ -112,8 +112,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 				LOG.finer("Loading graph...");
 			}
 		}
-		TNGraphMLReader<CSTNEdge> graphMLReader = new TNGraphMLReader<>(cstn.fInput, EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS);
-		cstn.setG(graphMLReader.readGraph());
+		TNGraphMLReader<CSTNEdge> graphMLReader = new TNGraphMLReader<>();
+		cstn.setG(graphMLReader.readGraph(cstn.fInput, EdgeSupplier.DEFAULT_CSTN_EDGE_CLASS));
 
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
@@ -142,10 +142,10 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	}
 
 	/**
-	 * <p>
-	 * Constructor for CSTN.
-	 * </p>
-	 *
+	 * 
+	 * Initialize the CSTN using graph.<br>
+	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput}, the
+	 * name of output file is build using {@link #fInput}.
 	 * @param graph TNGraph to check
 	 */
 	public CSTN(TNGraph<CSTNEdge> graph) {
@@ -154,9 +154,9 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	}
 
 	/**
-	 * <p>
-	 * Constructor for CSTN.
-	 * </p>
+	 * Initialize the CSTN using graph.<br>
+	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput}, the
+	 * name of output file is build using {@link #fInput}.
 	 *
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check
@@ -179,7 +179,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		try {
 			initAndCheck();
 		} catch (final IllegalArgumentException e) {
-			throw new IllegalArgumentException("The CSTN graph has a problem and it cannot be initialize: " + e.getMessage());
+			throw new IllegalArgumentException("The CSTN graph has a problem: " + e.getMessage());
 		}
 		return dynamicConsistencyCheckWOInit();
 	}
@@ -210,6 +210,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		/**
 		 * March, 03 2016 I try to apply the rules on all edges making a by-row-visit to the adjacency matrix.
 		 */
+		LabeledNode Z = this.g.getZ();
 		for (LabeledNode A : this.g.getVertices()) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -220,7 +221,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 				B = this.g.getDest(AB);
 				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
-				if (B == this.Z || !this.propagationOnlyToZ) {
+				if (B == Z || !this.propagationOnlyToZ) {
 					// Since in some graphs it is possible that there is not BC, we apply R0 and R3 to AB
 					if (A.isObserver()) {
 						// R0 on the resulting new values
@@ -236,7 +237,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 					C = this.g.getDest(BC);
 					// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to possibly create -∞
 
-					if (!this.propagationOnlyToZ || C == this.Z) {
+					if (!this.propagationOnlyToZ || C == Z) {
 						if (B.isObserver()) {
 							// R0 on the resulting new values
 							labelModificationR0qR0(B, C, BC);
@@ -271,7 +272,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 						return this.checkStatus;
 					}
 
-					if (!this.propagationOnlyToZ || C == this.Z) {
+					if (!this.propagationOnlyToZ || C == Z) {
 						if (A.isObserver()) {
 							// R0 on the resulting new values
 							labelModificationR0qR0(A, C, AC);
@@ -503,7 +504,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		for (Label l : SDLabelSet) {
 			allLiteralsSD = allLiteralsSD.conjunctionExtended(l);
 		}
-
+		LabeledNode Z = this.g.getZ();
 		for (final CSTNEdge eObsD : Obs2nDEdges) {
 			final LabeledNode nObs = this.g.getSource(eObsD);
 			if (nObs == nS)
@@ -549,7 +550,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 						continue;
 					}
 
-					Label newLabel = (nD != this.Z) ? makeAlphaBetaGammaPrime4R3(nS, nD, nObs, p, ObsDLabel, SDLabel)
+					Label newLabel = (nD != Z) ? makeAlphaBetaGammaPrime4R3(nS, nD, nObs, p, ObsDLabel, SDLabel)
 							: makeBetaGammaDagger4qR3(nS, nObs, p, ObsDLabel, SDLabel);
 					if (newLabel == null) {
 						continue;
@@ -808,6 +809,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		EdgesToCheck<CSTNEdge> newEdgesToCheckR0R3 = new EdgesToCheck<>();
 		int i = 1, j = 1, n;
 		// Find a stable state using R0 e R3.
+		LabeledNode Z = this.g.getZ();
 		while (edgesToCheck.size() != 0) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -824,8 +826,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 				A = this.g.getSource(AB);
 				B = this.g.getDest(AB);
 				if (applyR0R3(AB, A, B)) {
-					newEdgesToCheckR0R3.add(AB, A, B, this.Z, this.g, this.propagationOnlyToZ);
-					newEdgesToCheck.add(AB, A, B, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheckR0R3.add(AB, A, B, Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(AB, A, B, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -885,7 +887,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 				if (edgeModified) {
 					applyR0R3(AC, A, C);
-					newEdgesToCheck.add(AC, A, C, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(AC, A, C, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (!this.checkStatus.consistency) {
@@ -929,7 +931,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 				if (edgeModified) {
 					applyR0R3(CB, C, B);
-					newEdgesToCheck.add(CB, C, B, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(CB, C, B, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (!this.checkStatus.consistency) {
@@ -984,6 +986,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		EdgesToCheck<CSTNEdge> newEdgesToCheck = new EdgesToCheck<>(edgesToCheck.edgesToCheck);
 		EdgesToCheck<CSTNEdge> newEdgesToCheckR0R3 = new EdgesToCheck<>();
 		int i = 1, j = 1, n;
+		LabeledNode Z = this.g.getZ();
 		// Find a stable state using R0 and R3.
 		while (edgesToCheck.size() != 0) {
 			if (Debug.ON) {
@@ -993,7 +996,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 			}
 			n = edgesToCheck.size();
 			for (CSTNEdge BZ : edgesToCheck) {
-				if (this.g.getDest(BZ) != this.Z)
+				if (this.g.getDest(BZ) != Z)
 					continue;
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
@@ -1007,14 +1010,14 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 				edgeCopy = this.g.getEdgeFactory().get(BZ);
 				if (B.isObserver()) {
 					// R0 on the resulting new values
-					labelModificationR0qR0(B, this.Z, BZ);
+					labelModificationR0qR0(B, Z, BZ);
 				}
 
-				labelModificationR3qR3(B, this.Z, BZ);
+				labelModificationR3qR3(B, Z, BZ);
 
 				if (!BZ.hasSameValues(edgeCopy)) {
-					newEdgesToCheckR0R3.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
-					newEdgesToCheck.add(BZ, B, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheckR0R3.add(BZ, B, Z, Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(BZ, B, Z, Z, this.g, this.propagationOnlyToZ);
 				}
 
 				if (checkTimeOutAndAdjustStatus(timeoutInstant, this.checkStatus)) {
@@ -1047,28 +1050,28 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 				A = this.g.getSource(AB);
 				// Attention! It is necessary to consider also self loop, e.g. A==B and B==C to propagate rightly -∞
 
-				AZ = this.g.findEdge(A, this.Z);
+				AZ = this.g.findEdge(A, Z);
 				// I need to preserve the old edge to compare below
 				if (AZ != null) {
 					edgeCopy = this.g.getEdgeFactory().get(AZ);
 				} else {
-					AZ = makeNewEdge(A.getName() + "_" + this.Z.getName(), CSTNEdge.ConstraintType.derived);
+					AZ = makeNewEdge(A.getName() + "_" + Z.getName(), CSTNEdge.ConstraintType.derived);
 					edgeCopy = null;
 				}
 
-				this.labelPropagation(A, B, this.Z, AB, BZ, AZ);
+				this.labelPropagation(A, B, Z, AB, BZ, AZ);
 
 				boolean edgeModified = false;
 				if (edgeCopy == null && !AZ.isEmpty()) {
 					// the new CB has to be added to the graph!
-					this.g.addEdge(AZ, A, this.Z);
+					this.g.addEdge(AZ, A, Z);
 				} else {
 					// CB was already present and it has been changed!
 					edgeModified = edgeCopy != null && !edgeCopy.hasSameValues(AZ);
 				}
 
 				if (edgeModified) {
-					newEdgesToCheck.add(AZ, A, this.Z, this.Z, this.g, this.propagationOnlyToZ);
+					newEdgesToCheck.add(AZ, A, Z, Z, this.g, this.propagationOnlyToZ);
 					// potentialR3(A, this.Z, AZ, null);
 				}
 

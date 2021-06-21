@@ -611,16 +611,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	boolean withNodeLabels = true;
 
 	/**
-	 * Z node of the graph.
-	 * Utility reference for many method. #initAndCheck sets this value.
-	 */
-	LabeledNode Z = null;
-
-	/**
-	 * <p>
-	 * Constructor for AbstractCSTN.
-	 * </p>
-	 *
+	 * Initialize the CSTN using graph.<br>
+	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput}, the
+	 * name of output file is build using {@link #fInput}.
+	 * 
 	 * @param graph TNGraph to check
 	 */
 	public AbstractCSTN(TNGraph<E> graph) {
@@ -629,10 +623,10 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * <p>
-	 * Constructor for AbstractCSTN.
-	 * </p>
-	 *
+	 * Initialize the CSTN using graph.<br>
+	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput}, the
+	 * name of output file is build using {@link #fInput}.
+
 	 * @param graph TNGraph to check
 	 * @param giveTimeOut timeout for the check
 	 */
@@ -652,7 +646,8 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * During the execution of this method, the given network is modified. <br>
 	 * If the check is successful, all constraints to node Z in the network are minimized; otherwise, the network contains a negative loop at least.
 	 * <br>
-	 * After a check, {@link #getGChecked()} returns the network determined by the check and {@link #getCheckStatus()} the result of the checking action with some
+	 * After a check, {@link #getGChecked()} returns the network determined by the check and {@link #getCheckStatus()} the result of the checking action with
+	 * some
 	 * statistics and the node having the negative loop if the network is NOT DC.<br>
 	 * In any case, before returning, this method call {@link #saveGraphToFile()} for saving the computed graph.
 	 * 
@@ -662,8 +657,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	abstract public CSTNCheckStatus dynamicConsistencyCheck() throws WellDefinitionException;
 
 	/**
-	 * Getter for the field <code>checkStatus</code>, the status of a checking algorithm. 
-	 * @return the status of a checking algorithm. At the end of the running, this contains the final status and some statistics. 
+	 * Getter for the field <code>checkStatus</code>, the status of a checking algorithm.
+	 * 
+	 * @return the status of a checking algorithm. At the end of the running, this contains the final status and some statistics.
 	 */
 	public CSTNCheckStatus getCheckStatus() {
 		// CSTNU override this
@@ -681,6 +677,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Getter for the field <code>g</code>, the input graph.
+	 * 
 	 * @return the input graph
 	 */
 	final public TNGraph<E> getG() {
@@ -689,9 +686,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 	/**
 	 * Getter for the resulting graph of a check.<br>
+	 * In order to obtain a resulting graph without redundant labels or labels having unknown literals, set output cleaned flag by
+	 * {@link #setOutputCleaned(boolean)} before calling this method.
 	 * 
-	 * In order to obtain a resulting graph without redundant labels or labels having unknown literals, set output cleaned flag by {@link #setOutputCleaned(boolean)} before calling this method.  
-	 *         
 	 * @return the resulting graph of a check. It is up to the called to be sure the the returned graph is the result of a check.
 	 *         It can be used also by subclasses with a proper cast.
 	 * @see #setOutputCleaned(boolean)
@@ -706,6 +703,21 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		return this.g;
 	}
+	
+	
+	/**
+	 * Helper method for having the graph obtained by {@link #getGChecked()} in GraphML format.
+	 * 
+	 * @return the resulting graph of a check in GraphML format. It is up to the called to be sure the the returned graph is the result of a check.
+	 *         It can be used also by subclasses with a proper cast.
+	 * @see #getGChecked()
+	 */
+	public String getGCheckedAsGraphML() {
+		TNGraph<E> g1 = this.getGChecked();
+		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new StaticLayout<>(g1));
+		return graphWriter.save(g1);
+	}
+
 
 	/**
 	 * Getter for the field <code>maxWeight</code>.
@@ -782,13 +794,16 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * Stores the resulting graph of a check into the file {@link #fOutput} (see {@link #setfOutput(File)}) with a proper suffix according to the status of the check:
+	 * Helper method for making easier the storing of the resulting graph during a check. <br>
+	 * If field {@link #fOutput} is not null (or if {@link #fInput} is not null), for any possible result of a {@link #dynamicConsistencyCheck()}, the resulting
+	 * graph is stored according to the following rules:
 	 * <ul>
-	 * <li> "_notFinishedCheck" if the check was interrupted
-	 * <li>  "_timeout_" if a timeout has occurred
-	 * <li> "_checked_DC" or "_checked_NOTDC" if the the check has finished corretly. DC/NOTDC stands for DynamicConsistent or DynamicControllable and NOTDC for Not DynamicConsistent or Not DynamicControllable.
-	 * </ul> 
-	 * If {@link #fOutput} is null, it tries to build a name from the input file name.
+	 * <li>"_notFinishedCheck" if the check was interrupted
+	 * <li>"_timeout_" if a timeout has occurred
+	 * <li>"_checked_DC" or "_checked_NOTDC" if the the check has finished corretly. DC/NOTDC stands for DynamicConsistent or DynamicControllable and NOTDC for
+	 * Not DynamicConsistent or Not DynamicControllable.
+	 * </ul>
+	 * If {@link #fOutput} is null, it tries to build a name from the {@link #fInput}. If also {@link #fInput} is null, ti does nothing.
 	 *
 	 * @see #getGChecked()
 	 */
@@ -826,7 +841,13 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 
 		StaticLayout<E> layout = new StaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
-		graphWriter.save(g1, this.fOutput);
+		try {
+			graphWriter.save(g1, this.fOutput);
+		} catch (IOException e) {
+			System.err.println(
+					"It is not possible to save the result. File " + this.fOutput + " cannot be created: " + e.getMessage() + ". Computation continues.");
+		}
+
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 
@@ -859,7 +880,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			throw new IllegalArgumentException("Input graph is null!");
 		reset();
 		this.g = graph;
-		this.Z = graph.getZ();// Don't remove this assignment!
 	}
 
 	/**
@@ -1166,31 +1186,31 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		this.g.clearCache();
 		this.gCheckedCleaned = null;
-		this.Z = this.g.getZ();
+
+		LabeledNode Z = this.g.getZ();
 
 		// Checks the presence of Z node!
-		// this.Z = this.g.getZ(); already done in setG()
-		if (this.Z == null) {
-			this.Z = this.g.getNode(AbstractCSTN.ZERO_NODE_NAME);
-			if (this.Z == null) {
+		if (Z == null) {
+			Z = this.g.getNode(AbstractCSTN.ZERO_NODE_NAME);
+			if (Z == null) {
 				// We add by authority!
-				this.Z = this.g.getNodeFactory().get(AbstractCSTN.ZERO_NODE_NAME);
-				this.Z.setX(10);
-				this.Z.setY(10);
-				this.g.addVertex(this.Z);
+				Z = this.g.getNodeFactory().get(AbstractCSTN.ZERO_NODE_NAME);
+				Z.setX(10);
+				Z.setY(10);
+				this.g.addVertex(Z);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
 						LOG.log(Level.WARNING, "No " + AbstractCSTN.ZERO_NODE_NAME + " node found: added!");
 				}
 			}
-			this.g.setZ(this.Z);
+			this.g.setZ(Z);
 		} else {
-			if (!this.Z.getLabel().isEmpty()) {
+			if (!Z.getLabel().isEmpty()) {
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.WARNING))
 						LOG.log(Level.WARNING, "In the graph, Z node has not empty label. Label removed!");
 				}
-				this.Z.setLabel(Label.emptyLabel);
+				Z.setLabel(Label.emptyLabel);
 			}
 		}
 
@@ -1315,12 +1335,12 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 				}
 			}
 			// 3. Checks that each node has an edge to Z and and edge from Z with bound = horizon.
-			if (node != this.Z) {
+			if (node != Z) {
 				// LOWER BOUND FROM Z
-				E edge = this.g.findEdge(node, this.Z);
+				E edge = this.g.findEdge(node, Z);
 				if (edge == null) {
-					edge = makeNewEdge(node.getName() + "_" + this.Z.getName(), ConstraintType.internal);
-					this.g.addEdge(edge, node, this.Z);
+					edge = makeNewEdge(node.getName() + "_" + Z.getName(), ConstraintType.internal);
+					this.g.addEdge(edge, node, Z);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING,
@@ -1344,7 +1364,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 					if (added) {
 						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER,
-									"Added " + edge.getName() + ": " + node.getName() + "--" + pairAsString(nodeLabel, 0) + "-->" + this.Z.getName());
+									"Added " + edge.getName() + ": " + node.getName() + "--" + pairAsString(nodeLabel, 0) + "-->" + Z.getName());
 						}
 					}
 				}
@@ -1359,7 +1379,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		}
 		for (LabeledNode obs : this.g.getObservers()) {
 			if (this.propagationOnlyToZ) {
-				labelModificationR0qR0(obs, this.Z, this.g.findEdge(obs, this.Z));
+				labelModificationR0qR0(obs, Z, this.g.findEdge(obs, Z));
 			} else {
 				for (E e : this.g.getOutEdges(obs)) {
 					labelModificationR0qR0(obs, this.g.getDest(e), e);
@@ -1384,7 +1404,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 * @return the set of edges P?-->nX, an empty set if nX is empty or there is no observer or there is no such edges.
 	 */
 	final ObjectList<E> getEdgeFromObserversToNode(final LabeledNode nX) {
-		if (nX == this.Z) {
+		if (nX == this.g.getZ()) {
 			return this.g.getObserver2ZEdges();
 		}
 		final ObjectList<E> fromObs = new ObjectArrayList<>();
@@ -1556,7 +1576,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		// Table 1 ICAPS paper for standard DC
 		// When nD==Z, it is possible to skip the rule even when w==0 because the value on the other edge, v, can be negative or 0 at most (it cannot be v>0
 		// because nD==Z). Then, the max == 0, and the resulting constraint is already represented by the fact that any nodes is after or at Z in any scenario.
-		return w > 0 || (w == 0 && nD == this.Z);
+		return w > 0 || (w == 0 && nD == this.g.getZ());
 	}
 
 	/**
@@ -1667,7 +1687,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		Label alphaPrime = labelFromObs.remove(observed);
 		if (this.withNodeLabels) {
 			alphaPrime = alphaPrime.remove(this.g.getChildrenOf(nObs));
-			if (nX == this.Z && alphaPrime.containsUnknown()) {
+			if (nX == this.g.getZ() && alphaPrime.containsUnknown()) {
 				alphaPrime = removeChildrenOfUnknown(alphaPrime);
 			}
 			if (!alphaPrime.subsumes(nX.getLabel().conjunction(nObs.getLabel()))) {
@@ -1814,7 +1834,6 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 */
 	void reset() {
 		this.g = null;
-		this.Z = null;
 		this.maxWeight = 0;
 		this.horizon = 0;
 		this.checkStatus.reset();
@@ -1828,14 +1847,15 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 */
 	void addUpperBounds() {
 		final Collection<LabeledNode> nodeSet = this.g.getVertices();
+		LabeledNode Z = this.g.getZ();
 		for (final LabeledNode node : nodeSet) {
 			// Checks that each node has an edge from Z with bound = horizon.
-			if (node != this.Z) {
+			if (node != Z) {
 				// UPPER BOUND FROM Z
-				E edge = this.g.findEdge(this.Z, node);
+				E edge = this.g.findEdge(Z, node);
 				if (edge == null) {
-					edge = makeNewEdge(this.Z.getName() + "_" + node.getName(), ConstraintType.internal);
-					this.g.addEdge(edge, this.Z, node);
+					edge = makeNewEdge(Z.getName() + "_" + node.getName(), ConstraintType.internal);
+					this.g.addEdge(edge, Z, node);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
 							LOG.log(Level.WARNING,
@@ -1848,7 +1868,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 					if (added) {
 						if (LOG.isLoggable(Level.FINER)) {
 							LOG.log(Level.FINER,
-									"Added " + edge.getName() + ": " + this.Z.getName() + "--" + pairAsString(node.getLabel(), this.horizon) + "-->"
+									"Added " + edge.getName() + ": " + Z.getName() + "--" + pairAsString(node.getLabel(), this.horizon) + "-->"
 											+ node.getName() + ". Results: " + edge);
 						}
 					}

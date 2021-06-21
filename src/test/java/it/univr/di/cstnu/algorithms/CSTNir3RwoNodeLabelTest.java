@@ -96,7 +96,6 @@ public class CSTNir3RwoNodeLabelTest extends CSTNTest {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		this.cstn.Z = this.X;
 		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 
 		CSTNEdge pxOK = this.g.getEdgeFactory().get("XY");

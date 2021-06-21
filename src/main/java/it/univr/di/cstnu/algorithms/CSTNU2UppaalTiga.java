@@ -823,7 +823,7 @@ public class CSTNU2UppaalTiga {
 	 * Default constructor not accessible
 	 */
 	private CSTNU2UppaalTiga() {
-		this.cstnuCheck = new CSTNU(null);
+		this.cstnuCheck = new CSTNU();
 	}
 
 	/**
@@ -852,8 +852,8 @@ public class CSTNU2UppaalTiga {
 	 * @throws IOException
 	 */
 	private boolean loadCSTNU(File fileName) throws IOException, ParserConfigurationException, SAXException {
-		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>(fileName, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-		this.cstnu = graphMLReader.readGraph();
+		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>();
+		this.cstnu = graphMLReader.readGraph(fileName, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 		return checkCSTNUSyntax();
 	}
 

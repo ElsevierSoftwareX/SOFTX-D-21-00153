@@ -14,6 +14,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
@@ -41,7 +42,7 @@ import it.univr.di.labeledvalue.LabeledIntMapSupplier;
 import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 
 /**
- * Allows the reading of a Temporal Network (TM) graph from a file in GraphML format.<br>
+ * Allows the reading of a Temporal Network (TM) graph from a file or a string in GraphML format.<br>
  * GraphML format allows the definition of different attributes for the graph, vertices and edges.<br>
  * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
  * under CstnuTool one.
@@ -59,7 +60,6 @@ public class TNGraphMLReader<E extends Edge> {
 	 * @param <E>
 	 */
 	static private class InternalEdgeFactory<E extends Edge> implements Supplier<E> {
-
 		/**
 		 * 
 		 */
@@ -125,81 +125,77 @@ public class TNGraphMLReader<E extends Edge> {
 	static final String prefix = "__";
 
 	/**
-	 * The result of the loading action.
+	 * A TNGraphMLReader object can be now used many times for reading different graphs.
 	 */
-	TNGraph<E> tnGraph;
+	public TNGraphMLReader() {
 
-	/**
-	 * ALabel alphabet for UC a-labels
-	 */
-	private ALabelAlphabet aLabelAlphabet;
-	/**
-	 * 
-	 */
-	private Supplier<E> edgeFactory;
-
-	/**
-	 * Class for representing internal labeled values.
-	 */
-	private Class<? extends E> edgeImpl;
-
-	/**
-	 * Input file reader
-	 */
-	private Reader fileReader;
-
-	/**
-	 * 
-	 */
-	private Supplier<LabeledNode> nodeFactory;
-
-	/**
-	 * Allows to read a Temporal Network (TM) from a file written in GraphML format.<br>
-	 * GraphML format allows the definition of different attributes for a TNGraph, vertices and edges.<br>
-	 * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
-	 * under CstnuTool one.
-	 *
-	 * @param graphFile a {@link java.io.File} object.
-	 * @param edgeImplClass a {@link java.lang.Class} object.
-	 * @throws java.io.FileNotFoundException if the graphFile is not found
-	 */
-	public TNGraphMLReader(final File graphFile, Class<? extends E> edgeImplClass) throws FileNotFoundException {
-		if (graphFile == null) {
-			throw new FileNotFoundException("The given file does not exist.");
-		}
-		try {
-			this.fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(graphFile), "UTF8"));
-		} catch (UnsupportedEncodingException | FileNotFoundException e) {
-			throw new FileNotFoundException("There is a problem to read the file containing the network. Details: " + e.getMessage());
-		}
-		this.aLabelAlphabet = new ALabelAlphabet();
-		this.edgeImpl = edgeImplClass;
-
-		this.edgeFactory = new InternalEdgeFactory<>(this.edgeImpl);
-		this.nodeFactory = new InternalVertexFactory();
-		this.tnGraph = new TNGraph<>(this.edgeImpl, this.aLabelAlphabet);
-		this.tnGraph.setInputFile(graphFile);
 	}
 
 	/**
-	 * <p>
-	 * readGraph.
-	 * </p>
-	 *
+	 * Reads graphXML and returns the corresponding graph as a TNGraph object. Edges of TNGraph are created using the edgeImplClass.
+	 * In this way, such a reader can create more kinds of TNGraph according to the given type of edge.
+	 * 
+	 * @param graphXML a string representing the graph in GraphML format.
+	 * @param edgeImplClass the type for the edges of the graph.
+	 * @return the graphML as TNGraph.
+	 * @throws IOException if any error occurs during the graphXML reading
+	 * @throws ParserConfigurationException if graphXML contains character that cannot be parsed
+	 * @throws SAXException if graphXML is not valid
+	 */
+	public TNGraph<E> readGraph(final String graphXML, Class<? extends E> edgeImplClass) throws IOException, ParserConfigurationException, SAXException {
+		if (graphXML == null || graphXML.isEmpty()) {
+			throw new IllegalArgumentException("The given input is null or empty.");
+		}
+		Reader fileReader = new StringReader(graphXML);
+		TNGraph<E> tnGraph = this.load(fileReader, edgeImplClass);
+		return tnGraph;
+	}
+
+	/**
+	 *  Reads graphFile and returns the corresponding graph as a TNGraph object. Edges of TNGraph are created using the edgeImplClass.
+	 * In this way, such a reader can create more kinds of TNGraph according to the given type of edge.
+
+	 * @param graphFile file containing the graph in GraphML format.
+	 * @param edgeImplClass the type for the edges of the graph.
+	 * @return the graphML as TNGraph.
+	 * @throws IOException if any error occurs during the graphFile reading.
+	 * @throws ParserConfigurationException if graphXML contains character that cannot be parsed
+	 * @throws SAXException if graphFile does not containt a valid GraphML instance.
+	 */
+	public TNGraph<E> readGraph(final File graphFile, Class<? extends E> edgeImplClass) throws IOException, ParserConfigurationException, SAXException {
+		try (Reader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(graphFile), "UTF8"))) {
+			TNGraph<E> tnGraph = this.load(fileReader, edgeImplClass);
+			tnGraph.setInputFile(graphFile);
+			return tnGraph;
+		} catch (UnsupportedEncodingException | FileNotFoundException e) {
+			throw new FileNotFoundException("There is a problem to read the file containing the network. Details: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * Creates the graph object using the given reader for acquiring the input.
+	 * 
+	 * @param reader
+	 * @param edgeImplClass
 	 * @return the graphML as TNGraph.
 	 * @throws java.io.IOException
 	 * @throws org.xml.sax.SAXException
 	 * @throws javax.xml.parsers.ParserConfigurationException
 	 */
-	public TNGraph<E> readGraph() throws IOException, ParserConfigurationException, SAXException {
+	TNGraph<E> load(Reader reader, Class<? extends E> edgeImplClass) throws IOException, ParserConfigurationException, SAXException {
+		ALabelAlphabet aLabelAlphabet = new ALabelAlphabet();
+		Supplier<E> edgeFactory = new InternalEdgeFactory<>(edgeImplClass);
+		Supplier<LabeledNode> nodeFactory = new InternalVertexFactory();
+		TNGraph<E> tnGraph = new TNGraph<>(edgeImplClass, aLabelAlphabet);
+
 		/*
 		 * I use TNGraphMLReader instead of GraphMLReader2 because on 2017-11-01 I discovered that GraphMLReader2 does not allow to read
 		 * edge attributes that are very long, like the labeled upper case values of a checked CSTNU.
 		 * TNGraphMLReader is a little less intuitive but it manages all attributes in a right way!
 		 */
-		GraphMLReader<TNGraph<E>, LabeledNode, E> graphReader = new GraphMLReader<>(this.nodeFactory, this.edgeFactory);
+		GraphMLReader<TNGraph<E>, LabeledNode, E> graphReader = new GraphMLReader<>(nodeFactory, edgeFactory);
 		// populate the graph.
-		graphReader.load(this.fileReader, this.tnGraph);
+		graphReader.load(reader, tnGraph);
 
 		// Now graph contains all vertices and edges with default names (the factory cannot set the right names).
 
@@ -212,7 +208,8 @@ public class TNGraphMLReader<E extends Edge> {
 			public void accept(LabeledNode n, String s) {
 				n.setName(s);
 				if (s.equals(AbstractCSTN.ZERO_NODE_NAME)) {
-					TNGraphMLReader.this.tnGraph.setZ(n);
+					// TNGraphMLReader.tnGraph.setZ(n);
+					tnGraph.setZ(n);
 				}
 			}
 		});
@@ -228,7 +225,7 @@ public class TNGraphMLReader<E extends Edge> {
 		GraphMLMetadata<LabeledNode> nodeLabeledPotentialValueMD = graphReader.getVertexMetadata().get(TNGraphMLWriter.NODE_POTENTIAL_KEY);
 		Function<LabeledNode, String> nodeLabeledPotentialValueF = (nodeLabeledPotentialValueMD != null) ? nodeLabeledPotentialValueMD.transformer : null;
 
-		for (LabeledNode n : this.tnGraph.getVertices()) {
+		for (LabeledNode n : tnGraph.getVertices()) {
 			n.setLabel(Label.parse(nodeLabelF.apply(n)));
 			String s = nodeObservedPropF.apply(n);
 			if ((s != null) && (s.length() == 1)) {
@@ -256,7 +253,8 @@ public class TNGraphMLReader<E extends Edge> {
 				e.setName(s);
 				if (!e.getName().equals(s)) {
 					// there is a problem that the name has been already used...
-					s = TNGraphMLReader.this.tnGraph.getSource(e).getName() + "_" + TNGraphMLReader.this.tnGraph.getDest(e).getName();
+					// s = TNGraphMLReader.tnGraph.getSource(e).getName() + "_" + TNGraphMLReader.tnGraph.getDest(e).getName();
+					s = tnGraph.getSource(e).getName() + "_" + tnGraph.getDest(e).getName();
 					e.setName(s);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.WARNING)) {
@@ -282,15 +280,15 @@ public class TNGraphMLReader<E extends Edge> {
 
 		LabeledIntMapSupplier<? extends LabeledIntMap> LabIntMapSupplier = new LabeledIntMapSupplier<>(labeledValueMapImpl);
 		String data;
-		boolean notCSTNUCSTNPSU = this.tnGraph.getType() == NetworkType.STN || this.tnGraph.getType() == NetworkType.CSTN
-				|| this.tnGraph.getType() == NetworkType.STNU;
-		for (E e : this.tnGraph.getEdges()) {
+		boolean notCSTNUCSTNPSU = tnGraph.getType() == NetworkType.STN || tnGraph.getType() == NetworkType.CSTN
+				|| tnGraph.getType() == NetworkType.STNU;
+		for (E e : tnGraph.getEdges()) {
 			// Type
 			e.setConstraintType(ConstraintType.valueOf(edgeTypeF.apply(e)));
 			// Labeled Value
 			data = "";
-			LabeledNode s = this.tnGraph.getSource(e);
-			LabeledNode d = this.tnGraph.getDest(e);
+			LabeledNode s = tnGraph.getSource(e);
+			LabeledNode d = tnGraph.getDest(e);
 
 			boolean containsLabeledValues = CSTNEdge.class.isAssignableFrom(e.getClass());
 			if (edgeLabeledValueF != null) {
@@ -311,7 +309,7 @@ public class TNGraphMLReader<E extends Edge> {
 			if (edgeValueF != null) {
 				data = edgeValueF.apply(e);
 				if (data != null && !data.isEmpty()) {
-					if (this.tnGraph.getType() == NetworkType.STN || this.tnGraph.getType() == NetworkType.STNU) {
+					if (tnGraph.getType() == NetworkType.STN || tnGraph.getType() == NetworkType.STNU) {
 						((STNEdge) e).setValue(Integer.parseInt(data));
 						if (e.getConstraintType() == ConstraintType.contingent) {
 							STNUEdge e1 = (STNUEdge) e;
@@ -335,7 +333,7 @@ public class TNGraphMLReader<E extends Edge> {
 			if (edgeCaseValueF != null) {
 				data = edgeCaseValueF.apply(e);
 				if (data != null && !data.isEmpty()) {
-					if (this.tnGraph.getType() == NetworkType.STNU) {
+					if (tnGraph.getType() == NetworkType.STNU) {
 						STNUEdge e1 = ((STNUEdge) e);
 						e1.setLabeledValue(data);
 						if (e1.isUpperCase()) {
@@ -347,11 +345,11 @@ public class TNGraphMLReader<E extends Edge> {
 				}
 			}
 			if (e.isEmpty() && notCSTNUCSTNPSU) {
-				this.tnGraph.removeEdge(e);
+				tnGraph.removeEdge(e);
 			}
 		}
 		if (notCSTNUCSTNPSU) {
-			return this.tnGraph;
+			return tnGraph;
 		}
 		// FROM HERE the graph is assumed to be a CSTNU or CSTNPSU graph!
 
@@ -370,16 +368,16 @@ public class TNGraphMLReader<E extends Edge> {
 						"</key>\n" +
 						"before <graph> tag.");
 			}
-			return this.tnGraph;
+			return tnGraph;
 		}
 		Function<E, String> edgeLabeledUCValueF = edgeLabeledUCValueMD.transformer;
 		Function<E, String> edgeLabeledLCValueF = edgeLabeledLCValueMD.transformer;
 
-		for (E e1 : this.tnGraph.getEdges()) {
+		for (E e1 : tnGraph.getEdges()) {
 			BasicCSTNUEdge e = (BasicCSTNUEdge) e1;
 			// Labeled UC Value
 			data = edgeLabeledUCValueF.apply(e1);
-			LabeledALabelIntTreeMap upperCaseMap = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
+			LabeledALabelIntTreeMap upperCaseMap = LabeledALabelIntTreeMap.parse(data, aLabelAlphabet);
 			if (data != null && data.length() > 2 && (upperCaseMap == null || upperCaseMap.isEmpty()))
 				throw new IllegalArgumentException("Upper Case values in a wrong format: " + data + " in edge " + e);
 			if (upperCaseMap == null)
@@ -387,16 +385,16 @@ public class TNGraphMLReader<E extends Edge> {
 			e.setUpperCaseValueMap(upperCaseMap);
 			// Labeled LC Value
 			data = edgeLabeledLCValueF.apply(e1);
-			if (this.tnGraph.getType() == NetworkType.CSTNU) {
-				LabeledLowerCaseValue lowerCaseValue = LabeledLowerCaseValue.parse(data, this.aLabelAlphabet);
+			if (tnGraph.getType() == NetworkType.CSTNU) {
+				LabeledLowerCaseValue lowerCaseValue = LabeledLowerCaseValue.parse(data, aLabelAlphabet);
 				if (data != null && data.length() > 2 && (lowerCaseValue == null || lowerCaseValue.isEmpty()))
 					throw new IllegalArgumentException("Lower Case values in a wrong format: " + data + " in edge " + e);
 				if (lowerCaseValue == null)
 					lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 				((CSTNUEdge) e1).setLowerCaseValue(lowerCaseValue);
 			}
-			if (this.tnGraph.getType() == NetworkType.CSTNPSU) {
-				LabeledALabelIntTreeMap lowerCaseValue = LabeledALabelIntTreeMap.parse(data, this.aLabelAlphabet);
+			if (tnGraph.getType() == NetworkType.CSTNPSU) {
+				LabeledALabelIntTreeMap lowerCaseValue = LabeledALabelIntTreeMap.parse(data, aLabelAlphabet);
 				if (data != null && data.length() > 2 && (lowerCaseValue == null || lowerCaseValue.isEmpty()))
 					throw new IllegalArgumentException("Lower Case values in a wrong format: " + data + " in edge " + e);
 				if (lowerCaseValue == null)
@@ -405,10 +403,10 @@ public class TNGraphMLReader<E extends Edge> {
 			}
 
 			if (e.isEmpty()) {
-				this.tnGraph.removeEdge(e1);
+				tnGraph.removeEdge(e1);
 			}
 		}
 
-		return this.tnGraph;
+		return tnGraph;
 	}
 }

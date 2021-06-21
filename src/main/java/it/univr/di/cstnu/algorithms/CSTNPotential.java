@@ -80,10 +80,6 @@ public class CSTNPotential extends CSTNIR {
 	int numberOfNodes;
 
 	/**
-	 * <p>
-	 * Constructor for CSTNPotential.
-	 * </p>
-	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTNPotential(TNGraph<CSTNEdge> graph) {
@@ -92,10 +88,6 @@ public class CSTNPotential extends CSTNIR {
 	}
 
 	/**
-	 * <p>
-	 * Constructor for CSTNPotential.
-	 * </p>
-	 *
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check
 	 */
@@ -262,8 +254,9 @@ public class CSTNPotential extends CSTNIR {
 		LabeledNode[] allNodes = this.g.getVerticesArray();
 
 		NodesToCheck nodesToCheck = new NodesToCheck();
-		nodesToCheck.enqueue(this.Z);
-		this.Z.putLabeledPotential(Label.emptyLabel, 0);
+		LabeledNode Z = this.g.getZ();
+		nodesToCheck.enqueue(Z);
+		Z.putLabeledPotential(Label.emptyLabel, 0);
 
 		NodesToCheck obsNodesToCheck = new NodesToCheck();
 
@@ -336,7 +329,6 @@ public class CSTNPotential extends CSTNIR {
 						"Stable state reached. Number of cycles: " + (i - 1) + ".\nStatus: " + this.checkStatus);
 			}
 		}
-		this.g.reverse();
 		this.gCheckedCleaned = new TNGraph<>(this.g.getName(), this.g.getEdgeImplClass());
 		if (this.cleanCheckedInstance) {
 			this.gCheckedCleaned.copyCleaningRedundantLabels(this.g);
@@ -376,7 +368,7 @@ public class CSTNPotential extends CSTNIR {
 		Literal unkPropositionC = Literal.valueOf(nC.getPropositionObserved(), Literal.UNKNONW);
 
 		ObjectSet<Object2IntMap.Entry<Label>> setToReuse = new ObjectArraySet<>();
-		String firstLog = "Labeled Propagation Rule considers edges " + eAB.getName() + ", " + eBC.getName() + " for " + eAC.getName();
+		String firstLog = "Potential Labeled Propagation Rule considers edges " + eAB.getName() + ", " + eBC.getName() + " for " + eAC.getName();
 		for (final Object2IntMap.Entry<Label> ABEntry : eAB.getLabeledValueSet()) {
 			final Label labelAB = ABEntry.getKey();
 			final int u = ABEntry.getIntValue();
@@ -600,6 +592,7 @@ public class CSTNPotential extends CSTNIR {
 	 * 
 	 * @return if during the computation, it founds a negative loop, it updates this.checkStatus and return false, true otherwise.
 	 */
+	@SuppressWarnings("null")
 	private boolean qLoopFinder() {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
@@ -637,30 +630,33 @@ public class CSTNPotential extends CSTNIR {
 			for (CSTNEdge edgeAB : edgesToCheck) {
 				LabeledNode A = this.g.getSource(edgeAB);
 				LabeledNode B = this.g.getDest(edgeAB);
-
+				boolean newEdge = false;
 				for (CSTNEdge edgeBC : this.g.getOutEdges(B)) {
 					LabeledNode C = this.g.getDest(edgeBC);
 					CSTNEdge edgeAC = this.g.findEdge(A, C);
 
 					// Propagate only to new edges.
 					// At first round, even an already defined edge has to be considered new.
-					if (edgeAC == null) {
+					newEdge = edgeAC == null;
+					if (newEdge) {
 						edgeAC = makeNewEdge(A.getName() + C.getName() + "∞", CSTNEdge.ConstraintType.qloopFinder);
 					} else {
 						if (noFirstRound)
 							continue;
 					}
-
-					if (labelPropagation(A, B, C, edgeAB, edgeBC, edgeAC)) {
+					assert edgeAC != null : "Errore impossibile!";
+					
+					boolean newValue = labelPropagation(A, B, C, edgeAB, edgeBC, edgeAC); 
+					if (newValue) {
 						if (!this.checkStatus.consistency) {
 							this.checkStatus.initialized = true;
 							this.checkStatus.finished = true;
 							return false;
 						}
 
-						if (A != C && !edgeAC.isEmpty()) {
+						if (A != C) {
 							newEdgesToCheck.add(edgeAC);
-							if (edgeAC.getConstraintType() == ConstraintType.qloopFinder) {
+							if (newEdge && edgeAC.getConstraintType() == ConstraintType.qloopFinder) {
 								this.g.addEdge(edgeAC, A, C);
 								edgesToRemove.add(edgeAC);
 							}
@@ -683,6 +679,7 @@ public class CSTNPotential extends CSTNIR {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO)) {
 				LOG.log(Level.INFO, "All possible -∞ potentials found. They are " + negInftyPotentialCount + "."
+						+ "\nAll added edges for such a checking removed."
 						+ "\nTo be sure, number of edges: " + this.g.getEdgeCount());
 			}
 		}
@@ -730,7 +727,7 @@ public class CSTNPotential extends CSTNIR {
 			// }
 			// }
 			// }
-			if (!newLabel.containsUnknown() && (newValue == Constants.INT_NEG_INFINITE || (newValue < 0 && node == this.Z))) {
+			if (!newLabel.containsUnknown() && (newValue == Constants.INT_NEG_INFINITE || (newValue < 0 && node == this.g.getZ()))) {
 				// found a negative cycle!
 				this.checkStatus.consistency = false;
 				this.checkStatus.finished = true;

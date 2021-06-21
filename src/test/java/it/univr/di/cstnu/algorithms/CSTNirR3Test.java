@@ -60,7 +60,6 @@ public class CSTNirR3Test extends CSTNTest {
 		pz.mergeLabeledValue(Label.parse("C¬p"), 1);
 		this.g.addEdge(pz, this.P, this.Z);
 		this.g.setZ(this.X);
-		this.cstn.Z = this.X;
 
 		this.cstn.labelModificationR0qR0(this.P, this.X, pz);
 
@@ -100,7 +99,6 @@ public class CSTNirR3Test extends CSTNTest {
 		} catch (WellDefinitionException e) {
 			e.printStackTrace();
 		}
-		this.cstn.Z = this.X;
 
 		this.cstn.labelModificationR0qR0(this.P, this.X, px);
 

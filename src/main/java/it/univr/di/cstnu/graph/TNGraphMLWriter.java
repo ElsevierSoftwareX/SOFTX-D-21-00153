@@ -9,10 +9,10 @@ package it.univr.di.cstnu.graph;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 
@@ -25,7 +25,7 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Allows the writing of a Temporal Network graph to a file in GraphML format.<br>
+ * Allows the writing of a Temporal Network graph to a file or a string in GraphML format.<br>
  * GraphML format allows the definition of different attributes for the TNGraph, vertices and edges.<br>
  * All attributes are defined in the first part of a GraphML file. Examples of GraphML file that can read by this class are given in the Instances directory
  * under CstnuTool one.<br>
@@ -141,26 +141,59 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 	}
 
 	/**
-	 * <p>save.</p>
-	 *
+	 * Helper method for making {@link #save(Hypergraph, Writer)} easier. 
+	 * 
 	 * @param graph the network to save
-	 * @param outputFile the name of outfile.
+	 * @param outputFile file object where to save the XML string representing the graph. File encoding is UTF8.
+	 * @throws IOException if it is not possible to save to outputFile
 	 */
-	@SuppressWarnings("unchecked")
-	public void save(TNGraph<? extends Edge> graph, File outputFile) {
+	public void save(TNGraph<? extends Edge> graph, File outputFile) throws IOException {
 		this.networkType = graph.getType();
 		this.addMetaData();
-		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF8"))) {
-			super.save((TNGraph<Edge>) graph, writer);
+		try (Writer writer=  new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "UTF8"))){
+			this.save(graph,writer);
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
+	
+	/**
+	 * Helper method for making {@link #save(Hypergraph, Writer)} easier. 
+	 * 
+	 * @param graph the network to save
+	 * @return a GraphML string representing the graph. 
+	 */
+	public String save(TNGraph<? extends Edge> graph) {
+		StringWriter writer = new StringWriter();
+		try {
+			this.save(graph, writer);
+		} catch (IOException e) {
+			//a non likely possibility
+			e.printStackTrace();
+		}
+		return writer.toString();
+	}
+	
+	
+	/**
+	 * @param graph the network to save
+	 * @param writer the writer to use
+	 * @throws IOException if any IO error occurs
+	 */
+	@SuppressWarnings("unchecked")
+	public void save(TNGraph<? extends Edge> graph, Writer writer) throws IOException {
+		this.networkType = graph.getType();
+		this.addMetaData();
+		super.save((TNGraph<Edge>) graph, writer);
+	}
+
+
+	
+
+	/**
+	 * Adds metadata to the file
+	 */
 	private void addMetaData() {
 		/*
 		 * TNGraph attributes
