@@ -813,7 +813,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		char p;
 		Label l = null;
 		JTextField label = null;
-		if (BasicCSTNUEdge.class.isAssignableFrom(g.getEdgeImplClass())) {
+		if (CSTNEdge.class.isAssignableFrom(g.getEdgeImplClass())) {
 			// Observed proposition
 			p = node.getPropositionObserved();
 			observedProposition = new JTextField((p == Constants.UNKNOWN) ? "" : "" + p);
