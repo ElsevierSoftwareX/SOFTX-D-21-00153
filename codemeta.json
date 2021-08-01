@@ -4,10 +4,10 @@
     "license": "https://spdx.org/licenses/LGPL-3.0-or-later",
     "dateCreated": "2014-12-04",
     "datePublished": "2015-03-23",
-    "dateModified": "2021-07-14",
+    "dateModified": "2021-08-01",
     "downloadUrl": "http://profs.scienze.univr.it/~posenato/software/cstnu/download.html",
     "name": "CSTNU-Tool",
-    "version": "3.6",
+    "version": "4.0",
     "description": "A library and an editor for Conditional Simple Temporal Networks with Uncertainty model and some its extensions",
     "applicationCategory": "Computer Science",
     "releaseNotes": "All firebug warnings fixed.",
@@ -19,7 +19,7 @@
         "Java"
     ],
     "runtimePlatform": [
-        ">= JVM 1.8"
+        ">= JVM 11"
     ],
     "author": [
         {
