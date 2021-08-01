@@ -13,7 +13,7 @@ import com.bpodgursky.jbool_expressions.rules.RuleSet;
 public class LogicalExpression {
 
 	/**
-	 * @param args
+	 * @param args  none
 	 */
 	public static void main(String[] args) {
 

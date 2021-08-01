@@ -32,7 +32,7 @@ import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
-import it.univr.di.cstnu.visualization.StaticLayout;
+import it.univr.di.cstnu.visualization.CSTNUStaticLayout;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
@@ -45,8 +45,6 @@ import it.univr.di.labeledvalue.LabeledIntTreeMap;
  * In this class, contingent link are, in real, guarded ones.
  * Therefore, the input graph HAS to have defined guarded links explicitly: upper bound edge must contain also the lower guard as lower case contingent value,
  * and lower bound edge must contain also the upper case negative value.
- * <br>
- * This class is an extension of {@link it.univr.di.cstnu.algorithms.AbstractCSTN} class.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -62,16 +60,16 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * Version of the class
 	 */
 	@SuppressWarnings("hiding")
-	// static final String VERSIONandDATE = "Version 1.0 - Feb, 21 20178";
+	// static final String VERSIONandDATE = "Version 1.0 - Feb, 21 2017";
 	static final String VERSIONandDATE = "Version 2.0 - Feb, 13 2020";
 
 	/**
 	 * Reads a CSTNPSU file and checks it.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON) {
@@ -134,14 +132,14 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 		}
 
 		if (cstnpsu.fOutput != null) {
-			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new StaticLayout<>(cstnpsu.g));
+			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new CSTNUStaticLayout<>(cstnpsu.g));
 			graphWriter.save(cstnpsu.g, cstnpsu.fOutput);
 		}
 	}
 
 	/**
 	 * Utility map that returns the activation time point (node) associated to a contingent link given the contingent time point,
-	 * i.e., contingent link A===>C determines the entry (C,A) in this map.
+	 * i.e., contingent link A===&gt;C determines the entry (C,A) in this map.
 	 */
 	Object2ObjectMap<LabeledNode, LabeledNode> activationNode;
 
@@ -634,9 +632,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If
-	 *             this exception occurs, then
-	 *             there is a problem in the rules coding.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNPSUEdge> edgesToCheck, Instant timeoutInstant)
 			throws WellDefinitionException {
@@ -714,8 +710,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 			/**
 			 * Make all propagation considering current edge as follows:<br>
-			 * if (BZ) ==> A-->B-->Z
-			 * else ==> Z-->B-->A
+			 * if (BZ) ==&gt; A--&gt;B--&gt;Z
+			 * else ==&gt; Z--&gt;B--&gt;A
 			 */
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -839,7 +835,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	}
 
 	/**
-	 * @param nC
+	 * @param nC node 
 	 * @return the activation node associated to the contingent link having nC as contingent time point.
 	 */
 	LabeledNode getActivationNode(LabeledNode nC) {
@@ -847,7 +843,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	}
 
 	/**
-	 * @param nC
+	 * @param nC node 
 	 * @return the edge containing the lower case value associated to the contingent link having nC as contingent time point.
 	 */
 	CSTNPSUEdge getLowerContingentLink(LabeledNode nC) {
@@ -855,7 +851,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	}
 
 	/**
-	 * @param nA
+	 * @param nA node
 	 * @return true if nA is an activation time point
 	 */
 	boolean isActivationNode(LabeledNode nA) {
@@ -901,9 +897,9 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * ℵ can be empty.
 	 * </pre>
 	 * 
-	 * @param nX
-	 * @param nY
-	 * @param nZ
+	 * @param nX node
+	 * @param nY node
+	 * @param nZ node
 	 * @param eXY CANNOT BE NULL
 	 * @param eYW CANNOT BE NULL
 	 * @param eXZ CANNOT BE NULL
@@ -1092,9 +1088,9 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * if C ∉ ℵ and v+u &lt; 0.
 	 * </pre>
 	 * 
-	 * @param nA
-	 * @param nC
-	 * @param nZ
+	 * @param nA node 
+	 * @param nC none
+	 * @param nZ none
 	 * @param eAC CANNOT BE NULL
 	 * @param eCZ CANNOT BE NULL
 	 * @param eAZ CANNOT BE NULL
@@ -1210,8 +1206,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * if m = max(v, w + (-x))
 	 * </pre>
 	 * 
-	 * @param nY
-	 * @param eYZ
+	 * @param nY none
+	 * @param eYZ  none
 	 * @return true if the reduction has been applied.
 	 */
 	boolean rG4(final LabeledNode nY, final CSTNPSUEdge eYZ) {
@@ -1279,13 +1275,12 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 								getCheckStatus().letterRemovalRuleCalls++;
 								if (Debug.ON) {
 									if (LOG.isLoggable(Level.FINER)) {
-										if (LOG.isLoggable(Level.FINER))
-											LOG.log(Level.FINER, "CSTNPSU rG4 applied to edge " + oldYZ + ":\n" + "partic: "
-													+ nY.getName() + "---" + CSTNU.upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
-													+ CSTNU.upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
-													+ "---" + CSTNU.lowerCaseValueAsString(nC.getALabel(), x, guardedLinkLabel) + "---> " + nodeLetter
-													+ "\nresult: " + nY.getName() + "---" + CSTNU.upperCaseValueAsString(alephAleph1, m, alphaBeta) + "---> Z"
-													+ "; oldValue: " + Constants.formatInt(oldValue));
+										LOG.log(Level.FINER, "CSTNPSU rG4 applied to edge " + oldYZ + ":\n" + "partic: "
+												+ nY.getName() + "---" + CSTNU.upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
+												+ CSTNU.upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
+												+ "---" + CSTNU.lowerCaseValueAsString(nC.getALabel(), x, guardedLinkLabel) + "---> " + nodeLetter
+												+ "\nresult: " + nY.getName() + "---" + CSTNU.upperCaseValueAsString(alephAleph1, m, alphaBeta) + "---> Z"
+												+ "; oldValue: " + Constants.formatInt(oldValue));
 									}
 								}
 							}
@@ -1517,9 +1512,9 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * when u+v &ge; 0, ד can be empty and X not in ד
 	 * </pre>
 	 * 
-	 * @param nX
-	 * @param nY
-	 * @param nZ
+	 * @param nX node 
+	 * @param nY node 
+	 * @param nZ node
 	 * @param eZX CANNOT BE NULL
 	 * @param eXY CANNOT BE NULL
 	 * @param eZY CANNOT BE NULL
@@ -1904,21 +1899,21 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * Update lower bound of a guarded range.
 	 * 
 	 * <pre>
-	 * nC ---(u, ℵ, alpha)---> Z ---(v, ד, beta)---> nA
+	 * nC ---(u, ℵ, alpha)---&gt; Z ---(v, ד, beta)---&gt; nA
 	 * adds
-	 * nC ---(u+v, alphaBeta)---> nA
+	 * nC ---(u+v, alphaBeta)---&gt; nA
 	 * 
 	 * ℵ and/or ד can be empty and cannot contain common names or nC.
 	 * Alpha and beta must be consistent or, if one has unknown literals, the other must be empty.
 	 * </pre>
 	 * 
-	 * @param nC
-	 * @param nZ
-	 * @param nA
-	 * @param eCZ
-	 * @param eZA
-	 * @param eAC
-	 * @param eCA
+	 * @param nC contingent node 
+	 * @param nZ zero node a
+	 * @param nA activation node
+	 * @param eCZ edge 
+	 * @param eZA edge
+ 	 * @param eAC edge
+	 * @param eCA edge
 	 * @return true if the rule has been applied.
 	 */
 	static boolean rG9(LabeledNode nC, LabeledNode nZ, LabeledNode nA, CSTNPSUEdge eCZ, CSTNPSUEdge eZA, CSTNPSUEdge eAC, CSTNPSUEdge eCA) {
@@ -1987,21 +1982,21 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * Update upper bound of a guarded range.
 	 * 
 	 * <pre>
-	 * nA ---(u, ℵ, alpha)---> Z ---(v, ד, beta)---> nC
+	 * nA ---(u, ℵ, alpha)---&gt; Z ---(v, ד, beta)---&gt; nC
 	 * adds
-	 * nA ---(u+v, ⊡)---> nC
+	 * nA ---(u+v, ⊡)---&gt; nC
 	 * 
 	 * ℵ and/or ד can be empty and cannot contain common names or nC.
 	 * Alpha and beta must be consistent or, if one has unknown literals, the other must be empty.
 	 * </pre>
 	 * 
-	 * @param nA
-	 * @param nZ
-	 * @param nC
-	 * @param eAZ
-	 * @param eZC
-	 * @param eAC
-	 * @param eCA
+	 * @param nA activation node
+	 * @param nZ zero node 
+	 * @param nC contingent node
+	 * @param eAZ edge 
+	 * @param eZC edge 
+	 * @param eAC edge 
+	 * @param eCA edge
 	 * @return true if the rule has been applied.
 	 */
 	static boolean rG8(LabeledNode nA, LabeledNode nZ, LabeledNode nC, CSTNPSUEdge eAZ, CSTNPSUEdge eZC, CSTNPSUEdge eAC, CSTNPSUEdge eCA) {
@@ -2067,16 +2062,16 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * <pre>
-	 * A ---(u, alpha)&longrightarrow; C ---(v, beta)&longrightarrow; A
+	 * A ---(u, alpha)---&gt; C ---(v, beta)---&gt; A
 	 * 
 	 * If u+v &lt; 0, raise uncontrollability of the guarded link.
 	 * </pre>
 	 * 
-	 * @param nA
-	 * @param nC
-	 * @param eAC
-	 * @param eCA
-	 * @param checkStatus1
+	 * @param nA activation node 
+	 * @param nC contingent node 
+	 * @param eAC edge 
+	 * @param eCA edge
+	 * @param checkStatus1 status of the checking
 	 * @return true if the guarded link is uncontrollable.
 	 */
 	static boolean checkBoundGuarded(LabeledNode nA, LabeledNode nC, CSTNPSUEdge eAC, CSTNPSUEdge eCA, CSTNCheckStatus checkStatus1) {

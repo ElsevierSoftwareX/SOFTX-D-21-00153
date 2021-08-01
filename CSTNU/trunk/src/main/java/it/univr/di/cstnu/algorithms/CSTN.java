@@ -30,14 +30,26 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
 
 /**
+ * <p>
  * Represents a Conditional Simple Temporal Network (CSTN) and it contains a method to check the dynamic consistency of the instance.<br>
  * Edge weights are signed integer.<br>
- * The dynamic consistency check (DC check) is done assuming standard DC semantics (cf. ICAPS 2016 paper, table 1) and using LP, R0, qR0, R3*, and qR3*
- * rules.<br>
- * This class is the base class for some other specialized ones in which DC semantics is defined in a different way.<br>
- * Using the option --limitedToZ, the DC checking algorithm is the one presented at IJCAI18.<br>
- * Without --limitedToZ, the algorithm is the one presented at ICAPS19. This last version is not efficient as IJCAI18 one.<br>
- * For a very efficient version, consider CSTNPotential class that runs DC checking assuming IR semantics and node without labels.
+ * This class is the base class for 9 classes for CSTNs: each class is a specialization of this one where some assumptions about the system reaction type
+ * and/or the presence or not of labels on nodes are done.<br>
+ * In more details, in this class the dynamic consistency (DC) check is done assuming the standard DC semantics (a system reacts to the observations after a
+ * small but not quantified delay (cf. ICAPS 2016 paper, table 1))<br>
+ * In the derived class {@link it.univr.di.cstnu.algorithms.CSTNIR}, for example, the dynamic consistency check is done assuming that the system reacts istantaneously to the observations.
+ * </p>
+ * <p>
+ * As regards the {@link #dynamicConsistencyCheck()}, there are 3 possible algorithms: HunsbergerPosenato2018, HunsbergerPosenato2019, and
+ * HunsbergerPosenato2020.
+ * HunsbergerPosenato2018 is the algorithm presented at IJCAI 2018 conference and it is executed by {@link #dynamicConsistencyCheck()} when method
+ * {@link #setPropagationOnlyToZ(boolean)} is executed before with true value.<br>
+ * HunsbergerPosenato2019 is the algorithm presented at ICAPS 2019and it is executed by {@link #dynamicConsistencyCheck()} when method
+ * {@link #setPropagationOnlyToZ(boolean)} is executed before with false value.<br>
+ * This last version is not efficient as IJCAI18 one when instances are DC while is very efficient when instances are NOT DC.<br>
+ * For a very efficient version for both DC and not DC instances, consider {@link it.univr.di.cstnu.algorithms.CSTNPotential#dynamicConsistencyCheck()} that runs DC checking assuming IR
+ * semantics and nodes without labels, algorithm presented at ICAPS 2020.
+ * </p>
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -71,21 +83,21 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * Just for using this class also from a terminal.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTN(), "Standard DC");
 	}
 
 	/**
-	 * @param args
-	 * @param cstn
-	 * @param kindOfChecking
-	 * @throws SAXException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 * @param args node
+	 * @param cstn cstn 
+	 * @param kindOfChecking type name of the network for showing the type of checking 
+	 * @throws SAXException  none
+	 * @throws ParserConfigurationException none
+	 * @throws IOException none
 	 */
 	static void defaultMain(final String[] args, final CSTN cstn, String kindOfChecking)
 			throws IOException, ParserConfigurationException, SAXException {
@@ -142,10 +154,11 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	}
 
 	/**
-	 * 
 	 * Initialize the CSTN using graph.<br>
-	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput}, the
+	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput},
+	 * the
 	 * name of output file is build using {@link #fInput}.
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTN(TNGraph<CSTNEdge> graph) {
@@ -155,7 +168,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 	/**
 	 * Initialize the CSTN using graph.<br>
-	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput}, the
+	 * For saving the resulting graph in a file during/after a check, field {@link #fOutput} must be set. Setting {@link #fInput} instead of {@link #fOutput},
+	 * the
 	 * name of output file is build using {@link #fInput}.
 	 *
 	 * @param graph TNGraph to check
@@ -192,8 +206,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * {@link #dynamicConsistencyCheck()} uses a different propagation technique!</em>
 	 *
 	 * @return the update status (for convenience. The status is also stored in {@link #checkStatus}).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph&lt;E&gt; is not well defined (does not observe all well definition
-	 *             properties). If this exception occurs, then there is a problem in the rules coding.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public CSTNCheckStatus oneStepDynamicConsistencyByNode() throws WellDefinitionException {
 		LabeledNode B, C;
@@ -305,9 +318,9 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	/**
 	 * Applies R0 and R3 to the edge AB.
 	 * 
-	 * @param AB
-	 * @param A
-	 * @param B
+	 * @param AB edge
+	 * @param A source
+	 * @param B destination
 	 * @return true if the rules were applied, false otherwise.
 	 */
 	boolean applyR0R3(CSTNEdge AB, LabeledNode A, LabeledNode B) {
@@ -480,6 +493,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * @param eSD E containing the constrain to modify
 	 * @return true if a rule has been applied.
 	 */
+	// Visibility is package because there is Junit Class test that checks this method.
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationR3qR3(final LabeledNode nS, final LabeledNode nD, final CSTNEdge eSD) {
 		if (Debug.ON) {
@@ -764,8 +778,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * Returns true if label propagation rule (for example, {@link CSTN#labelPropagation} method) has to apply only for consistent labels.<br>
 	 * Overriding this method it is possible implement the different semantics in the {@link CSTN#labelPropagation} method.
 	 * 
-	 * @param u
-	 * @param v
+	 * @param u value 
+	 * @param v value
 	 * @return true if the rule has to be apply only when the resulting label does not contain unknown literals.
 	 */
 	@SuppressWarnings("static-method")
@@ -961,8 +975,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 	/**
 	 * Executes one step of the dynamic consistency check.
-	 * For each edge B-->Z in edgesToCheck, rules R0--R3 are applied on it and, then, label propagation rule
-	 * is applied to A-->B-->Z for all A-->B.
+	 * For each edge B--&gt;Z in edgesToCheck, rules R0--R3 are applied on it and, then, label propagation rule
+	 * is applied to A--&gt;B--&gt;Z for all A--&gt;B.
 	 * All modified or new edges are returned in the set 'edgesToCheck'.
 	 * This method does not manage –∞ values (IJCAI18 algorithm).
 	 * 

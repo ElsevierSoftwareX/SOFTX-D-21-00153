@@ -57,7 +57,7 @@ public class EdgeRendering {
 	/**
 	 * Font for edge label rendering
 	 */
-	public final static Function<Edge, Font> edgeFontFunction = new Function<Edge, Font>() {
+	public final static Function<Edge, Font> edgeFontFunction = new Function<>() {
 		/**
 		 * 
 		 */
@@ -80,17 +80,17 @@ public class EdgeRendering {
 
 		/**
 		 * @param bold1 true if it must be rendered in bold
-		 */
 		@SuppressWarnings("unused")
 		public void setBold(boolean bold1) {
 			this.bold = bold1;
 		}
+		 */
 	};
 
 	/**
 	 * Font for edge label rendering
 	 */
-	public final static Function<Edge, String> edgeLabelFunction = new Function<Edge, String>() {
+	public final static Function<Edge, String> edgeLabelFunction = new Function<>() {
 		/**
 		 * Returns a label for the edge
 		 */
@@ -137,7 +137,7 @@ public class EdgeRendering {
 	/**
 	 * Select how to draw an edge given its type.
 	 */
-	public final static Function<Edge, Stroke> edgeStrokeTransformer = new Function<Edge, Stroke>() {
+	public final static Function<Edge, Stroke> edgeStrokeTransformer = new Function<>() {
 		@Override
 		public Stroke apply(final Edge s) {
 			switch (s.getConstraintType()) {
@@ -165,6 +165,7 @@ public class EdgeRendering {
 	 * @param contingentPaint a {@link java.awt.Paint} object.
 	 * @param derivedPaint a {@link java.awt.Paint} object.
 	 * @return a transformer object to draw an edge with a different color when it is picked.
+	 * @param <K> a K object.
 	 */
 	public static final <K extends Edge> Function<K, Paint> edgeDrawPaintTransformer(final PickedInfo<K> pi,
 			final Paint pickedPaint,
@@ -173,7 +174,7 @@ public class EdgeRendering {
 
 		final Paint[] paintMap = new Paint[] { normalPaint, contingentPaint, derivedPaint, derivedPaint, normalPaint };
 
-		return new Function<K, Paint>() {
+		return new Function<>() {
 			@Override
 			public Paint apply(final K e) {
 				if (e == null)
@@ -190,13 +191,13 @@ public class EdgeRendering {
 	 * An edge is usually draw as an arc between two points. The area delimited by the arc and the straight line connecting the two edge points can be filled by
 	 * a color.
 	 *
-	 * @param normalPaint
-	 * @param contingentPaint
-	 * @param derivedPaint
+	 * @param normalPaint for normale edge
+	 * @param contingentPaint for contingent edge 
+	 * @param derivedPaint for derived edge
 	 * @return a transformer object to fill an edge 'area' with a color depending on edge type.
 	 */
 	static final Function<Edge, Paint> edgeFillPaintTransformer(final Paint normalPaint, final Paint contingentPaint, final Paint derivedPaint) {
-		return new Function<Edge, Paint>() {
+		return new Function<>() {
 			final Paint[] paintMap = { normalPaint, contingentPaint, derivedPaint, normalPaint, normalPaint };
 
 			@Override

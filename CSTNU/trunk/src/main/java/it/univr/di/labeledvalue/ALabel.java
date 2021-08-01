@@ -4,6 +4,7 @@
 
 package it.univr.di.labeledvalue;
 
+import java.io.Serializable;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -29,7 +30,12 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
+public class ALabel implements Comparable<ALabel>, Iterable<ALetter>, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * @author posenato
@@ -128,7 +134,14 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	 * @author posenato
 	 */
 	public static final class EmptyLabel extends ALabel {
-		@SuppressWarnings({ "synthetic-access", "javadoc" })
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		/**
+		 * default constructor
+		 */
 		public EmptyLabel() {
 			super();
 		}
@@ -234,7 +247,7 @@ public class ALabel implements Comparable<ALabel>, Iterable<ALetter> {
 	/**
 	 * Validator for graphical interface
 	 */
-	public static final Validator<String> labelValidator = new Validator<String>() {
+	public static final Validator<String> labelValidator = new Validator<>() {
 
 		@Override
 		public Class<String> modelType() {

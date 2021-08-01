@@ -116,6 +116,8 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>getAllDeterminedPriorities.</p>
+	 *
 	 * @return the map (LabeledNode, priority) of all the elements that have been in the queue.
 	 */
 	public Object2IntMap<LabeledNode> getAllDeterminedPriorities(){
@@ -128,6 +130,8 @@ public class NodePriorityHeap {
 	}
 	
 	/**
+	 * <p>getPriority.</p>
+	 *
 	 * @param node must be present.
 	 * @return the priority of the node if it is present.
 	 */
@@ -138,6 +142,8 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>getStatus.</p>
+	 *
 	 * @param node a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 * @return a {@link it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus} object.
 	 */
@@ -177,6 +183,8 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>isEmpty.</p>
+	 *
 	 * @return a boolean.
 	 */
 	public boolean isEmpty() {
@@ -214,6 +222,8 @@ public class NodePriorityHeap {
 	}
 
 	/**
+	 * <p>value.</p>
+	 *
 	 * @param item the element
 	 * @return the priority associated to item in the queue, {@link it.univr.di.labeledvalue.Constants#INT_NULL} if the item is not in the queue.
 	 */

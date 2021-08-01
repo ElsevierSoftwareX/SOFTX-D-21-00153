@@ -19,15 +19,14 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  */
 public class ALabelTest {
 
-	@SuppressWarnings("javadoc")
-	ALabel a, b, c, e;
+	private ALabel a, b, c, e;
 	/**
 	 * 
 	 */
 	ALabelAlphabet alpha;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception if any error
 	 */
 	@Before
 	public void setUp() throws Exception {
@@ -196,7 +195,7 @@ public class ALabelTest {
 	}
 
 	/**
-	 * @param args
+	 * @param args args
 	 */
 	public static void main(String[] args) {
 		ALabelAlphabet alpha = new ALabelAlphabet();

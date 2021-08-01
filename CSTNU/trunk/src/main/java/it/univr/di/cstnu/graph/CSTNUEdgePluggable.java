@@ -29,7 +29,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 	private static final long serialVersionUID = 3L;
 
 	/**
-	 * Morris Lower case value augmented by a propositional label.Br>
+	 * Morris Lower case value augmented by a propositional label.<br>
 	 * The name of node has to be equal to the original name. No case modifications are necessary!
 	 */
 	LabeledLowerCaseValue lowerCaseValue;
@@ -37,7 +37,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 	/**
 	 * class initializer
 	 */
-	{
+	static {
 		/**
 		 * logger
 		 */
@@ -45,6 +45,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 	}
 
 	/**
+	 * @param <C> type of map
 	 */
 	<C extends LabeledIntMap> CSTNUEdgePluggable() {
 		this((String) null);
@@ -52,6 +53,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 
 	/**
 	 * Constructor to clone the component.
+	 * @param <C> type of map
 	 *
 	 * @param e the edge to clone.
 	 */
@@ -66,7 +68,8 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 	}
 
 	/**
-	 * @param n
+	 * @param <C> type of edge
+	 * @param n name of edge
 	 */
 	<C extends LabeledIntMap> CSTNUEdgePluggable(final String n) {
 		super(n);
@@ -156,8 +159,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		int i = this.lowerCaseValue.getValue();
 		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
 		this.setConstraintType(ConstraintType.normal);
-		this.setChanged();
-		notifyObservers("LowerLabel:remove");
+		this.pcs.firePropertyChange("lowerLabel:remove", null, this.lowerCaseValue );
 		return i;
 	}
 
@@ -180,8 +182,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 		this.lowerCaseValue = inputLabeledValue;
 		if (!this.lowerCaseValue.isEmpty()) {
 			this.setConstraintType(ConstraintType.contingent);
-			this.setChanged();
-			notifyObservers("LowerLabel:add");
+			this.pcs.firePropertyChange("lowerLabel:add", null, this.lowerCaseValue );
 		}
 	}
 

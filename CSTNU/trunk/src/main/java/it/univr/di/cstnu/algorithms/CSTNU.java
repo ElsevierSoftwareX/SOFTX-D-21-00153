@@ -32,7 +32,7 @@ import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
-import it.univr.di.cstnu.visualization.StaticLayout;
+import it.univr.di.cstnu.visualization.CSTNUStaticLayout;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
@@ -65,9 +65,19 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
-		@SuppressWarnings("javadoc")
-		public int zEsclamationRuleCalls = 0,
-				lowerCaseRuleCalls = 0, crossCaseRuleCalls = 0, letterRemovalRuleCalls = 0;
+		public int zEsclamationRuleCalls = 0;
+		/**
+		 * Counters about the # of application of different rules.
+		 */
+		public int lowerCaseRuleCalls = 0;
+		/**
+		 * Counters about the # of application of different rules.
+		 */
+		public int crossCaseRuleCalls = 0;
+		/**
+		 * Counters about the # of application of different rules.
+		 */
+		public int letterRemovalRuleCalls = 0;
 
 		/**
 		 * @return the value of controllability
@@ -99,8 +109,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			return ("The check is" + (this.finished ? " " : " NOT") + " finished after " + this.cycles + " cycle(s).\n"
 					+ ((this.finished) ? "the controllability check has determined that given network is" + (this.consistency ? " " : " NOT ")
 							+ "dynamic controllable.\n" : "")
-					+ ((!this.consistency && this.negativeLoopNode != null) ?
-						"The negative loop is on node " + this.negativeLoopNode + "\n" : "")
+					+ ((!this.consistency && this.negativeLoopNode != null) ? "The negative loop is on node " + this.negativeLoopNode + "\n" : "")
 					+ "Some statistics:\nRule R0 has been applied " + this.r0calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
 					+ "Labeled Propagation Rule (zLp/Nc/Uc) has been applied " + this.labeledValuePropagationCalls + " times.\n"
@@ -135,16 +144,13 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	@SuppressWarnings("hiding")
 	static final Logger LOG = Logger.getLogger(CSTNU.class.getName());
 
-	
-	
-	
 	/**
 	 * Reads a CSTNU file and checks it.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		if (Debug.ON) {
@@ -208,7 +214,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		}
 
 		if (cstnu.fOutput != null) {
-			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new StaticLayout<>(cstnu.g));
+			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new CSTNUStaticLayout<>(cstnu.g));
 			graphWriter.save(cstnu.g, cstnu.fOutput);
 		}
 	}
@@ -216,11 +222,11 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * Just to check if a new labeled value is negative, its label has not unknown literals and it is in a self loop.
 	 *
-	 * @param value
-	 * @param source
-	 * @param dest
-	 * @param newEdge
-	 * @param status
+	 * @param value value
+	 * @param source source node
+	 * @param dest dest node
+	 * @param newEdge newedge
+	 * @param status status of the checking.
 	 * @return true if the value represent a negative loop!
 	 */
 	static final boolean checkAndManageIfNewLabeledValueIsANegativeLoop(final int value, final LabeledNode source, final LabeledNode dest,
@@ -240,9 +246,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * @param value
-	 * @param nodeName
-	 * @param label
+	 * @param value value
+	 * @param nodeName node name to put as lower case label
+	 * @param label label to represent
 	 * @return the conventional representation of a labeled value
 	 */
 	static final String lowerCaseValueAsString(ALabel nodeName, int value, Label label) {
@@ -250,9 +256,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * @param value
-	 * @param nodeName
-	 * @param label
+	 * @param value value
+	 * @param nodeName  node name to put as upper case label
+	 * @param label label to represent
 	 * @return the conventional representation of a labeled value
 	 */
 	static final String upperCaseValueAsString(ALabel nodeName, int value, Label label) {
@@ -261,7 +267,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 	/**
 	 * Utility map that returns the activation time point (node) associated to a contingent link given the contingent time point,
-	 * i.e., contingent link A===>C determines the entry (C,A) in this map.
+	 * i.e., contingent link A===&gt;C determines the entry (C,A) in this map.
 	 */
 	Object2ObjectMap<LabeledNode, LabeledNode> activationNode;
 
@@ -286,20 +292,19 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * Helper constructor for CSTNU.<br> 
+	 * Helper constructor for CSTNU.<br>
 	 * This constructor is useful for making easier the use of this class in environment like Node.js-Java
 	 *
 	 * @param graphXML the TNGraph to check in GraphML format
-	 * @throws IOException if any error occurs during the graphXML reading
-	 * @throws ParserConfigurationException if graphXML contains character that cannot be parsed
-	 * @throws SAXException if graphXML is not valid
+	 * @throws java.io.IOException if any error occurs during the graphXML reading
+	 * @throws javax.xml.parsers.ParserConfigurationException if graphXML contains character that cannot be parsed
+	 * @throws org.xml.sax.SAXException if graphXML is not valid
 	 */
 	public CSTNU(String graphXML) throws IOException, ParserConfigurationException, SAXException {
 		this();
 		this.setG((new TNGraphMLReader<CSTNUEdge>()).readGraph(graphXML, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
 	}
 
-	
 	/**
 	 * Constructor for CSTNU
 	 *
@@ -327,9 +332,10 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * Static initiliazer
 	 */
-	{ 
-		FILE_NAME_SUFFIX = ".cstnu";//ovverride suffix 
+	static {
+		FILE_NAME_SUFFIX = ".cstnu";// ovverride suffix
 	}
+
 	/**
 	 * Default constructor, package use only!
 	 */
@@ -344,6 +350,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
+	 * {@inheritDoc}
 	 * Wrapper method for {@link #dynamicControllabilityCheck()}
 	 */
 	@Override
@@ -352,15 +359,16 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * Checks the dynamic controllability (DC) of the given network (see {@link #CSTNU(TNGraph)} or  {@link #setG(TNGraph)}.<br>
+	 * Checks the dynamic controllability (DC) of the given network (see {@link #CSTNU(TNGraph)} or {@link #setG(TNGraph)}.<br>
 	 * If the network is DC, it determines all the minimal ranges for the constraints. <br>
 	 * During the execution of this method, the given network is modified. <br>
 	 * If the check is successful, all constraints to node Z in the network are minimized; otherwise, the network contains a negative loop at least.
 	 * <br>
-	 * After a check, {@link #getGChecked()} returns the graph resulting after the check and {@link #getCheckStatus()} the result of the checking action with some
+	 * After a check, {@link #getGChecked()} returns the graph resulting after the check and {@link #getCheckStatus()} the result of the checking action with
+	 * some
 	 * statistics and the node with the negative loop is the network is NOT DC.<br>
 	 * In any case, before returning, this method call {@link #saveGraphToFile()} for saving the computed graph.
-
+	 *
 	 * @return an {@link it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus} object containing the final status and some statistics about the executed
 	 *         checking.
 	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
@@ -573,9 +581,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			}
 			/**
 			 * Memo.
-			 * If current initialValue is negative, current edge is the lower bound C--->A. The lower case labeled value has to be put in the inverted edge.
+			 * If current initialValue is negative, current edge is the lower bound C---&gt;A. The lower case labeled value has to be put in the inverted edge.
 			 * If the lower case labeled value is already present, it must be equal.
-			 * If current initialValue is positive, current edge is the upper bound A--->C. The upper case labeled value has to be put in the inverted edge.
+			 * If current initialValue is positive, current edge is the upper bound A---&gt;C. The upper case labeled value has to be put in the inverted edge.
 			 * If the upper case labeled value is already present, it must be equal.
 			 * if current initialValue is undefined, then we assume that the contingent link is already set.
 			 */
@@ -783,9 +791,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If
-	 *             this exception occurs, then
-	 *             there is a problem in the rules coding.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public CSTNUCheckStatus oneStepDynamicControllability(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant) throws WellDefinitionException {
 
@@ -848,7 +854,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 			/**
 			 * Step 1/2: Make all propagation considering edge AB as first edge.<br>
-			 * A-->B-->C
+			 * A--&gt;B--&gt;C
 			 */
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -914,7 +920,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 			/**
 			 * Step 2/2: Make all propagation considering edge AB as second edge.<br>
-			 * C-->A-->B
+			 * C--&gt;A--&gt;B
 			 */
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -994,9 +1000,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the nextGraph is not well defined (does not observe all well definition properties). If
-	 *             this exception occurs, then
-	 *             there is a problem in the rules coding.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant)
 			throws WellDefinitionException {
@@ -1060,7 +1064,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 			/**
 			 * Make all propagation considering edge AB as first edge in the chain.<br>
-			 * A-->B-->Z
+			 * A--&gt;B--&gt;Z
 			 */
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -1160,7 +1164,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param e edge representing a labeled constraint.
 	 * @param hasToBeFixed true for fixing well-definition errors that can be fixed!
 	 * @return false if the check fails, true otherwise
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException if definition property is not satisfied
 	 */
 	@Override
 	boolean checkWellDefinitionProperty1and3(final LabeledNode source, final LabeledNode destination, final CSTNUEdge e, boolean hasToBeFixed)
@@ -1256,7 +1260,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * @param nC
+	 * @param nC node
 	 * @return the activation node associated to the contingent link having nC as contingent time point.
 	 */
 	LabeledNode getActivationNode(LabeledNode nC) {
@@ -1264,7 +1268,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * @param nC
+	 * @param nC node
 	 * @return the edge containing the lower case value associated to the contingent link having nC as contingent time point.
 	 */
 	CSTNUEdge getLowerContingentLink(LabeledNode nC) {
@@ -1272,7 +1276,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * @param nA
+	 * @param nA node
 	 * @return true if nA is an activation time point
 	 */
 	boolean isActivationNode(LabeledNode nA) {
@@ -1294,9 +1298,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * 
 	 * Since it is assumed that L(C)=L(A)=α, there is only ONE lower-case labeled value u,c,α!
 	 * 
-	 * @param nA
-	 * @param nC
-	 * @param nX
+	 * @param nA node
+	 * @param nC node 
+	 * @param nX node
 	 * @param eAC CANNOT BE NULL
 	 * @param eCX CANNOT BE NULL
 	 * @param eAX CANNOT BE NULL
@@ -1418,9 +1422,9 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * ℵ'=ℵ'/C
 	 * </pre>
 	 * 
-	 * @param nX
-	 * @param nA
-	 * @param eXA
+	 * @param nX node
+	 * @param nA node
+	 * @param eXA edge
 	 * @return true if the reduction has been applied.
 	 */
 	boolean labeledLetterRemovalRule(final LabeledNode nX, final LabeledNode nA, final CSTNUEdge eXA) {
@@ -1472,12 +1476,11 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 						getCheckStatus().letterRemovalRuleCalls++;
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								if (LOG.isLoggable(Level.FINER))
-									LOG.log(Level.FINER, "Lr applied to edge " + oldXA + ":\n" + "partic: "
-											+ nC + " <---" + lowerCaseValueAsString(ACLowerCaseValueObj.getNodeName(), x, alpha) + "--- " + nA.getName()
-											+ " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
-											+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, newV, beta) + "--- " + nX.getName()
-											+ "; oldValue: " + Constants.formatInt(oldZ));
+								LOG.log(Level.FINER, "Lr applied to edge " + oldXA + ":\n" + "partic: "
+										+ nC + " <---" + lowerCaseValueAsString(ACLowerCaseValueObj.getNodeName(), x, alpha) + "--- " + nA.getName()
+										+ " <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nX.getName()
+										+ "\nresult: " + nA.getName() + " <---" + upperCaseValueAsString(aleph1, newV, beta) + "--- " + nX.getName()
+										+ "; oldValue: " + Constants.formatInt(oldZ));
 							}
 						}
 					}
@@ -1580,6 +1583,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param eSZ CSTNUEdge containing the constrain to modify
 	 * @return true if a rule has been applied.
 	 */
+	// Visibility is package because there is Junit Class test that checks this method.
+	// Visibility is package because there is Junit Class test that checks this method.
 	// Visibility is package because there is Junit Class test that checks this method.
 	// Visibility is package because there is Junit Class test that checks this method.
 	boolean labelModificationqR3(final LabeledNode nS, final CSTNUEdge eSZ) {
@@ -1691,7 +1696,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 *     u+v,ℵ,αβ
 	 * W &lt;------------------------------X
 	 * 
-	 * ℵ can be empty. If |ℵ|>1, then W must be Z.
+	 * ℵ can be empty. If |ℵ| &gt; 1, then W must be Z.
 	 * 
 	 * 2) CASE z!
 	 * Also known as z!
@@ -1704,14 +1709,16 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * ℵ can be empty.
 	 * </pre>
 	 * 
-	 * @param nX
-	 * @param nY
-	 * @param nW
+	 * @param nX node
+	 * @param nY node
+	 * @param nW node
 	 * @param eXY CANNOT BE NULL
 	 * @param eYW CANNOT BE NULL
 	 * @param eXW CANNOT BE NULL
 	 * @return true if a reduction is applied at least
 	 */
+	// Don't rename such method because it has to overwrite the CSTN one!
+	// Don't rename such method because it has to overwrite the CSTN one!
 	// Don't rename such method because it has to overwrite the CSTN one!
 	// Don't rename such method because it has to overwrite the CSTN one!
 	boolean labelPropagation(final LabeledNode nX, final LabeledNode nY, final LabeledNode nW, final CSTNUEdge eXY, final CSTNUEdge eYW,
@@ -1936,8 +1943,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	/**
 	 * IR Semantics
 	 * 
-	 * @param u
-	 * @param v
+	 * @param u value
+	 * @param v value
 	 * @return true if a restricted LP can be applied
 	 */
 	@SuppressWarnings({ "static-method" })
@@ -2180,8 +2187,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * if v &lt; 0
 	 * </pre>
 	 * 
-	 * @param nY
-	 * @param eYZ
+	 * @param nY node
+	 * @param eYZ edge
 	 * @return true if the reduction has been applied.
 	 */
 	boolean zLabeledLetterRemovalRule(final LabeledNode nY, final CSTNUEdge eYZ) {
@@ -2228,12 +2235,11 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 							getCheckStatus().letterRemovalRuleCalls++;
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
-									if (LOG.isLoggable(Level.FINER))
-										LOG.log(Level.FINER, "zLR* applied to edge " + oldYZ + ":\n" + "partic: "
-												+ "Z <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName()
-												+ "---(" + nC.getALabel().toLowerCase() + ",...," + Label.emptyLabel + ")---> " + nodeLetter
-												+ "\nresult: " + "Z <---" + upperCaseValueAsString(alephAleph1, v, beta) + "--- " + nY.getName()
-												+ "; oldValue: " + Constants.formatInt(oldValue));
+									LOG.log(Level.FINER, "zLR* applied to edge " + oldYZ + ":\n" + "partic: "
+											+ "Z <---" + upperCaseValueAsString(aleph, v, beta) + "--- " + nY.getName()
+											+ "---(" + nC.getALabel().toLowerCase() + ",...," + Label.emptyLabel + ")---> " + nodeLetter
+											+ "\nresult: " + "Z <---" + upperCaseValueAsString(alephAleph1, v, beta) + "--- " + nY.getName()
+											+ "; oldValue: " + Constants.formatInt(oldValue));
 								}
 							}
 						}
@@ -2280,13 +2286,12 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 								getCheckStatus().letterRemovalRuleCalls++;
 								if (Debug.ON) {
 									if (LOG.isLoggable(Level.FINER)) {
-										if (LOG.isLoggable(Level.FINER))
-											LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
-													+ nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
-													+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
-													+ "---" + lowerCaseValueAsString(nC.getALabel(), x, Label.emptyLabel) + "---> " + nodeLetter
-													+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, newV, alphaBeta) + "---> Z"
-													+ "; oldValue: " + Constants.formatInt(oldValue));
+										LOG.log(Level.FINER, "zLR applied to edge " + oldYZ + ":\n" + "partic: "
+												+ nY.getName() + "---" + upperCaseValueAsString(aleph, v, beta) + "---> Z <---"
+												+ upperCaseValueAsString(aleph1, w, alpha) + "--- " + nA.getName()
+												+ "---" + lowerCaseValueAsString(nC.getALabel(), x, Label.emptyLabel) + "---> " + nodeLetter
+												+ "\nresult: " + nY.getName() + "---" + upperCaseValueAsString(alephAleph1, newV, alphaBeta) + "---> Z"
+												+ "; oldValue: " + Constants.formatInt(oldValue));
 									}
 								}
 							}

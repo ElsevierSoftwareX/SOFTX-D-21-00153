@@ -14,7 +14,7 @@ import java.util.NoSuchElementException;
  * 2 objects and is not mutable. They respect <code>equals</code>
  * and may be used as indices or map keys.
  * 
- * @param <T>
+ * @param <T> type of the two elements.
  */
 class ObjectPair<T> implements Collection<T>, Serializable {
 	/**
@@ -43,7 +43,6 @@ class ObjectPair<T> implements Collection<T>, Serializable {
 			return this.position < 2;
 		}
 
-		@SuppressWarnings("synthetic-access")
 		@Override
 		public T next() {
 			this.position++;

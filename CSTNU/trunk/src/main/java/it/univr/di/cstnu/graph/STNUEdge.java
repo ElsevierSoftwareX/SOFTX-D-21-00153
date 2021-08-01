@@ -36,8 +36,8 @@ public interface STNUEdge extends STNEdge {
 		/**
 		 * A lower/upper-case label. k must be not null.
 		 * 
-		 * @param k
-		 * @param v
+		 * @param k first element of the pair
+		 * @param v second element of the pair
 		 */
 		public Pair(ALetter k, boolean v) {
 			super(k, v);
@@ -47,7 +47,7 @@ public interface STNUEdge extends STNEdge {
 		}
 
 		/**
-		 * @param pair
+		 * @param pair a pair to clone
 		 */
 		public Pair(Pair pair) {
 			this(pair.getFirst(), pair.getSecond());

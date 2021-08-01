@@ -7,7 +7,8 @@
  */
 package it.univr.di.cstnu.graph;
 
-import java.util.Observable;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * <p>
@@ -17,7 +18,7 @@ import java.util.Observable;
  * @author posenato
  * @version $Id: $Id
  */
-public abstract class AbstractComponent extends Observable implements Component {
+public abstract class AbstractComponent implements Component {
 
 	/**
 	 * To provide a unique id for the default creation of component.
@@ -40,6 +41,16 @@ public abstract class AbstractComponent extends Observable implements Component 
 	Color color;
 
 	/**
+	 * Since Java 9, Observable is no more supported.
+	 * I decided to replace Observable using java.bean.
+	 * PropertyChangeSupport allows to register listener indexed by a key (string) that represents the property.
+	 * Then, when a property is changed, it is sufficient to call <code>pcs.firePropertyChange("theProperty", old, val);</code>
+	 * A listener l of a property X must be registered as <code>addObserver("X",l)</code>
+	 * A listener must be implement {@link PropertyChangeListener}.
+	 */
+	PropertyChangeSupport pcs;
+	
+	/**
 	 * Minimal constructor. the name will be 'c&lt;id&gt;'.
 	 */
 	protected AbstractComponent() {
@@ -52,6 +63,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 * @param c the component to clone.
 	 */
 	protected AbstractComponent(final Component c) {
+		this.pcs = new  PropertyChangeSupport(this);
 		if (c == null) {
 			this.name = "";
 			return;
@@ -68,6 +80,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	protected AbstractComponent(final String n) {
 		this.name = ((n == null) || (n.length() == 0)) ? "c" + AbstractComponent.idSeq++ : n;
 		this.color = null;
+		this.pcs = new  PropertyChangeSupport(this);
 	}
 
 	/** {@inheritDoc} */
@@ -95,12 +108,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 		return this.name.equals(c.getName());
 	}
 
-	/**
-	 * {@inheritDoc}
-	 * <p>
-	 * Getter for the field <code>name</code>.
-	 * </p>
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public String getName() {
 		return this.name;
@@ -118,11 +126,11 @@ public abstract class AbstractComponent extends Observable implements Component 
 	 */
 	@Override
 	public String setName(final String inputName) {
+		//put firePropertyChange in the overriding method!
 		final String old = this.name;
 		if ((inputName != null) && (inputName.length() > 0)) {
 			this.name = inputName;
-			this.setChanged();
-			notifyObservers("Name:" + old);
+			this.pcs.firePropertyChange("name", old, inputName);
 		}
 		return old;
 	}
@@ -155,9 +163,7 @@ public abstract class AbstractComponent extends Observable implements Component 
 	}
 
 	/**
-	 * <p>
-	 * takeIn.
-	 * </p>
+	 * <p>takeIn.</p>
 	 *
 	 * @param c a {@link it.univr.di.cstnu.graph.Component} object.
 	 */
@@ -165,4 +171,25 @@ public abstract class AbstractComponent extends Observable implements Component 
 		this.color = c.getColor();
 		this.setName(c.getName());
 	}
+	
+	/**
+	 * An observer for the property.
+	 *
+	 * @param propertyName a {@link java.lang.String} object.
+	 * @param l a {@link java.beans.PropertyChangeListener} object.
+	 */
+	public void addObserver(String propertyName, PropertyChangeListener l) {
+		this.pcs.addPropertyChangeListener(propertyName, l);
+	}
+	
+	/**
+	 * Removes a specifif listener
+	 *
+	 * @param propertyName a {@link java.lang.String} object.
+	 * @param listener a {@link java.beans.PropertyChangeListener} object.
+	 */
+	public void removeObserver(String propertyName, PropertyChangeListener listener) {
+		this.pcs.removePropertyChangeListener(propertyName, listener);
+	}
+	
 }

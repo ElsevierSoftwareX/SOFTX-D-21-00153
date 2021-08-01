@@ -7,6 +7,7 @@
  */
 package it.univr.di.labeledvalue;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -26,7 +27,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
  * @author posenato
  * @version $Id: $Id
  */
-public class ALabelAlphabet {
+public class ALabelAlphabet implements Serializable {
 
 	/**
 	 * ALetter makes simpler to check if a node name is appropriate.<br>
@@ -34,7 +35,11 @@ public class ALabelAlphabet {
 	 * 
 	 * @author posenato
 	 */
-	public static class ALetter implements Comparable<ALetter> {
+	public static class ALetter implements Comparable<ALetter>, Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		/**
 		 * 
 		 */

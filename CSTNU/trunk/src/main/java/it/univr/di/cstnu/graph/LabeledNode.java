@@ -29,7 +29,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Used to show the node name.
 	 */
-	public final static Function<LabeledNode, String> vertexLabelTransformer = new Function<LabeledNode, String>() {
+	public final static Function<LabeledNode, String> vertexLabelTransformer = new Function<>() {
 		/**
 		 * Returns a label for the node
 		 */
@@ -42,7 +42,7 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Transformer object to show the tooltip of node: the label is print.
 	 */
-	public static final Function<LabeledNode, String> vertexToolTipTransformer = new Function<LabeledNode, String>() {
+	public static final Function<LabeledNode, String> vertexToolTipTransformer = new Function<>() {
 		@Override
 		public String apply(final LabeledNode v) {
 			return "Label: " + v.getLabel().toString();
@@ -149,10 +149,10 @@ public class LabeledNode extends AbstractComponent {
 
 	/**
 	 * Standard constructor for an observation node
+	 * @param <C> type of map
 	 *
 	 * @param n name of the node.
 	 * @param proposition proposition observed by this node.
-	 * @param <C> a C object.
 	 */
 	public <C extends LabeledIntMap> LabeledNode(final String n, final char proposition) {// , Class<C> labeledIntMapImplementation
 		this(n);
@@ -342,13 +342,12 @@ public class LabeledNode extends AbstractComponent {
 	/**
 	 * Setter for the field <code>label</code>.
 	 *
-	 * @param inputLabel the label to set. If it is null, this.label is set to {@link Label#emptyLabel}.
+	 * @param inputLabel the label to set. If it is null, this.label is set to {@link it.univr.di.labeledvalue.Label#emptyLabel}.
 	 */
 	public void setLabel(@Nullable final Label inputLabel) {
 		String old = this.label.toString();
 		this.label = (inputLabel == null || inputLabel.isEmpty()) ? Label.emptyLabel : inputLabel;
-		this.setChanged();
-		notifyObservers("Label:" + old);
+		this.pcs.firePropertyChange("nodeLabel", old, inputLabel);
 	}
 
 	/**
@@ -369,8 +368,7 @@ public class LabeledNode extends AbstractComponent {
 		final String old = this.name;
 		if ((nodeName != null) && (nodeName.length() > 0)) {
 			this.name = nodeName;
-			this.setChanged();
-			notifyObservers("Name:" + old);
+			this.pcs.firePropertyChange("nodeName", old, nodeName);
 		}
 		return old;
 	}
@@ -383,8 +381,7 @@ public class LabeledNode extends AbstractComponent {
 	public void setObservable(final char c) {
 		char old = this.propositionObserved;
 		this.propositionObserved = (Literal.check(c)) ? c : Constants.UNKNOWN;
-		notifyObservers("Proposition:" + old);
-		this.setChanged();
+		this.pcs.firePropertyChange("nodeProposition", Character.valueOf(old), Character.valueOf(c));
 	}
 
 	/**

@@ -1,10 +1,14 @@
 package it.univr.di.cstnu.graph;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 
@@ -13,12 +17,19 @@ import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.LabeledALabelIntTreeMap;
 import it.univr.di.labeledvalue.Literal;
-
-@SuppressWarnings("javadoc")
+/**
+ * test for  CSTNUGraphMLWriter
+ * @author posenato
+ */
 public class CSTNUGraphMLWriterTest {
 
-	String fileName = "src/test/resources/testGraphML.cstnu";
+	private String fileName = "src/test/resources/testGraphML.cstnu";
 
+	/**
+	 * testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge
+	 * 
+	 * @throws IOException clear
+	 */
 	@Test
 	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws IOException {
 		Label p = Label.valueOf('p', Literal.NEGATED);
@@ -51,16 +62,19 @@ public class CSTNUGraphMLWriterTest {
 		// cstnu.initAndCheck();
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
 		graphWriter.save(g, new File(this.fileName));
-		try (FileReader input = new FileReader(this.fileName)) {
+		try (BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(this.fileName), StandardCharsets.UTF_8))) { // don't use new FileReader(this.fileName)
+																														// because for Java 8 it does not accept "UTF-8"
 			char[] fileAsChar = new char[4200];
-			input.read(fileAsChar);
+			if (input.read(fileAsChar)==-1) {
+				fail("Problem reading "+ this.fileName);
+			}
 			String fileAsString = new String(fileAsChar);
 			input.close();
 			assertEquals(this.fileOk, fileAsString.trim());
 		}
 	}
 
-	String fileOk = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+	private String fileOk = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 			"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns/graphml\"\n" +
 			"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"  \n" +
 			"xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns/graphml\">\n" +

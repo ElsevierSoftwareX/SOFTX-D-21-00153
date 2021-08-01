@@ -24,7 +24,7 @@ public class ObjectArrayFifoSetQueueTest {
 	public ObjectArrayFIFOSetQueue<String> queue;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  none
 	 */
 	@Before
 	public void setUp() throws Exception {

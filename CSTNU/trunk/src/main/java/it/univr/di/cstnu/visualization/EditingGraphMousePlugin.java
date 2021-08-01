@@ -45,9 +45,13 @@ public class EditingGraphMousePlugin<V, E> extends edu.uci.ics.jung.visualizatio
 	 */
 	static Logger LOG = Logger.getLogger(EditingGraphMousePlugin.class.getName());
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * Helper for creating a node
+	 */
 	protected VertexSupport<V, E> vertexSupport;
-	@SuppressWarnings("javadoc")
+	/**
+	 * Helper for creating an edge
+	 */
 	protected EdgeSupport<V, E> edgeSupport;
 	private Creating createMode = Creating.UNDETERMINED;
 
@@ -204,9 +208,7 @@ public class EditingGraphMousePlugin<V, E> extends edu.uci.ics.jung.visualizatio
 	}
 
 	/**
-	 * <p>
-	 * Getter for the field <code>vertexSupport</code>.
-	 * </p>
+	 * <p>Getter for the field <code>vertexSupport</code>.</p>
 	 *
 	 * @return a {@link edu.uci.ics.jung.visualization.control.VertexSupport} object.
 	 */

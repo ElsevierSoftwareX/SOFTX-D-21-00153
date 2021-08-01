@@ -4,9 +4,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>it.univr.di</groupId>
-	<artifactId>CSTNU</artifactId>
-	<version>3.6</version><!--Aggiornare anche codemeta.json -->
-	<name>CSTNU</name>
+	<artifactId>CSTNU-Tool</artifactId><!--Aggiornare anche codemeta.json -->
+	<name>CSTNU-Tool</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
 		<exportAntProperties>true</exportAntProperties>
@@ -133,11 +132,6 @@
 			<version>2.4</version>
 		</dependency>
 		<dependency>
-			<groupId>net.openhft</groupId>
-			<artifactId>affinity</artifactId>
-			<version>3.1.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
 			<version>1.7.25</version>
@@ -157,6 +151,38 @@
 			<groupId>org.netbeans.external</groupId>
 			<artifactId>ValidationAPI</artifactId>
 			<version>RELEASE124</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> 
+			<version>3.0.5</version> <exclusions> <exclusion> <groupId>xml-apis</groupId> 
+			<artifactId>xml-apis</artifactId> </exclusion> <exclusion> <groupId>jaxen</groupId> 
+			<artifactId>jaxen</artifactId> </exclusion> </exclusions> </dependency> -->
+
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId>
+			<version>3.0.0-M5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-report-plugin</artifactId>
+			<version>3.0.0-M5</version>
+		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>affinity</artifactId>
+			<version>3.21ea5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.spotbugs</groupId>
+			<artifactId>spotbugs-maven-plugin</artifactId>
+			<version>4.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-report-plugin</artifactId>
+			<version>3.0.0-M5</version>
+			<type>maven-plugin</type>
 		</dependency>
 	</dependencies>
 
@@ -205,11 +231,10 @@
 		</repository>
 	</repositories>
 
-
 	<distributionManagement>
 		<site>
 			<id>profs</id>
-			<!-- la gestione della password è come spiegato in https://maven.apache.org/guides/mini/guide-encryption.html 
+			<!-- la gestione della password è come spiegato in https://maven.apache.org/guides/mini/guide-encryption.html. 
 				Master password: quella del 17 -->
 			<url>scp://profs.scienze.univr.it/home/posenato/public_html/software/cstnu/</url>
 		</site>
@@ -257,8 +282,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version><!-- 3.2 -->
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>11</source>
+					<target>11</target>
 					<showDeprecation>true</showDeprecation>
 					<showWarnings>true</showWarnings>
 					<!-- <executable>${env.JAVA_HOME_7}/bin/javac</executable> -->
@@ -268,10 +293,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-surefire-plugin</artifactId> 
-				<version>2.22.2</version> 2.17 <dependencies> <dependency> <groupId>org.apache.maven.surefire</groupId> 
-				<artifactId>surefire-junit47</artifactId> <version>2.22.2</version> </dependency> 
-				</dependencies> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -607,7 +628,7 @@
 				<executions>
 					<execution>
 						<id>pdf_html</id>
-						<phase>pre-site</phase>
+						 <phase>pre-site</phase> 
 						<goals>
 							<!--<goal>latex</goal> -->
 							<goal>tex4ht</goal>
@@ -619,20 +640,18 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.3.0</version>
 				<configuration>
-					<show>private</show>
-					<source>8</source>
-<!-- 					<detectJavaApiLink>false</detectJavaApiLink>-->
-					<doclint>all,-missing</doclint>
-					<!-- cosa controllare-->
+					<show>package</show>
+					<doclint>all,-html</doclint><!-- cosa controllare. Ho tolto html perché javadoc 11 non riconosce le entità HTML! -->
+					<source>11</source>
+					<detectJavaApiLink>false</detectJavaApiLink>
 					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
 						<exclude>**/attic/*.java</exclude>
 						<exclude>**/lazy/*.java</exclude>
 					</sourceFileExcludes>
-					<show>package</show>
 					<keywords>true</keywords>
 					<tags>
 						<tag>
@@ -649,15 +668,39 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<configuration>
+					<excludes>
+						<exclude>**/*Lazy*.java</exclude>
+						<exclude>**/lazy/*.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 	<scm>
-		<!-- <connection>scm:svn:https://archive.softwareheritage.org/badge/swh:1:dir:154964a39f8f90a8f4242e021a5b111d6b2d251c/</connection> -->
-		<!-- <developerConnection>scm:svn:https://svn.example.org/repo/project/trunk/site</developerConnection> -->
-		<url>https://archive.softwareheritage.org/swh:1:dir:154964a39f8f90a8f4242e021a5b111d6b2d251c;origin=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU</url>
+		<!-- <connection></connection> -->
+		<developerConnection>scm:svn:https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk</developerConnection>
+		<url>https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU</url>
+		<connection>scm:svn:https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk</connection>
 	</scm>
 	<reporting>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>3.0.0-M5</version>
+				<configuration>
+					<excludes>
+						<exclude>**/*Lazy*.java</exclude>
+						<exclude>**/lazy/*.java</exclude>
+					</excludes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
@@ -676,35 +719,31 @@
 					</reportSet>
 				</reportSets>
 			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>3.0.0-M5</version>
-			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.3.0</version>
 				<reportSets>
 					<reportSet>
 						<id>html</id>
 						<reports>
-							<report>javadoc</report>
+							<report>aggregate-no-fork</report>
 						</reports>
 					</reportSet>
 				</reportSets>
 				<configuration>
-					<show>private</show>
-					<source>8</source>
+					<show>package</show>
+					<doclint>all,-html</doclint>	<!-- cosa controllare. Ho tolto html perché javadoc 11 non riconosce le entità 
+						HTML! -->
+					<source>11</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
-					<doclint>all,-missing</doclint><!-- cosa controllare -->
 					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
 						<exclude>**/attic/*.java</exclude>
 						<exclude>**/lazy/*.java</exclude>
 					</sourceFileExcludes>
-					<show>package</show>
 					<keywords>true</keywords>
 					<tags>
 						<tag>
@@ -720,17 +759,22 @@
 					</tags>
 				</configuration>
 			</plugin>
+			<!-- <plugin> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> 
+				<version>3.0.5</version> <configuration> <effort>Default</effort> <threshold>Medium</threshold> 
+				<xmlOutput>true</xmlOutput> Optional directory to put findbugs xdoc xml report 
+				<xmlOutputDirectory>target/site</xmlOutputDirectory> <excludeFilterFile>findbugs-exclude.xml</excludeFilterFile> 
+				</configuration> </plugin> -->
+
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.5</version>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.2.3</version>
 				<configuration>
+					<effort>Max</effort>
+					<threshold>Medium</threshold>
 					<xmlOutput>true</xmlOutput>
-					<!-- Optional directory to put findbugs xdoc xml report -->
 					<xmlOutputDirectory>target/site</xmlOutputDirectory>
-					<onlyAnalyze>it.univr.di.cstnu.algorithms.*,
-						it.univr.di.cstnu.graph.*,it.univr.di.labeledvalue.*</onlyAnalyze><!-- 
-						it.univr.di.cstnu.visualization.*, -->
+					<excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -774,4 +818,5 @@
 			</build>
 		</profile>
 	</profiles>
+	<version>4.0</version>
 </project>

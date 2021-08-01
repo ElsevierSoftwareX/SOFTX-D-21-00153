@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 /**
- * Contains all classes for representing vertices, edges and (distance) graphs related to CSTN(U) model.
+ * Contains all classes for representing vertices, edges and graphs related to (C)STN(U) model.
  * 
  * @author posenato
  */

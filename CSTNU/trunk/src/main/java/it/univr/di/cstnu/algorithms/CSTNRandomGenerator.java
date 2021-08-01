@@ -9,7 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -195,8 +195,8 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
-	 * @param s1
-	 * @param s2
+	 * @param s1 first set 
+	 * @param s2 second set
 	 * @return an array that is the s1 / s2. s1 and s2 are not modified.
 	 */
 	static char[] setDifference(char[] s1, char[] s2) {
@@ -236,7 +236,11 @@ public class CSTNRandomGenerator {
 		File baseDir = new File(DIR_NAME);
 
 		if (!baseDir.exists()) {
-			baseDir.mkdirs();
+			if(!baseDir.mkdirs()) {
+				String m = "Directory " + baseDir.getAbsolutePath() + " cannot be created!";
+				LOG.severe(m);
+				throw new RuntimeException(m);
+			}
 		}
 		String suffix = "_" + String.format(makeNumberFormat(generator.nNodes), generator.nNodes) + "nodes_" + generator.nPropositions + "props_"
 				+ generator.nQLoops + "qLoops_" + generator.nNodesQLoop + "nodeInQLoop_"
@@ -247,14 +251,22 @@ public class CSTNRandomGenerator {
 			File oldDir = new File(generator.dcSubDir.getAbsolutePath() + "_" + System.currentTimeMillis());
 			Files.move(generator.dcSubDir, oldDir);
 		}
-		generator.dcSubDir.mkdir();
+		if (!generator.dcSubDir.mkdir()) {
+			String m = "Directory " + generator.dcSubDir.getAbsolutePath() + " cannot be created!";
+			LOG.severe(m);
+			throw new RuntimeException(m);
+		}
 
 		generator.notDCSubDir = new File(baseDir, NOT_DC_SUB_DIR_NAME + suffix);
 		if (generator.notDCSubDir.exists()) {
 			File oldDir = new File(generator.notDCSubDir.getAbsolutePath() + "_" + System.currentTimeMillis());
 			Files.move(generator.notDCSubDir, oldDir);
 		}
-		generator.notDCSubDir.mkdir();
+		if (!generator.notDCSubDir.mkdir()) {
+			String m = "Directory " + generator.notDCSubDir.getAbsolutePath() + " cannot be created!";
+			LOG.severe(m);
+			throw new RuntimeException(m);
+		}
 
 		final String log = "Main directory where generated instances are saved: " + baseDir.getCanonicalPath()
 				+ "\nSub dir for DC instances:\t\t" + generator.dcSubDir.getPath()
@@ -456,7 +468,7 @@ public class CSTNRandomGenerator {
 	/**
 	 * Random generator used in the building of labels.
 	 */
-	private Random rnd = new Random(System.currentTimeMillis());
+	private SecureRandom rnd = new SecureRandom();
 
 	/**
 	 * <p>
@@ -473,6 +485,7 @@ public class CSTNRandomGenerator {
 	 * @param edgeProbability a double.
 	 * @param givenMaxWeight a int.
 	 * @throws java.lang.IllegalArgumentException if one or more parameters has/have not valid value/s.
+	 * @throws java.lang.IllegalArgumentException if any.
 	 */
 	public CSTNRandomGenerator(int givenDcInstances, int givenNotDCInstances, int nodes, int propositions, int qLoops, int nodesInQloop, int obsInQLoop,
 			double edgeProbability,
@@ -680,12 +693,14 @@ public class CSTNRandomGenerator {
 				try {
 					cstnWriter.save(cstn.getG(), new File(this.dcSubDir.getParent(), "current.cstn"));
 				} catch (IOException e) {
-					LOG.severe("It is not possible to create a temporany file in directory "+this.dcSubDir.getParent()+". Please, change the permissions and re-run the app.");
-					System.exit(1);
+					String msg = "It is not possible to create a temporany file in directory " + this.dcSubDir.getParent()
+							+ ". Please, change the permissions and re-run the app.";
+					LOG.severe(msg);
+					throw new RuntimeException(msg);
 				}
 				LOG.finer("Current cstn saved as 'current.cstn' before checking.");
 			}
-			status = new CSTNCheckStatus();
+			// status = new CSTNCheckStatus();
 			try {
 				LOG.fine("DC Check started.");
 				status = cstn.dynamicConsistencyCheck();

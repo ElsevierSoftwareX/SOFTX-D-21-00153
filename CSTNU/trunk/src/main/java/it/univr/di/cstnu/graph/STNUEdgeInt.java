@@ -16,6 +16,9 @@ import it.univr.di.labeledvalue.Constants;
  * @author posenato
  * @version $Id: $Id
  */
+@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+	    value="SE_BAD_FIELD",
+	    justification="I know what I'm doing")
 public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 
 	/**
@@ -34,7 +37,7 @@ public class STNUEdgeInt extends STNEdgeInt implements STNUEdge {
 	Pair nodeLabel;
 
 	/**
-	 * <p>Constructor for STNUEdgeInt.</p>
+	 * Constructor for STNUEdgeInt.
 	 */
 	public STNUEdgeInt() {
 		super();

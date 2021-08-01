@@ -51,7 +51,7 @@ public class Luke2GraphML {
 	 * </p>
 	 *
 	 * @param args a CSTN file in Luke's format.
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception if any.
 	 */
 	public static void main(String[] args) throws Exception {
 
@@ -84,6 +84,8 @@ public class Luke2GraphML {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(converter.inputCSTNFile), "UTF8"))) {
 			while (reader.ready()) {
 				String line = reader.readLine();
+				if (line == null)
+					break;
 				LOG.finest("Line:" + line);
 				if (line.startsWith(";") || line.startsWith("--") || line.startsWith("==") || line.isEmpty()) {
 					// it is comment, ignore
@@ -121,7 +123,7 @@ public class Luke2GraphML {
 	 */
 	private static void addEdge(BufferedReader reader, String line, TNGraph<CSTNEdge> g,
 			Int2ObjectMap<LabeledNode> int2Node) throws IOException {
-		final String patternEdge = new String("EDGE \\(|,|\\):");
+		final String patternEdge = "EDGE \\(|,|\\):";
 		String[] nodeParts = line.split(patternEdge);
 		// nodeParts[0] is empty!
 
@@ -134,6 +136,8 @@ public class Luke2GraphML {
 		String[] labelParts = null;
 		while (reader.ready()) {
 			String line1 = reader.readLine();
+			if (line1 == null)
+				break;
 			if (line1.startsWith("<*POS-INF*") || line1.startsWith(";") || line1.isEmpty())
 				continue;
 			if (line1.startsWith("---"))
@@ -147,7 +151,7 @@ public class Luke2GraphML {
 				label = Label.parse(toLabel(labelParts[2]));
 				LOG.info("line1:" + line1 + ". labelparts:" + Arrays.toString(labelParts) + ". label:" + label);
 			}
-			int value = Integer.valueOf(labelParts[1]);
+			int value = Integer.parseInt(labelParts[1]);
 			edge.mergeLabeledValue(label, value);
 		}
 		if (edge.getLabeledValueSet().size() > 0) {
@@ -164,7 +168,7 @@ public class Luke2GraphML {
 	 */
 	private static <C extends LabeledIntMap> void addNode(BufferedReader reader, String line, TNGraph<CSTNEdge> g,
 			Int2ObjectMap<LabeledNode> int2Node) throws Exception {
-		final String patternNode = new String("TP\\(|\\):[\\s\u00A0]+|,\\s+\\[|\\],\\s+|\\]");
+		final String patternNode = "TP\\(|\\):[\\s\u00A0]+|,\\s+\\[|\\],\\s+|\\]";
 		String[] nodeParts = line.split(patternNode);
 		// nodeParts[0] is empty!
 		LOG.info("NodeParts:" + Arrays.toString(nodeParts) + ". Lenght:" + nodeParts.length);
@@ -174,7 +178,7 @@ public class Luke2GraphML {
 		if (!added)
 			throw new Exception("Node " + node + " cannot be insert.");
 
-		if (int2Node.put(Integer.valueOf(nodeParts[1]).intValue(), node) != null)
+		if (int2Node.put(Integer.parseInt(nodeParts[1]), node) != null)
 			throw new Exception("Node " + node + " already inserted.");
 		if (nodeParts.length == 3) {
 			node.setLabel(Label.emptyLabel);
@@ -198,8 +202,8 @@ public class Luke2GraphML {
 
 	/**
 	 * Class to use for managing labeled values of edges.
-	 */
 	Class<LabeledIntMap> internalMapImplementationClass;
+	 */
 
 	/**
 	 * The input file names. Each file has to contain a CSTN tNGraph in GraphML
@@ -270,11 +274,23 @@ public class Luke2GraphML {
 				return false;
 			}
 			if (!this.fOutput.getName().endsWith(".csv")) {
-				this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
+				if(!this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"))) {
+					String m = "File "+this.fOutput.getAbsolutePath()+" cannot be renamed.";
+					LOG.severe(m);
+					throw new RuntimeException(m);
+				}
 			}
 			if (this.fOutput.exists()) {
-				this.fOutput.renameTo(new File(this.fOutput.getAbsoluteFile() + ".old"));
-				this.fOutput.delete();
+				if(!this.fOutput.renameTo(new File(this.fOutput.getAbsoluteFile() + ".old"))) {
+					String m = "File "+this.fOutput.getAbsolutePath()+" cannot be renamed in .old.";
+					LOG.severe(m);
+					throw new RuntimeException(m);
+				}
+				if(!this.fOutput.delete()) {
+					String m = "File " + this.fOutput.getAbsolutePath() + " cannot be deleted.";
+					LOG.severe(m);
+					throw new RuntimeException(m);
+				}
 			}
 		}
 		return true;

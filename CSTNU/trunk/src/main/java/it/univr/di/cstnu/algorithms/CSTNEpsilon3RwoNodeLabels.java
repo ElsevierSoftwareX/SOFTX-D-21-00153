@@ -41,9 +41,9 @@ public class CSTNEpsilon3RwoNodeLabels extends CSTNEpsilon3R {
 	 * Just for using this class also from a terminal.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNEpsilon3RwoNodeLabels(), "Epsilon DC based on 3 Rules and without node labels");

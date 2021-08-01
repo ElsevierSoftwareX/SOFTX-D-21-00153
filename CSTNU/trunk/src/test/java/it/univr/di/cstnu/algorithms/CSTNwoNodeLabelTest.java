@@ -31,7 +31,7 @@ public class CSTNwoNodeLabelTest extends CSTNTest {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  none
 	 */
 	@Override
 	@Before
@@ -746,7 +746,7 @@ public class CSTNwoNodeLabelTest extends CSTNTest {
 	/**
 	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  none
 	 */
 	@Override
 	@Test

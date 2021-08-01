@@ -66,7 +66,8 @@ public class TNGraphMLReader<E extends Edge> {
 		Supplier<E> edgeFactory;
 
 		/**
-		 * @param edgeImpl
+		 * @param <E1> type of edge
+		 * @param edgeImpl class representing a concrete edge type
 		 */
 		public <E1 extends E> InternalEdgeFactory(Class<E1> edgeImpl) {
 			super();
@@ -134,13 +135,13 @@ public class TNGraphMLReader<E extends Edge> {
 	/**
 	 * Reads graphXML and returns the corresponding graph as a TNGraph object. Edges of TNGraph are created using the edgeImplClass.
 	 * In this way, such a reader can create more kinds of TNGraph according to the given type of edge.
-	 * 
+	 *
 	 * @param graphXML a string representing the graph in GraphML format.
 	 * @param edgeImplClass the type for the edges of the graph.
 	 * @return the graphML as TNGraph.
-	 * @throws IOException if any error occurs during the graphXML reading
-	 * @throws ParserConfigurationException if graphXML contains character that cannot be parsed
-	 * @throws SAXException if graphXML is not valid
+	 * @throws java.io.IOException if any error occurs during the graphXML reading
+	 * @throws javax.xml.parsers.ParserConfigurationException if graphXML contains character that cannot be parsed
+	 * @throws org.xml.sax.SAXException if graphXML is not valid
 	 */
 	public TNGraph<E> readGraph(final String graphXML, Class<? extends E> edgeImplClass) throws IOException, ParserConfigurationException, SAXException {
 		if (graphXML == null || graphXML.isEmpty()) {
@@ -154,13 +155,13 @@ public class TNGraphMLReader<E extends Edge> {
 	/**
 	 *  Reads graphFile and returns the corresponding graph as a TNGraph object. Edges of TNGraph are created using the edgeImplClass.
 	 * In this way, such a reader can create more kinds of TNGraph according to the given type of edge.
-
+	 *
 	 * @param graphFile file containing the graph in GraphML format.
 	 * @param edgeImplClass the type for the edges of the graph.
 	 * @return the graphML as TNGraph.
-	 * @throws IOException if any error occurs during the graphFile reading.
-	 * @throws ParserConfigurationException if graphXML contains character that cannot be parsed
-	 * @throws SAXException if graphFile does not containt a valid GraphML instance.
+	 * @throws java.io.IOException if any error occurs during the graphFile reading.
+	 * @throws javax.xml.parsers.ParserConfigurationException if graphXML contains character that cannot be parsed
+	 * @throws org.xml.sax.SAXException if graphFile does not containt a valid GraphML instance.
 	 */
 	public TNGraph<E> readGraph(final File graphFile, Class<? extends E> edgeImplClass) throws IOException, ParserConfigurationException, SAXException {
 		try (Reader fileReader = new BufferedReader(new InputStreamReader(new FileInputStream(graphFile), "UTF8"))) {
@@ -175,12 +176,12 @@ public class TNGraphMLReader<E extends Edge> {
 	/**
 	 * Creates the graph object using the given reader for acquiring the input.
 	 * 
-	 * @param reader
-	 * @param edgeImplClass
+	 * @param reader  none
+	 * @param edgeImplClass  none
 	 * @return the graphML as TNGraph.
-	 * @throws java.io.IOException
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
+	 * @throws java.io.IOException  none
+	 * @throws org.xml.sax.SAXException  none
+	 * @throws javax.xml.parsers.ParserConfigurationException  none
 	 */
 	TNGraph<E> load(Reader reader, Class<? extends E> edgeImplClass) throws IOException, ParserConfigurationException, SAXException {
 		ALabelAlphabet aLabelAlphabet = new ALabelAlphabet();
@@ -203,14 +204,11 @@ public class TNGraphMLReader<E extends Edge> {
 		 * Node attribute setting!
 		 */
 		// Name
-		graphReader.getVertexIDs().forEach(new BiConsumer<LabeledNode, String>() {
-			@Override
-			public void accept(LabeledNode n, String s) {
-				n.setName(s);
-				if (s.equals(AbstractCSTN.ZERO_NODE_NAME)) {
-					// TNGraphMLReader.tnGraph.setZ(n);
-					tnGraph.setZ(n);
-				}
+		graphReader.getVertexIDs().forEach((n, s) -> {
+			n.setName(s);
+			if (s.equals(AbstractCSTN.ZERO_NODE_NAME)) {
+				// TNGraphMLReader.tnGraph.setZ(n);
+				tnGraph.setZ(n);
 			}
 		});
 		// Label

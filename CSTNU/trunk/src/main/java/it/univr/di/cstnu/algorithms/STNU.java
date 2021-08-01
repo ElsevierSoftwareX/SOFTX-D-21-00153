@@ -42,7 +42,7 @@ import it.univr.di.cstnu.graph.STNUEdgeInt;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
-import it.univr.di.cstnu.visualization.StaticLayout;
+import it.univr.di.cstnu.visualization.CSTNUStaticLayout;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -55,7 +55,9 @@ import it.univr.di.labeledvalue.Label;
  */
 public class STNU {
 
-	@SuppressWarnings("javadoc")
+	/**
+	 * Possible DC checking algorithm
+	 */
 	public static enum CheckAlgorithm {
 		/**
 		 * Morris cubic algorithm
@@ -68,11 +70,11 @@ public class STNU {
 		/**
 		 * Luke's version of RUL^- algorithm
 		 */
-		RUL2020,
+		RUL2020
 		/**
 		 * Only for checking BellmanFord
+		 * BellmanFord
 		 */
-		BellmanFord
 	}
 
 	/**
@@ -128,12 +130,18 @@ public class STNU {
 			return sb.toString();
 		}
 
-		@SuppressWarnings("javadoc")
+		/**
+		 * Sets the controllability value
+		 * 
+		 * @param state new controllability value
+		 */
 		public void setControllability(boolean state) {
 			this.consistency = state;
 		}
 
-		@SuppressWarnings("javadoc")
+		/**
+		 * @return true if the controllability status is true
+		 */
 		public boolean isControllability() {
 			return this.consistency;
 		}
@@ -177,9 +185,9 @@ public class STNU {
 	 * </p>
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		STNU stnu = new STNU();
@@ -434,9 +442,9 @@ public class STNU {
 		case RUL2018:
 			this.checkStatus.setControllability(rul2018());
 			break;
-		case BellmanFord:// it is just for experiments
-			this.checkStatus.setControllability(bellmanFordOL() != null);
-			break;
+		// case BellmanFord:// it is just for experiments
+		// this.checkStatus.setControllability(bellmanFordOL() != null);
+		// break;
 		default:
 		case RUL2020:
 			this.checkStatus.setControllability(rul2020());
@@ -571,7 +579,7 @@ public class STNU {
 	 * {@link it.univr.di.cstnu.algorithms.WellDefinitionException}.
 	 *
 	 * @return true if the graph is a well formed
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the initial graph is not well defined.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
 		if (Debug.ON) {
@@ -1016,13 +1024,13 @@ public class STNU {
 		g1.setName(this.fOutput.getName());
 		g1.removeEmptyEdges();
 
-		StaticLayout<STNUEdge> layout = new StaticLayout<>(g1);
+		CSTNUStaticLayout<STNUEdge> layout = new CSTNUStaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
 		try {
 			graphWriter.save(g1, this.fOutput);
 		} catch (IOException e) {
 			System.err.println(
-					"It is not possible to save the result. File "+this.fOutput +" cannot be created: " + e.getMessage());
+					"It is not possible to save the result. File " + this.fOutput + " cannot be created: " + e.getMessage());
 			return;
 		}
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
@@ -1128,7 +1136,7 @@ public class STNU {
 			parser.parseArgument(args);
 
 			if (this.fInput == null) {
-				try (Scanner consoleScanner = new Scanner(System.in)) {
+				try (Scanner consoleScanner = new Scanner(System.in, "UTF-8")) {
 					System.out.print("Insert STNU file name (absolute file name): ");
 					String fileName = consoleScanner.next();
 					this.fInput = new File(fileName);
@@ -1141,10 +1149,18 @@ public class STNU {
 				if (this.fOutput.isDirectory())
 					throw new CmdLineException(parser, "Output file is a directory.");
 				if (!this.fOutput.getName().endsWith(".stnu")) {
-					this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".stnu"));
+					if (!this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".stnu"))) {
+						String m = "File " + this.fOutput.getAbsolutePath() + " cannot be renamed.";
+						LOG.severe(m);
+						throw new RuntimeException(m);
+					}
 				}
 				if (this.fOutput.exists()) {
-					this.fOutput.delete();
+					if (!this.fOutput.delete()) {
+						String m = "File " + this.fOutput.getAbsolutePath() + " cannot be deleted.";
+						LOG.severe(m);
+						throw new RuntimeException(m);
+					}
 				}
 			}
 		} catch (final CmdLineException e) {
@@ -1166,18 +1182,18 @@ public class STNU {
 
 	/**
 	 * Determines the minimal distance in this STN between any node and the sink one (node Z) using the BellmanFord algorithm.
-	 * The minimal distance is stored as potential value in each node.
-	 * If the graph contains a negative cycle, it returns false.
-	 * for dc-checking STNUs, morris' 2014 algorithm is the easiest to implement because it
-	 * does not need any potential functions to reweight the edges in the graph. it only back-propagates
-	 * along non-negative edges. it makes recursive function calls to dcbackprop. use a global vector to
-	 * keep track of status of each "negative node": *not-yet-encountered*, *already-started*, *successfully-completed*.
-	 * that way, when you enter a recursive call, you can check its status (see first few lines of pseudocode for the algorithm in morris-2014) before
+	 * The minimal distance is stored as potential value in each node.<br>
+	 * If the graph contains a negative cycle, it returns false.<br>
+	 * For dc-checking STNUs, Morris' 2014 algorithm is the easiest algorithm to implement because it
+	 * does not need any potential functions to reweight the edges in the graph.<br>
+	 * It only back-propagates along non-negative edges. It makes recursive function calls to dcbackprop. use a global vector to
+	 * keep track of status of each "negative node": *not-yet-encountered*, *already-started*, *successfully-completed*.<br>
+	 * That way, when you enter a recursive call, you can check its status (see first few lines of pseudocode for the algorithm in morris-2014) before
 	 * proceeding.
 	 * 
 	 * @return true if the graph is dynamic controllable (DC), false otherwise.
 	 */
-	private boolean morris2014() {
+	boolean morris2014() {
 		this.contingentAlsoAsOrdinary = false; // Morris consider only labeled value for contingent links.
 		if (!this.makeNormalForm())
 			return false;
@@ -1382,7 +1398,7 @@ public class STNU {
 		/**
 		 * Default constructor
 		 * 
-		 * @param defaultDistance
+		 * @param defaultDistance default distance when map does not contasin the key
 		 */
 		RULLocalInfo(int defaultDistance) {
 			this.distanceFrom = new Object2IntOpenHashMap<>();
@@ -1398,7 +1414,7 @@ public class STNU {
 	 * 
 	 * @return true if the graph is dynamic controllable (DC), false otherwise.
 	 */
-	private boolean rul2018() {
+	boolean rul2018() {
 		this.contingentAlsoAsOrdinary = false; // RUL consider only labeled value in contingent links.
 		int k;
 
@@ -1703,8 +1719,7 @@ public class STNU {
 	}
 
 	/**
-	 * Determines the minimal distance between source node (added by the method) and any node using the BellmanFord
-	 * algorithm.
+	 * Determines the minimal distance between source node (added by the method) and any node using the BellmanFord algorithm.
 	 * The minimal distance is determined considering the ordinary an the lower case values of the input STNU.
 	 * The minimal distance is returned as map (node, value).
 	 * If the graph contains a negative cycle, it returns null.
@@ -1769,7 +1784,7 @@ public class STNU {
 	 * 
 	 * @return true if the graph is dynamic controllable (DC), false otherwise.
 	 */
-	private boolean rul2020() {
+	boolean rul2020() {
 		this.contingentAlsoAsOrdinary = false; // RUL consider only labeled value in contingent links.
 		int k;
 

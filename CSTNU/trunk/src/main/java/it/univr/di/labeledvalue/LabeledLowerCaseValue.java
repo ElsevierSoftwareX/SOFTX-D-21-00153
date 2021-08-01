@@ -7,6 +7,7 @@
  */
 package it.univr.di.labeledvalue;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,7 +21,12 @@ import it.univr.di.Debug;
  * @author posenato
  * @version $Id: $Id
  */
-public class LabeledLowerCaseValue {
+public class LabeledLowerCaseValue implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Logger.
 	 */

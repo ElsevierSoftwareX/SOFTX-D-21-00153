@@ -31,7 +31,7 @@ public class CSTNepsilonTest extends CSTNTest {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception nope
 	 */
 	@Override
 	@Before
@@ -689,7 +689,7 @@ public class CSTNepsilonTest extends CSTNTest {
 	/**
 	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException nope
 	 */
 	@Override
 	@Test

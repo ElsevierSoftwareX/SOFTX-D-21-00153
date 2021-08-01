@@ -44,11 +44,10 @@ public class STNUTest {
 	 */
 	STNU stnu;
 
-	@SuppressWarnings("javadoc")
-	LabeledNode X, Ω, Y, Z;
+	private LabeledNode X, Ω, Y, Z;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  nope
 	 */
 	@Before
 	public void setUp() throws Exception {

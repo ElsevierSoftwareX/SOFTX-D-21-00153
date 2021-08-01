@@ -24,8 +24,7 @@ import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
  */
 public class LabeledALabelIntTreeMapTest {
 
-	@SuppressWarnings("javadoc")
-	LabeledALabelIntTreeMap map,
+	private LabeledALabelIntTreeMap map,
 			result;
 
 	/**
@@ -34,7 +33,7 @@ public class LabeledALabelIntTreeMapTest {
 	ALabelAlphabet alpha;
 
 	/**
-	 * @throws Exception
+	 * @throws Exception  nope
 	 */
 	@Before
 	public void setUp() throws Exception {
@@ -624,12 +623,12 @@ public class LabeledALabelIntTreeMapTest {
 		// System.out.println("Execution time for determining the min value (" + min + ") (mean over " + nTest + " tests). (ms): "
 		// + ((endTime - startTime) / msNorm));
 
-		startTime = System.nanoTime();
+//		startTime = System.nanoTime();
 		Label l = Label.parse("abd¿f");
 		for (int i = 0; i < nTest; i++) {
 			min = map.getValue(l, a);
 		}
-		endTime = System.nanoTime();
+//		endTime = System.nanoTime();
 		// System.out.println("Execution time for retrieving value of label " + l + " (mean over " + nTest + " tests). (ms): "
 		// + ((endTime - startTime) / msNorm));
 

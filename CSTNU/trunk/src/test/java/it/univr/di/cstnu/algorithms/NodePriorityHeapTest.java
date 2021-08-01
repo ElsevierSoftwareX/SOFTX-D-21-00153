@@ -22,11 +22,10 @@ public class NodePriorityHeapTest {
 	 * 
 	 */
 	NodePriorityHeap heap;
-	@SuppressWarnings("javadoc")
-	LabeledNode A, B, C;
+	private LabeledNode A, B, C;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  nope
 	 */
 	@Before
 	public void setUp() throws Exception {

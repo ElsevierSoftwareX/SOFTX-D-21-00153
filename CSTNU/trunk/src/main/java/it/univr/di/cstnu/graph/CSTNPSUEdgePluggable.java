@@ -27,6 +27,9 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
  * @author posenato
  * @version $Id: $Id
  */
+@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(
+	    value="SE_BAD_FIELD",
+	    justification="I know what I'm doing")
 public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNPSUEdge {
 
 	/**
@@ -38,7 +41,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 	 * The CSTNU controllability check algorithm needs to know if a labeled value has been already considered
 	 * in the past in order to avoid to add it a second time.
 	 */
-	Object2IntMap<Entry<Label, ALabel>> consideredLowerCaseValue;
+	 Object2IntMap<Entry<Label, ALabel>> consideredLowerCaseValue;
 
 	/**
 	 * Morris Lower case value augmented by a propositional label.<br>
@@ -49,7 +52,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 	/**
 	 * class initializer
 	 */
-	{
+	static {
 		/**
 		 * logger
 		 */
@@ -63,7 +66,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 	 */
 
 	/**
-	 * @param <C>
+	 * @param <C> type of map
 	 */
 	<C extends LabeledIntMap> CSTNPSUEdgePluggable() {
 		this((String) null);
@@ -71,6 +74,7 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 
 	/**
 	 * Constructor to clone the component.
+	 * @param <C> type of map
 	 *
 	 * @param e the edge to clone.
 	 */
@@ -96,7 +100,8 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 	}
 
 	/**
-	 * @param n
+	 * @param <C> type of map
+	 * @param n name of edge
 	 */
 	<C extends LabeledIntMap> CSTNPSUEdgePluggable(final String n) {
 		super(n);
@@ -326,9 +331,9 @@ public class CSTNPSUEdgePluggable extends BasicCSTNUEdgePluggable implements CST
 	/**
 	 * Set the triple as already considered in order to avoid to consider it again in the future.
 	 * 
-	 * @param l
-	 * @param n
-	 * @param i
+	 * @param l label
+	 * @param n name of node as alabel
+	 * @param i edge weight
 	 * @return the old value associated to (l,n), or the {@link Constants#INT_NULL} if no value was present.
 	 */
 	int setLowerCaseValueAsConsidered(final Label l, final ALabel n, final int i) {

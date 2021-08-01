@@ -1,10 +1,14 @@
 package it.univr.di.cstnu.graph;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,13 +16,19 @@ import org.junit.Test;
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
 import it.univr.di.labeledvalue.ALabelAlphabet.ALetter;
 
-@SuppressWarnings("javadoc")
+/**
+ * @author posenato
+ *
+ */
 public class STNUGraphMLWriterTest {
 
-	String fileName = "src/test/resources/testGraphML.stnu";
+	private String fileName = "src/test/resources/testGraphML.stnu";
 
-	TNGraph<STNUEdge> g;
-	
+	private TNGraph<STNUEdge> g;
+
+	/**
+	 * @throws Exception  nope
+	 */
 	@Before
 	public void setUp() throws Exception {
 		this.g = new TNGraph<>(STNUEdgeInt.class);
@@ -41,19 +51,29 @@ public class STNUGraphMLWriterTest {
 		this.g.addEdge(yx, Y, X);
 	}
 
+	/**
+	 * @throws IOException  nope
+	 */
 	@Test
 	public void testGraphMLWriterAbstractLayoutOfLabeledNodeLabeledIntEdge() throws IOException {
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
 		graphWriter.save(this.g, new File(this.fileName));
-		try (FileReader input = new FileReader(this.fileName)) {
+		try (BufferedReader input = new BufferedReader(new InputStreamReader(new FileInputStream(this.fileName), StandardCharsets.UTF_8))) { // don't use new
+																																				// FileReader(this.fileName) because for Java 8 it does not accept "UTF-8"
+
 			char[] fileAsChar = new char[4200];
-			input.read(fileAsChar);
+			if (input.read(fileAsChar)==-1) {
+				fail("Problem reading "+this.fileName);
+			}
 			String fileAsString = new String(fileAsChar);
 			input.close();
 			assertEquals(this.fileOk, fileAsString.trim());
 		}
 	}
 
+	/**
+	 *  nope
+	 */
 	@Test
 	public void testGraphMLStringWriter() {
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(null);
@@ -61,8 +81,7 @@ public class STNUGraphMLWriterTest {
 		assertEquals(this.fileOk, graphXML);
 	}
 
-	
-	String fileOk = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+	private String fileOk = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
 			"<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns/graphml\"\n" +
 			"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"  \n" +
 			"xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns/graphml\">\n" +

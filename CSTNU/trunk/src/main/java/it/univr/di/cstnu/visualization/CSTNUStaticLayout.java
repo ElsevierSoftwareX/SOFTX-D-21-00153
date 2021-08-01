@@ -10,7 +10,6 @@ package it.univr.di.cstnu.visualization;
 
 import java.awt.Dimension;
 import java.awt.geom.Point2D;
-import java.io.Serializable;
 
 import com.google.common.base.Function;
 import com.google.common.cache.LoadingCache;
@@ -20,18 +19,13 @@ import edu.uci.ics.jung.graph.Graph;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
- * Extends StaticLayout retrieving initial node positions from node attributes.
+ * Extends CSTNUStaticLayout retrieving initial node positions from node attributes.
  *
  * @param <E> edge type
  * @version $Id: $Id
  * @author posenato
  */
-public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements Serializable, IterativeContext {
-
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1L;
+public class CSTNUStaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLayout<LabeledNode, E> implements IterativeContext {
 
 	/**
 	 * Version
@@ -42,7 +36,7 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/**
 	 * It is used for getting the coordinates of node stored inside LabelNode object.
 	 */
-	static public final Function<LabeledNode, Point2D> positionInitializer = new Function<LabeledNode, Point2D>() {
+	static public final Function<LabeledNode, Point2D> positionInitializer = new Function<>() {
 		@Override
 		public Point2D apply(final LabeledNode v) {
 			final Point2D p = new Point2D.Double(v.getX(), v.getY());
@@ -55,7 +49,7 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	 *
 	 * @param graph1 a {@link edu.uci.ics.jung.graph.Graph} object.
 	 */
-	public StaticLayout(final Graph<LabeledNode, E> graph1) {
+	public CSTNUStaticLayout(final Graph<LabeledNode, E> graph1) {
 		super(graph1, positionInitializer);
 	}
 
@@ -65,14 +59,12 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	 * @param graph1 a {@link edu.uci.ics.jung.graph.Graph} object.
 	 * @param size1 a {@link java.awt.Dimension} object.
 	 */
-	public StaticLayout(final Graph<LabeledNode, E> graph1, final Dimension size1) {
+	public CSTNUStaticLayout(final Graph<LabeledNode, E> graph1, final Dimension size1) {
 		super(graph1, positionInitializer, size1);
 	}
 
 	/**
-	 * <p>
-	 * getLocations.
-	 * </p>
+	 * <p>getLocations.</p>
 	 *
 	 * @return the position of all vertices.
 	 */
@@ -101,7 +93,7 @@ public class StaticLayout<E> extends edu.uci.ics.jung.algorithms.layout.StaticLa
 	/** {@inheritDoc} */
 	@Override
 	public String toString() {
-		return StaticLayout.VERSIONandDATE;
+		return CSTNUStaticLayout.VERSIONandDATE;
 	}
 
 	/** {@inheritDoc} */

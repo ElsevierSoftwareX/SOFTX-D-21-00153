@@ -69,7 +69,7 @@ public class CSTNTest {
 	CSTNEdge ok = this.g.getEdgeFactory().get("OK");
 
 	/**
-	 * @throws java.lang.Exception
+ 	 * @throws java.lang.Exception  none
 	 */
 	@Before
 	public void setUp() throws Exception {
@@ -160,7 +160,7 @@ public class CSTNTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.CSTN#labelModificationR3qR3(LabeledNode, LabeledNode, CSTNEdge)}.
+	 * Test method for CSTN#labelModificationR3qR3(LabeledNode, LabeledNode, CSTNEdge)
 	 */
 	@Test
 	public void testLabelModificationR3() {
@@ -829,7 +829,7 @@ public class CSTNTest {
 	/**
 	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  none
 	 */
 	@Test
 	public void testQstar() throws WellDefinitionException {

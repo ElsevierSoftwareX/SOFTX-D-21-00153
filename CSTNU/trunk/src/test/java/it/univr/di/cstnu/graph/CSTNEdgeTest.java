@@ -29,7 +29,7 @@ public class CSTNEdgeTest {
 	CSTNEdge e;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception nope
 	 */
 	@Before
 	public void setUp() throws Exception {

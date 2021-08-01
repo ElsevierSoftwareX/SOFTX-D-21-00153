@@ -37,7 +37,7 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * @param inputMap
+		 * @param inputMap  nope
 		 */
 		public LabeledIntNotMinMapView(LabeledIntSimpleMap inputMap) {
 			this.mainMap = inputMap.mainMap;
@@ -65,12 +65,12 @@ public class LabeledIntSimpleMap extends AbstractLabeledIntMap {
 	/**
 	 * Map of label
 	 */
-	Object2IntMap<Label> mainMap;
+	 Object2IntMap<Label> mainMap;
 
 	/**
 	 * Counter of labeled value updates.
 	 */
-	Object2IntMap<Label> updateCount;
+	 Object2IntMap<Label> updateCount;
 
 	/**
 	 * Necessary constructor for the factory. The internal structure is built and empty.

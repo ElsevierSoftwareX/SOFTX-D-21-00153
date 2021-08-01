@@ -18,7 +18,7 @@ import it.univr.di.cstnu.graph.TNGraph;
  * Simple class to represent and DC check Conditional Simple Temporal Network (CSTN) where the edge weight are signed integer.
  * The dynamic consistency check (DC check) is done assuming epsilon DC semantics (cf. ICAPS 2016 paper, table 2) and using LP, R0, qR0, R3*, and qR3*
  * rules.<br>
- * In this class, an input CSTN tNGraph is transformed into an equivalent CSTN instance where node labels are empty.<br>
+ * In this class, an input CSTN TNGraph is transformed into an equivalent CSTN instance where node labels are empty.<br>
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -41,9 +41,9 @@ public class CSTNEpsilonwoNodeLabels extends CSTNEpsilon {
 	 * Just for using this class also from a terminal.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNEpsilonwoNodeLabels(), "Epsilon DC without node labels");

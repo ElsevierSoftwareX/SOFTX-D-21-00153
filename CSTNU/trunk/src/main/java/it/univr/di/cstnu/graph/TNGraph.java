@@ -9,13 +9,13 @@
  */
 package it.univr.di.cstnu.graph;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +55,8 @@ import it.univr.di.labeledvalue.Literal;
  * @version $Id: $Id
  * @param <E> type of edge
  */
-public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> implements DirectedGraph<LabeledNode, E>, Observer {
+@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "SE_BAD_FIELD", justification = "I know what I'm doing")
+public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> implements DirectedGraph<LabeledNode, E>, PropertyChangeListener {
 
 	/**
 	 * Types of network that can be represented by this class.
@@ -129,9 +130,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		int rowAdj = -1;
 
 		/**
-		 * @param e
-		 * @param row
-		 * @param col
+		 * @param e edge
+		 * @param row row 
+		 * @param col col
 		 */
 		EdgeIndex(E e, int row, int col) {
 			this.edge = e;
@@ -172,7 +173,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * @return an instance for propositionToNode field.
 	 */
 	private final static Char2ObjectMap<LabeledNode> newProposition2NodeInstance() {
-		return new Char2ObjectArrayMap<>();// I verified that Char2ObjectArrayMap is faster than Openhash when proposition are limited, as in this application.
+		Char2ObjectMap<LabeledNode> map = new Char2ObjectArrayMap<>();
+		map.defaultReturnValue(null);
+		return map;// I verified that Char2ObjectArrayMap is faster than Openhash when proposition are limited, as in this application.
 	}
 
 	/**
@@ -191,7 +194,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private Map<LabeledNode, Label> childrenOfObserver;
 
 	/**
-	 * Map (edge-->adjacency position)
+	 * Map (edge--&gt;adjacency position)
 	 */
 	private Object2ObjectMap<String, EdgeIndex> edge2index;
 
@@ -201,7 +204,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private EdgeSupplier<E> edgeFactory;
 
 	/**
-	 * Map (adjacency row-->node)
+	 * Map (adjacency row--&gt;node)
 	 */
 	private Int2ObjectMap<LabeledNode> index2node;
 
@@ -226,7 +229,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private LabeledNodeSupplier nodeFactory;
 
 	/**
-	 * Map (node-->adjacency row)
+	 * Map (node--&gt;adjacency row)
 	 */
 	private Object2IntMap<String> nodeName2index;
 
@@ -241,7 +244,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private int order;
 
 	/**
-	 * Map of (proposition-->Observer node).
+	 * Map of (proposition--&gt;Observer node).
 	 */
 	private Char2ObjectMap<LabeledNode> proposition2Observer;
 
@@ -257,9 +260,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Creates a new object using inputEdgeImplClass class for representing the edges of the graph.
+	 * @param <E1> type of edge
 	 *
 	 * @param inputEdgeImplClass a {@link java.lang.Class} object.
-	 * @param <E1> For considering any class implementing the parameter type E
 	 */
 	public <E1 extends E> TNGraph(Class<E1> inputEdgeImplClass) {// , Class<M1> inputLabeledValueMapImplClass
 		super(EdgeType.DIRECTED);
@@ -290,10 +293,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Creates a new object using inputEdgeImplClass class for representing the edges of the graph.
+	 * @param <E1> type of edge
 	 *
 	 * @param edgeImplClass a {@link java.lang.Class} object.
 	 * @param alphabet Alphabet to use for naming Upper Case label
-	 * @param <E1> For considering any class implementing the parameter type E
 	 */
 	public <E1 extends E> TNGraph(Class<E1> edgeImplClass, ALabelAlphabet alphabet) {
 		this(edgeImplClass);
@@ -304,10 +307,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * A constructor that copy a given graph g using copy constructor even for internal structures. If g is null, this new graph will be empty.
+	 * @param <E1> type of edge
 	 *
 	 * @param g the graph to be cloned
 	 * @param edgeImplClass class
-	 * @param <E1> For considering any class implementing the parameter type E
 	 */
 	public <E1 extends E> TNGraph(final TNGraph<E> g, Class<E1> edgeImplClass) {
 		this(edgeImplClass);
@@ -338,10 +341,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Constructor for TNGraph.
+	 * @param <E1> type of edge
 	 *
 	 * @param graphName a name for the graph
 	 * @param inputEdgeImplClass type of edges
-	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(final String graphName, Class<E1> inputEdgeImplClass) {
 		this(inputEdgeImplClass);
@@ -350,11 +353,11 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/**
 	 * Constructor for TNGraph.
+	 * @param <E1> type of edge
 	 *
 	 * @param graphName a name for the graph
 	 * @param inputEdgeImplClass type of edges
 	 * @param alphabet alphabet for upper case letter used to label values in the edges.
-	 * @param <E1> a E1 object.
 	 */
 	public <E1 extends E> TNGraph(final String graphName, Class<E1> inputEdgeImplClass, ALabelAlphabet alphabet) {
 		this(inputEdgeImplClass);
@@ -425,46 +428,53 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 * @param e not null
 	 * @param v1Name not null
 	 * @param v2Name not null
-	 * @return true if edge has been added.
+	 * @return true if edge has been added, false otherwise.
 	 */
 	public boolean addEdge(E e, final String v1Name, final String v2Name) {
 		if (e == null || v1Name == null || v2Name == null) {
-			throw new IllegalArgumentException("A parameter is null: " + e + ", " + v1Name + ", " + v2Name);
+			LOG.severe("A parameter is null: " + e + ", " + v1Name + ", " + v2Name);
+			return false;
 		}
 		if (this.edge2index.containsKey(e.getName())) {
-			throw new IllegalArgumentException("An edge with name " + e.getName() + " already exists. The new edge cannot be added.");
+			LOG.severe("An edge with name " + e.getName() + " already exists. The new edge cannot be added.");
+			return false;
 		}
 		int sourceIndex = this.nodeName2index.getInt(v1Name);
 		if (sourceIndex == Constants.INT_NULL) {
-			throw new IllegalArgumentException("Source node during adding edge with name " + e.getName() + " is null. The new edge cannot be added.");
+			LOG.severe("Source node during adding edge with name " + e.getName() + " is null. The new edge cannot be added.");
+			return false;
 		}
 
 		int destIndex = this.nodeName2index.getInt(v2Name);
 		if (destIndex == Constants.INT_NULL) {
-			throw new IllegalArgumentException("Destination node during adding edge with name " + e.getName() + " is null. The new edge cannot be added.");
+			LOG.severe("Destination node during adding edge with name " + e.getName() + " is null. The new edge cannot be added.");
+			return false;
 		}
 
 		E old = this.adjacency[sourceIndex][destIndex];
 		if (old != null) {
-			throw new IllegalArgumentException(
-					"Between node " + v1Name + " and node " + v2Name + " there exists the edge " + old + ". Remove it before adding a new one.");
+			LOG.severe("Between node " + v1Name + " and node " + v2Name + " there exists the edge " + old + ". Remove it before adding a new one.");
+			return false;
 		}
 		// removeEdgeFromIndex(old);
 		this.adjacency[sourceIndex][destIndex] = e;
 
 		this.edge2index.put(e.getName(), new EdgeIndex(e, sourceIndex, destIndex));
 		this.lowerCaseEdges = null;
-		((Observable) e).addObserver(this);
+		((AbstractEdge) e).addObserver("edgeType", this);
+		((AbstractEdge) e).addObserver("edgeName", this);
 		return true;
 	}
 
 	/** {@inheritDoc} */
 	@Override
 	public boolean addVertex(LabeledNode vertex) {
-		if (vertex == null || this.nodeName2index.containsKey(vertex.name)) {
+		if (vertex == null
+				|| this.nodeName2index.containsKey(vertex.name)
+				|| (vertex.getPropositionObserved() != Constants.UNKNOWN && this.getObserver(vertex.getPropositionObserved()) != null)) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.INFO)) {
-					LOG.info("The new vertex for adding is null or is already present.");
+					LOG.info("The new vertex for adding is null or is already present or contains a proposition already present.");
 				}
 			}
 			return false;
@@ -490,7 +500,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		this.index2node.put(this.order, vertex);
 		this.order++;
 		clearCache();
-		vertex.addObserver(this);
+		vertex.addObserver("nodeName", this);
+		vertex.addObserver("nodeLabel", this);
+		vertex.addObserver("nodeProposition", this);
 		return true;
 	}
 
@@ -904,10 +916,6 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	 */
 
 	/**
-	 * <p>
-	 * getEdgeImplClass.
-	 * </p>
-	 *
 	 * @return the edgeImplementationClass
 	 */
 	public Class<? extends E> getEdgeImplClass() {
@@ -996,11 +1004,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * <p>
-	 * getObservedAndObserver.
-	 * </p>
+	 * <p>getObservedAndObserver.</p>
 	 *
-	 * @return the map of propositions and their observers (nodes). If there is no observer node, it returns an empty map. The key is the literal observed.
+	 * @return the map of propositions and their observers (nodes). If there is no observer node, it returns an empty map.
 	 */
 	public Char2ObjectMap<LabeledNode> getObservedAndObserver() {
 		if (this.proposition2Observer == null) {
@@ -1008,7 +1014,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			char proposition;
 			for (final LabeledNode n : getVertices()) {
 				if ((proposition = n.getPropositionObserved()) != Constants.UNKNOWN) {
-					this.proposition2Observer.put(proposition, n);
+					if (this.proposition2Observer.put(proposition, n) != null) {
+						throw new IllegalStateException("There is two observer nodes for the same proposition " + proposition);
+					}
 				}
 			}
 		}
@@ -1016,12 +1024,10 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
-	 * <p>
-	 * getObserver.
-	 * </p>
+	 * <p>getObserver.</p>
 	 *
-	 * @param c the request proposition
-	 * @return the node that observes the proposition l if it exists, null otherwise.
+	 * @param c the proposition
+	 * @return the node that observes the proposition if it exists, null otherwise.
 	 */
 	public LabeledNode getObserver(final char c) {
 		final Char2ObjectMap<LabeledNode> observer = this.getObservedAndObserver();
@@ -1033,6 +1039,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 				TNGraph.LOG.finest("Propositione=" + c + "; observer=" + observer);
 		}
 		return observer.get(c);
+
 	}
 
 	/**
@@ -1408,7 +1415,9 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			return false;
 		}
 
-		removingNode.deleteObservers();
+		removingNode.removeObserver("nodeLabel", this);
+		removingNode.removeObserver("nodeName", this);
+		removingNode.removeObserver("nodeProposition", this);
 		int last = this.order - 1;
 		// Start to move node to remove at the end of adjacency matrix and to remove all its edges.
 		if (removingNodeIndex == last) {
@@ -1483,6 +1492,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>Setter for the field <code>inputFile</code>.</p>
+	 *
 	 * @param file a {@link java.io.File} object.
 	 */
 	public void setInputFile(File file) {
@@ -1499,10 +1510,12 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	}
 
 	/**
+	 * <p>setZ.</p>
+	 *
 	 * @param z the node to be set as Z node of the graph.
 	 */
 	public void setZ(final LabeledNode z) {
-		if (z==null) {
+		if (z == null) {
 			this.Z = null;
 			return;
 		}
@@ -1563,18 +1576,16 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 
 	/** {@inheritDoc} */
 	@Override
-	public void update(Observable o, Object arg) {
-		if (arg == null)
+	public void propertyChange(PropertyChangeEvent pce) {
+		if (pce == null)
 			return;
-		String argS = (String) arg;
-
-		String[] args = argS.split(":");
-		String obj = args[0];
-		String oldValue = args[1];
-
+		Object o = pce.getSource();
+		String property = pce.getPropertyName();
+		Object old = pce.getOldValue();
 		if (o instanceof LabeledNode) {
 			LabeledNode node = (LabeledNode) o;
-			if (obj.equals("Name")) {
+			if (property.equals("nodeName")) {
+				String oldValue = (String) old;
 				int oldI = this.nodeName2index.getInt(oldValue);
 				int newI = this.nodeName2index.getInt(node.getName());
 				if (newI != Constants.INT_NULL) {
@@ -1604,48 +1615,38 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 				}
 				return;
 			}
-			if (obj.equals("Proposition")) {
+			if (property.equals("nodeProposition")) {
 				char newP = node.propositionObserved;
-				char oldP = oldValue.charAt(0);
+				char oldP = ((Character) old).charValue();
+				// it is complicated to rely on proposition2Observer because it can be erased for some reason.
+				// So, the check is made checking all nodes.
 				if (newP != Constants.UNKNOWN) {
-					LabeledNode obsNewProp = this.proposition2Observer.get(newP);
-					if (obsNewProp != null) {
-						if (Debug.ON) {
-							if (LOG.isLoggable(Level.FINER))
-								LOG.finer("Values in proposition2Node: " + this.proposition2Observer.toString());
+					for (final LabeledNode n : getVertices()) {
+						if (n != node && n.getPropositionObserved() == newP) {
+							if (Debug.ON) {
+								LOG.severe("It is not possible to assign proposition " + newP + " to node " + node.getName()
+										+ " because there is already a node that observes the proposition: node " + n);
+								node.propositionObserved = oldP;
+							}
+							return;
 						}
-						if (Debug.ON)
-							LOG.severe("It is not possible to set observed proposition " + newP + " to node " + node.getName()
-									+ " because there is already a node that observes the proposition: node " + obsNewProp);
-						node.propositionObserved = oldP;
-						return;
 					}
 				}
-				if (oldP != Constants.UNKNOWN) {
-					this.proposition2Observer.remove(oldP);
-				}
-				if (newP != Constants.UNKNOWN) {
-					this.proposition2Observer.put(newP, node);
-				}
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
-						LOG.finer("The proposition2Node is updated. Removed old key " + oldP + ". Add the new one: " + newP + " with node " + node +
-								"\nValues in proposition2Node: " + this.proposition2Observer.toString());
-					}
-				}
+				this.proposition2Observer = null;
 				this.childrenOfObserver = null;
 				this.observer2Z = null;
 				return;
 			}
-			if (obj.equals("Label")) {
+			if (property.equals("nodeLabel")) {
 				this.childrenOfObserver = null;
 			}
 		} // LabeledNode
 
 		if (o instanceof AbstractEdge) {
 			AbstractEdge edge = (AbstractEdge) o;
-			if (obj.equals("Name")) {
-				EdgeIndex oldI = this.edge2index.get(oldValue);
+			if (property.equals("edgeName")) {
+				String oldName = (String) old;
+				EdgeIndex oldI = this.edge2index.get(oldName);
 				EdgeIndex newI = this.edge2index.get(edge.getName());
 				if (newI != null) {
 					if (Debug.ON) {
@@ -1653,36 +1654,37 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 							LOG.finer("Values in edge2index: " + this.edge2index.toString());
 					}
 					if (Debug.ON)
-						LOG.severe("It is not possible to rename edge " + oldValue + " with " + edge.getName()
+						LOG.severe("It is not possible to rename edge " + (oldName) + " with " + edge.getName()
 								+ " because there is already a edge with name " + edge.getName());
-					edge.name = oldValue;
+					edge.name = (String) old;
 					return;
 				}
-				this.edge2index.remove(oldValue);
+				this.edge2index.remove(oldName);
 				this.edge2index.put(edge.getName(), oldI);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.finer("The edge2index is updated. Removed old name " + oldValue + ". Add the new one: " + edge + " at position " + oldI +
+						LOG.finer("The edge2index is updated. Removed old name " + oldName + ". Add the new one: " + edge + " at position " + oldI +
 								"\nValues in edge2index: " + this.edge2index.toString());
 					}
 				}
 				return;
 			}
-			if (obj.equals("LowerLabel")) {
+			if (property.equals("lowerLabel:remove")) {
 				BasicCSTNUEdge e1 = (BasicCSTNUEdge) edge;
-				if (oldValue.equals("remove")) {
-					this.lowerCaseEdges.remove(e1);
-				} else {
-					if (this.lowerCaseEdges == null) {
-						this.lowerCaseEdges = new ObjectArrayList<>();
-					}
-					this.lowerCaseEdges.add(e1);
+				this.lowerCaseEdges.remove(e1);
+				return;
+			}
+			if (property.equals("lowerLabel:add")) {
+				BasicCSTNUEdge e1 = (BasicCSTNUEdge) edge;
+				if (this.lowerCaseEdges == null) {
+					this.lowerCaseEdges = new ObjectArrayList<>();
 				}
+				this.lowerCaseEdges.add(e1);
 			}
-			if (obj.equals("Type")) {
-				this.lowerCaseEdges = null;
-
-			}
+			return;
+		}
+		if (property.equals("edgeType")) {
+			this.lowerCaseEdges = null;
 		}
 	}
 
@@ -1716,7 +1718,8 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 	private void removeEdgeFromIndex(E e) {
 		if (e == null || e.getName() == null)
 			return;
-		((Observable) e).deleteObservers();
+		((AbstractEdge) e).removeObserver("edgeType", this);
+		((AbstractEdge) e).removeObserver("edgeName", this);
 		this.edge2index.remove(e.getName());
 	}
 
@@ -1732,5 +1735,4 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 		ei.rowAdj = row;
 		ei.colAdj = col;
 	}
-
 }

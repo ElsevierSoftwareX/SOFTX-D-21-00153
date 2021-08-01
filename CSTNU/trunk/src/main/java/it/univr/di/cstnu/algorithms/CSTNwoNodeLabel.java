@@ -45,9 +45,9 @@ public class CSTNwoNodeLabel extends CSTN {
 	 * Just for using this class also from a terminal.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNwoNodeLabel(), "Standard DC without node labels");

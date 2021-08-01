@@ -141,11 +141,11 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 	}
 
 	/**
-	 * Helper method for making {@link #save(Hypergraph, Writer)} easier. 
-	 * 
+	 * Helper method for making {@link #save(Hypergraph, Writer)} easier.
+	 *
 	 * @param graph the network to save
 	 * @param outputFile file object where to save the XML string representing the graph. File encoding is UTF8.
-	 * @throws IOException if it is not possible to save to outputFile
+	 * @throws java.io.IOException if it is not possible to save to outputFile
 	 */
 	public void save(TNGraph<? extends Edge> graph, File outputFile) throws IOException {
 		this.networkType = graph.getType();
@@ -159,10 +159,10 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 
 	
 	/**
-	 * Helper method for making {@link #save(Hypergraph, Writer)} easier. 
-	 * 
+	 * Helper method for making {@link #save(Hypergraph, Writer)} easier.
+	 *
 	 * @param graph the network to save
-	 * @return a GraphML string representing the graph. 
+	 * @return a GraphML string representing the graph.
 	 */
 	public String save(TNGraph<? extends Edge> graph) {
 		StringWriter writer = new StringWriter();
@@ -177,9 +177,9 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 	
 	
 	/**
-	 * @param graph the network to save
-	 * @param writer the writer to use
-	 * @throws IOException if any IO error occurs
+	 * @param graph the graph to save
+	 * @param writer the write to use
+	 * @throws IOException  if the writer cannot write the file
 	 */
 	@SuppressWarnings("unchecked")
 	public void save(TNGraph<? extends Edge> graph, Writer writer) throws IOException {

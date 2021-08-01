@@ -59,7 +59,7 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	/**
 	 * Simplified constructor
 	 *
-	 * @param n
+	 * @param n name of edge
 	 */
 	AbstractEdge(final String n) {
 		super(n);
@@ -106,8 +106,9 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	/** {@inheritDoc} */
 	@Override
 	public void setConstraintType(final ConstraintType type) {
+		ConstraintType old = this.getConstraintType();
 		this.constraintType = type;
-		notifyObservers("Type:" + type);
+		this.pcs.firePropertyChange("edgeType", old, type);
 	}
 
 	/** {@inheritDoc} */
@@ -127,8 +128,7 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 		final String old = this.name;
 		if ((edgeName != null) && (edgeName.length() > 0)) {
 			this.name = edgeName;
-			this.setChanged();
-			notifyObservers("Name:" + old);
+			this.pcs.firePropertyChange("edgeName", old, edgeName);
 		}
 		return old;
 	}

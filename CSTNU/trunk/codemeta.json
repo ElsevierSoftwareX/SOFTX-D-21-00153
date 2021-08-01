@@ -4,13 +4,13 @@
     "license": "https://spdx.org/licenses/LGPL-3.0-or-later",
     "dateCreated": "2014-12-04",
     "datePublished": "2015-03-23",
-    "dateModified": "2021-01-14",
+    "dateModified": "2021-07-14",
     "downloadUrl": "http://profs.scienze.univr.it/~posenato/software/cstnu/download.html",
-    "name": "CSTNU",
-    "version": "3.2",
-    "description": "An editor and checking tool for Conditional Simple Temporal Networks and companion",
+    "name": "CSTNU-Tool",
+    "version": "3.6",
+    "description": "A library and an editor for Conditional Simple Temporal Networks with Uncertainty model and some its extensions",
     "applicationCategory": "Computer Science",
-    "releaseNotes": "Fixed a coding error on saving network into file. From this release, the file encoding is UTF8 independently of the execution platform.\nFixed an initialization error in CSTNU class.\nFixed almost all Javadoc errors.",
+    "releaseNotes": "All firebug warnings fixed.",
     "developmentStatus": "active",
     "keywords": [
         "temporal constraint networks"
@@ -19,7 +19,7 @@
         "Java"
     ],
     "runtimePlatform": [
-        "JVM 1.8"
+        ">= JVM 1.8"
     ],
     "author": [
         {

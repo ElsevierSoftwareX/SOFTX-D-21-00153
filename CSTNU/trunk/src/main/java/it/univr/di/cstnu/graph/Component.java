@@ -79,7 +79,6 @@ public interface Component extends Serializable, Comparable<Object> {
 
 	/**
 	 * {@inheritDoc}
-	 * 
 	 * @see #equals(Object)
 	 */
 	@Override

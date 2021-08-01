@@ -80,7 +80,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	/**
 	 * 
 	 */
-	LabelEditingGraphMousePlugin<V, E> labelEditingPlugin;
+	CSTNULabelEditingGraphMousePlugin<V, E> labelEditingPlugin;
 	/**
 	 * 
 	 */
@@ -124,6 +124,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 * {@inheritDoc}
 	 * create the plugins, and load the plugins for TRANSFORMING mode
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void loadPlugins() {
 		this.pickingPlugin = new PickingGraphMousePlugin<V, E>();
@@ -133,7 +134,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		this.rotatingPlugin = new RotatingGraphMousePlugin();
 		this.shearingPlugin = new ShearingGraphMousePlugin();
 		this.editingPlugin = new EditingGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
-		this.labelEditingPlugin = new LabelEditingGraphMousePlugin<>(this.cstnEditor);
+		this.labelEditingPlugin = new CSTNULabelEditingGraphMousePlugin<>(this.cstnEditor);
 		// this.annotatingPlugin = new AnnotatingGraphMousePlugin<>(this.rc);
 		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
 		add(this.scalingPlugin);// for zooming
@@ -335,18 +336,18 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		protected ModalGraphMouse graphMouse;
 
 		/**
-		 * @param graphMouse
+		 * @param graphMouse  nope
 		 */
 		public ModeKeyAdapter(ModalGraphMouse graphMouse) {
 			this.graphMouse = graphMouse;
 		}
 
 		/**
-		 * @param t
-		 * @param p
-		 * @param e
-		 * @param a
-		 * @param graphMouse
+		 * @param t  nope
+		 * @param p  nope
+		 * @param e  nope
+		 * @param a  nope
+		 * @param graphMouse  nope
 		 */
 		public ModeKeyAdapter(char t, char p, char e, char a, ModalGraphMouse graphMouse) {
 			this.t = t;
@@ -384,10 +385,6 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	// }
 	//
 	/**
-	 * <p>
-	 * Getter for the field <code>editingPlugin</code>.
-	 * </p>
-	 *
 	 * @return the editingPlugin
 	 */
 	public EditingGraphMousePlugin<V, E> getEditingPlugin() {
@@ -395,20 +392,16 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	}
 
 	/**
-	 * <p>
-	 * Getter for the field <code>labelEditingPlugin</code>.
-	 * </p>
+	 * <p>Getter for the field <code>labelEditingPlugin</code>.</p>
 	 *
 	 * @return the labelEditingPlugin
 	 */
-	public LabelEditingGraphMousePlugin<V, E> getLabelEditingPlugin() {
+	public CSTNULabelEditingGraphMousePlugin<V, E> getLabelEditingPlugin() {
 		return this.labelEditingPlugin;
 	}
 
 	/**
-	 * <p>
-	 * Getter for the field <code>popupEditingPlugin</code>.
-	 * </p>
+	 * <p>Getter for the field <code>popupEditingPlugin</code>.</p>
 	 *
 	 * @return the popupEditingPlugin
 	 */

@@ -44,7 +44,7 @@ public class CSTNUEdgeTest {
 	CSTNUEdge e;
 
 	/**
-	 * @throws Exception
+	 * @throws Exception  none
 	 */
 	@Before
 	public void setUp() throws Exception {
