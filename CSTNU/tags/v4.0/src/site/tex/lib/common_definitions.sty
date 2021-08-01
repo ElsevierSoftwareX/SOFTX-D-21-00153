@@ -1,0 +1,216 @@
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{textgreek}
+\usepackage{lmodern}
+
+\usepackage{amsmath}%It is necessary for \DeclareMathOperator command
+\usepackage{amssymb}
+%\usepackage{amstext} 
+%\usepackage{amsthm}
+
+\usepackage{array}
+\usepackage{ragged2e}
+% \usepackage{graphics}
+\usepackage{graphicx}%to import figures in pdflatex.
+\graphicspath{{./}{images/}}
+\usepackage{xspace}%to manage space after a defined command
+%\usepackage{import}
+\usepackage{microtype}
+\usepackage{paralist}
+\usepackage[aboveskip=0pt]{subfig}
+\usepackage[]{caption}
+% \usepackage{subcaption}
+% \usepackage[normalem]{ulem}
+\usepackage{xcolor}% 
+\usepackage{flushend}
+\usepackage{ifpdf}
+
+
+\ifdefined\HCode
+    \def\pgfsysdriver{pgfsys-dvisvgm4ht.def} %con Tex2019 è necessario mettere questa direttiva per impedire a tex4ht di generare i file svg
+	% e obbligarlo a usare quelli generati in inkscape. Uso inkscape perché genera svg corretti.
+	% Purtroppo i nomi creati da tikz externalize per i file svg NON sono compatibili con quelli che si aspetta tex4ht (solo dal 2019).
+	% in pom.xml faccio il rename
+%   \def\pgfsysdriver{pgfsys-tex4ht-updated.def}%NON FUNZIONA
+\fi
+
+\usepackage{tikz}%Front end per PGF, package di disegno
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{lib/myexternalize}
+\pgfplotsset{compat=1.16}%IT IS NECESSARY for compiling diagrams correctly 2020-033-31
+\usetikzlibrary{plotmarks}
+\usepgfplotslibrary{units}
+\usepgfplotslibrary{statistics}
+
+\pgfplotsset{Std0/.style={green!60!black,mark=x,every mark/.append style={fill=green!80!black,solid}}}
+\pgfplotsset{Std1/.style={Std0,mark=o}}
+\pgfplotsset{Std2/.style={Std0,mark=square}}
+\pgfplotsset{Std3/.style={Std0,mark=diamond}}
+\pgfplotsset{Std/.style={Std0}}
+\pgfplotsset{StdwoNL/.style={red,mark=o,mark/.append style={fill=red,solid}}}
+
+\pgfplotsset{StdZ0/.style={Std0,cyan}}
+\pgfplotsset{StdZ1/.style={Std1,cyan}}
+\pgfplotsset{StdZ2/.style={Std2,cyan}}
+\pgfplotsset{StdZ3/.style={Std3,cyan}}
+
+
+
+\pgfplotsset{Epsilon/.style={cyan,mark=asterisk,mark/.append style={fill=cyan,solid}}}
+\pgfplotsset{EpsilonwoNL/.style={Epsilon,yellow,mark/.append style={fill=yellow}}}
+\pgfplotsset{Epsilon3R/.style={Epsilon,purple!60!black,mark/.append style={fill=purple!60!black}}}
+\pgfplotsset{Epsilon3RwoNL/.style={Epsilon,orange,mark/.append style={fill=orange}}}
+\pgfplotsset{Epsilon2IR/.style={Epsilon,black,mark/.append style={fill=black}}}
+
+
+\pgfplotsset{potential0/.style={densely dotted,blue!60!black,mark=x,every mark/.append style={fill=cyan,solid}}}
+\pgfplotsset{potential1/.style={potential0,mark=o}}
+\pgfplotsset{potential2/.style={potential0,mark=square}}
+\pgfplotsset{potential3/.style={potential0,mark=diamond}}
+
+
+\pgfplotsset{2cstn0/.style={dashed,black,mark=x,every mark/.append style={fill=black,solid}}}
+\pgfplotsset{2cstn1/.style={2cstn0,mark=o}}
+\pgfplotsset{2cstn2/.style={2cstn0,mark=square}}
+\pgfplotsset{2cstn3/.style={2cstn0,mark=diamond}}
+
+
+\pgfplotsset{IR/.style={black,mark=diamond*,mark/.append style={fill=black,solid}}}
+\pgfplotsset{IRwoNL/.style={magenta,mark=diamond*,mark/.append style={fill=black,solid}}}
+\pgfplotsset{IR3R/.style={violet,mark=diamond*,mark/.append style={fill=violet,solid}}}
+\pgfplotsset{IR3RwoNL/.style={brown,mark=diamond*,mark/.append style={fill=brown,solid}}}
+
+\pgfplotscreateplotcyclelist{colorbrewer}{%
+	Std\\%
+	StdwoNL\\%
+	Epsilon\\%
+	Epsilon3R\\%
+	Epsilon3RwoNL\\%
+	IR\\
+	IR3R\\
+	IR3RwoNL\\
+}
+
+\usetikzlibrary{calc,positioning,fit,backgrounds}%calc e positioning permettono il posizionamento avanzato
+\usetikzlibrary{shapes,shapes.multipart,shapes.arrows}
+\usetikzlibrary{decorations,decorations.pathmorphing,decorations.pathreplacing,decorations.markings,decorations.shapes}
+\usetikzlibrary{arrows}%se si usano le frecce diverse
+%\usetikzlibrary{fit}
+%un po' di stili comuni!
+\tikzstyle{node}=[circle,draw,inner sep=2pt,transform shape,minimum size=1.75em]
+%%
+%% Nota per le label dentro le activity
+%% Si vuole che l'etichetta sia su più righe:
+%% 1) nome attività
+%% 2) durata (scritta più piccola perché solitamente più lunga)
+%% Come è noto LaTeX non permette di variare l'interlinea all'interno di un paragrafo in modo semplice.
+%% Se si dichiara <nome>\\\scriptsize <durata>, l'interlinea sarebbe per \normalsize con l'effetto che la
+%% seconda riga è a interlinea per \normalsize mentre il font è più piccolo: spazio sprecato per nulla.
+%% Consultando le diverse FAQ, ho dedotto che la cosa migliore è:
+%% Dichiarare come font per il paragrafo il più piccolo
+%% mettere in un environment {} la prima riga con la sua dichiarazione di font più grande: {\small <nome>}
+%% Circa il valore da inserire come text width, NON usare em, altrimenti il risultato non risulterà centrato
+\tikzstyle{task}=[draw,rectangle,rounded corners,inner sep=2pt,transform shape
+                        ,font=\sffamily\scriptsize,text width=45pt%vedi nota sopra
+                        ,text centered
+                        ]
+\newcommand{\TaskText}[2]{{\small #1}\\{#2}}%%a capo funziona perché task ha l'opzione text width
+%
+\tikzstyle{connector}=[draw,diamond,shape aspect=1,inner sep=1pt,transform shape
+                ,font=\sffamily\scriptsize,text width=35pt%vedi nota sopra.
+                ,text centered
+                ]
+\newcommand{\AND}{\tikz[baseline,arrows=-] \draw[very thick] (0,0) -- (0,1em) (4pt,0) -- (4pt,1em);}%$\boldsymbol{||}$}
+\newcommand{\TOT}{\AND}
+\newcommand{\OR}{\tikz[baseline,arrows=-] \draw[very thick] (0,0) -- (1.5ex,1.5ex) (0,1.5ex) -- (1.5ex,0);}%\textbf{X}}
+\newcommand{\ALT}{\OR}
+\newcommand{\ANDText}[2]{{\AND #1}\\ {#2}}%%a capo funziona perché connector ha l'opzione text width
+\newcommand{\ORText}[2]{{\small\OR #1}\\ {#2}}%%a capo funziona perché connector ha l'opzione text width
+% \newcommand{\TOTText}[2]{{\small\TOT #1}\\ {#2}}%%a capo funziona perché connector ha l'opzione text width
+\newcommand{\ALTText}[2]{{\small\ALT #1}\\ {#2}}%%a capo funziona perché connector ha l'opzione text width
+% \newcommand{\IFText}[2]{{\textit{#1}}\\ {#2}}
+%\newcommand{\CHECKERText}[2]{{\Large $\pmb{\circlearrowright}$}\\\textit{#1}\\ {#2}}
+% \newcommand{\CHECKERText}[2]{%
+% {\begin{tikzpicture}[baseline,thick,->]
+%         \draw (0,0) .. controls +(0:.3) and +(0:.3) .. (-.1,.4);
+%         \draw (-.1,.4) .. controls +(180:.3) and +(180:.3) .. (0,0);
+% \end{tikzpicture}}\\\textit{#1}\\ {#2}%
+% }
+
+% \tikzstyle{StartCase}=[circle,draw,minimum size=.75cm,transform shape]
+% \tikzstyle{EndCase}=[circle,draw,ultra thick,minimum size=.75cm,transform shape]
+\tikzstyle{timePoint}=[transform shape
+						,inner sep=2pt
+						,outer sep=0pt
+                        ,font=\scriptsize\sffamily,text width=45pt
+                        ,text centered
+                        ]
+\tikzstyle{smallLabel}=[font=\sffamily\scriptsize,inner sep=1,outer sep=1pt,transform shape]
+\tikzstyle{timeLabel}=[smallLabel,align=center]%align is necessary to do multi-line text
+\tikzstyle{timeLabelBold}=[timeLabel,blue,font=\sffamily\scriptsize\bfseries]
+\tikzstyle{timeLabelBoldGray}=[timeLabelBold,black,fill=gray!30]
+\tikzstyle{minWidth}=[text width=.9cm]
+\tikzstyle{crosses}=[decorate,decoration={name=crosses,segment length=2mm,post length=2mm}]
+\tikzstyle{info}=[rounded corners,fill=yellow,text width=1cm,text centered,inner sep=1pt]
+\tikzstyle{infoLine}=[thin,decorate,decoration={snake,amplitude=.4mm, segment length=2mm, post length=1mm}]
+\tikzstyle{edgeLabel}=[font=\tiny,sloped]
+\tikzstyle{infoRow}=[smallLabel,rounded corners,fill=yellow,inner sep=2pt,outer sep=2pt]
+\tikzstyle{punto}=[circle,draw,fill=black,minimum size=2bp,inner sep=0pt,outer sep=0pt]
+\tikzstyle{puntoLinea}=[dash pattern=on 1pt off 3pt on 4pt off 3pt,>=angle 60]
+\tikzstyle{strikeOut}=[-,shorten <=5pt,shorten >=5pt,strike out,draw]
+\tikzstyle{axes}=[]
+\tikzstyle{every picture}=[>=latex,transform shape]%,node distance=.5cm and .3cm]
+%\tikzstyle{information text}=[rounded corners, fill=red!10,inner sep=1ex]
+\tikzstyle{every node}=[transform shape,inner sep=2pt, outer sep=0]
+% 
+\tikzstyle{vecArrow} = [thick, decoration={markings,mark=at position
+   1 with {\arrow[thick]{open triangle 60}}},
+   double distance=3pt, shorten >= 5.9pt,
+   preaction = {decorate},
+   postaction = {draw,line width=1.5pt,white}]%,shorten >= 5pt}]
+   
+\tikzstyle{guardRange}=[above,scale=.8,outer sep=0pt,inner sep=1.5pt,xshift=-2pt,transform shape,minimum width=\mingnat]
+
+\newcommand{\makecal}[2]{\newcommand{#1}{\mathcal{#2}}}
+\makecal{\calc}{C}
+\makecal{\cale}{E}
+\makecal{\calh}{H}
+\makecal{\cali}{I}
+\makecal{\cala}{A}
+% \makecal{\cally}{L}
+\makecal{\lvs}{L}
+\makecal{\caln}{N}
+\makecal{\calo}{O}
+\makecal{\calot}{OT}
+\newcommand{\calto}{\mathcal{T}_0}
+\newcommand{\caloto}{\mathcal{OT}_0}
+\newcommand{\calnot}{\mathit{NcOT}}
+\makecal{\calp}{P}
+\makecal{\calq}{Q}
+\makecal{\cals}{S}
+\makecal{\calt}{T}
+\makecal{\calv}{V}
+\makecal{\calcl}{L}
+
+\usepackage[unicode]{hyperref}
+\usepackage[capitalise,nameinlink]{cleveref}
+
+\let\svthefootnote\thefootnote
+\newcommand\blankfootnote[1]{%
+  \let\thefootnote\relax\footnotetext{#1}%
+  \let\thefootnote\svthefootnote%
+}
+
+
+\newcommand{\mathup}[1]{\text{\textup{#1}}}
+\newcommand{\RZero}{\ensuremath{\mathup{R}_0}\xspace}
+\newcommand{\RThree}{\ensuremath{\mathup{R}_3^*}\xspace}
+\newcommand{\LP}{\ensuremath{\mathup{LP}}\xspace}
+
+\newcommand{\qLP}{\ensuremath{\mathup{qLP}}\space}
+\newcommand{\qLPP}{\ensuremath{\mathup{qLP}^+}\space}
+\newcommand{\qRZero}{\ensuremath{\mathup{qR}_0}\xspace}
+\newcommand{\qRThree}{\ensuremath{\mathup{qR}_3^*}}
+% 

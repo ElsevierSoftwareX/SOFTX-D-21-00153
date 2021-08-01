@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="Optimized" for="graph">
+<desc>Label optimization</desc>
+<default></default>
+</key>
+<key id="Name" for="graph">
+<desc>LabeledIntGraph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Format: [a-zA-Z]</desc>
+<default></default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-zA-Z]|[a-zA-Z]]+|⊡</desc>
+<default></default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: normal|contingent|constraint.</desc>
+<default>normal</default>
+</key>
+<key id="LowerCaseLabeledValues" for="edge">
+<desc>Lower-Case Labeled Values. Format: {[[\('label', 'lower case name', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<key id="Optimized" for="edge">
+<desc>If the labeled values must be optimized. Format: a boolean.</desc>
+<default>true</default>
+</key>
+<key id="UpperCaseLabeledValues" for="edge">
+<desc>Upper-Case Labeled Values. Format: {[[\('label', 'UPPER CASE NAME', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values. Format: {[[\('label', 'integer'\) ]+}|{}</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="Optimized">false</data>
+<data key="Name">fig2Paper.cstnu</data>
+<node id="C">
+<data key="Obs"></data>
+<data key="x">678.0</data>
+<data key="Label">pq</data>
+<data key="y">179.0</data>
+</node>
+<node id="D">
+<data key="Obs"></data>
+<data key="x">686.0</data>
+<data key="Label">pq</data>
+<data key="y">361.0</data>
+</node>
+<node id="E">
+<data key="Obs"></data>
+<data key="x">472.0</data>
+<data key="Label">p¬q</data>
+<data key="y">262.0</data>
+</node>
+<node id="F">
+<data key="Obs"></data>
+<data key="x">281.0</data>
+<data key="Label">p¬q</data>
+<data key="y">367.0</data>
+</node>
+<node id="G">
+<data key="Obs"></data>
+<data key="x">137.0</data>
+<data key="Label">¬p</data>
+<data key="y">191.0</data>
+</node>
+<node id="H">
+<data key="Obs"></data>
+<data key="x">137.0</data>
+<data key="Label">¬p</data>
+<data key="y">468.0</data>
+</node>
+<node id="P?">
+<data key="Obs">p</data>
+<data key="x">297.0</data>
+<data key="Label">⊡</data>
+<data key="y">14.0</data>
+</node>
+<node id="Q?">
+<data key="Obs">q</data>
+<data key="x">489.0</data>
+<data key="Label">p</data>
+<data key="y">20.0</data>
+</node>
+<node id="Z">
+<data key="Obs"></data>
+<data key="x">140.0</data>
+<data key="Label">⊡</data>
+<data key="y">26.0</data>
+</node>
+<edge id="e0" source="P?" target="G">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(¬p, 10) }</data>
+</edge>
+<edge id="e1" source="G" target="P?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(¬p, 0) }</data>
+</edge>
+<edge id="e10" source="Q?" target="C">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(pq, 10) }</data>
+</edge>
+<edge id="e11" source="C" target="Q?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(pq, 0) }</data>
+</edge>
+<edge id="e12" source="E" target="F">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p¬q, 10) }</data>
+</edge>
+<edge id="e13" source="F" target="E">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p¬q, -8) }</data>
+</edge>
+<edge id="e14" source="C" target="D">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(pq, 20) }</data>
+</edge>
+<edge id="e15" source="D" target="C">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(pq, -10) }</data>
+</edge>
+<edge id="e2" source="G" target="H">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(¬p, 30) }</data>
+</edge>
+<edge id="e3" source="H" target="G">
+<data key="Type">contingent</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(¬p, -10) }</data>
+</edge>
+<edge id="e6" source="P?" target="Q?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p, 1) }</data>
+</edge>
+<edge id="e7" source="Q?" target="P?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p, 0) }</data>
+</edge>
+<edge id="e78" source="P?" target="F">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p¬q, 14) }</data>
+</edge>
+<edge id="e79" source="F" target="P?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p¬q, -7) }</data>
+</edge>
+<edge id="e8" source="Q?" target="E">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p¬q, 5) }</data>
+</edge>
+<edge id="e80" source="P?" target="D">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(pq, 25) }</data>
+</edge>
+<edge id="e81" source="D" target="P?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(pq, -10) }</data>
+</edge>
+<edge id="e9" source="E" target="Q?">
+<data key="Type">normal</data>
+<data key="LowerCaseLabeledValues">{}</data>
+<data key="Optimized">false</data>
+<data key="UpperCaseLabeledValues">{}</data>
+<data key="LabeledValues">{(p¬q, 0) }</data>
+</edge>
+</graph>
+</graphml>
