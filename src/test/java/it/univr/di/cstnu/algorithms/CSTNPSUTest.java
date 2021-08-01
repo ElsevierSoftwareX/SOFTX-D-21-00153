@@ -52,7 +52,7 @@ public class CSTNPSUTest {
 	TNGraph<CSTNPSUEdge> g;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  nope
 	 */
 	@Before
 	public void setUp() throws Exception {
@@ -76,7 +76,7 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  nope
 	 */
 	@Test
 	public final void testCaseLabelRemovalRule() throws WellDefinitionException {
@@ -184,7 +184,7 @@ public class CSTNPSUTest {
 	/**
 	 * Test method for
 	 * 
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  nope
 	 */
 
 	@Test
@@ -235,7 +235,7 @@ public class CSTNPSUTest {
 	/**
 	 * Test method for
 	 * 
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  nope
 	 */
 
 	@Test
@@ -803,7 +803,7 @@ public class CSTNPSUTest {
 	}
 
 	/**
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException nope
 	 */
 	@Test
 	public final void test_llcRule() throws WellDefinitionException {

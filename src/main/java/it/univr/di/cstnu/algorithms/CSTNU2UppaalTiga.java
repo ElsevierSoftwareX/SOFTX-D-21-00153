@@ -51,7 +51,10 @@ import it.univr.di.labeledvalue.Label;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Allows one to translate a CSTNU instance into a UppaalTiga Time Game Automa schema.
+ * Actor class that transforms a CSTNU instance into a UppaalTiga Time Game Automa schema.<br>
+ * It is sufficient to build an CSTNU2UppaalTiga object giving a TNGraph instance that represents the network of a CSTNU instance and an output stream where the
+ * result must be sent (see {@link it.univr.di.cstnu.algorithms.CSTNU2UppaalTiga#CSTNU2UppaalTiga(TNGraph, PrintStream)}.<br>
+ * Then, invoking {@link #translate()}, the result is sent to the specificied output stream.
  *
  * @author posenato
  * @version $Id: $Id
@@ -74,10 +77,10 @@ public class CSTNU2UppaalTiga {
 		LabeledNode source, dest;
 
 		/**
-		 * @param s
-		 * @param l
-		 * @param u
-		 * @param d
+		 * @param s  none
+		 * @param l  none
+		 * @param u  none
+		 * @param d  none
 		 */
 		Contingent(LabeledNode s, int l, int u, LabeledNode d) {
 			if (l == Constants.INT_NULL || u == Constants.INT_NULL)
@@ -232,7 +235,7 @@ public class CSTNU2UppaalTiga {
 	/**
 	 * Build a clock name: "t" followed by node name cleaned off not allowed chars.
 	 * 
-	 * @param n
+	 * @param n node
 	 * @return clock name associated to the node
 	 */
 	static String getClockName(LabeledNode n) {
@@ -290,9 +293,9 @@ public class CSTNU2UppaalTiga {
 	 * Reads a CSTNU file and converts it into <a href="http://people.cs.aau.dk/~adavid/tiga/index.html">UPPAAL TIGA</a> format.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 		LOG.finest("Start...");
@@ -843,7 +846,7 @@ public class CSTNU2UppaalTiga {
 	}
 
 	/**
-	 * Load CSTNU file and create a tNGraph g.
+	 * Load CSTNU file and create a TNGraph g.
 	 * 
 	 * @param fileName
 	 * @return tNGraph if the file was load successfully; null otherwise.
@@ -897,10 +900,16 @@ public class CSTNU2UppaalTiga {
 					this.fOutput = new File(name);
 				}
 				if (this.fOutput.exists()) {
-					this.fOutput.delete();
+					if (!this.fOutput.delete()) {
+						String m = "File " + this.fOutput.getAbsolutePath() + " cannot be deleted.";
+						LOG.severe(m);
+						throw new RuntimeException(m);
+					}
 				}
 				try {
-					this.fOutput.createNewFile();
+					if (!this.fOutput.createNewFile()) {
+						LOG.warning("Cannot create " + this.fOutput.getName());
+					}
 					this.output = new PrintStream(this.fOutput, "UTF-8");
 				} catch (IOException e) {
 					throw new CmdLineException(parser, "Output file cannot be created.");
@@ -990,7 +999,7 @@ public class CSTNU2UppaalTiga {
 	}
 
 	/**
-	 * Convert a CSTNU tNGraph g into a Timed Game Automata in the UPPAAL TIGA format.
+	 * Convert a CSTNU TNGraph g into a Timed Game Automata in the UPPAAL TIGA format.
 	 *
 	 * @return true if the translation has been done and saved.
 	 */

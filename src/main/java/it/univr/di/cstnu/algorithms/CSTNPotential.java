@@ -34,9 +34,10 @@ import it.univr.di.labeledvalue.Literal;
 /**
  * Represents a Conditional Simple Temporal Network (CSTN) and it contains a method to check the dynamic consistency of the instance.<br>
  * Edge weights are signed integer.<br>
- * The dynamic consistency check (DC check) is done assuming standard IR semantics (cf. ICAPS 2016 paper, table 1).
+ * The dynamic consistency check (DC check) is done assuming the instantaneous reaction semantics (cf. ICAPS 2016 paper, table 1).
  * and that the instance is streamlined (cf TIME 2018 paper).
- * In this class the DC checking is solved using the Single-Sink Shortest-Paths algorithm (SSSP), and R0-R3 rules.<br>
+ * In this class the DC checking is solved using the Single-Sink Shortest-Paths algorithm (SSSP), and R0-R3 rules.
+ * This DC checking algorithm was presented at ICAPS 2020.<br>
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -66,9 +67,9 @@ public class CSTNPotential extends CSTNIR {
 	 * Just for using this class also from a terminal.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNPotential(), "Potential DC");
@@ -80,6 +81,8 @@ public class CSTNPotential extends CSTNIR {
 	int numberOfNodes;
 
 	/**
+	 * <p>Constructor for CSTNPotential.</p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public CSTNPotential(TNGraph<CSTNEdge> graph) {
@@ -88,6 +91,8 @@ public class CSTNPotential extends CSTNIR {
 	}
 
 	/**
+	 * <p>Constructor for CSTNPotential.</p>
+	 *
 	 * @param graph TNGraph to check
 	 * @param givenTimeOut timeout for the check
 	 */
@@ -149,7 +154,7 @@ public class CSTNPotential extends CSTNIR {
 	 * Executes one step of the single-sink BellmanFord algorithm.
 	 * 
 	 * <pre>
-	 * A[u,α]&longleftarrow;(v,β)---B
+	 * A[u,α] &lt;---(v,β)---B
 	 * adds
 	 * B[(u+v),γ]
 	 * where γ=α*β if v&lt;0, γ=αβ otherwise and (u+v) &lt; possibly previous value.
@@ -495,7 +500,7 @@ public class CSTNPotential extends CSTNIR {
 	 * @param nodesToCheck the set of nodes that has to be checked w.r.t. the obs node in obsNodesToCheck.
 	 * @param obsNodesToCheck the input set of observation time point to consider
 	 * @param newNodesToCheck it is fill with nodes modified by this method.
-	 * @param timeoutInstant
+	 * @param timeoutInstant time out instant to not overlap
 	 * @return true if at least one node was updated.
 	 */
 	boolean potentialR3(final LabeledNode[] nodesToCheck, final NodesToCheck obsNodesToCheck, final NodesToCheck newNodesToCheck,

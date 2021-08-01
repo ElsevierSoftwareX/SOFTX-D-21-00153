@@ -9,8 +9,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.security.SecureRandom;
 import java.util.Collections;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,22 +40,24 @@ import it.univr.di.labeledvalue.Constants;
 /**
  * Allows one to build random STNU instances specifying:
  *
- * <pre>
- * - # of wanted DC/NOT DC instances
+ * <ul>
+ * <li>number of wanted DC/NOT DC instances</li>
+ * </ul>
  * And the following parameters that characterize each generated instance:
- * - # nodes
- * - # contingent nodes
- * - max weight for each edge
- * - max weight for each contingent link (upper value)
- * - max in-degree for each node
- * - max out-degree for each node
- * - probability to have an edge between any pair of nodes
- * </pre>
+ * <ul>
+ * <li>number nodes
+ * <li>number of contingent nodes
+ * <li> max weight for each edge
+ * <li> max weight for each contingent link (upper value)
+ * <li> max in-degree for each node
+ * <li> max out-degree for each node
+ * <li> probability to have an edge between any pair of nodes
+ * </ul>
  *
  * The class generates the wanted instances, building each one randomly and, then, DC checking it for stating its DC property.
  *
  * @author posenato
- * @version $Id: $Id
+ * @version 2.1
  */
 public class STNURandomGenerator {
 
@@ -165,8 +167,8 @@ public class STNURandomGenerator {
 	 * </p>
 	 *
 	 * @param args input args
-	 * @throws java.io.IOException if results cannot be stored
-	 * @throws java.io.FileNotFoundException if a file is not found
+	 * @throws java.io.FileNotFoundException if any.
+	 * @throws java.io.IOException if any.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 
@@ -580,7 +582,7 @@ public class STNURandomGenerator {
 	/**
 	 * Random generator used in the building of labels.
 	 */
-	private Random rnd = new Random(System.currentTimeMillis());
+	private SecureRandom rnd = new SecureRandom();
 
 	/**
 	 * Son probability
@@ -622,6 +624,7 @@ public class STNURandomGenerator {
 	 * @param edgeProbability a double.
 	 * @param givenMaxWeight a int.
 	 * @throws java.lang.IllegalArgumentException if one or more parameters has/have not valid value/s.
+	 * @throws java.lang.IllegalArgumentException if any.
 	 */
 	public STNURandomGenerator(int givenDcInstances, int givenNotDCInstances, int nodes, int nCtgNodes1, double edgeProbability, int givenMaxWeight,
 			int givenMaxContingentWeight) throws IllegalArgumentException {
@@ -946,9 +949,10 @@ public class STNURandomGenerator {
 					cstnWriter.save(stnu.getG(), this.tmpNetwork);
 				} catch (IOException e) {
 					System.err.println(
-							"It is not possible to save the result. File "+this.tmpNetwork +" cannot be created: " + e.getMessage()+". Computation continues.");
+							"It is not possible to save the result. File " + this.tmpNetwork + " cannot be created: " + e.getMessage()
+									+ ". Computation continues.");
 				}
-				
+
 				LOG.finer("Current cstn saved as 'current.stnu' before checking.");
 			}
 			try {
@@ -1386,7 +1390,11 @@ public class STNURandomGenerator {
 		File baseDir = new File(DIR_NAME);
 
 		if (!baseDir.exists()) {
-			baseDir.mkdirs();
+			if(!baseDir.mkdirs()) {
+				String m = "Directory " + baseDir.getAbsolutePath() + " cannot be created!";
+				LOG.severe(m);
+				throw new RuntimeException(m);
+			}
 		}
 		String suffix = "_" + String.format(makeNumberFormat(this.nNodes), this.nNodes) + "nodes_"
 				+ String.format(makeNumberFormat(this.nCtgNodes), this.nCtgNodes) + "ctgs_"
@@ -1403,12 +1411,20 @@ public class STNURandomGenerator {
 
 		this.dcSubDir = new File(baseDir, DC_SUB_DIR_NAME + suffix);
 		if (!this.dcSubDir.exists()) {
-			this.dcSubDir.mkdir();
+			if (!this.dcSubDir.mkdir()) {
+				String m = "Directory " + this.dcSubDir.getAbsolutePath() + " cannot be created!";
+				LOG.severe(m);
+				throw new RuntimeException(m);
+			}
 		}
 
 		this.notDCSubDir = new File(baseDir, NOT_DC_SUB_DIR_NAME + suffix);
 		if (!this.notDCSubDir.exists()) {
-			this.notDCSubDir.mkdir();
+			if (!this.notDCSubDir.mkdir()) {
+				String m = "Directory " + this.notDCSubDir.getAbsolutePath() + " cannot be created!";
+				LOG.severe(m);
+				throw new RuntimeException(m);
+			}
 		}
 
 		final String log = "Main directory where generated instances are saved: " + baseDir.getCanonicalPath()

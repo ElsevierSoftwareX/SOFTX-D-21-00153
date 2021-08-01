@@ -4,6 +4,7 @@
 
 package it.univr.di.labeledvalue;
 
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.ints.IntArraySet;
@@ -48,7 +49,11 @@ public class LabeledIntHierarchyMap extends AbstractLabeledIntMap {
 	 * 
 	 * @author posenato
 	 */
-	static class HierarchyNode implements Object2IntMap.Entry<Label>, Comparable<HierarchyNode> {
+	static class HierarchyNode implements Object2IntMap.Entry<Label>, Comparable<HierarchyNode>, Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
 		/**
 		 * Labeled values subsumed by this.
 		 */

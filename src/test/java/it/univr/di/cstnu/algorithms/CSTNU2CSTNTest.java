@@ -26,7 +26,7 @@ public class CSTNU2CSTNTest {
 	TNGraph<CSTNUEdge> g;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  none
 	 */
 	@Before
 	public void setUp() throws Exception {

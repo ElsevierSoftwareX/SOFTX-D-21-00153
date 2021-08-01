@@ -51,9 +51,9 @@ public class CSTNUGraphMLReaderTest {
 	TNGraph<STNEdge> stn;
 
 	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
+	 * @throws IOException nope
+	 * @throws ParserConfigurationException nope
+	 * @throws SAXException nope
 	 */
 	@Test
 	public void testCSTNU() throws IOException, ParserConfigurationException, SAXException {
@@ -65,9 +65,9 @@ public class CSTNUGraphMLReaderTest {
 	}
 
 	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
+	 * @throws IOException  nope
+	 * @throws ParserConfigurationException nope
+	 * @throws SAXException nope
 	 */
 	@Test
 	public void testSTN() throws IOException, ParserConfigurationException, SAXException {

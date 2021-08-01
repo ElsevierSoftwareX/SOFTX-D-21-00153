@@ -26,6 +26,7 @@
 \usepackage{flushend}
 \usepackage{ifpdf}
 
+
 \ifdefined\HCode
     \def\pgfsysdriver{pgfsys-dvisvgm4ht.def} %con Tex2019 è necessario mettere questa direttiva per impedire a tex4ht di generare i file svg
 	% e obbligarlo a usare quelli generati in inkscape. Uso inkscape perché genera svg corretti.
@@ -194,6 +195,7 @@
 \makecal{\calcl}{L}
 
 \usepackage[unicode]{hyperref}
+\usepackage[capitalise,nameinlink]{cleveref}
 
 \let\svthefootnote\thefootnote
 \newcommand\blankfootnote[1]{%

@@ -28,7 +28,7 @@ import it.unimi.dsi.fastutil.objects.ObjectSet;
  * This class provides additional methods that implement a <em>dequeue</em>
  * (double-ended queue).
  *
- * @param <K>
+ * @param <K> type of the element in the queue
  * @author posenato
  * @version $Id: $Id
  */
@@ -63,8 +63,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	/**
 	 * Creates a new empty queue with given capacity.
 	 *
-	 * @param capacity
-	 *            the initial capacity of this queue.
+	 * @param capacity the initial capacity of this queue.
 	 */
 	@SuppressWarnings("unchecked")
 	public ObjectArrayFIFOSetQueue(final int capacity) {
@@ -76,8 +75,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	}
 
 	/**
-	 * Creates a new empty queue with standard {@linkplain #INITIAL_CAPACITY initial
-	 * capacity}.
+	 * Creates a new empty queue with standard {@linkplain #INITIAL_CAPACITY}.
 	 */
 	public ObjectArrayFIFOSetQueue() {
 		this(INITIAL_CAPACITY);
@@ -145,14 +143,14 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	}
 
 	/**
-	 * 
+	 * expane the queue
 	 */
 	private final void expand() {
 		resize(this.length, (int) Math.min(it.unimi.dsi.fastutil.Arrays.MAX_ARRAY_SIZE, 2L * this.length));
 	}
 
 	/**
-	 * 
+	 * reduce the queue
 	 */
 	private final void reduce() {
 		final int size = size();
@@ -253,7 +251,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	}
 
 	/**
-	 * @param k
+	 * @param k index
 	 * @return the index of k if present, -1 otherwise
 	 */
 	private int getIndex(K k) {
@@ -307,7 +305,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	/** {@inheritDoc} */
 	@Override
 	public ObjectIterator<K> iterator() {
-		return new ObjectIterator<K>() {
+		return new ObjectIterator<>() {
 			int pos = ObjectArrayFIFOSetQueue.this.start, max = ObjectArrayFIFOSetQueue.this.length, last = ObjectArrayFIFOSetQueue.this.end;
 
 			@Override
@@ -397,8 +395,8 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	}
 
 	/**
-	 * @param s
-	 * @throws IOException
+	 * @param s out stream
+	 * @throws IOException none
 	 */
 	private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
 		s.defaultWriteObject();
@@ -428,9 +426,9 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	}
 
 	/**
-	 * @param s
-	 * @throws IOException
-	 * @throws ClassNotFoundException
+	 * @param s input stream
+	 * @throws IOException none
+	 * @throws ClassNotFoundException none
 	 */
 	@SuppressWarnings("unchecked")
 	private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {

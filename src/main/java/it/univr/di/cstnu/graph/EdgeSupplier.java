@@ -115,14 +115,11 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	}
 
 	/**
-	 * <p>
-	 * get.
-	 * </p>
+	 * @param <K> type of edge
 	 *
 	 * @param edgeClass dd
 	 * @param n dimension
 	 * @return a new LabeledIntEdge array of size n.
-	 * @param <K> a K object.
 	 */
 	@SuppressWarnings("unchecked")
 	public static <K extends Edge> K[] get(Class<K> edgeClass, int n) {
@@ -137,10 +134,6 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 	 */
 
 	/**
-	 * <p>
-	 * getEdgeImplClass.
-	 * </p>
-	 *
 	 * @return the class chosen for creating new edge.
 	 */
 	public Class<? extends E> getEdgeImplClass() {

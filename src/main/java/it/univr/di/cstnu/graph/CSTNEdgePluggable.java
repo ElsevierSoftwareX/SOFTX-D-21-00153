@@ -37,7 +37,7 @@ public class CSTNEdgePluggable extends AbstractEdge implements CSTNEdge {
 	 * logger
 	 */
 	@SuppressWarnings("hiding")
-	static Logger LOG = Logger.getLogger(CSTNEdgePluggable.class.getName());
+	static transient Logger LOG = Logger.getLogger(CSTNEdgePluggable.class.getName());
 
 	/**
 	 *

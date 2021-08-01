@@ -4,6 +4,7 @@
 
 package it.univr.di.labeledvalue;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -140,7 +141,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
  * @author Roberto Posenato
  * @version $Id: $Id
  */
-public class Label implements Comparable<Label> {
+public class Label implements Comparable<Label>, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Label object cache
@@ -166,7 +172,7 @@ public class Label implements Comparable<Label> {
 	/**
 	 * Validator for graphical interface
 	 */
-	public static final Validator<String> labelValidator = new Validator<String>() {
+	public static final Validator<String> labelValidator = new Validator<>() {
 		@Override
 		public Class<String> modelType() {
 			return String.class;

@@ -47,8 +47,8 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 		Label label;
 
 		/**
-		 * @param inputLabel
-		 * @param inputALabel
+		 * @param inputLabel propositional label 
+		 * @param inputALabel alphabetic label
 		 */
 		public InternalEntry(Label inputLabel, ALabel inputALabel) {
 			this.label = inputLabel;
@@ -125,7 +125,7 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 	/**
 	 * class initializer
 	 */
-	{
+	static {
 		/**
 		 * logger
 		 */
@@ -133,14 +133,14 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 	}
 
 	/**
-	 * @param <C>
+	 * @param <C> type of map
 	 */
 	<C extends LabeledIntMap> BasicCSTNUEdgePluggable() {
 		this((String) null);
 	}
 
 	/**
-	 * @param e
+	 * @param e edge to clone
 	 */
 	BasicCSTNUEdgePluggable(Edge e) {
 		super(e);
@@ -157,7 +157,8 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 	}
 
 	/**
-	 * @param n
+	 * @param <C> type of map
+	 * @param n name of edge 
 	 */
 	<C extends LabeledIntMap> BasicCSTNUEdgePluggable(final String n) {
 		super(n);
@@ -405,9 +406,9 @@ public abstract class BasicCSTNUEdgePluggable extends CSTNEdgePluggable implemen
 	/**
 	 * Set the triple as already considered in order to avoid to consider it again in the future.
 	 * 
-	 * @param l
-	 * @param n
-	 * @param i
+	 * @param l label
+	 * @param n name of node as alabel
+	 * @param i edge weight
 	 * @return the old value associated to (l,n), or the {@link Constants#INT_NULL} if no value was present.
 	 */
 	final int setUpperCaseValueAsConsidered(final Label l, final ALabel n, final int i) {

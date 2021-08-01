@@ -8,11 +8,15 @@
 package it.univr.di;
 
 /**
+ * Allows the addition/removal of all debug code.
+ *
  * @author posenato
+ * @version $Id: $Id
  */
 public final class Debug {
 	/**
-	 * set to false to allow compiler to identify and eliminate debug code.
+	 * Set <code>true</code> to ruc all debug code.<br>
+	 * Set <code>false</code> to allow compiler to identify and remove all debug code.
 	 */
-	public static final boolean ON = false;
+	public static final boolean ON = true;
 }

@@ -196,7 +196,7 @@ public class Checker {
 		/**
 		 * Each call of method, advance this.current and print the meter.
 		 * 
-		 * @param givenCurrent
+		 * @param givenCurrent current meter
 		 */
 		void printProgress(long givenCurrent) {
 
@@ -232,11 +232,6 @@ public class Checker {
 	static final String CSVSep = ";\t";
 
 	/**
-	 * DateFormatter
-	 */
-	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-
-	/**
 	 * Default implementation class for CSTNEdge
 	 */
 	static final Class<? extends CSTNEdge> EDGE_IMPL_CLASS = CSTNEdgePluggable.class;
@@ -244,7 +239,7 @@ public class Checker {
 	/**
 	 * Global header
 	 */
-	static final String GLOBAL_HEADER = "\n\nGlobal statistics\n"
+	static final String GLOBAL_HEADER = "%n%nGlobal statistics%n"
 			+ "#CSTNs"
 			+ CSVSep + "#nodes"
 			+ CSVSep + "#contingent"
@@ -255,7 +250,7 @@ public class Checker {
 			+ CSVSep + "std.dev."
 			+ CSVSep + "avgAddedEdgesRate"
 			+ CSVSep + "std.dev."
-			+ CSVSep + "\n";
+			+ CSVSep + "%n";
 	/**
 	 * 
 	 */
@@ -269,7 +264,7 @@ public class Checker {
 			+ CSVSep + "%E"
 			+ CSVSep + "%E"
 			+ CSVSep + "%E"
-			+ CSVSep + "\n";
+			+ CSVSep + "%n";
 
 	/**
 	 * class logger
@@ -392,9 +387,9 @@ public class Checker {
 	 * it is possible to run the parallel thread in the better conditions.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException if instances contains syntax errors
-	 * @throws javax.xml.parsers.ParserConfigurationException if input parameters contains errors
-	 * @throws java.io.IOException if files are not readable
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
@@ -540,12 +535,22 @@ public class Checker {
 	}
 
 	/**
+	 * Date formatter
+	 */
+	private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+	/**
 	 * @return the current date formatted.
 	 */
-	private static String getNow() {
-		return dateFormatter.format(new Date());
+	private static SimpleDateFormat getDateFormatter() {
+		//Define getter for dateFormatter  because, otherwise there is the possibility of error STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE  by findbugs
+		return dateFormatter;
 	}
-
+	/**
+	 * @return current time in {@link #dateFormatter} format
+	 */
+	private static String getNow() {
+		return getDateFormatter().format(new Date());
+	}
 	/**
 	 * 
 	 */
@@ -998,7 +1003,12 @@ public class Checker {
 			}
 			// filename has to end with .csv
 			if (!this.outputFile.getName().endsWith(".csv")) {
-				this.outputFile.renameTo(new File(this.outputFile.getAbsolutePath() + ".csv"));
+				if (!this.outputFile.renameTo(new File(this.outputFile.getAbsolutePath() + ".csv"))) {
+					String m = "File "+this.outputFile.getAbsolutePath()+ " cannot be renamed!";
+					LOG.severe(m);
+					System.err.println(m);
+					return false;
+				}
 			}
 			try {
 				this.output = new PrintStream(new FileOutputStream(this.outputFile, true), true, "UTF-8");
@@ -1098,10 +1108,6 @@ public class Checker {
 			return false;
 		}
 		LOG.finer("...done!");
-		if (graphToCheck == null) {
-			LOG.warning("File " + file.getName() + " does not contain a valid CSTN instance.\nIgnored.");
-			return false;
-		}
 
 		/**
 		 * *************************************************
@@ -1325,7 +1331,8 @@ public class Checker {
 				localAvg,
 				((this.nDCRepetition > 1) ? localStdDev : Double.NaN),
 				nRules,
-				((!this.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"));
+				// ((!this.noDCCheck) ? (status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE") : "-"));
+				(status.finished ? Boolean.toString(status.consistency).toUpperCase() : "FALSE"));
 		if (isCSTN()) {
 			rowToWrite += String.format(OUTPUT_ROW_TIME_CSTN,
 					((CSTNCheckStatus) status).r0calls,

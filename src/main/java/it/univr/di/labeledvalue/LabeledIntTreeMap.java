@@ -9,7 +9,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
@@ -78,7 +77,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 		private static final long serialVersionUID = 1L;
 
 		/**
-		 * @param inputMap
+		 * @param inputMap input
 		 */
 		public LabeledIntTreeMapView(LabeledIntTreeMap inputMap) {
 			this.mainInt2SetMap = inputMap.mainInt2SetMap;
@@ -113,7 +112,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	/**
 	 * @return an Object2IntMap<Label> object
 	 */
-	private static final Int2ObjectMap<Object2IntMap<Label>> makeInt2ObjectMap() {
+	private static final Int2ObjectArrayMap<Object2IntMap<Label>> makeInt2ObjectMap() {
 		return new Int2ObjectArrayMap<>();
 	}
 
@@ -134,7 +133,7 @@ public class LabeledIntTreeMap extends AbstractLabeledIntMap {
 	 * label minimization task to be performed in a more systematic and efficient way. The efficiency has been proved comparing this implementation
 	 * with one in which the map has been realized with a standard map and the minimization task determines the same length labels every time it needs it.
 	 */
-	Int2ObjectMap<Object2IntMap<Label>> mainInt2SetMap;
+	Int2ObjectArrayMap<Object2IntMap<Label>> mainInt2SetMap;
 
 	/**
 	 * Necessary constructor for the factory. The internal structure is built and empty.

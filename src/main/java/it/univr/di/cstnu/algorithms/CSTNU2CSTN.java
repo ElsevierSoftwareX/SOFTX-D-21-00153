@@ -30,7 +30,9 @@ import it.univr.di.labeledvalue.LabeledLowerCaseValue;
 import it.univr.di.labeledvalue.Literal;
 
 /**
- * Simple class to represent and check Conditional Simple Temporal Network with Uncertainty (CSTNU) reducing it to a CSTNIR3R
+ * Simple class to represent and check Conditional Simple Temporal Network with Uncertainty (CSTNU) where the DC checking is done
+ * reducing the instance to an equivalent CSTN instance where the DC checking is done assuming instantaneous reaction.<br>
+ * In other words, the CSTNU instance is transformed into a CSTN one and checked invoking {@link it.univr.di.cstnu.algorithms.CSTNIR3R#dynamicConsistencyCheck()}.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -58,9 +60,9 @@ public class CSTNU2CSTN extends CSTNU {
 	 * </p>
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		LOG.finest("Start...");
@@ -195,8 +197,8 @@ public class CSTNU2CSTN extends CSTNU {
 	 * link).
 	 * 
 	 * <pre>
-	 * A ---(c:x, alpha) &longrightarrow; C is transformed to A ---(x,alpha) &longrightarrow; K? ---(0, alpha k) (y-x,alpha) &longrightarrow; C
-	 *   &longleftarrow; (C:-y, alpha)--                       &longleftarrow;(-x,alpha)--    &longleftarrow;(0,alpha) (x-y,alpha¬k)--
+	 * A ---(c:x, alpha) ---&gt; C is transformed to A ---(x,alpha) ---&gt; K? ---(0, alpha k) (y-x,alpha) ---&gt; C
+	 *   &lt;--- (C:-y, alpha)--                       &lt;---(-x,alpha)--    &lt;---(0,alpha) (x-y,alpha¬k)--
 	 * </pre>
 	 * 
 	 * @return g represented as a CSTN
@@ -236,7 +238,7 @@ public class CSTNU2CSTN extends CSTNU {
 		// build the vector of proposition that can be used for codifying contingents.
 		char[] availableProposition = new char[nOfContingents];
 		for (int i = 0, j = 0; j < nOfContingents; i++) {
-			char c = Literal.PROPOSITION_ARRAY[i];
+			char c = Literal.charValue(i);
 			if (usedProposition.contains(c)) {
 				continue;
 			}

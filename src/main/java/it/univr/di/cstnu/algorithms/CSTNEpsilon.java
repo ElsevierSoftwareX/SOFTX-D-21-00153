@@ -44,9 +44,9 @@ public class CSTNEpsilon extends CSTN {
 	 * Just for using this class also from a terminal.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTNEpsilon(), "Epsilon DC");
@@ -60,6 +60,7 @@ public class CSTNEpsilon extends CSTN {
 
 	/**
 	 * Constructor for CSTN.
+	 *
 	 * @see CSTN#CSTN(TNGraph)
 	 * @param reactionTime1 reaction time. It must be strictly positive.
 	 * @param g1 tNGraph to check

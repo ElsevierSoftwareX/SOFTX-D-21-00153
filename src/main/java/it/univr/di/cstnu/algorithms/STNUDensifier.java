@@ -66,11 +66,6 @@ public class STNUDensifier {
 	static final String CSVSep = ";\t";
 
 	/**
-	 * DateFormatter
-	 */
-	static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
-
-	/**
 	 * Default instance name suffix for dense transformation
 	 */
 	static final String DENSE_FILE_NAME_SUFFIX = "DENSE";
@@ -104,9 +99,9 @@ public class STNUDensifier {
 	 * it is possible to run the parallel thread in the better conditions.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException if instances contains syntax errors
-	 * @throws javax.xml.parsers.ParserConfigurationException if input parameters contains errors
-	 * @throws java.io.IOException if files are not readable
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	@SuppressWarnings("null")
 	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
@@ -228,10 +223,21 @@ public class STNUDensifier {
 	}
 
 	/**
+	 * Date formatter
+	 */
+	private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+	/**
 	 * @return the current date formatted.
 	 */
+	private static SimpleDateFormat getDateFormatter() {
+		//Define getter for dateFormatter  because, otherwise there is the possibility of error STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE  by findbugs
+		return dateFormatter;
+	}
+	/**
+	 * @return current time in {@link #dateFormatter} format
+	 */
 	private static String getNow() {
-		return dateFormatter.format(new Date());
+		return getDateFormatter().format(new Date());
 	}
 
 	/**
@@ -770,10 +776,6 @@ public class STNUDensifier {
 			return false;
 		}
 		LOG.finer("...done!");
-		if (graphToAdjust == null) {
-			LOG.warning("File " + file.getName() + " does not contain a valid STNU instance.\nIgnored.");
-			return false;
-		}
 
 		ObjectPair<TNGraph<STNUEdge>> pair = makePairSTNUInstances(graphToAdjust);
 		TNGraphMLWriter stnuWriter = new TNGraphMLWriter(null);

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 /**
- * Contains all checking algorithms for CSTN &amp; c. models.
+ * Contains all checking algorithms for (C)STN(U)s.
  * 
  * @author posenato
  */

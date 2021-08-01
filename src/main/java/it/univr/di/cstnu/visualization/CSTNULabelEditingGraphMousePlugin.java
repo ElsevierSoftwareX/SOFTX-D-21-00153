@@ -6,8 +6,8 @@
 package it.univr.di.cstnu.visualization;
 
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.GridLayout;
+import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.util.Set;
@@ -60,13 +60,13 @@ import it.univr.di.labeledvalue.Literal;
  * @param <E> edge type
  * @version $Id: $Id
  */
-public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
+public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		extends edu.uci.ics.jung.visualization.control.LabelEditingGraphMousePlugin<V, E> {
 
 	/**
 	 * logger della classe
 	 */
-	static Logger LOG = Logger.getLogger(LabelEditingGraphMousePlugin.class.getName());
+	static Logger LOG = Logger.getLogger(CSTNULabelEditingGraphMousePlugin.class.getName());
 
 	/**
 	 * General method to setup a dialog to edit the attributes of a vertex or of an edge.
@@ -270,9 +270,9 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		}
 
 		int nUpperLabels = 0, nLowerLabels = 0;
-		JTextField[] labelUpperInputs = null;
+		// JTextField[] labelUpperInputs = null;
 		JTextField[] newUpperValueInputs = null;
-		JTextField[] labelLowerInputs = null;
+		// JTextField[] labelLowerInputs = null;
 		JTextField[] newLowerValueInputs = null;
 
 		if (e.isCSTNUEdge() || e.isCSTNPSUEdge()) {
@@ -284,11 +284,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			if (e.isContingentEdge() || nUpperLabels > 0 || nLowerLabels > 0) {
 				// Show all upper and lower case values allowing also the possibility of insertion.
 				BasicCSTNUEdge e1 = (BasicCSTNUEdge) e;
-				labelUpperInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
+				// labelUpperInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
 				newUpperValueInputs = new JTextField[(nUpperLabels == 0) ? 1 : nUpperLabels];
 
 				// lowerValue = e1.getLowerCaseValue();
-				labelLowerInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
+				// labelLowerInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
 				newLowerValueInputs = new JTextField[(nLowerLabels == 0) ? 1 : nLowerLabels];
 
 				// If the edge type is contingent, then we allow the modification of the single possible lower/upper case value.
@@ -309,7 +309,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 							// It should be only one! I put a cycle in order to verify
 							jp.add(new JLabel("Upper Label"));
 							jtLabel = new JTextField(entry1.getKey().toString());
-							labelUpperInputs[i] = jtLabel;
+							// labelUpperInputs[i] = jtLabel;
 							setConditionToEnable(jtLabel, viewerName, true);
 							jp.add(jtLabel);
 							jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
@@ -323,7 +323,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				} else {
 					jp.add(new JLabel("Upper Label"));
 					jtLabel = new JTextField("");
-					labelUpperInputs[i] = jtLabel;
+					// labelUpperInputs[i] = jtLabel;
 					setConditionToEnable(jtLabel, viewerName, true);
 					jp.add(jtLabel);
 					jtLabel = new JTextField("");
@@ -339,7 +339,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						lowerValue = e1.getLowerCaseValue();
 						jp.add(new JLabel("Lower Label"));
 						jtLabel = new JTextField(lowerValue.getLabel().toString());// entry1.getKey().toString());
-						labelLowerInputs[i] = jtLabel;
+						// labelLowerInputs[i] = jtLabel;
 						setConditionToEnable(jtLabel, viewerName, true);
 						jp.add(jtLabel);
 						jtLabel = new JTextField(lowerValue.getNodeName().toString() + ": " + Constants.formatInt(lowerValue.getValue()));
@@ -356,7 +356,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 								// It should be only one! I put a cycle in order to verify
 								jp.add(new JLabel("Lower Label"));
 								jtLabel = new JTextField(entry1.getKey().toString());
-								labelLowerInputs[i] = jtLabel;
+								// labelLowerInputs[i] = jtLabel;
 								setConditionToEnable(jtLabel, viewerName, true);
 								jp.add(jtLabel);
 								jtLabel = new JTextField(alabel.toString() + ": " + Constants.formatInt(entry1.getIntValue()));
@@ -372,7 +372,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					if (editorPanel) {
 						jp.add(new JLabel("Lower Label"));
 						jtLabel = new JTextField("");
-						labelLowerInputs[i] = jtLabel;
+						// labelLowerInputs[i] = jtLabel;
 						setConditionToEnable(jtLabel, viewerName, true);
 						jp.add(jtLabel);
 						jtLabel = new JTextField("");
@@ -401,7 +401,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			// v = e.getInitialValue();
 			// if ((v == null) || !newValue.equals(v.toString())) {
 			// v = (newValue.isEmpty()) ? null : Integer.valueOf(newValue);
-			// LabelEditingGraphMousePlugin.LOG.finest("New default value: " + v);
+			// CSTNULabelEditingGraphMousePlugin.LOG.finest("New default value: " + v);
 			// e.clear();
 			// e.setInitialValue(v);
 			// modified = true;
@@ -422,7 +422,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				v = (is.length() > 0) ? Integer.valueOf(is) : null;
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LabelEditingGraphMousePlugin.LOG.finest("Value: " + is + " [old:" + oldIntInputs[0] + "])");
+						CSTNULabelEditingGraphMousePlugin.LOG.finest("Value: " + is + " [old:" + oldIntInputs[0] + "])");
 					}
 				}
 				if (v == null) {
@@ -442,7 +442,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				v = (is.length() > 0) ? Integer.valueOf(is) : null;
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LabelEditingGraphMousePlugin.LOG.finest("Value: " + is + " [old:" + oldIntInputs[0] + "])");
+						CSTNULabelEditingGraphMousePlugin.LOG.finest("Value: " + is + " [old:" + oldIntInputs[0] + "])");
 					}
 				}
 				if (v != null) {
@@ -469,7 +469,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					v = (is.length() > 0) ? Integer.valueOf(is) : null;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							LabelEditingGraphMousePlugin.LOG.finest("Label value" + i + ": (" + s + ", " + is + " [old:" + oldIntInputs[i] + "])");
+							CSTNULabelEditingGraphMousePlugin.LOG.finest("Label value" + i + ": (" + s + ", " + is + " [old:" + oldIntInputs[i] + "])");
 						}
 					}
 					if (v == null)
@@ -486,7 +486,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					v = Integer.valueOf(is);
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							LabelEditingGraphMousePlugin.LOG.finest("New label value: (" + l + ", " + v + ")");
+							CSTNULabelEditingGraphMousePlugin.LOG.finest("New label value: (" + l + ", " + v + ")");
 						}
 					}
 					comp.put(l, v);
@@ -495,21 +495,21 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				if (!e1.getLabeledValueMap().equals(comp)) {
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							LabelEditingGraphMousePlugin.LOG.finer("Original label set of the component: " + e1.getLabeledValueMap());
-							LabelEditingGraphMousePlugin.LOG.finer("New label set for the component: " + comp);
+							CSTNULabelEditingGraphMousePlugin.LOG.finer("Original label set of the component: " + e1.getLabeledValueMap());
+							CSTNULabelEditingGraphMousePlugin.LOG.finer("New label set for the component: " + comp);
 						}
 					}
 					e1.clear();
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							LabelEditingGraphMousePlugin.LOG.finer("Label set of the component after the clear: " + e1.getLabeledValueMap());
+							CSTNULabelEditingGraphMousePlugin.LOG.finer("Label set of the component after the clear: " + e1.getLabeledValueMap());
 						}
 					}
 					e1.mergeLabeledValue(comp);
 					modified = true;
 					if (Debug.ON) {
 						if (LOG.isLoggable(Level.FINER)) {
-							LabelEditingGraphMousePlugin.LOG.finer("New label set assigned to the component: " + e1.getLabeledValueMap());
+							CSTNULabelEditingGraphMousePlugin.LOG.finer("New label set assigned to the component: " + e1.getLabeledValueMap());
 						}
 					}
 				}
@@ -545,7 +545,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 								if (g.getNode(nodeName) == null) {
 									if (Debug.ON) {
 										if (LOG.isLoggable(Level.SEVERE)) {
-											LabelEditingGraphMousePlugin.LOG
+											CSTNULabelEditingGraphMousePlugin.LOG
 													.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!" + caseValue);
 										}
 									}
@@ -555,7 +555,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINEST)) {
-									LabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
+									CSTNULabelEditingGraphMousePlugin.LOG.finest("New Upper value input: " + nodeName + ": " + v + ".");
 								}
 							}
 						}
@@ -580,7 +580,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 							// value of a contingent must have the label of its endpoints.
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINEST)) {
-									LabelEditingGraphMousePlugin.LOG.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
+									CSTNULabelEditingGraphMousePlugin.LOG
+											.finest("Merged Upper value input: " + endpointsLabel + ", " + alabel + ": " + v + ".");
 								}
 							}
 							modified = true;
@@ -607,7 +608,8 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 									if (g.getNode(nodeName) == null) {
 										if (Debug.ON) {
 											if (LOG.isLoggable(Level.SEVERE)) {
-												LabelEditingGraphMousePlugin.LOG.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
+												CSTNULabelEditingGraphMousePlugin.LOG
+														.severe("ALabel " + nodeName + " does not correspond to a node name. Abort!");
 											}
 										}
 										nodeName = null;
@@ -670,9 +672,32 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	 *
 	 * @param cstnEditor1 reference to the editor object (useful for finding some part of its panels).
 	 */
-	public LabelEditingGraphMousePlugin(CSTNEditor cstnEditor1) {
-		super();
+	public CSTNULabelEditingGraphMousePlugin(CSTNEditor cstnEditor1) {
+		//I use InputEvent.BUTTON1_DOWN_MASK instead of InputEvent.BUTTON1_MASK because InputEvent.BUTTON1_MASK is deprecated.
+		//Then, I don't use it for detecting when mouse1 is clicked because getModifiersEx changed w.r.t. getModifiers eventhough manuals says to use getModifiersEx!
+		super(InputEvent.BUTTON1_DOWN_MASK);
 		this.cstnEditor = cstnEditor1;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * check the mouse event modifiers against the
+	 * instance member modifiers. Default implementation
+	 * checks equality. Can be overridden to test with a mask
+	 */
+	@Override
+	public boolean checkModifiers(MouseEvent e) {
+		return e.getModifiersEx() == this.modifiers;
+	}
+
+	/**
+	 * <p>Getter for the field <code>cstnEditor</code>.</p>
+	 *
+	 * @return the cstnEditor
+	 */
+	public CSTNEditor getCstnEditor() {
+		return this.cstnEditor;
 	}
 
 	/**
@@ -692,17 +717,17 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	 * </ol>
 	 */
 	@Override
-	@SuppressWarnings({ "unqualified-field-access", "unchecked" })
 	public void mouseClicked(final MouseEvent e) {
-		// DON'T USE e.getModifiersex()
-		// LOG.severe("e.getModifiers():" + e.getModifiers() + "\tthis.modifiers: " + this.modifiers + "\te.getClickCount(): " + e.getClickCount());
-		if ((e.getModifiers() == modifiers) && (e.getClickCount() == 2)) {
-			// LOG.severe("LabelEditingGraphMousePlugin.mouseClicked.cstnEditor " + this.cstnEditor);
-			final VisualizationViewer<V, E> vv = (VisualizationViewer<V, E>) e.getSource();
+		// DON'T USE e.getModifiersex() because it always return 0 for a simple click!
+		if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+			// LOG.severe("CSTNULabelEditingGraphMousePlugin.mouseClicked.cstnEditor " + this.cstnEditor);
+			@SuppressWarnings("unchecked")
+			final VisualizationViewer<V, E> vv = (VisualizationViewer<V,E>) e.getSource();
 			final GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
 			final String viewerName = vv.getName();
 			if (pickSupport != null) {
 				final Layout<V, E> layout = vv.getGraphLayout();
+				@SuppressWarnings("unchecked")
 				final TNGraph<E> g = (TNGraph<E>) layout.getGraph();
 				final Point2D p = e.getPoint(); // p is the screen point for the mouse event
 
@@ -712,7 +737,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						this.cstnEditor.resetDerivedGraphStatus();
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
+								CSTNULabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
 							}
 						}
 						g.clearCache();
@@ -731,7 +756,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						this.cstnEditor.resetDerivedGraphStatus();
 						if (Debug.ON) {
 							if (LOG.isLoggable(Level.FINER)) {
-								LabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
+								CSTNULabelEditingGraphMousePlugin.LOG.finer("The graph has been modified. Disable the distance viewer.");
 							}
 						}
 						g.clearCache();
@@ -747,14 +772,11 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	}
 
 	/**
-	 * Create an instance with overrides.
+	 * <p>Setter for the field <code>cstnEditor</code>.</p>
 	 *
-	 * @param selectionModifiers for primary selection
-	 * @param cstnEditor1 reference to the editor object (useful for finding some part of its panels).
+	 * @param cstnEditor1 the cstnEditor to set
 	 */
-	public LabelEditingGraphMousePlugin(final int selectionModifiers, CSTNEditor cstnEditor1) {
-		super(selectionModifiers);
-		this.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+	public void setCstnEditor(CSTNEditor cstnEditor1) {
 		this.cstnEditor = cstnEditor1;
 	}
 
@@ -766,7 +788,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 	 * @param g graph
 	 * @return true if one attribute at least has been modified
 	 */
-	@SuppressWarnings({  "static-method", "null" })
+	@SuppressWarnings({ "static-method", "null" })
 	private boolean nodeAttributesEditor(final LabeledNode node, final String viewerName, final TNGraph<? extends Edge> g) {
 
 		// Planning a possible extension, a node could contains more labels with associated integers.
@@ -887,7 +909,7 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 				newValue = label.getText();
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINEST)) {
-						LabelEditingGraphMousePlugin.LOG.finest("New label for node " + node.getName() + ": " + newValue + ". Old: " + l.toString());
+						CSTNULabelEditingGraphMousePlugin.LOG.finest("New label for node " + node.getName() + ": " + newValue + ". Old: " + l.toString());
 					}
 				}
 				if (!l.toString().equals(newValue)) {
@@ -900,25 +922,4 @@ public class LabelEditingGraphMousePlugin<V extends LabeledNode, E extends Edge>
 		return modified;
 	}
 
-	/**
-	 * <p>
-	 * Getter for the field <code>cstnEditor</code>.
-	 * </p>
-	 *
-	 * @return the cstnEditor
-	 */
-	public CSTNEditor getCstnEditor() {
-		return this.cstnEditor;
-	}
-
-	/**
-	 * <p>
-	 * Setter for the field <code>cstnEditor</code>.
-	 * </p>
-	 *
-	 * @param cstnEditor1 the cstnEditor to set
-	 */
-	public void setCstnEditor(CSTNEditor cstnEditor1) {
-		this.cstnEditor = cstnEditor1;
-	}
 }

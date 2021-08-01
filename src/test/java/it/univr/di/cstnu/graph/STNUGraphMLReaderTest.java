@@ -40,9 +40,9 @@ public class STNUGraphMLReaderTest {
 	TNGraph<STNUEdge> stnu;
 
 	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
+	 * @throws IOException  none
+	 * @throws ParserConfigurationException  none
+	 * @throws SAXException  none
 	 */
 	@Test
 	public void testSTNU() throws IOException, ParserConfigurationException, SAXException {
@@ -59,9 +59,9 @@ public class STNUGraphMLReaderTest {
 	}
 
 	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
+	 * @throws IOException  none
+	 * @throws ParserConfigurationException  none
+	 * @throws SAXException  none
 	 */
 	@Test
 	public void testSTNU1() throws IOException, ParserConfigurationException, SAXException {
@@ -71,9 +71,9 @@ public class STNUGraphMLReaderTest {
 	}
 
 	/**
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
+	 * @throws IOException  none
+	 * @throws ParserConfigurationException  none
+	 * @throws SAXException  none
 	 */
 	@Test
 	public void testSTNU33() throws IOException, ParserConfigurationException, SAXException {

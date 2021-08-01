@@ -162,7 +162,8 @@ public final class Constants implements Serializable {
 	 * @param a an integer
 	 * @param b an integer
 	 * @return the controlled sum
-	 * @throws java.lang.ArithmeticException if the sum of two inputs is greater/lesser than the maximum/minimum integer representable by a {@code int}
+	 * @throws java.lang.ArithmeticException if any.
+	 * @throws java.lang.ArithmeticException if any.
 	 * @throws java.lang.ArithmeticException if any.
 	 */
 	static public final int sumWithOverflowCheck(final int a, final int b) throws ArithmeticException {

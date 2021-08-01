@@ -33,7 +33,7 @@ public class CSTNirR3Test extends CSTNTest {
 	}
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  nope
 	 */
 	@Override
 	@Before
@@ -110,7 +110,7 @@ public class CSTNirR3Test extends CSTNTest {
 	}
 
 	/**
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  nope
 	 */
 	@Test
 	public final void testLabelModificationqR3() throws WellDefinitionException {
@@ -635,7 +635,7 @@ public class CSTNirR3Test extends CSTNTest {
 	/**
 	 * Test method to check if a tNGraph requiring only R0-R3 application is checked well. .
 	 * 
-	 * @throws WellDefinitionException
+	 * @throws WellDefinitionException  nope
 	 */
 	@Override
 	@Test

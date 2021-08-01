@@ -1,6 +1,14 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v4.0
+	date: 2021-08-01
+	
+	Relevant change: the library is now a JVM 11 library, but it is still compatible with JVM 8.
+	Other changes:
+	Improved Javadoc for almost the classes/methods.
+	Fixed all spotbugs bugs/errors at level medium and max effort. 
+	 
 ## v3.6
 	date: 2021-06-20
 	

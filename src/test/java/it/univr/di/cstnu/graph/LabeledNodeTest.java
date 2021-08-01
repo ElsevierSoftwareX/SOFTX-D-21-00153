@@ -34,11 +34,11 @@ public class LabeledNodeTest {
 	LabeledNode a;
 
 	/**
-	 * @throws java.lang.Exception
+	 * @throws java.lang.Exception  none
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.alphabet = new ALabelAlphabet();
+//		this.alphabet = new ALabelAlphabet();
 		this.a = nodeFactory.get("A");
 		this.a.setLabel(Label.emptyLabel);
 	}

@@ -6,13 +6,12 @@ package it.univr.di.cstnu.algorithms;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +43,7 @@ import it.univr.di.cstnu.graph.STNEdgeInt;
 import it.univr.di.cstnu.graph.TNGraph;
 import it.univr.di.cstnu.graph.TNGraphMLReader;
 import it.univr.di.cstnu.graph.TNGraphMLWriter;
-import it.univr.di.cstnu.visualization.StaticLayout;
+import it.univr.di.cstnu.visualization.CSTNUStaticLayout;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 
@@ -111,8 +110,11 @@ public class STN {
 		/**
 		 * Counters about the # of application of different rules.
 		 */
-		@SuppressWarnings("javadoc")
-		public int cycles = 0, propagationCalls = 0;
+		public int cycles = 0;
+		/**
+		 * Number of propagations
+		 */
+		public int propagationCalls = 0;
 
 		/**
 		 * Execution time in nanoseconds.
@@ -213,9 +215,9 @@ public class STN {
 	 * </p>
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		STN stn = new STN();
@@ -360,8 +362,8 @@ public class STN {
 	 * setting <code>status.timeout=true</code>.<br>
 	 * As courtesy, it sets also <code>status.consistency=status.finished=false</code>.
 	 * 
-	 * @param timeoutInstant
-	 * @param status
+	 * @param timeoutInstant timeout instant
+	 * @param status status of the check
 	 * @return true if timeOut has been reached.
 	 */
 	static final boolean checkTimeOutAndAdjustStatus(Instant timeoutInstant, STNCheckStatus status) {
@@ -421,7 +423,7 @@ public class STN {
 		int v;
 
 		NodePriorityHeap nodeQueue = new NodePriorityHeap();
-		
+
 		for (LabeledNode node : nodes) {
 			nodeQueue.insertOrDecrease(node, Constants.INT_POS_INFINITE);
 		}
@@ -442,7 +444,8 @@ public class STN {
 			for (STNEdge e : graph.getOutEdges(s)) {
 				d = graph.getDest(e);
 				eValue = e.getValue();
-				if (!s.equalsByName(source) && eValue < 0) //s != source is for allowing the use of Dijkstra when the edges from source are negative (it is a particular use od Dijkstra algorithm).  
+				if (!s.equalsByName(source) && eValue < 0) // s != source is for allowing the use of Dijkstra when the edges from source are negative (it is a
+															// particular use od Dijkstra algorithm).
 					return null;
 				v = Constants.sumWithOverflowCheck(sValue, eValue);
 				if (nodeQueue.getStatus(d) == NodeStatus.isPresent && nodeQueue.value(d) > v) {
@@ -521,7 +524,7 @@ public class STN {
 					ij = graph.findEdge(iV, jV);
 					int old = Constants.INT_POS_INFINITE;
 					if (ij == null) {
-						ij = edgeFactory.get(node[i].getName() + "__"+ node[j].getName());
+						ij = edgeFactory.get(node[i].getName() + "__" + node[j].getName());
 						ij.setConstraintType(Edge.ConstraintType.derived);
 						graph.addEdge(ij, iV, jV);
 					} else {
@@ -534,7 +537,7 @@ public class STN {
 						}
 						if (Debug.ON) {
 							STN.LOG.fine("Edge " + ij.getName() + ": " + Constants.formatInt(old) + " --> " + Constants.formatInt(v)
-							+ "\n\t\t"+ik+" + " +kj);
+									+ "\n\t\t" + ik + " + " + kj);
 						}
 					}
 				}
@@ -584,13 +587,13 @@ public class STN {
 		if (Debug.ON) {
 			LOG.finer("Re-weighted graph: " + g1);
 		}
-		
+
 		TNGraph<STNEdge> finalG = new TNGraph<>(g1, g1.getEdgeImplClass());
 
 		// Determine the distances from each node updating the edge in the finalG
 		for (LabeledNode source : g1.getVertices()) {
 			if (Debug.ON) {
-				LOG.finer("\nDetermining the distances considering node "+ source.getName() +" as source node using Dijkstra.");
+				LOG.finer("\nDetermining the distances considering node " + source.getName() + " as source node using Dijkstra.");
 			}
 			// Dijkstra determines distances from source
 			Object2IntMap<LabeledNode> nodeDistanceFromSource = dijkstraReadOnly(g1, source, checkStatus1);
@@ -611,7 +614,8 @@ public class STN {
 						Constants.sumWithOverflowCheck(d.getPotential(), -source.getPotential()));
 				if (Debug.ON) {
 					LOG.finer("Adjusting value of edge " + finalE + " in final graph " + newEdgeValue
-							+".\tDetails: -source potential (" + (-source.getPotential()+") + distance of destination ("+ nodeDistanceFromSource.getInt(d) +") + destination potential ("+d.getPotential()+")"));
+							+ ".\tDetails: -source potential (" + (-source.getPotential() + ") + distance of destination (" + nodeDistanceFromSource.getInt(d)
+									+ ") + destination potential (" + d.getPotential() + ")"));
 				}
 				finalE.setValue(newEdgeValue);
 			}
@@ -625,8 +629,8 @@ public class STN {
 	 * All node colors are assumed to be null.
 	 * At the end, all reachable nodes have also color {@link Color#gray}.
 	 * 
-	 * @param g1
-	 * @param root
+	 * @param g1 graph
+	 * @param root root node
 	 * @return the array of node in reverse-post-order if g1 is not null and root is a node of g1, null otherwise.
 	 */
 	static LabeledNode[] reversePostOrderVisit(TNGraph<STNEdge> g1, LabeledNode root) {
@@ -828,6 +832,8 @@ public class STN {
 	boolean versionReq = false;
 
 	/**
+	 * <p>Constructor for STN.</p>
+	 *
 	 * @param graph TNGraph to check
 	 */
 	public STN(TNGraph<STNEdge> graph) {
@@ -1185,7 +1191,7 @@ public class STN {
 	 * It calls {@link #coreSTNInitAndCheck()}.
 	 *
 	 * @return true if the graph is a well formed
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if the initial graph is not well defined.
+	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
 	public boolean initAndCheck() throws WellDefinitionException {
 		return coreSTNInitAndCheck();
@@ -1368,17 +1374,17 @@ public class STN {
 		g1.setName(this.fOutput.getName());
 		g1.removeEmptyEdges();
 
-		StaticLayout<STNEdge> layout = new StaticLayout<>(g1);
+		CSTNUStaticLayout<STNEdge> layout = new CSTNUStaticLayout<>(g1);
 		final TNGraphMLWriter graphWriter = new TNGraphMLWriter(layout);
 
 		try {
 			graphWriter.save(g1, this.fOutput);
 		} catch (IOException e) {
 			System.err.println(
-					"It is not possible to save the result. File "+this.fOutput +" cannot be created: " + e.getMessage());
+					"It is not possible to save the result. File " + this.fOutput + " cannot be created: " + e.getMessage());
 			return;
 		}
-		
+
 		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 
@@ -1438,6 +1444,7 @@ public class STN {
 	 * @return true if the STN is consistent, false otherwise.
 	 *         It also fills {@link #checkStatus}.
 	 */
+	@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "I know what I'm doing")
 	public boolean yenAlgorithm(boolean randomOrder, boolean backward) {
 		/**
 		 * make a random order of nodes, putting Z at the first position.
@@ -1449,16 +1456,11 @@ public class STN {
 		LabeledNode[] orderedNodes;
 		if (randomOrder) {
 			orderedNodes = this.g.getVertices().toArray(new LabeledNode[n]);
-			Random rnd = new Random(System.currentTimeMillis());
+			SecureRandom rnd = new SecureRandom();
 			for (int i = 0; i < n; i++) {
 				orderedNodes[i].setPotential(rnd.nextInt());
 			}
-			java.util.Arrays.sort(orderedNodes, 1, n, new Comparator<LabeledNode>() {
-				@Override
-				public int compare(LabeledNode o1, LabeledNode o2) {
-					return o1.getPotential() - o2.getPotential();
-				}
-			});
+			java.util.Arrays.sort(orderedNodes, 1, n, (o1, o2) -> o1.getPotential() - o2.getPotential());
 		} else {
 			orderedNodes = this.g.getVerticesArray();// already ordered but Z can be in the last positions
 			int i = n;
@@ -1734,7 +1736,7 @@ public class STN {
 	/**
 	 * Simple method to manage command line parameters using args4j library.
 	 *
-	 * @param args
+	 * @param args none
 	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
 	 */
 	@SuppressWarnings("deprecation")
@@ -1745,7 +1747,7 @@ public class STN {
 			parser.parseArgument(args);
 
 			if (this.fInput == null) {
-				try (Scanner consoleScanner = new Scanner(System.in)) {
+				try (Scanner consoleScanner = new Scanner(System.in, "UTF-8")) {
 					System.out.print("Insert STN file name (absolute file name): ");
 					String fileName = consoleScanner.next();
 					this.fInput = new File(fileName);
@@ -1758,10 +1760,18 @@ public class STN {
 				if (this.fOutput.isDirectory())
 					throw new CmdLineException(parser, "Output file is a directory.");
 				if (!this.fOutput.getName().endsWith(".cstn")) {
-					this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"));
+					if (!this.fOutput.renameTo(new File(this.fOutput.getAbsolutePath() + ".cstn"))) {
+						String m = "File " + this.fOutput.getAbsolutePath() + " cannot be renamed.";
+						LOG.severe(m);
+						throw new RuntimeException(m);
+					}
 				}
 				if (this.fOutput.exists()) {
-					this.fOutput.delete();
+					if (!this.fOutput.delete()) {
+						String m = "File " + this.fOutput.getAbsolutePath() + " cannot be deleted.";
+						LOG.severe(m);
+						throw new RuntimeException(m);
+					}
 				}
 			}
 		} catch (final CmdLineException e) {

@@ -395,10 +395,6 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 */
 
 	/**
-	 * <p>
-	 * alreadyRepresents.
-	 * </p>
-	 *
 	 * @param newLabel it must be not null
 	 * @param newAlabel it must be not null
 	 * @param newValue the new value
@@ -464,7 +460,7 @@ public class LabeledALabelIntTreeMap implements Serializable {
 	 * </p>
 	 *
 	 * @return the minimal value of this map not considering upper/lower case label (node label).
-	 *         If the map is null, returns the entry ({@link Label#emptyLabel}, ({@link ALabel#emptyLabel},
+	 *         If the map is null, returns the entry ({@link it.univr.di.labeledvalue.Label#emptyLabel}, ({@link it.univr.di.labeledvalue.ALabel#emptyLabel},
 	 *         {@link it.univr.di.labeledvalue.Constants#INT_NULL})).
 	 */
 	public Object2ObjectMap.Entry<Label, Entry<ALabel>> getMinValue() {

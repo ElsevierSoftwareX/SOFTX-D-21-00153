@@ -25,8 +25,7 @@ import it.univr.di.labeledvalue.Label;
 
 /**
  * Simple class to represent and check Conditional Simple Temporal Network assuming epsilon semantics and reducing an instance to an appropriate CSTN where DC
- * checking is
- * made assuming instantaneous reaction semantics.
+ * checking is made assuming instantaneous reaction semantics.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -49,9 +48,9 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	 * <p>main.</p>
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws org.xml.sax.SAXException
-	 * @throws javax.xml.parsers.ParserConfigurationException
-	 * @throws java.io.IOException
+	 * @throws java.io.IOException if any.
+	 * @throws javax.xml.parsers.ParserConfigurationException if any.
+	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
 		defaultMain(args, new CSTN2CSTN0(), "Reduction to CSTN IR DC");
@@ -64,6 +63,8 @@ public class CSTN2CSTN0 extends CSTNEpsilonwoNodeLabels {
 	}
 
 	/**
+	 * <p>Constructor for CSTN2CSTN0.</p>
+	 *
 	 * @param givenReactionTime a int.
 	 * @param graph a {@link it.univr.di.cstnu.graph.TNGraph} object.
 	 */

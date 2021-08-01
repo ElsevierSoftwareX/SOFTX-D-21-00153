@@ -24,7 +24,7 @@ public class LabeledIntSimpleMapTest {
 	LabeledIntSimpleMap map;
 
 	/**
-	 * @throws Exception
+	 * @throws Exception  nope
 	 */
 	@SuppressWarnings("deprecation")
 	@Before

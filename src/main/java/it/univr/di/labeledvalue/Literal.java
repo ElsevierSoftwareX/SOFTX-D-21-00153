@@ -19,8 +19,7 @@ package it.univr.di.labeledvalue;
  * A literal object is immutable and must have a propositional letter.
  * <p>
  * Lastly, for efficiency reasons, this class allows to represent literal using at most {@link it.univr.di.labeledvalue.Label#NUMBER_OF_POSSIBLE_PROPOSITIONS}
- * propositions in the range
- * {@link #PROPOSITION_ARRAY}.
+ * propositions in the range PROPOSITION_ARRAY.
  * {@link it.univr.di.labeledvalue.Label#NUMBER_OF_POSSIBLE_PROPOSITIONS} is given by the fact that {@link it.univr.di.labeledvalue.Label} represents
  * propositional labels using integer (32 bits), so labels with
  * at most 32 different propositions.
@@ -66,7 +65,7 @@ public class Literal implements Comparable<Literal> {
 	 * @see #PROPOSITIONS
 	 */
 	// 3 blocks: a-z, A-Z, α-μ.<br>
-	public static final char[] PROPOSITION_ARRAY = {
+	static final char[] PROPOSITION_ARRAY = {
 			// 0 1 2 3 4 5 6 7 8 9
 			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
 			'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
@@ -82,7 +81,7 @@ public class Literal implements Comparable<Literal> {
 	public static final String PROPOSITIONS = "a-zA-F";// "A-Za-z0-9α-μ";
 
 	/**
-	 * R.E. representation of {@link #PROPOSITION_ARRAY}
+	 * R.E. representation of PROPOSITION_ARRAY
 	 */
 	public static final String PROPOSITION_RANGE = "[" + PROPOSITIONS + "]";
 
@@ -98,11 +97,13 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
+	 * <p>charValue.</p>
+	 *
 	 * @param i a positive value smaller than {@value Label#NUMBER_OF_POSSIBLE_PROPOSITIONS}.
-	 * @return char at position i in {@link Literal#PROPOSITION_ARRAY}
+	 * @return char at position i in PROPOSITION_ARRAY.
 	 * @implSpec No parameter integrity-check is done
 	 */
-	static final char charValue(final int i) {
+	public static final char charValue(final int i) {
 		return PROPOSITION_ARRAY[i];
 	}
 
@@ -192,7 +193,7 @@ public class Literal implements Comparable<Literal> {
 	/**
 	 * Hash code for a literal given as char {@code c} and state {@code state}.
 	 * 
-	 * @param c
+	 * @param c char for proposition
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}. No integrity check is done.
 	 * @return an integer that is surely unique when 'a' &le; c &le; 'z'.
 	 */
@@ -201,7 +202,7 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * @param c
+	 * @param c char for proposition
 	 * @return the index of the given proposition {@code c} in {@link #PROPOSITION_ARRAY} if it is a proposition, a negative integer otherwise.
 	 */
 	static final byte index(final char c) {
@@ -217,8 +218,8 @@ public class Literal implements Comparable<Literal> {
 	/**
 	 * Parses the string {@code s} returning the literal represented.
 	 *
-	 * @param s It can be a single char ({@link #PROPOSITION_ARRAY}) or one of characters [{@value Constants#NOT} {@value Constants#UNKNOWN}]
-	 *            followed by a char of {@link #PROPOSITION_ARRAY}. No spaces are allowed
+	 * @param s It can be a single char (PROPOSITION_ARRAY) or one of characters [{@value Constants#NOT} {@value Constants#UNKNOWN}]
+	 *            followed by a char of PROPOSITION_ARRAY. No spaces are allowed
 	 * @return the literal represented by {@code s} if {@code s} is a valid representation of a literal, null otherwise
 	 */
 	public static final Literal parse(final String s) {
@@ -250,7 +251,7 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * @param state
+	 * @param state state of the literal
 	 * @return the string representation of {@code state}
 	 */
 	static final String stateAsString(char state) {
@@ -260,7 +261,7 @@ public class Literal implements Comparable<Literal> {
 	}
 
 	/**
-	 * @param propositionIndex
+	 * @param propositionIndex index of proposition
 	 * @param state one of possible state of a literal {@link #NEGATED} or {@link #STRAIGHT} o {@link #UNKNONW}
 	 * @return the char-array representation of a literal identified by its index and state parameter. If state is not correct, an empty array is returned
 	 * @implSpec No parameter integrity-check is done
