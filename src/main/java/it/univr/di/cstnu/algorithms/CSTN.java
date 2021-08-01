@@ -635,6 +635,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * @param eAC edge nA⟶nC
 	 * @return true if a reduction has been applied.
 	 */
+	@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "I know what I'm doing")
 	boolean labelPropagation(final LabeledNode nA, final LabeledNode nB, final LabeledNode nC, final CSTNEdge eAB, final CSTNEdge eBC, CSTNEdge eAC) {
 		// * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with nodes A == B or B==C!
 		// Visibility is package because there is Junit Class test that checks this method.
@@ -821,7 +822,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 		 */
 		EdgesToCheck<CSTNEdge> newEdgesToCheck = new EdgesToCheck<>(edgesToCheck.edgesToCheck);
 		EdgesToCheck<CSTNEdge> newEdgesToCheckR0R3 = new EdgesToCheck<>();
-		int i = 1, j = 1, n;
+		int i = 1, j = 1;
 		// Find a stable state using R0 e R3.
 		LabeledNode Z = this.g.getZ();
 		while (edgesToCheck.size() != 0) {
@@ -830,11 +831,10 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 					LOG.log(Level.FINER, "*** R3R0 CYCLE " + (j++));
 				}
 			}
-			n = edgesToCheck.size();
 			for (CSTNEdge AB : edgesToCheck) {
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "*** R3R0: considering edge " + (i++) + "/" + n + ": " + AB.getName());
+						LOG.log(Level.FINER, "*** R3R0: considering edge " + (i++) + "/" + edgesToCheck.size() + ": " + AB.getName());
 					}
 				}
 				A = this.g.getSource(AB);
@@ -856,12 +856,11 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 		edgesToCheck.addAll(newEdgesToCheck.edgesToCheck);
 		newEdgesToCheck.clear();
-		n = edgesToCheck.size();
 		// now it is time to propagate a stable configuration
 		for (CSTNEdge AB : edgesToCheck) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "*** LP: considering edge " + (i++) + "/" + n + ": " + AB.getName());
+					LOG.log(Level.FINER, "*** LP: considering edge " + (i++) + "/" + edgesToCheck.size() + ": " + AB.getName());
 				}
 			}
 			A = this.g.getSource(AB);
@@ -999,7 +998,7 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 		EdgesToCheck<CSTNEdge> newEdgesToCheck = new EdgesToCheck<>(edgesToCheck.edgesToCheck);
 		EdgesToCheck<CSTNEdge> newEdgesToCheckR0R3 = new EdgesToCheck<>();
-		int i = 1, j = 1, n;
+		int i = 1, j = 1;
 		LabeledNode Z = this.g.getZ();
 		// Find a stable state using R0 and R3.
 		while (edgesToCheck.size() != 0) {
@@ -1008,13 +1007,12 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 					LOG.log(Level.FINER, "\n\n*** R3R0 CYCLE " + (j++));
 				}
 			}
-			n = edgesToCheck.size();
 			for (CSTNEdge BZ : edgesToCheck) {
 				if (this.g.getDest(BZ) != Z)
 					continue;
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER, "\n\n*** R3R0: considering edge " + (i++) + "/" + n + ": " + BZ.getName());
+						LOG.log(Level.FINER, "\n\n*** R3R0: considering edge " + (i++) + "/" + edgesToCheck.size() + ": " + BZ.getName());
 					}
 				}
 				B = this.g.getSource(BZ);
@@ -1046,13 +1044,12 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 
 		edgesToCheck.addAll(newEdgesToCheck.edgesToCheck);
 		newEdgesToCheck.clear();
-		n = edgesToCheck.size();
 
 		// now it is time to propagate a stable configuration
 		for (CSTNEdge BZ : edgesToCheck) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "\n\n*** LP: considering edge " + (i++) + "/" + n + ": " + BZ.getName());
+					LOG.log(Level.FINER, "\n\n*** LP: considering edge " + (i++) + "/" + edgesToCheck.size() + ": " + BZ.getName());
 				}
 			}
 			B = this.g.getSource(BZ);

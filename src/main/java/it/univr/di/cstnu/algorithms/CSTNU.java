@@ -805,18 +805,18 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		}
 
 		EdgesToCheck<CSTNUEdge> newEdgesToCheck = new EdgesToCheck<>();
-		int i = 1, n = edgesToCheck.size();
+		int i = 1 ;
 		// int maxNumberOfValueInAnEdge = 0, maxNumberOfUpperCaseValuesInAnEdge = 0;
 		// CSTNUEdge fatEdgeInLabeledValues = null, fatEdgeInUpperCaseValues = null;// for sure they will be initialized!
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO))
-				LOG.log(Level.INFO, "Number of edges to analyze: " + n);
+				LOG.log(Level.INFO, "Number of edges to analyze: " + edgesToCheck.size());
 		}
 		LabeledNode Z = this.g.getZ();
 		for (CSTNUEdge AB : edgesToCheck) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "Considering edge " + (i++) + "/" + n + ": " + AB + "\n");
+					LOG.log(Level.FINER, "Considering edge " + (i++) + "/" + edgesToCheck.size() + ": " + AB + "\n");
 				}
 			}
 			A = this.g.getSource(AB);
@@ -1017,12 +1017,12 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		}
 
 		EdgesToCheck<CSTNUEdge> newEdgesToCheck = new EdgesToCheck<>();
-		int i = 1, n = edgesToCheck.size();
+		int i = 1;
 		// int maxNumberOfValueInAnEdge = 0, maxNumberOfUpperCaseValuesInAnEdge = 0;
 		// CSTNUEdge fatEdgeInLabeledValues = null, fatEdgeInUpperCaseValues = null;// for sure they will be initialized!
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.INFO))
-				LOG.log(Level.INFO, "Number of edges to analyze: " + n);
+				LOG.log(Level.INFO, "Number of edges to analyze: " + edgesToCheck.size());
 		}
 		LabeledNode Z = this.g.getZ();
 		for (CSTNUEdge BZ : edgesToCheck) {
@@ -1030,7 +1030,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				continue;
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
-					LOG.log(Level.FINER, "Considering edge " + (i++) + "/" + n + ": " + BZ + "\n");
+					LOG.log(Level.FINER, "Considering edge " + (i++) + "/" + edgesToCheck.size() + ": " + BZ + "\n");
 				}
 			}
 			B = this.g.getSource(BZ);

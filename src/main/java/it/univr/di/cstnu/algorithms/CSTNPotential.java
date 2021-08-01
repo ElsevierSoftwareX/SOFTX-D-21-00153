@@ -354,6 +354,7 @@ public class CSTNPotential extends CSTNIR {
 	 * This method is used by {@link #initAndCheck()} for determining all negative qloops!
 	 */
 	@Override
+	@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "I know what I'm doing")
 	boolean labelPropagation(final LabeledNode nA, final LabeledNode nB, final LabeledNode nC, final CSTNEdge eAB, final CSTNEdge eBC,
 			CSTNEdge eAC) {
 		// * Be careful, in order to propagate correctly possibly -∞ self-loop, it is necessary call this method also for triple like with nodes A == B or B==C!

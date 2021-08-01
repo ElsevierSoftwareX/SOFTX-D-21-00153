@@ -1617,7 +1617,6 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 			}
 			if (property.equals("nodeProposition")) {
 				char newP = node.propositionObserved;
-				char oldP = ((Character) old).charValue();
 				// it is complicated to rely on proposition2Observer because it can be erased for some reason.
 				// So, the check is made checking all nodes.
 				if (newP != Constants.UNKNOWN) {
@@ -1626,7 +1625,7 @@ public class TNGraph<E extends Edge> extends AbstractTypedGraph<LabeledNode, E> 
 							if (Debug.ON) {
 								LOG.severe("It is not possible to assign proposition " + newP + " to node " + node.getName()
 										+ " because there is already a node that observes the proposition: node " + n);
-								node.propositionObserved = oldP;
+								node.propositionObserved = ((Character) old).charValue();
 							}
 							return;
 						}
