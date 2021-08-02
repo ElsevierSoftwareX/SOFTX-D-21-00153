@@ -1,0 +1,30 @@
+%%%
+%%%FOR working with tex4ht
+%%%Questo file permette di convertire le figure tikz in file svg.
+%%% Ad ogni compilazione, tutte le figure tikz sono automaticamente salvate come file svg separati.
+%%% Quanto poi htlatex viene invocato, ciascuna delle figure nel codice viene sostituita con un includegraphics configurato con il nome del file corrispondente. 
+%%%il file myexternalize.4ht contiene le direttive per htlatex di come includere i file svg nel file in html.
+
+\makeatletter
+\@ifpackageloaded{tex4ht}{
+%    \tikzexternalize[mode=only graphics] con la versione 2019, tex4ht NON vuone nessuna consfigurazione \tikzexternalize
+%    \tikzset{tex4ht inc}
+}{
+    \usepgfplotslibrary{external}% recall \usetikzlibrary{external}
+   \tikzsetexternalprefix{images/}%tex4ht is not able to manage it! Lo metto perché così pdflatex mette i *.svg qui dentro.
+    \tikzexternalize
+}
+\makeatother
+
+\tikzset{tex4ht inc/.style={
+        /pgf/images/include external/.code={%
+            \includegraphics[]{##1.svg}%
+        }
+    }
+}
+
+\tikzset{%
+	external/system call/.add={}{; pdftocairo -svg "\image.pdf" "\image.svg"}%
+}
+%OLD	external/system call/.add={};{/usr/local/bin/inkscape --export-filename="\image.svg" "\image.pdf"}%
+%OLD COMMAND ; inkscape -z -f $PWD/\image.pdf -l $PWD/\image.svg %metto $PWD perché inkscape vuole path assoluti
