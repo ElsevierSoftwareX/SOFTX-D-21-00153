@@ -24,9 +24,7 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.CSTNU.CSTNUCheckStatus;
-import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.CSTNPSUEdge;
-import it.univr.di.cstnu.graph.CSTNUEdge;
 import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.TNGraph;
@@ -632,10 +630,8 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNPSUEdge> edgesToCheck, Instant timeoutInstant)
-			throws WellDefinitionException {
+	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNPSUEdge> edgesToCheck, Instant timeoutInstant) {
 		// This version consider only pair of edges going to Z, i.e., in the form A-->B-->Z,
 		LabeledNode B, A;
 		CSTNPSUEdge AZorZA, edgeCopy;
@@ -1193,7 +1189,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * rG4<br>
-	 * Overrides {@link CSTNU#zLabeledLetterRemovalRule(LabeledNode, CSTNUEdge)}
+	 * Overrides {@link CSTNU#zLabeledLetterRemovalRule(LabeledNode, it.univr.di.cstnu.graph.CSTNUEdge)}
 	 * considering guarded links instead of contingent ones.<br>
 	 * 
 	 * <pre>
@@ -1298,7 +1294,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * Implements the CSTNU zqR0 rule assuming instantaneous reaction and a streamlined network.<br>
-	 * <b>This differs from {@link CSTN#labelModificationR0qR0(LabeledNode, LabeledNode, CSTNEdge)}
+	 * <b>This differs from {@link CSTN#labelModificationR0qR0(LabeledNode, LabeledNode, it.univr.di.cstnu.graph.CSTNEdge)}
 	 * in the checking also upper case value</b>
 	 * 
 	 * @param nObs the observation node
@@ -1378,7 +1374,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 
 	/**
 	 * Implements the CSTNU qR3* rule assuming instantaneous reaction and a streamlined network.<br>
-	 * <b>This differs from {@link CSTNIR3RwoNodeLabels#labelModificationR3qR3(LabeledNode, LabeledNode, CSTNEdge)}
+	 * <b>This differs from {@link CSTNIR3RwoNodeLabels#labelModificationR3qR3(LabeledNode, LabeledNode, it.univr.di.cstnu.graph.CSTNEdge)}
 	 * in the checking also upper case value.</b>
 	 * 
 	 * @param nS node

@@ -658,17 +658,17 @@ public class STNU {
 			int labeledValue = e.getLabeledValue();
 
 			if (initialValue == Constants.INT_NULL && labeledValue == Constants.INT_NULL) {
-				throw new IllegalArgumentException(
+				throw new WellDefinitionException(
 						"Contingent edge " + e + " cannot be inizialized because it hasn't an initial value neither a lower/upper case value.");
 			}
 
 			STNUEdge eInverted = this.g.findEdge(d, s);
 			if (eInverted == null) {
-				throw new IllegalArgumentException("Contingent edge " + e + " is alone. The companion contingent edge between " + d.getName()
+				throw new WellDefinitionException("Contingent edge " + e + " is alone. The companion contingent edge between " + d.getName()
 						+ " and " + s.getName() + " does not exist while it must exist!");
 			}
 			if (!eInverted.isContingentEdge()) {
-				throw new IllegalArgumentException("Edge " + e + " is contingent while the companion edge " + eInverted + " is not contingent!\nIt must be!");
+				throw new WellDefinitionException("Edge " + e + " is contingent while the companion edge " + eInverted + " is not contingent!\nIt must be!");
 			}
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINEST))
@@ -698,14 +698,14 @@ public class STNU {
 					ALetter contingentALetter = new ALetter(s.getName());
 
 					if (lowerCaseValue != Constants.INT_NULL && -initialValue != lowerCaseValue) {
-						throw new IllegalArgumentException(
+						throw new WellDefinitionException(
 								"Edge " + e + " is contingent with a negative value and the inverted " + eInverted
 										+ " already contains a ***different*** lower case value: "
 										+ eInverted.getLabeledValueFormatted()
 										+ ".");
 					}
 					if (lowerCaseValue == Constants.INT_NULL && (eInvertedInitialValue == Constants.INT_NULL || eInvertedInitialValue <= 0)) {
-						throw new IllegalArgumentException("Edge " + e + " is contingent with a negative value but the inverted " + eInverted
+						throw new WellDefinitionException("Edge " + e + " is contingent with a negative value but the inverted " + eInverted
 								+ " does not contain a lower case value neither a proper initial value. ");
 					}
 
@@ -751,13 +751,13 @@ public class STNU {
 					upperCaseValue = eInverted.getLabeledValue();
 
 					if (upperCaseValue != Constants.INT_NULL && -initialValue != upperCaseValue) {
-						throw new IllegalArgumentException(
+						throw new WellDefinitionException(
 								"Edge " + e + " is contingent with a positive value and the inverted " + eInverted
 										+ " already contains a ***different*** upper case value: "
 										+ eInverted.getLabeledValueFormatted() + ".");
 					}
 					if (upperCaseValue == Constants.INT_NULL && (eInvertedInitialValue == Constants.INT_NULL || eInvertedInitialValue >= 0)) {
-						throw new IllegalArgumentException("Edge " + e + " is contingent with a positive value but the inverted " + eInverted
+						throw new WellDefinitionException("Edge " + e + " is contingent with a positive value but the inverted " + eInverted
 								+ " does not contain a upper case value neither a proper initial value. ");
 					}
 
@@ -805,7 +805,7 @@ public class STNU {
 					if (pair.getSecond()) {// it is a upper case value
 						// check that the node name is correct
 						if (!ctg.toString().equals(s.getName())) {
-							throw new IllegalArgumentException(
+							throw new WellDefinitionException(
 									"Edge " + e + " is upper case contingent edge but the name of node is not the name of contingent node: "
 											+ "\n upper case label: " + ctg
 											+ "\n ctg node: " + s);
@@ -814,7 +814,7 @@ public class STNU {
 						this.upperContingentEdge.put(s, e);
 					} else {// it is a lower case value
 						if (!ctg.toString().equals(d.getName())) {
-							throw new IllegalArgumentException(
+							throw new WellDefinitionException(
 									"Edge " + e + " is upper case contingent edge but the name of node is not the name of contingent node: "
 											+ "\n upper case label: " + ctg
 											+ "\n ctg node: " + d);

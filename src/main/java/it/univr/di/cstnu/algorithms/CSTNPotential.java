@@ -146,7 +146,7 @@ public class CSTNPotential extends CSTNIR {
 	/** {@inheritDoc} */
 	@Override
 	@Deprecated
-	public CSTNCheckStatus oneStepDynamicConsistencyByNode() throws WellDefinitionException {
+	public CSTNCheckStatus oneStepDynamicConsistencyByNode() {
 		throw new RuntimeException("Not applicable.");
 	}
 

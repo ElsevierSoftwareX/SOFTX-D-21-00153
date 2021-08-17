@@ -149,7 +149,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					public void actionPerformed(ActionEvent a) {
 						ExportDialog export = new ExportDialog("Roberto Posenato");
 						VisualizationImageServer<V, E> vis = new VisualizationImageServer<>(vv.getGraphLayout(), vv.getGraphLayout().getSize());
-						CSTNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, Edge>) vis, false);
+						TNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, Edge>) vis, false);
 						export.showExportDialog(vv.getParent(), "Export view as ...", vis, "cstnExported.pdf");
 					}
 				});

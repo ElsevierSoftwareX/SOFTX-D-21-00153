@@ -880,22 +880,16 @@ public class STN {
 	 * After a check, {@link #getGChecked} returns the graph resulting after the check.
 	 *
 	 * @return the final status of the checking with some statistics.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public STNCheckStatus consistencyCheck() throws WellDefinitionException {
+	public STNCheckStatus consistencyCheck()  {
 		return consistencyCheck(this.defaultConsistencyCheckAlg);
 	}
 
 	/**
-	 * <p>
-	 * consistencyCheck.
-	 * </p>
-	 *
 	 * @param alg a {@link it.univr.di.cstnu.algorithms.STN.CheckAlgorithm} object.
 	 * @return a {@link it.univr.di.cstnu.algorithms.STN.STNCheckStatus} object.
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public STNCheckStatus consistencyCheck(CheckAlgorithm alg) throws WellDefinitionException {
+	public STNCheckStatus consistencyCheck(CheckAlgorithm alg) {
 		try {
 			initAndCheck();
 		} catch (final IllegalArgumentException e) {
@@ -1129,11 +1123,7 @@ public class STN {
 	 */
 	public ObjectList<ObjectList<LabeledNode>> getSTNRigidComponents() {
 		if (this.checkStatus == null || !this.checkStatus.initialized) {
-			try {
 				initAndCheck();
-			} catch (WellDefinitionException e) {
-				e.printStackTrace();
-			}
 			makeNodesReachableBy(this.g, this.g.getZ(), this.horizon);
 		}
 
@@ -1191,9 +1181,8 @@ public class STN {
 	 * It calls {@link #coreSTNInitAndCheck()}.
 	 *
 	 * @return true if the graph is a well formed
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public boolean initAndCheck() throws WellDefinitionException {
+	public boolean initAndCheck() {
 		return coreSTNInitAndCheck();
 	}
 
@@ -1216,11 +1205,7 @@ public class STN {
 	 */
 	public boolean johnson() {
 		if (this.horizon == Constants.INT_NULL) {
-			try {
 				this.initAndCheck();
-			} catch (WellDefinitionException e) {
-				e.printStackTrace();
-			}
 		}
 		return STN.johnson(this.g, this.horizon, this.checkStatus);
 	}
@@ -1585,8 +1570,7 @@ public class STN {
 	/**
 	 * Makes the STN check and initialization. The STN instance is represented by graph g.
 	 * If some constraints of the network does not observe well-definition properties AND they can be adjusted, then the method fixes them
-	 * and logs such fixes in log system at WARNING level. If the method cannot fix such not-well-defined constraints, it raises a
-	 * {@link WellDefinitionException}.
+	 * and logs such fixes in log system at WARNING level. 
 	 * <br>
 	 * Since the current DC checking algorithm is complete only if the STN instance contains an upper bound to the distance between Z (the first node) and
 	 * each node, this procedure add such upper bound (= #nodes * max weight value) to each node.<br>
@@ -1594,9 +1578,8 @@ public class STN {
 	 * This method is necessary for allowing the building of special subclass initAndCheck (in subclasses of subclasses).
 	 * 
 	 * @return true if the graph is a well formed
-	 * @throws WellDefinitionException if the initial graph is not well defined.
 	 */
-	final boolean coreSTNInitAndCheck() throws WellDefinitionException {
+	final boolean coreSTNInitAndCheck() {
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE)) {
 				LOG.log(Level.FINE, "Starting initial well definition check.");

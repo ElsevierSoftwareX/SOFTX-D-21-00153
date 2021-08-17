@@ -398,7 +398,7 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 	 * @param s out stream
 	 * @throws IOException none
 	 */
-	private void writeObject(java.io.ObjectOutputStream s) throws java.io.IOException {
+	private void writeObject(java.io.ObjectOutputStream s) throws IOException  {
 		s.defaultWriteObject();
 		int size = size();
 		s.writeInt(size);
@@ -427,11 +427,11 @@ public class ObjectArrayFIFOSetQueue<K> implements PriorityQueue<K>, ObjectSet<K
 
 	/**
 	 * @param s input stream
-	 * @throws IOException none
 	 * @throws ClassNotFoundException none
+	 * @throws IOException none
 	 */
 	@SuppressWarnings("unchecked")
-	private void readObject(java.io.ObjectInputStream s) throws java.io.IOException, ClassNotFoundException {
+	private void readObject(java.io.ObjectInputStream s) throws ClassNotFoundException, IOException {
 		s.defaultReadObject();
 		this.end = s.readInt();
 		this.backingArray = (K[]) new Object[this.length = HashCommon.nextPowerOfTwo(this.end + 1)];

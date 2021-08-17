@@ -24,7 +24,6 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.graph.BasicCSTNUEdge;
-import it.univr.di.cstnu.graph.CSTNEdge;
 import it.univr.di.cstnu.graph.CSTNUEdge;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.EdgeSupplier;
@@ -791,9 +790,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public CSTNUCheckStatus oneStepDynamicControllability(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant) throws WellDefinitionException {
+	public CSTNUCheckStatus oneStepDynamicControllability(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant) {
 
 		LabeledNode A, B, C;
 		CSTNUEdge AC, CB, edgeCopy;
@@ -1000,10 +998,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @param edgesToCheck set of edges that have to be checked.
 	 * @param timeoutInstant time instant limit allowed to the computation.
 	 * @return the update status (for convenience. It is not necessary because return the same parameter status).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant)
-			throws WellDefinitionException {
+	public CSTNUCheckStatus oneStepDynamicControllabilityLimitedToZ(final EdgesToCheck<CSTNUEdge> edgesToCheck, Instant timeoutInstant) {
 		//
 		// This version consider only pair of edges going to Z, i.e., in the form A-->B-->Z,
 		// 2018-01-25: with this method, performances worsen.
@@ -1156,7 +1152,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	}
 
 	/**
-	 * Calls {@link CSTN#checkWellDefinitionProperty1and3(LabeledNode, LabeledNode, CSTNEdge, boolean)}
+	 * Calls {@link CSTN#checkWellDefinitionProperty1and3(LabeledNode, LabeledNode, it.univr.di.cstnu.graph.CSTNEdge, boolean)}
 	 * and, then, checks upper and lower case values.
 	 *
 	 * @param source the source node of the edge.
@@ -1496,7 +1492,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 	/**
 	 * Implements the zqR0 rule assuming instantaneous reaction and a streamlined network.<br>
-	 * <b>This differs from {@link CSTN#labelModificationR0qR0(LabeledNode, LabeledNode, CSTNEdge)}
+	 * <b>This differs from {@link CSTN#labelModificationR0qR0(LabeledNode, LabeledNode, it.univr.di.cstnu.graph.CSTNEdge)}
 	 * in the checking also upper case value</b>
 	 * 
 	 * @param nObs the observation node
@@ -1576,7 +1572,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 	/**
 	 * Implements the qR3* rule assuming instantaneous reaction and a streamlined network.<br>
-	 * <b>This differs from {@link CSTNIR3RwoNodeLabels#labelModificationR3qR3(LabeledNode, LabeledNode, CSTNEdge)}
+	 * <b>This differs from {@link CSTNIR3RwoNodeLabels#labelModificationR3qR3(LabeledNode, LabeledNode, it.univr.di.cstnu.graph.CSTNEdge)}
 	 * in the checking also upper case value.</b>
 	 * 
 	 * @param nS node

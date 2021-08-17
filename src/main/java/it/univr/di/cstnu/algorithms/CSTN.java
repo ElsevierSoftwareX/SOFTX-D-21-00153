@@ -206,9 +206,8 @@ public class CSTN extends AbstractCSTN<CSTNEdge> {
 	 * {@link #dynamicConsistencyCheck()} uses a different propagation technique!</em>
 	 *
 	 * @return the update status (for convenience. The status is also stored in {@link #checkStatus}).
-	 * @throws it.univr.di.cstnu.algorithms.WellDefinitionException if any.
 	 */
-	public CSTNCheckStatus oneStepDynamicConsistencyByNode() throws WellDefinitionException {
+	public CSTNCheckStatus oneStepDynamicConsistencyByNode() {
 		LabeledNode B, C;
 		CSTNEdge AC;// AB, BC
 		boolean createEdge = false;
