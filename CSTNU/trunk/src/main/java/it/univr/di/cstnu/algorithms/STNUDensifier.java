@@ -99,12 +99,9 @@ public class STNUDensifier {
 	 * it is possible to run the parallel thread in the better conditions.
 	 *
 	 * @param args an array of {@link java.lang.String} objects.
-	 * @throws java.io.IOException if any.
-	 * @throws javax.xml.parsers.ParserConfigurationException if any.
-	 * @throws org.xml.sax.SAXException if any.
 	 */
 	@SuppressWarnings("null")
-	public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
+	public static void main(String[] args) {
 
 		LOG.finest("STNUDensifier " + VERSIONandDATE + "\nStart...");
 		System.out.println("Checker " + VERSIONandDATE + "\n" + getNow() + ": Start of execution.");

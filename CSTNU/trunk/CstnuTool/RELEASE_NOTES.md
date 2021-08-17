@@ -1,6 +1,12 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v4.1
+	date: 2021-08-17
+	
+	Program CSTNEditor is renamed as TNEditor.
+	Removed all unnecessary exceptions.
+	
 ## v4.0
 	date: 2021-08-01
 	

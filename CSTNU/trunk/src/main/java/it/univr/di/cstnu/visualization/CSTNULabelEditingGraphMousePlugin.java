@@ -81,7 +81,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 
 		// Edge has a name, a default value (label for this value is determined by the conjunction of labels of its end-points and a type.
 
-		final boolean editorPanel = viewerName.equals(CSTNEditor.EDITOR_NAME);
+		final boolean editorPanel = viewerName.equals(TNEditor.EDITOR_NAME);
 		// Create a ValidationPanel - this is a panel that will show
 		// any problem with the input at the bottom with an icon
 		final ValidationPanel panel = new ValidationPanel();
@@ -648,7 +648,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 	}
 
 	/**
-	 * Simple method to disable the editing of the property jc if forceDisable is true or if the viewerName is not equals to CSTNEditor.editorName.
+	 * Simple method to disable the editing of the property jc if forceDisable is true or if the viewerName is not equals to TNEditor.editorName.
 	 *
 	 * @param jc
 	 * @param viewerName
@@ -659,20 +659,20 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 			jc.setEnabled(false);
 			return;
 		}
-		jc.setEnabled(viewerName.equals(CSTNEditor.EDITOR_NAME));
+		jc.setEnabled(viewerName.equals(TNEditor.EDITOR_NAME));
 	}
 
 	/**
 	 * The editor in which this plugin works.
 	 */
-	CSTNEditor cstnEditor;
+	TNEditor cstnEditor;
 
 	/**
 	 * Create an instance with default settings
 	 *
 	 * @param cstnEditor1 reference to the editor object (useful for finding some part of its panels).
 	 */
-	public CSTNULabelEditingGraphMousePlugin(CSTNEditor cstnEditor1) {
+	public CSTNULabelEditingGraphMousePlugin(TNEditor cstnEditor1) {
 		//I use InputEvent.BUTTON1_DOWN_MASK instead of InputEvent.BUTTON1_MASK because InputEvent.BUTTON1_MASK is deprecated.
 		//Then, I don't use it for detecting when mouse1 is clicked because getModifiersEx changed w.r.t. getModifiers eventhough manuals says to use getModifiersEx!
 		super(InputEvent.BUTTON1_DOWN_MASK);
@@ -696,7 +696,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 	 *
 	 * @return the cstnEditor
 	 */
-	public CSTNEditor getCstnEditor() {
+	public TNEditor getCstnEditor() {
 		return this.cstnEditor;
 	}
 
@@ -776,7 +776,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 	 *
 	 * @param cstnEditor1 the cstnEditor to set
 	 */
-	public void setCstnEditor(CSTNEditor cstnEditor1) {
+	public void setCstnEditor(TNEditor cstnEditor1) {
 		this.cstnEditor = cstnEditor1;
 	}
 
@@ -794,7 +794,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 		// Planning a possible extension, a node could contains more labels with associated integers.
 		// For now, we use only one entry and only the label part.
 
-		final boolean editorPanel = viewerName.equals(CSTNEditor.EDITOR_NAME);
+		final boolean editorPanel = viewerName.equals(TNEditor.EDITOR_NAME);
 		// Create a ValidationPanel - this is a panel that will show
 		// any problem with the input at the bottom with an icon
 		final ValidationPanel panel = new ValidationPanel();

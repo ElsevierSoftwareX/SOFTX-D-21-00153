@@ -58,7 +58,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	/**
 	 * Internal reference to the main JFrame.
 	 */
-	CSTNEditor cstnEditor;
+	TNEditor cstnEditor;
 
 	/**
 	 * Internal flag for activating 'editing' functions.
@@ -107,7 +107,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	 * @param cstnEditor1 reference to the editor
 	 * @param editor1 true for having 'editing' function in modeComboBox.
 	 */
-	public EditingModalGraphMouse(final RenderContext<V, E> rc1, final Supplier<V> vertexFactory1, final Supplier<E> edgeFactory1, CSTNEditor cstnEditor1,
+	public EditingModalGraphMouse(final RenderContext<V, E> rc1, final Supplier<V> vertexFactory1, final Supplier<E> edgeFactory1, TNEditor cstnEditor1,
 			boolean editor1) {
 		super(1.1f, 1 / 1.1f);
 		this.vertexFactory = vertexFactory1;

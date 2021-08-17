@@ -5,7 +5,6 @@
 package it.univr.di.labeledvalue;
 
 import java.util.Comparator;
-import java.util.Map;
 
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.AbstractObject2IntMap;
@@ -90,7 +89,7 @@ public interface LabeledIntMap {
 	/**
 	 * Remove all entries of the map.
 	 *
-	 * @see Map#clear()
+	 * @see java.util.Map#clear()
 	 */
 	public void clear();
 
@@ -345,7 +344,7 @@ public interface LabeledIntMap {
 	 * Put all elements of inputMap into the current one without making a defensive copy.
 	 *
 	 * @param inputMap a {@link it.univr.di.labeledvalue.LabeledIntMap} object.
-	 * @see Object2IntMap#putAll(Map)
+	 * @see Object2IntMap#putAll(java.util.Map)
 	 */
 	default public void putAll(final LabeledIntMap inputMap) {
 		if (inputMap == null)
@@ -360,15 +359,13 @@ public interface LabeledIntMap {
 	 *
 	 * @param l a not null label.
 	 * @return the previous value associated with <code>l</code>, or {@link it.univr.di.labeledvalue.Constants#INT_NULL} if there was no mapping for <code>l</code>.
-	 * @see Map#remove(Object)
+	 * @see java.util.Map#remove(Object)
 	 */
 	public int remove(Label l);
 
 	/**
-	 * <p>size.</p>
-	 *
 	 * @return the number of labeled value (value with empty label included).
-	 * @see Map#size()
+	 * @see java.util.Map#size()
 	 */
 	public int size();
 

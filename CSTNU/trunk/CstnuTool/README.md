@@ -10,8 +10,8 @@ The output is the xml description of the corresponding TIGA.
 You have to install uppaal-tiga-0.18 software in order to run cstnuTranslator.sh
 Please, adjust the location of 'verifytga' program inside cstnuTranslator.sh according to the location where you installed 'uppaal-tiga-0.18'.
 
-## `cstnuEditor.sh`
-A prototype CSTNU editor.
+## `tnEditor.sh`
+The temporal constraint network GUI editor.
 
 ## `CSTNRunningTime.sh`
 This tool is intended for a subproject in which we are experimenting a new algorithm for checking the dynamic consistency of CSTN
