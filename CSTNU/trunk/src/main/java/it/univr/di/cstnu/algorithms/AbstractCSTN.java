@@ -130,9 +130,9 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			if (!this.consistency && this.negativeLoopNode != null) {
 				sb.append("The negative loop is on node " + this.negativeLoopNode + "\n");
 			}
-			sb.append("Some statistics:\nR0 has been applied ").append(this.r0calls).append(" times.\n");
-			sb.append("R3 has been applied ").append(this.r3calls).append(" times.\n");
-			sb.append("Labeled Propagation has been applied ").append(this.labeledValuePropagationCalls).append(" times.\n");
+			sb.append("Some statistics:\nRule R0 has been applied ").append(this.r0calls).append(" times.\n");
+			sb.append("Rule R3 has been applied ").append(this.r3calls).append(" times.\n");
+			sb.append("Rule Labeled Propagation has been applied ").append(this.labeledValuePropagationCalls).append(" times.\n");
 			sb.append("Potentials updated ").append(this.potentialUpdate).append(" times.\n");
 			if (this.timeout)
 				sb.append("Checking has been interrupted because execution time exceeds the given time limit.\n");
@@ -454,7 +454,8 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * Version of the class
 	 */
-	static final String VERSIONandDATE = "Version 1.0 - June, 12 2019";// Refactoring CSTN class
+//	static final String VERSIONandDATE = "Version 1.0 - June, 12 2019";// Refactoring CSTN class
+	static final String VERSIONandDATE = "Version 1.1 - September, 1 2021";// Put two INFO log under Debug.ON condition
 
 	/**
 	 * Determines the minimal distance between all pair of vertexes modifying the given consistent graph.
@@ -571,19 +572,19 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	/**
 	 * If true, after a check, the reulting graph is cleaned: all empty edges or labeled values containing unknown literals are removed.
 	 */
-	@Option(required = false, name = "-cleaned", usage = "Output a cleaned result. A result cleaned graph does not contain empty edges or labeled values containing unknown literals.")
+	@Option(required = false, name = "-cleaned", usage = "Output a cleaned result. A result cleaned network does not contain empty edges or labeled values containing unknown literals.")
 	boolean cleanCheckedInstance = true;
 
 	/**
 	 * The input file containing the CSTN graph in GraphML format.
 	 */
-	@Argument(required = true, index = 0, usage = "file_name must be the input CSTN graph in GraphML format.", metaVar = "file_name")
+	@Argument(required = true, index = 0, usage = "file_name must be the input network in GraphML format.", metaVar = "file_name")
 	File fInput;
 
 	/**
 	 * Output file where to write the XML representing the CSTN graph after a check.
 	 */
-	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file. If file is already present, it is overwritten. If this parameter is not present, then the output is send to the std output.", metaVar = "output_file_name")
+	@Option(required = false, name = "-o", aliases = "--output", usage = "Output to this file. If file is already present, it is overwritten.", metaVar = "output_file_name")
 	File fOutput = null;
 
 	/**
@@ -773,16 +774,12 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	}
 
 	/**
-	 * <p>
-	 * getVersionAndCopyright.
-	 * </p>
-	 *
 	 * @return version and copyright string
 	 */
 	public String getVersionAndCopyright() {
 		// I use a non-static method for having a general method that prints the right name for each derived class.
 		String s = "\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2017-2019, Roberto Posenato.\n";
+				+ "Copyright © 2017-2021, Roberto Posenato.\n";
 		try {
 			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
 					+ s;
@@ -845,7 +842,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	public void saveGraphToFile() {
 		if (this.fOutput == null) {
 			if (this.fInput == null) {
-				LOG.info("Input file and output file are null. It is not possible to save the result in automatic way.");
+				if (Debug.ON) LOG.info("Input file and output file are null. It is not possible to save the result in automatic way.");
 				return;
 			}
 			String outputName;
@@ -866,7 +863,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 			}
 			outputName += FILE_NAME_SUFFIX;
 			this.fOutput = new File(outputName);
-			LOG.info("Output file name is " + this.fOutput.getAbsolutePath());
+			if (Debug.ON) LOG.info("Output file name is " + this.fOutput.getAbsolutePath());
 		}
 
 		TNGraph<E> g1 = this.getGChecked();
@@ -883,7 +880,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 					"It is not possible to save the result. File " + this.fOutput + " cannot be created: " + e.getMessage() + ". Computation continues.");
 		}
 
-		LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
+		if (Debug.ON) LOG.info("Checked instance saved in file " + this.fOutput.getAbsolutePath());
 	}
 
 	/**

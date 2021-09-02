@@ -8,8 +8,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,6 +71,11 @@ public class CSTNRandomGenerator {
 	// static public final String VERSIONandDATE = "Version 0.9 - June, 09 2019";// edge re-factoring
 	static public final String VERSIONandDATE = "Version 1.0 - November, 13 2019";// obs nodes can be set far from Z
 	/**
+	 * Name of the root directory
+	 */
+	static final String BASE_DIR_NAME = "Instances";
+
+	/**
 	 * Base name for generated files
 	 */
 	static final String BASE_NAME = "cstn";
@@ -84,11 +89,6 @@ public class CSTNRandomGenerator {
 	 * Name of sub dir containing DC instances
 	 */
 	static final String DC_SUB_DIR_NAME = "Consistent";
-
-	/**
-	 * Name of the root directory
-	 */
-	static final String DIR_NAME = "Instances";
 
 	/**
 	 * logger
@@ -145,10 +145,8 @@ public class CSTNRandomGenerator {
 	 * @throws java.io.IOException if any.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-
 		CSTNRandomGenerator generator = new CSTNRandomGenerator();
-
-		generator.printVersion();
+		System.out.println(generator.getVersionAndCopyright());
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Start...");
@@ -195,7 +193,7 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
-	 * @param s1 first set 
+	 * @param s1 first set
 	 * @param s2 second set
 	 * @return an array that is the s1 / s2. s1 and s2 are not modified.
 	 */
@@ -217,23 +215,23 @@ public class CSTNRandomGenerator {
 			return result;
 		char[] result1 = new char[result.length - k];
 		int j = 0;
-		for (int i = 0; i < result.length; i++) {
-			if (result[i] == 0)
+		for (char element : result) {
+			if (element == 0)
 				continue;
-			result1[j++] = result[i];
+			result1[j++] = element;
 		}
 		return result1;
 	}
 
 	/**
 	 * Creates the main directory and the two sub dirs that will contain the random instances.
-	 * 
+	 *
 	 * @param generator instance of this class containing all parameter values for building the prefix.
 	 * @return prefix to use for creating file names
 	 * @throws IOException if any directory cannot be created or moved.
 	 */
 	static private String createFolders(CSTNRandomGenerator generator) throws IOException {
-		File baseDir = new File(DIR_NAME);
+		File baseDir = new File(generator.baseDirName);
 
 		if (!baseDir.exists()) {
 			if(!baseDir.mkdirs()) {
@@ -280,7 +278,7 @@ public class CSTNRandomGenerator {
 
 	/**
 	 * Creates the two README files that describe the content of the two sub dir this.DCSubDir and this.notDCSubDir.
-	 * 
+	 *
 	 * @param generator instance of this class containing all parameter values for building the prefix.
 	 * @throws IOException if any file cannot be created.
 	 */
@@ -361,15 +359,10 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
-	 * Timeout in seconds for the check.
+	 * Base directory for saving the random instances.
 	 */
-	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
-	int timeOut = 60 * 15;
-
-	/**
-	 * weight adjustment. This value is determined in the constructor.
-	 */
-	int weightAdjustment;
+	@Option(required=false, name="--baseOutputDir", usage = "Root directory where to create the subdirs containing the DC/notDC instance.")
+	private String baseDirName = BASE_DIR_NAME;
 
 	/**
 	 * Number of wanted DC random CSTN instances.
@@ -469,6 +462,17 @@ public class CSTNRandomGenerator {
 	 * Random generator used in the building of labels.
 	 */
 	private SecureRandom rnd = new SecureRandom();
+
+	/**
+	 * Timeout in seconds for the check.
+	 */
+	@Option(required = false, name = "-t", aliases = "--timeOut", usage = "Timeout in seconds for the check", metaVar = "seconds")
+	private int timeOut = 60 * 15;
+
+	/**
+	 * weight adjustment. This value is determined in the constructor.
+	 */
+	private int weightAdjustment;
 
 	/**
 	 * <p>
@@ -873,12 +877,19 @@ public class CSTNRandomGenerator {
 	}
 
 	/**
-	 * Print version of the this class in System.out.
+	 * @return version and copyright string
 	 */
-	public void printVersion() {
+	public String getVersionAndCopyright() {
 		// I use a non-static method for having a general method that prints the right name for each derived class.
-		System.out.println(this.getClass().getName() + " " + VERSIONandDATE + ".\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2017-2019, Roberto Posenato");
+		String s = "\nAcademic and non-commercial use only.\n"
+				+ "Copyright © 2017-2021, Roberto Posenato.\n";
+		try {
+			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
+					+ s;
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			//
+		}
+		return s;
 	}
 
 	/**
@@ -938,7 +949,7 @@ public class CSTNRandomGenerator {
 	/**
 	 * Creates a negative qLoop among nodes having index in [firstIndex, lastIndex] choosing weights randomly using a normal distribution
 	 * and associating to them random labels from proposition in qLoopPropositions.
-	 * 
+	 *
 	 * @param g
 	 * @param firstIndex
 	 * @param lastIndex
@@ -1091,9 +1102,9 @@ public class CSTNRandomGenerator {
 		char l;
 		char state;
 		boolean isInconsitentWithPrevious = false;
-		for (int i = 0; i < propositions.length; i++) {
+		for (char proposition : propositions) {
 			if (this.rnd.nextBoolean()) {
-				l = propositions[i];
+				l = proposition;
 				state = this.rnd.nextBoolean() ? Literal.STRAIGHT : Literal.NEGATED;
 				label = label.conjunction(l, state);
 				if (previousLabel.isEmpty())

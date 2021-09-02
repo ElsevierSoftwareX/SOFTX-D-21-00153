@@ -286,11 +286,7 @@
 					<target>11</target>
 					<showDeprecation>true</showDeprecation>
 					<showWarnings>true</showWarnings>
-					<!-- <executable>${env.JAVA_HOME_7}/bin/javac</executable> -->
 					<fork>true</fork>
-					<excludes>
-						<exclude>it/univr/di/attic/*.java</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -316,6 +312,7 @@
 								<filter>
 									<artifact>*:*</artifact>
 									<excludes>
+									<exclude>module-info.class</exclude>
 										<exclude>META-INF/*.SF</exclude>
 										<exclude>META-INF/*.DSA</exclude>
 										<exclude>META-INF/*.RSA</exclude>
@@ -646,10 +643,8 @@
 					<doclint>all,-html</doclint><!-- cosa controllare. Ho tolto html perché javadoc 11 non riconosce le entità HTML! -->
 					<source>11</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
-					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
-						<exclude>**/attic/*.java</exclude>
 						<exclude>**/lazy/*.java</exclude>
 					</sourceFileExcludes>
 					<keywords>true</keywords>
@@ -738,10 +733,8 @@
 						HTML! -->
 					<source>11</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
-					<excludePackageNames>it.univr.di.attic.*</excludePackageNames>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
-						<exclude>**/attic/*.java</exclude>
 						<exclude>**/lazy/*.java</exclude>
 					</sourceFileExcludes>
 					<keywords>true</keywords>

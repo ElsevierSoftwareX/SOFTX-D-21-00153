@@ -105,17 +105,17 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 		@Override
 		public String toString() {
-			return ("The check is" + (this.finished ? " " : " NOT") + " finished after " + this.cycles + " cycle(s).\n"
-					+ ((this.finished) ? "the controllability check has determined that given network is" + (this.consistency ? " " : " NOT ")
+			return ("The check is" + (this.finished ? "" : " NOT") + " finished after " + this.cycles + " cycle(s).\n"
+					+ ((this.finished) ? "The controllability check has determined that given network is" + (this.consistency ? " " : " NOT ")
 							+ "dynamic controllable.\n" : "")
 					+ ((!this.consistency && this.negativeLoopNode != null) ? "The negative loop is on node " + this.negativeLoopNode + "\n" : "")
 					+ "Some statistics:\nRule R0 has been applied " + this.r0calls + " times.\n"
 					+ "Rule R3 has been applied " + this.r3calls + " times.\n"
-					+ "Labeled Propagation Rule (zLp/Nc/Uc) has been applied " + this.labeledValuePropagationCalls + " times.\n"
-					+ "Labeled z! has been applied " + this.zEsclamationRuleCalls + " times.\n"
-					+ "Labeled Lower Case Rule (zLc) has been applied " + this.lowerCaseRuleCalls + " times.\n"
-					+ "Labeled Cross-Lower Case Rule (Cc) has been applied " + this.crossCaseRuleCalls + " times.\n"
-					+ "Labeled Letter Removal (zLR/zLR*) Rule has been applied " + this.letterRemovalRuleCalls + " times.\n"
+					+ "Rule Labeled Propagation (zLp/Nc/Uc) has been applied " + this.labeledValuePropagationCalls + " times.\n"
+					+ "Rule Labeled z! has been applied " + this.zEsclamationRuleCalls + " times.\n"
+					+ "Rule Labeled Lower Case (zLc) has been applied " + this.lowerCaseRuleCalls + " times.\n"
+					+ "Rule Labeled Cross-Lower Case (Cc) has been applied " + this.crossCaseRuleCalls + " times.\n"
+					+ "Rule Labeled Letter Removal (zLR/zLR*) has been applied " + this.letterRemovalRuleCalls + " times.\n"
 					// + "Negative qLoops: " + this.qAllNegLoop + "\n"
 					// + "Negative qLoops with positive edge: " + this.qSemiNegLoop + "\n"
 					+ "The global execution time has been " + this.executionTimeNS + " ns (~" + (this.executionTimeNS / 1E9) + " s.)");
@@ -136,7 +136,8 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	// static final public String VERSIONandDATE = "Version 6.1 - March, 12 2019";// full propagation option added
 	// static final public String VERSIONandDATE = "Version 6.2 - June, 9 2019";// Edge refactoring
 	// static final public String VERSIONandDATE = "Version 6.3 - June, 9 2019";// CSTN Refactoring
-	static final public String VERSIONandDATE = "Version 6.4 - January, 12 2021";// Fixed an error in initialization
+//	static final public String VERSIONandDATE = "Version 6.4 - January, 12 2021";// Fixed an error in initialization
+	static final public String VERSIONandDATE = "Version 6.5 - September, 1 2021";// Fixed the output of the status and of the main method.
 	/**
 	 * logger
 	 */
@@ -152,13 +153,12 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		final CSTNU cstnu = new CSTNU();
+		System.out.println(cstnu.getVersionAndCopyright());
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER))
 				LOG.log(Level.FINER, "Start...");
 		}
-
-		final CSTNU cstnu = new CSTNU();
-
 		if (!cstnu.manageParameters(args))
 			return;
 		if (Debug.ON) {
@@ -167,7 +167,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 		}
 		if (cstnu.versionReq) {
 			System.out.println("CSTNU " + CSTNU.VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2017,2018,2019 Roberto Posenato");
+					+ "Copyright © 2017-2021 Roberto Posenato");
 			return;
 		}
 
@@ -204,7 +204,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 			} else {
 				System.out.println("The given network is NOT Dynamic controllable!");
 			}
-			System.out.println("Final graph: " + cstnu.g.toString());
+			System.out.println("Checked graph saved as " + cstnu.fOutput.getCanonicalPath());
 
 			System.out.println("Details: " + status);
 		} else {
@@ -214,7 +214,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 
 		if (cstnu.fOutput != null) {
 			final TNGraphMLWriter graphWriter = new TNGraphMLWriter(new CSTNUStaticLayout<>(cstnu.g));
-			graphWriter.save(cstnu.g, cstnu.fOutput);
+			graphWriter.save(cstnu.getGChecked(), cstnu.fOutput);
 		}
 	}
 

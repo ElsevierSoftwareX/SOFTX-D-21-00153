@@ -79,7 +79,7 @@ public class STNURandomGenerator {
 	/**
 	 * Name of the root directory
 	 */
-	static final String DIR_NAME = "Instances";
+	static final String BASE_DIR_NAME = "Instances";
 
 	/**
 	 * Default edge name prefix
@@ -171,10 +171,8 @@ public class STNURandomGenerator {
 	 * @throws java.io.IOException if any.
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-
 		STNURandomGenerator generator = new STNURandomGenerator();
-
-		generator.printVersion();
+		System.out.println(generator.getVersionAndCopyright());
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINER)) {
 				LOG.finer("Start...");
@@ -465,6 +463,12 @@ public class STNURandomGenerator {
 		return true;
 	}
 
+	/** 
+	 * Base directory for saving the random instances.
+	 */
+	@Option(required=false, name="--baseOutputDir", usage = "Root directory where to create the subdirs containing the DC/notDC instance.")
+	String baseDirName = BASE_DIR_NAME;
+	
 	/**
 	 * Number of wanted DC random STNU instances.
 	 */
@@ -728,12 +732,19 @@ public class STNURandomGenerator {
 	}
 
 	/**
-	 * Print version of the this class in System.out.
+	 * @return version and copyright string
 	 */
-	public void printVersion() {
+	public String getVersionAndCopyright() {
 		// I use a non-static method for having a general method that prints the right name for each derived class.
-		System.out.println(this.getClass().getName() + " " + VERSIONandDATE + ".\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2020, Roberto Posenato");
+		String s = "\nAcademic and non-commercial use only.\n"
+				+ "Copyright © 2017-2021, Roberto Posenato.\n";
+		try {
+			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
+					+ s;
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			//
+		}
+		return s;
 	}
 
 	/**
@@ -1387,7 +1398,7 @@ public class STNURandomGenerator {
 	 * @throws IOException if any directory cannot be created or moved.
 	 */
 	private String createFolders() throws IOException {
-		File baseDir = new File(DIR_NAME);
+		File baseDir = new File(this.baseDirName);
 
 		if (!baseDir.exists()) {
 			if(!baseDir.mkdirs()) {
