@@ -16,6 +16,7 @@
 		<project.javadocjar.filename>${project.artifactId}-${project.version}-javadoc.jar</project.javadocjar.filename>
 		<tex.dir>tex</tex.dir>
 		<tex.images.dir>${tex.dir}/images</tex.images.dir>
+		<java.version>11</java.version><!--  to upgrade to 17, maven-shade-plugin must be upgrade to 3.3.0 before... -->
 	</properties>
 	<licenses>
 		<license>
@@ -282,8 +283,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version><!-- 3.2 -->
 				<configuration>
-					<source>11</source>
-					<target>11</target>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
 					<showDeprecation>true</showDeprecation>
 					<showWarnings>true</showWarnings>
 					<fork>true</fork>
@@ -292,7 +293,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.2.4</version><!-- 3.1.0 -->
+				<version>3.2.4</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
@@ -640,8 +641,8 @@
 				<version>3.3.0</version>
 				<configuration>
 					<show>package</show>
-					<doclint>all,-html</doclint><!-- cosa controllare. Ho tolto html perché javadoc 11 non riconosce le entità HTML! -->
-					<source>11</source>
+					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because Javadoc 11 does not recognise HTML entities! -->
+					<source>${java.version}</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
@@ -729,9 +730,8 @@
 				</reportSets>
 				<configuration>
 					<show>package</show>
-					<doclint>all,-html</doclint>	<!-- cosa controllare. Ho tolto html perché javadoc 11 non riconosce le entità 
-						HTML! -->
-					<source>11</source>
+					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because Javadoc 11 does not recognise HTML entities! -->
+					<source>${java.version}</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<sourceFileExcludes>
 						<exclude>**/wf/*.java</exclude>
@@ -811,5 +811,5 @@
 			</build>
 		</profile>
 	</profiles>
-	<version>4.1</version>
+	<version>4.2</version>
 </project>

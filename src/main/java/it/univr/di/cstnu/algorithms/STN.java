@@ -207,13 +207,10 @@ public class STN {
 	 */
 	// static final String VERSIONandDATE = "Version 1.0 - July, 15 2019";
 	// static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made a distinction between AllPairsShortestPaths and F-W algorithms
-	static final String VERSIONandDATE = "Version 1.2 - April, 24 2021";// renamed getPredecessorGraph. Now it is getPredecessorSubGraph
+//	static final String VERSIONandDATE = "Version 1.2 - April, 24 2021";// renamed getPredecessorGraph. Now it is getPredecessorSubGraph
+	static final String VERSIONandDATE = "Version 1.2.1 - October, 04 2021";// main fixed
 
 	/**
-	 * <p>
-	 * main.
-	 * </p>
-	 *
 	 * @param args an array of {@link java.lang.String} objects.
 	 * @throws java.io.IOException if any.
 	 * @throws javax.xml.parsers.ParserConfigurationException if any.
@@ -252,33 +249,28 @@ public class STN {
 				LOG.finer("STN Graph loaded!\nNow, it is time to check it...");
 			}
 		}
-		// STNCheckStatus status;
-		// try {
-		// status = stn.consistencyCheck();
-		// } catch (final WellDefinitionException e) {
-		// System.out.print("An error has been occured during the checking: " + e.getMessage());
-		// return;
-		// }
-		// if (status.finished) {
-		// System.out.println("Checking finished!");
-		// if (status.consistency) {
-		// System.out.println("The given STN is consistent!");
-		// } else {
-		// System.out.println("The given STN is not consistent!");
-		// }
-		// System.out.println("Details: " + status);
-		// System.out.println("Graph checked: " + stn.getGChecked());
-		// } else {
-		// System.out.println("Checking has not been finished!");
-		// System.out.println("Details: " + status);
-		// }
-		ObjectList<ObjectList<LabeledNode>> rcSet = stn.getSTNRigidComponents();
-		System.out.println("List of rigid components: ");
-		int i = 1;
-		for (ObjectList<LabeledNode> rc : rcSet) {
-			System.out.println("RC #" + (i++));
-			System.out.println(rc.toString());
+		STNCheckStatus status;
+		status = stn.consistencyCheck();
+		if (status.finished) {
+			System.out.println("Checking finished!");
+			if (status.consistency) {
+				System.out.println("The given STN is consistent!");
+			} else {
+				System.out.println("The given STN is not consistent!");
+			}
+			System.out.println("Details: " + status);
+			System.out.println("Graph checked: " + stn.getGChecked());
+		} else {
+			System.out.println("Checking has not been finished!");
+			System.out.println("Details: " + status);
 		}
+//		ObjectList<ObjectList<LabeledNode>> rcSet = stn.getSTNRigidComponents();
+//		System.out.println("List of rigid components: ");
+//		int i = 1;
+//		for (ObjectList<LabeledNode> rc : rcSet) {
+//			System.out.println("RC #" + (i++));
+//			System.out.println(rc.toString());
+//		}
 	}
 
 	/**
