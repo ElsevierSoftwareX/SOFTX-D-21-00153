@@ -16,10 +16,6 @@ package it.univr.di.cstnu.graph;
 public interface STNEdge extends Edge {
 
 	/**
-	 * <p>
-	 * getValue.
-	 * </p>
-	 *
 	 * @return the weight associated to the edge
 	 */
 	public int getValue();

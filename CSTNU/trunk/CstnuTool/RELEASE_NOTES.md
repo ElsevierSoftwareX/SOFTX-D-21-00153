@@ -1,6 +1,11 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v4.2 
+	date: 
+	
+	Fixed the main method of STN class: now it checks a given network.
+
 ## v4.1
 	date: 2021-08-17
 	
