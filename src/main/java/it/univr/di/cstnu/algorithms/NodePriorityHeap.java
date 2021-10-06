@@ -20,7 +20,8 @@ import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.univr.di.cstnu.graph.LabeledNode;
 
 /**
- * Simple implementation of the Fibonacci Heap data structure, where elements are {@link it.univr.di.cstnu.graph.LabeledNode} and priorities are integers.
+ * Simple implementation a priority queue where elements are {@link it.univr.di.cstnu.graph.LabeledNode} and priorities are integers
+ * using a {@link BinaryHeap}. 
  *
  * @author posenato
  * @version $Id: $Id
@@ -58,7 +59,7 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * The heap organized as FibonacciHeap
+	 * The heap organized as binary heap.
 	 */
 	// private FibonacciHeap<Integer, LabeledNode> heap = new FibonacciHeap<>();
 	private BinaryHeap<Integer, LabeledNode> heap = new BinaryHeap<>();
@@ -116,8 +117,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>getAllDeterminedPriorities.</p>
-	 *
 	 * @return the map (LabeledNode, priority) of all the elements that have been in the queue.
 	 */
 	public Object2IntMap<LabeledNode> getAllDeterminedPriorities(){
@@ -130,8 +129,6 @@ public class NodePriorityHeap {
 	}
 	
 	/**
-	 * <p>getPriority.</p>
-	 *
 	 * @param node must be present.
 	 * @return the priority of the node if it is present.
 	 */
@@ -142,8 +139,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>getStatus.</p>
-	 *
 	 * @param node a {@link it.univr.di.cstnu.graph.LabeledNode} object.
 	 * @return a {@link it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus} object.
 	 */
@@ -183,8 +178,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>isEmpty.</p>
-	 *
 	 * @return a boolean.
 	 */
 	public boolean isEmpty() {
@@ -192,10 +185,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>
-	 * size.
-	 * </p>
-	 *
 	 * @return a int.
 	 */
 	public int size() {
@@ -222,8 +211,6 @@ public class NodePriorityHeap {
 	}
 
 	/**
-	 * <p>value.</p>
-	 *
 	 * @param item the element
 	 * @return the priority associated to item in the queue, {@link it.univr.di.labeledvalue.Constants#INT_NULL} if the item is not in the queue.
 	 */
