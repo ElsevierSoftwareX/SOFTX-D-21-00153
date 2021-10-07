@@ -16,7 +16,8 @@
 		<project.javadocjar.filename>${project.artifactId}-${project.version}-javadoc.jar</project.javadocjar.filename>
 		<tex.dir>tex</tex.dir>
 		<tex.images.dir>${tex.dir}/images</tex.images.dir>
-		<java.version>11</java.version><!--  to upgrade to 17, maven-shade-plugin must be upgrade to 3.3.0 before... -->
+		<java.version>11</java.version><!-- to upgrade to 17, maven-shade-plugin 
+			must be upgrade to 3.3.0. -->
 	</properties>
 	<licenses>
 		<license>
@@ -157,7 +158,6 @@
 			<version>3.0.5</version> <exclusions> <exclusion> <groupId>xml-apis</groupId> 
 			<artifactId>xml-apis</artifactId> </exclusion> <exclusion> <groupId>jaxen</groupId> 
 			<artifactId>jaxen</artifactId> </exclusion> </exclusions> </dependency> -->
-
 		<dependency>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
@@ -199,11 +199,21 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
-		<!--il seguente rep è per simplevalidation <repository> <id>timboudreau-builds</id> 
-			<name>timboudreau.com builds</name> <url>http://timboudreau.com/builds/plugin/repository/everything/</url> 
-			<releases> <enabled>true</enabled> <updatePolicy>never</updatePolicy> </releases> 
-			<snapshots> <enabled>true</enabled> <updatePolicy>never</updatePolicy> </snapshots> 
-			</repository> -->
+
+		<!--il seguente rep è per simplevalidation -->
+		<!-- <repository> -->
+		<!-- <id>timboudreau-builds</id> -->
+		<!-- <name>timboudreau.com builds</name> -->
+		<!-- <url>http://timboudreau.com/builds/plugin/repository/everything/</url> -->
+		<!-- <releases> -->
+		<!-- <enabled>true</enabled> -->
+		<!-- <updatePolicy>never</updatePolicy> -->
+		<!-- </releases> -->
+		<!-- <snapshots> -->
+		<!-- <enabled>true</enabled> -->
+		<!-- <updatePolicy>never</updatePolicy> -->
+		<!-- </snapshots> -->
+		<!-- </repository> -->
 
 		<!-- il seguente rep è per freehep -->
 		<repository>
@@ -308,27 +318,43 @@
 							</artifactSet>
 							<minimizeJar>true</minimizeJar>
 							<filters>
-								<!-- <filter> <artifact>org.codehaus.woodstox:wstx-asl</artifact> 
-									<includes> <include>com/ctc/wstx/stax</include> </includes> </filter> -->
 								<filter>
 									<artifact>*:*</artifact>
 									<excludes>
-									<exclude>module-info.class</exclude>
+										<exclude>module-info.class</exclude>
 										<exclude>META-INF/*.SF</exclude>
 										<exclude>META-INF/*.DSA</exclude>
 										<exclude>META-INF/*.RSA</exclude>
 										<exclude>logging.properties</exclude>
 									</excludes>
 								</filter>
+								<filter>
+									<!-- This force the inclusio of graphicsio classes where there is 
+										org.freehep.graphicsio.raw.RawImageWriterSpi that it is necessary but excluded 
+										by Maven:shade for some reason. -->
+									<artifact>org.freehep:freehep-graphicsio</artifact>
+									<includes>
+										<include>**</include>
+									</includes>
+								</filter>
 							</filters>
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<mainClass>it.univr.di.cstnu.algorithms.CSTN</mainClass>
+										<Main-Class>it.univr.di.cstnu.visualization.TNEditor</Main-Class>
 										<Build-Number>${project.version}</Build-Number>
+										<X-Compile-Source-JDK>${java.version}</X-Compile-Source-JDK>
+										<Implementation-Title>${project.artifactId}</Implementation-Title>
+										<Implementation-Version>${project.version}</Implementation-Version>
+										<Implementation-Vendor>Roberto Posenato</Implementation-Vendor>
 									</manifestEntries>
 								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
+								<!-- This bit merges the various META-INF/services files -->
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
 							</transformers>
 						</configuration>
 					</execution>
@@ -626,7 +652,7 @@
 				<executions>
 					<execution>
 						<id>pdf_html</id>
-						 <phase>pre-site</phase> 
+						<phase>pre-site</phase>
 						<goals>
 							<!--<goal>latex</goal> -->
 							<goal>tex4ht</goal>
@@ -641,7 +667,8 @@
 				<version>3.3.0</version>
 				<configuration>
 					<show>package</show>
-					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because Javadoc 11 does not recognise HTML entities! -->
+					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because 
+						Javadoc 11 does not recognise HTML entities! -->
 					<source>${java.version}</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<sourceFileExcludes>
@@ -730,7 +757,8 @@
 				</reportSets>
 				<configuration>
 					<show>package</show>
-					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because Javadoc 11 does not recognise HTML entities! -->
+					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because 
+						Javadoc 11 does not recognise HTML entities! -->
 					<source>${java.version}</source>
 					<detectJavaApiLink>false</detectJavaApiLink>
 					<sourceFileExcludes>
