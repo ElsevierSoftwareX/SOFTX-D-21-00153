@@ -3,8 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU-Tool</artifactId><!--Aggiornare anche codemeta.json -->
+	<version>4.2</version>
 	<name>CSTNU-Tool</name>
 	<url>http://prof.sci.univr.it/~posenato/software/cstnu</url>
 	<properties>
@@ -19,6 +21,13 @@
 		<java.version>11</java.version><!-- to upgrade to 17, maven-shade-plugin 
 			must be upgrade to 3.3.0. -->
 	</properties>
+	<scm>
+		<!-- <connection></connection> -->
+		<developerConnection>scm:svn:https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk</developerConnection>
+		<url>https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU</url>
+		<connection>scm:svn:https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk</connection>
+	</scm>
+
 	<licenses>
 		<license>
 			<name>GNU LESSER GENERAL PUBLIC LICENSE, Version 3</name>
@@ -265,15 +274,7 @@
 				<version>3.4.2</version><!-- 2.8 -->
 			</extension>
 		</extensions>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-site-plugin</artifactId>
-					<version>3.9.1</version>
-				</plugin>
-			</plugins>
-		</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -288,6 +289,7 @@
 					<downloadJavadocs>true</downloadJavadocs>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -300,6 +302,7 @@
 					<fork>true</fork>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -360,9 +363,14 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
+				<version>3.9.1</version>
+				<!-- <configuration>
+					<skip>true</skip>
+				</configuration>-->
 				<dependencies>
 					<dependency><!-- add support for ssh/scp -->
 						<groupId>org.apache.maven.wagon</groupId>
@@ -391,6 +399,7 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
@@ -526,6 +535,7 @@
 					</execution>
 				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>wagon-maven-plugin</artifactId>
@@ -608,6 +618,7 @@
 
 				</executions>
 			</plugin>
+
 			<plugin>
 				<groupId>de.akquinet.jbosscc.latex</groupId>
 				<artifactId>maven-latex-plugin</artifactId>
@@ -705,12 +716,8 @@
 
 		</plugins>
 	</build>
-	<scm>
-		<!-- <connection></connection> -->
-		<developerConnection>scm:svn:https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk</developerConnection>
-		<url>https://archive.softwareheritage.org/browse/origin/directory/?origin_url=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU</url>
-		<connection>scm:svn:https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk</connection>
-	</scm>
+
+
 	<reporting>
 		<plugins>
 			<plugin>
@@ -724,6 +731,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
@@ -800,6 +808,7 @@
 			</plugin>
 		</plugins>
 	</reporting>
+
 	<profiles>
 		<profile>
 			<id>noDebug</id>
@@ -839,5 +848,5 @@
 			</build>
 		</profile>
 	</profiles>
-	<version>4.2</version>
+	
 </project>
