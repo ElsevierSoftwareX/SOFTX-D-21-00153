@@ -15,8 +15,6 @@ CSTNU="$DIR/$( cd $DIR  && echo `ls CSTNU-Tool-*.jar`)"
 #############################
 #Check Java version
 # Changed code to remove the 'head -1' as per the suggestion in comment.
-#Check Java version
-# Changed code to remove the 'head -1' as per the suggestion in comment.
 JAVA_MIN='1.8'
 JAVA_MIN_1='11'
 JAVA_VERSION_COMPLETE=`java -version 2>&1 | head -n 1 | cut -d\" -f 2`
