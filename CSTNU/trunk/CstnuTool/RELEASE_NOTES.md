@@ -2,14 +2,15 @@
 <!-- START SNIPPET: rn -->
 
 ## v4.2 
-	date: 
+	date: 2021-10-07
 	
 	Fixed the main method of STN class: now it checks a given network.
+	Fixed a initialization error of graphic driver in `TNEditor` and improved Save dialog.
 
 ## v4.1
 	date: 2021-08-17
 	
-	Program CSTNEditor is renamed as TNEditor.
+	Program CSTNEditor is renamed as `TNEditor`.
 	Removed all unnecessary exceptions.
 	
 ## v4.0
