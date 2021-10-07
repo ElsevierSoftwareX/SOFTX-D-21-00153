@@ -572,9 +572,9 @@ public class TNEditor extends JFrame {
 	/**
 	 * @author posenato
 	 */
-	private class CSTNSaveListener implements ActionListener {
+	private class TNSaveListener implements ActionListener {
 
-		public CSTNSaveListener() {
+		public TNSaveListener() {
 		}
 
 		@Override
@@ -587,7 +587,7 @@ public class TNEditor extends JFrame {
 					TNEditor.this.cstn.setfOutput(file);
 					TNEditor.this.cstn.saveGraphToFile();
 				}
-				// aveGraphToFile(TNEditor.this.checkedGraph, file);
+				// saveGraphToFile(TNEditor.this.checkedGraph, file);
 			}
 		}
 	}
@@ -1186,11 +1186,37 @@ public class TNEditor extends JFrame {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			final JFileChooser chooser = new JFileChooser(TNEditor.this.defaultDir);
+			final JFileChooser chooser = new JFileChooser(TNEditor.this.defaultDir) {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				public void approveSelection() {
+					File f = getSelectedFile();
+					if (f.exists() && getDialogType() == SAVE_DIALOG) {
+						int result = JOptionPane.showConfirmDialog(this, "The file exists, overwrite?", "Existing file", JOptionPane.YES_NO_OPTION);
+						switch (result) {
+						case JOptionPane.YES_OPTION:
+							super.approveSelection();
+							return;
+						case JOptionPane.NO_OPTION:
+							return;
+						default:
+						case JOptionPane.CLOSED_OPTION:
+							return;
+						}
+					}
+					super.approveSelection();
+				}
+			};
 			// TNEditor.LOG.finest("Path wanted:" + path);
 			boolean saved = false;
 			while (!saved) {
 				final int option = chooser.showSaveDialog(TNEditor.this);
+				if (option == JFileChooser.CANCEL_OPTION)
+					break;
 				if (option == JFileChooser.APPROVE_OPTION) {
 					final File file = chooser.getSelectedFile();
 					TNEditor.this.defaultDir = file.getParent();
@@ -1553,12 +1579,12 @@ public class TNEditor extends JFrame {
 	 * Standard serial number
 	 */
 	@SuppressWarnings("unused")
-	private static final long SERIAL_VERSION_UID = 647420826043015776L;
+	private static final long SERIAL_VERSION_UID = 647420826043015777L;
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
 	/**
 	 * Version
@@ -2129,7 +2155,7 @@ public class TNEditor extends JFrame {
 
 		this.saveCSTNResultButton = new JButton("Save checked CSTN");
 		this.saveCSTNResultButton.setEnabled(false);
-		this.saveCSTNResultButton.addActionListener(new CSTNSaveListener());
+		this.saveCSTNResultButton.addActionListener(new TNSaveListener());
 		rowForCSTNButtons.add(this.saveCSTNResultButton);
 
 		// buttonCheck = new JButton("CSTN All-Pair Shortest Paths");
@@ -2276,7 +2302,7 @@ public class TNEditor extends JFrame {
 	 * .cstpsu ===&gt; CSTNPSU
 	 * </pre>
 	 * 
-	 * @param fileName file name 
+	 * @param fileName file name
 	 * @throws SAXException none
 	 * @throws ParserConfigurationException none
 	 * @throws IOException none
