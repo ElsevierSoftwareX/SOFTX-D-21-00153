@@ -17,7 +17,9 @@ Azioni per rilasciare una nuova versione di CSTNU
 - Poi, si compila
 	* mvn site //for building site without deploy
 	* mvn site-deploy //for building site and deploying it on profs.sci.univr.it.
-   Before a 'mvn site-deploy', make a 'mvn clean && mvn package'.
+    * mvn site:deploy //for deploy the site previously built by mvn site.
+   Before a 'mvn site-deploy', make a 'mvn clean && mvn package -P noDebug'.
+
 - Verificare che in http://profs.scienze.univr.it/~posenato/software/cstnu tutto è ok.
 
 3) Fare i commit di tutti i file modificati.
