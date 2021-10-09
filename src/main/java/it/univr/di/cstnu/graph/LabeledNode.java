@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.base.Function;
 
+import it.univr.di.cstnu.algorithms.STN;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
@@ -21,10 +22,30 @@ import it.univr.di.labeledvalue.Literal;
 /**
  * LabeledNode class.
  *
- * @author posenato
+ * @author posenato, ocampo
  * @version $Id: $Id
  */
 public class LabeledNode extends AbstractComponent {
+
+	/**
+	 * Possible status of a node during execution of some visiting algorithms.
+	 * 
+	 * @author posenato
+	 */
+	public static enum Status {
+		/**
+		 * 
+		 */
+		LABELED,
+		/**
+		 * 
+		 */
+		SCANNED,
+		/**
+		 * 
+		 */
+		UNREACHED
+	}
 
 	/**
 	 * Used to show the node name.
@@ -114,6 +135,28 @@ public class LabeledNode extends AbstractComponent {
 	boolean contingent;
 
 	/**
+	 * Predecessor of parent node. It is used for delimiting the subtree to disassemble.
+	 * A node X_i is the predecessor of node X_j, i.e., X_i=p(X_j),
+	 * if the distance or potential d(X_j) has been updated to d(x_i) + delta_{ij}
+	 */
+	private LabeledNode p;
+
+	/**
+	 * Node in the double-link list used in subtreeDisassembly
+	 */
+	private LabeledNode before;
+
+	/**
+	 * Node in the double-link list used in subtreeDisassembly
+	 */
+	private LabeledNode after;
+
+	/**
+	 * Status used by algorithm BFCT.
+	 */
+	private Status status;
+
+	/**
 	 * Constructor for cloning.
 	 *
 	 * @param n the node to copy.
@@ -149,8 +192,8 @@ public class LabeledNode extends AbstractComponent {
 
 	/**
 	 * Standard constructor for an observation node
+	 * 
 	 * @param <C> type of map
-	 *
 	 * @param n name of the node.
 	 * @param proposition proposition observed by this node.
 	 */
@@ -460,5 +503,65 @@ public class LabeledNode extends AbstractComponent {
 	 */
 	public void setPotential(int potential1) {
 		this.potential = potential1;
+	}
+
+	/**
+	 * @return the predecessor LabeledNode or null.
+	 */
+	public LabeledNode getP() {
+		return this.p;
+	}
+
+	/**
+	 * Set the predecessor.
+	 * 
+	 * @param p1 the predecessor node
+	 */
+	public void setP(LabeledNode p1) {
+		this.p = p1;
+	}
+
+	/**
+	 * @return the node before in the double linked representation of the predecessor graph.
+	 *         This field is managed by DissassemblyTree procedure
+	 */
+	public LabeledNode getBefore() {
+		return this.before;
+	}
+
+	/**
+	 * @param before1 new before node in the double linked representation of the predecessor graph.
+	 */
+	public void setBefore(LabeledNode before1) {
+		this.before = before1;
+	}
+
+	/**
+	 * @return the node after in the double linked representation of the predecessor graph.
+	 *         This field is managed by DissassemblyTree procedure
+	 */
+	public LabeledNode getAfter() {
+		return this.after;
+	}
+
+	/**
+	 * @param after1 new after node in the double linked representation of the predecessor graph.
+	 */
+	public void setAfter(LabeledNode after1) {
+		this.after = after1;
+	}
+
+	/**
+	 * @return the status of the node during {@link STN#BFCT} execution.
+	 */
+	public Status getStatus() {
+		return this.status;
+	}
+
+	/**
+	 * @param status1 new status of the node during {@link STN#BFCT} execution.
+	 */
+	public void setStatus(Status status1) {
+		this.status = status1;
 	}
 }
