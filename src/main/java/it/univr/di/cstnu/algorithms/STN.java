@@ -171,6 +171,7 @@ public class STN {
 			this.finished = this.timeout = false;
 			this.initialized = false;
 			this.negativeLoopNode = null;
+			this.negativeCycle = null;
 		}
 
 		/**
@@ -194,6 +195,9 @@ public class STN {
 				sb.append("The checking has been interrupted because execution time exceeds the given time limit.\n");
 			if (!this.consistency && this.negativeLoopNode != null) {
 				sb.append("The negative loop is on node " + this.negativeLoopNode + "\n");
+			}
+			if (!this.consistency && this.negativeCycle != null) {
+				sb.append("The negative cycle is " + this.negativeCycle.toString() + "\n");
 			}
 			if (this.executionTimeNS != Constants.INT_NULL)
 				sb.append("The global execution time has been ").append(this.executionTimeNS).append(" ns (~")
