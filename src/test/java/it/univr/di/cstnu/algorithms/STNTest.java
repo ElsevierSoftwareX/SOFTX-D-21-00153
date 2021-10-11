@@ -1,6 +1,7 @@
 package it.univr.di.cstnu.algorithms;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -16,7 +17,6 @@ import it.univr.di.cstnu.graph.TNGraphMLReader;
 
 /**
  * @author posenato, ocampo
- *
  */
 public class STNTest {
 
@@ -27,7 +27,7 @@ public class STNTest {
 	/**
 	 * 
 	 */
-	TNGraphMLReader<STNEdge> graphMLReader; 
+	TNGraphMLReader<STNEdge> graphMLReader;
 	/**
 	 * 
 	 */
@@ -40,7 +40,7 @@ public class STNTest {
 	/**
 	 */
 	@Before
-	public void setUp(){
+	public void setUp() {
 		this.stn = new STN();
 		this.graphMLReader = new TNGraphMLReader<>();
 	}
@@ -52,10 +52,12 @@ public class STNTest {
 	public void testBFCTWithNegativeCycle() throws Exception {
 
 		this.stn.fInput = new File(this.fileName);
-		
+
 		this.stn.setG(this.graphMLReader.readGraph(this.stn.fInput, STNEdgeInt.class));
 
-		ObjectList<LabeledNode> cycle = this.stn.BFCT();
+		boolean consistent = this.stn.BFCT();
+		assertFalse(consistent);
+		ObjectList<LabeledNode> cycle = this.stn.getCheckStatus().negativeCycle;
 		assertNotNull(cycle);
 		assertEquals("Negative cycle",
 				"[❮1; Potential: 5\u276F, \u276EZ; Potential: -1\u276F, \u276E3; Potential: 2\u276F, \u276E1; Potential: 5❯]", cycle.toString());
@@ -77,9 +79,14 @@ public class STNTest {
 			throw new IllegalArgumentException(
 					"The STN graph has a problem and it cannot be initialize: " + e.getMessage());
 		}
-		ObjectList<LabeledNode> cycle = this.stn.BFCT();
-		assertEquals("Empty cycle","[\u276En9; Potential: -6\u276F, \u276EZ; Potential: -6\u276F, \u276En3; Potential: -5\u276F, \u276En9; Potential: -6\u276F]", cycle.toString());
-		assertEquals("Node n7 ",-2, this.stn.getG().getNode("n7").getPotential());
+		boolean consistent = this.stn.BFCT();
+		assertFalse(consistent);
+		ObjectList<LabeledNode> cycle = this.stn.getCheckStatus().negativeCycle;
+		assertNotNull(cycle);
+		assertEquals("Empty cycle",
+				"[\u276En9; Potential: -6\u276F, \u276EZ; Potential: -6\u276F, \u276En3; Potential: -5\u276F, \u276En9; Potential: -6\u276F]",
+				cycle.toString());
+		assertEquals("Node n7 ", -2, this.stn.getG().getNode("n7").getPotential());
 
 	}
 
