@@ -48,8 +48,9 @@ import it.univr.di.labeledvalue.Constants;
 import it.univr.di.labeledvalue.Label;
 
 /**
- * Represents a Simple Temporal Network (STN) and it contains some methods to manipulate and to check a STN instance.
- * In this class, edge weights are represented as signed integer.
+ * Represents a Simple Temporal Network (STN) and it contains some methods to
+ * manipulate and to check a STN instance. In this class, edge weights are
+ * represented as signed integer.
  *
  * @author Roberto Posenato
  * @version $Id: $Id
@@ -77,6 +78,10 @@ public class STN {
 		 */
 		BellmanFordSingleSink,
 		/**
+		 * BFCT
+		 */
+		BFCT,
+		/**
 		 * Dijkstra
 		 */
 		Dijkstra,
@@ -95,9 +100,11 @@ public class STN {
 	}
 
 	/**
-	 * Represents the status of a checking algorithm during its execution and the final result of a check.
-	 * At the end of a STN-checking algorithm running, it contains the final status ({@link STNCheckStatus#consistency} or the node
-	 * {@link STNCheckStatus#negativeLoopNode} where a negative loop has been found).
+	 * Represents the status of a checking algorithm during its execution and the
+	 * final result of a check. At the end of a STN-checking algorithm running, it
+	 * contains the final status ({@link STNCheckStatus#consistency} or the node
+	 * {@link STNCheckStatus#negativeLoopNode} where a negative loop has been
+	 * found).
 	 * 
 	 * @author Roberto Posenato
 	 */
@@ -127,12 +134,14 @@ public class STN {
 		public boolean finished = false;
 
 		/**
-		 * Standard Deviation of execution time if this last one is a mean. In nanoseconds.
+		 * Standard Deviation of execution time if this last one is a mean. In
+		 * nanoseconds.
 		 */
 		public long stdDevExecutionTimeNS = Constants.INT_NULL;
 
 		/**
-		 * Becomes true if check has been interrupted because a given time-out has occurred.
+		 * Becomes true if check has been interrupted because a given time-out has
+		 * occurred.
 		 */
 		public boolean timeout = false;
 
@@ -142,7 +151,12 @@ public class STN {
 		boolean initialized = false;
 
 		/**
-		 * The node where the negative loop has been found (if the network is not consistent).
+		 * The list of LabeledNode representing a negative loop has been found (if the network is not consistent and the algorithm can build it).
+		 */
+		public ObjectList<LabeledNode> negativeCycle = null;
+
+		/**
+		 * The node with a negative loop in case that the grap is not consistent and the algorithm can determine only the node with negative loop.
 		 */
 		public LabeledNode negativeLoopNode = null;
 
@@ -182,8 +196,8 @@ public class STN {
 				sb.append("The negative loop is on node " + this.negativeLoopNode + "\n");
 			}
 			if (this.executionTimeNS != Constants.INT_NULL)
-				sb.append("The global execution time has been ").append(this.executionTimeNS).append(" ns (~").append((this.executionTimeNS / 1E9))
-						.append(" s.)");
+				sb.append("The global execution time has been ").append(this.executionTimeNS).append(" ns (~")
+						.append((this.executionTimeNS / 1E9)).append(" s.)");
 			return sb.toString();
 		}
 	}
@@ -206,8 +220,9 @@ public class STN {
 	 * Version of the class
 	 */
 	// static final String VERSIONandDATE = "Version 1.0 - July, 15 2019";
-	// static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made a distinction between AllPairsShortestPaths and F-W algorithms
-//	static final String VERSIONandDATE = "Version 1.2 - April, 24 2021";// renamed getPredecessorGraph. Now it is getPredecessorSubGraph
+	// static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made
+	// a distinction between AllPairsShortestPaths and F-W algorithms
+	// static final String VERSIONandDATE = "Version 1.2 - April, 24 2021";// renamed getPredecessorGraph. Now it is getPredecessorSubGraph
 	static final String VERSIONandDATE = "Version 1.2.1 - October, 04 2021";// main fixed
 
 	/**
@@ -264,19 +279,193 @@ public class STN {
 			System.out.println("Checking has not been finished!");
 			System.out.println("Details: " + status);
 		}
-//		ObjectList<ObjectList<LabeledNode>> rcSet = stn.getSTNRigidComponents();
-//		System.out.println("List of rigid components: ");
-//		int i = 1;
-//		for (ObjectList<LabeledNode> rc : rcSet) {
-//			System.out.println("RC #" + (i++));
-//			System.out.println(rc.toString());
-//		}
 	}
 
 	/**
-	 * Determines the minimal distance between source node and any node (or any node and the sink (called source) if backward) using the BellmanFord algorithm.
-	 * The minimal distance is stored as potential value in each node.
-	 * If the graph contains a negative cycle, it returns false.
+	 * @param g graph
+	 * @return the parent/before/after fields of all nodes of g.
+	 */
+	private static String printStatusNodesForBFCT(TNGraph<STNEdge> g) {
+		final Collection<LabeledNode> nodes = g.getVertices();
+		StringBuffer str = new StringBuffer();
+		for (LabeledNode node : nodes) {
+			str.append("\nNode " + node.getName());
+			str.append("   parent " + ((node.getP() != null) ? node.getP().getName() : "-"));
+			str.append("   after " + ((node.getAfter() != null) ? node.getAfter().getName() : "-"));
+			str.append("   before " + ((node.getBefore() != null) ? node.getBefore().getName() : "-"));
+		}
+		return str.toString();
+	}
+
+	/**
+	 * Subtree Disassembly strategy (Tarjan, 1981). Removes all descendants in
+	 * graphGp of the given nodeY from Gp and from the queue Q because they are no
+	 * more valid descendants.
+	 *
+	 * @param g input predecessor graph. Is a subgraph of G(T,E) having the same
+	 *            nodes T and a set of edges E'={p(X_i), delta_{p(X_i)i},X_i}
+	 * @param nodeY subtree root node.
+	 * @param nodeX the node to find
+	 * @param delta the adjustment to apply to node distances.
+	 * @return A list L of nodes forming a negative cycle if there is a negative
+	 *         cycle in G; otherwise an empty list; The G_p is adjusted accordingly.
+	 */
+	static ObjectList<LabeledNode> subtreeDisassembly(TNGraph<STNEdge> g, LabeledNode nodeY, LabeledNode nodeX,
+			int delta) {
+		if (g == null)
+			return null;
+		final Collection<LabeledNode> nodes = g.getVertices();
+		if (nodeX == null || !nodes.contains(nodeX))
+			return null;
+		if (nodeY == null || !nodes.contains(nodeY))
+			return null;
+
+		LabeledNode nodeBeforeY = nodeY.getBefore();
+		nodeY.setBefore(null);
+		LabeledNode y = nodeY.getAfter();
+		delta = delta - 1;
+
+		while (y != null && y.getP() != null && y.getP().getBefore() == null) {
+
+			if (y == nodeX) {
+				ObjectList<LabeledNode> l = new ObjectArrayList<>();
+				// build the list in the reverse order
+				while (y != nodeY) {
+					l.add(y);
+					y = y.getP();
+				}
+				l.add(nodeY);
+				l.add(nodeX);
+				// it is important to return in the list in the correct order
+				ObjectList<LabeledNode> l1 = new ObjectArrayList<>();
+				for (int i = l.size(); --i != -1;) {
+					l1.add(l.get(i));
+				}
+				return l1;
+			}
+			y.setPotential(y.getPotential() - delta);
+			y.setBefore(null);
+			y.setStatus(LabeledNode.Status.UNREACHED);
+			y = y.getAfter();
+		}
+		if (nodeBeforeY != null)
+			nodeBeforeY.setAfter(y);
+
+		if (y != null)
+			y.setBefore(nodeBeforeY);
+
+		nodeY.setAfter(nodeX.getAfter());
+
+		if (nodeY.getAfter() != null)
+			nodeY.getAfter().setBefore(nodeY); // Connect nodeY as nodeX son in the doubly-linked list
+
+		nodeY.setBefore(nodeX);
+
+		nodeX.setAfter(nodeY);
+
+		return null;
+	}
+
+	/**
+	 * Implementation of the Bellman-Ford-Tarjan algorithm.
+	 * Such an algorithm is the Bellman-Ford aumented by a cycle detection routine called 'Subtree disassembly' written by Tarjan.
+	 * 
+	 * If the STN graph is not consistent and the checkStatus parameter is not null, then the negative cycle is stored in the field
+	 * {@link STNCheckStatus#negativeCycle}
+	 * @param g1 The STN graph
+	 * @param source the starting node. If the 
+	 * @param horizon an upper bound to the maximum distance between Z and any other node.
+	 *            It is used to make any node reachable from Z.
+	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
+	 * @return A list L of nodes forming a negative cycle if there is a negative
+	 *         cycle in g; otherwise an empty list.<br>
+	 *         In case of an empty list, the minimal distances are stored in each node (field 'potential') and the
+	 *         predecessor graph is also implicit store as field 'p' (for parent or predecessor in each node.
+	 */
+	static boolean BFCT(TNGraph<STNEdge> g1, LabeledNode source, int horizon, STNCheckStatus checkStatus1) {
+
+		if (Debug.ON) {
+			LOG.finest("Horizon value: " + horizon + "\nAdding edges for guaranteeing that source node reaches each node.");
+		}
+		makeNodesReachableBy(g1, source, horizon);
+
+		final Collection<LabeledNode> nodes = g1.getVertices();
+		final ObjectArrayFIFOSetQueue<LabeledNode> q = new ObjectArrayFIFOSetQueue<>();
+
+		horizon++;// Use horizon+1 as +infty value! In this way, in the first cycle, all nodes will be put in the queue.
+		for (LabeledNode node : nodes) {
+			node.setPotential(horizon);
+			node.setBefore(null);
+			node.setAfter(null);
+			node.setP(null);
+			node.setStatus(LabeledNode.Status.UNREACHED);
+		}
+
+		source.setPotential(0);
+		source.setBefore(source);
+		source.setAfter(source);
+		source.setStatus(LabeledNode.Status.LABELED);
+		q.add(source);
+
+		int n=0;
+		while (!q.isEmpty()) {
+			LabeledNode nodeX = q.dequeue();
+
+			if (nodeX.getStatus() == LabeledNode.Status.LABELED) {
+				for (STNEdge e : g1.getOutEdges(nodeX)) {
+					LabeledNode nodeY = g1.getDest(e);
+					int delta = nodeY.getPotential() - nodeX.getPotential() - e.getValue();
+					if (delta > 0) {
+						nodeY.setPotential(nodeY.getPotential() - delta);
+						nodeY.setP(nodeX);
+						nodeY.setStatus(LabeledNode.Status.LABELED);
+						q.add(nodeY);
+						if (Debug.ON) {
+							LOG.finest("\nNode Y: " + nodeY + "\tNode X: " + nodeX);
+							LOG.finest("\nBefore subtreeDisasembly");
+							if (LOG.isLoggable(Level.FINEST))
+								LOG.log(Level.FINEST, STN.printStatusNodesForBFCT(g1));
+						}
+						ObjectList<LabeledNode> cycle = subtreeDisassembly(g1, nodeY, nodeX, delta);
+						if (Debug.ON) {
+							LOG.finest("\nAfter subtreeDisasembly");
+							if (LOG.isLoggable(Level.FINEST))
+								LOG.log(Level.FINEST, STN.printStatusNodesForBFCT(g1));
+						}
+						if (checkStatus1 != null)
+							checkStatus1.propagationCalls++;
+
+						if (cycle != null) {
+							if (Debug.ON) {
+								LOG.fine("Found a negative cycle: " + cycle.toString());
+							}
+							if (checkStatus1 != null) {
+								checkStatus1.consistency = false;
+								checkStatus1.finished = true;
+								checkStatus1.negativeCycle = cycle;
+							}
+							return false;
+						}
+					}
+				}
+				nodeX.setStatus(LabeledNode.Status.SCANNED);
+				n++;
+			}
+		}
+		if (checkStatus1 != null) {
+			checkStatus1.cycles = n;
+			checkStatus1.consistency = true;
+			checkStatus1.finished = true;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Determines the minimal distance between source node and any node (or any node
+	 * and the sink (called source) if backward) using the BellmanFord algorithm.
+	 * The minimal distance is stored as potential value in each node. If the graph
+	 * contains a negative cycle, it returns false.
 	 * 
 	 * @param g1 input graph
 	 * @param source the source node for the algorithm
@@ -284,7 +473,7 @@ public class STN {
 	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
 	 * @return true if the graph is consistent, false otherwise.
 	 */
-	static boolean bellmanFord(TNGraph<STNEdge> g1, LabeledNode source, boolean backward, STNCheckStatus checkStatus1) {
+	static boolean bellmanFord(TNGraph<STNEdge> g1, LabeledNode source, final boolean backward, STNCheckStatus checkStatus1) {
 		if (g1 == null)
 			return false;
 		final Collection<LabeledNode> nodes = g1.getVertices();
@@ -311,7 +500,8 @@ public class STN {
 				v = Constants.sumWithOverflowCheck(s.getPotential(), e.getValue());
 				if (d.getPotential() > v) {
 					if (Debug.ON) {
-						STN.LOG.finer("BF " + d.getName() + " potential: " + Constants.formatInt(d.getPotential()) + " --> " + Constants.formatInt(v));
+						STN.LOG.finer("BF " + d.getName() + " potential: " + Constants.formatInt(d.getPotential())
+								+ " --> " + Constants.formatInt(v));
 					}
 					d.setPotential(v);
 					if (checkStatus1 != null)
@@ -331,7 +521,8 @@ public class STN {
 			v = Constants.sumWithOverflowCheck(s.getPotential(), e.getValue());
 			if (d.getPotential() > v) {
 				if (Debug.ON) {
-					STN.LOG.finer("BF inconsitency:" + d.getName() + " potential: " + Constants.formatInt(d.getPotential()) + "-->" + Constants.formatInt(v));
+					STN.LOG.finer("BF inconsitency:" + d.getName() + " potential: "
+							+ Constants.formatInt(d.getPotential()) + "-->" + Constants.formatInt(v));
 				}
 				if (checkStatus1 != null) {
 					checkStatus1.consistency = false;
@@ -350,9 +541,10 @@ public class STN {
 	}
 
 	/**
-	 * Stops a computation if current instant is after the <code>timeoutInstant</code>
-	 * setting <code>status.timeout=true</code>.<br>
-	 * As courtesy, it sets also <code>status.consistency=status.finished=false</code>.
+	 * Stops a computation if current instant is after the
+	 * <code>timeoutInstant</code> setting <code>status.timeout=true</code>.<br>
+	 * As courtesy, it sets also
+	 * <code>status.consistency=status.finished=false</code>.
 	 * 
 	 * @param timeoutInstant timeout instant
 	 * @param status status of the check
@@ -374,13 +566,15 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance between source node and any node using the Dijkstra algorithm.
-	 * Each minimal distance is stored as potential value of the node.
-	 * If the graph contains a negative edge beyond the source outgoing edges or the source is not in the graph, it returns false.
+	 * Determines the minimal distance between source node and any node using the
+	 * Dijkstra algorithm. Each minimal distance is stored as potential value of the
+	 * node. If the graph contains a negative edge beyond the source outgoing edges
+	 * or the source is not in the graph, it returns false.
 	 * 
 	 * @param g1 input graph
 	 * @param source the source node. It must belong to g1.
-	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
+	 * @param checkStatus1 status to update with statistics of algorithm. It can be
+	 *            null.
 	 * @return true if the node distances have been determined, false otherwise.
 	 */
 	static boolean dijkstra(TNGraph<STNEdge> g1, LabeledNode source, STNCheckStatus checkStatus1) {
@@ -395,17 +589,23 @@ public class STN {
 	}
 
 	/**
-	 * This method differs from {@link #dijkstra(TNGraph, LabeledNode, STNCheckStatus)} in the fact that distances are store on
-	 * a map &lt;node, value&gt; that is returned. Node potentials are not modified.
+	 * This method differs from
+	 * {@link #dijkstra(TNGraph, LabeledNode, STNCheckStatus)} in the fact that
+	 * distances are store on a map &lt;node, value&gt; that is returned. Node
+	 * potentials are not modified.
 	 * 
 	 * @see #dijkstra(TNGraph, LabeledNode, STNCheckStatus)
 	 * @param graph input graph
 	 * @param source the source node for the algorithm
-	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
-	 * @return a non empty map (node,integer) representing the distances of all nodes from the given source.
-	 *         Null if any error occurs like source not in graph, graph is empty, negative edge beyond source edges has been found, etc.
+	 * @param checkStatus1 status to update with statistics of algorithm. It can be
+	 *            null.
+	 * @return a non empty map (node,integer) representing the distances of all
+	 *         nodes from the given source. Null if any error occurs like source not
+	 *         in graph, graph is empty, negative edge beyond source edges has been
+	 *         found, etc.
 	 */
-	static Object2IntMap<LabeledNode> dijkstraReadOnly(TNGraph<STNEdge> graph, LabeledNode source, STNCheckStatus checkStatus1) {
+	static Object2IntMap<LabeledNode> dijkstraReadOnly(TNGraph<STNEdge> graph, LabeledNode source,
+			STNCheckStatus checkStatus1) {
 		if (graph == null)
 			return null;
 		final Collection<LabeledNode> nodes = graph.getVertices();
@@ -436,15 +636,15 @@ public class STN {
 			for (STNEdge e : graph.getOutEdges(s)) {
 				d = graph.getDest(e);
 				eValue = e.getValue();
-				if (!s.equalsByName(source) && eValue < 0) // s != source is for allowing the use of Dijkstra when the edges from source are negative (it is a
+				if (!s.equalsByName(source) && eValue < 0) // s != source is for allowing the use of Dijkstra when the
+															// edges from source are negative (it is a
 															// particular use od Dijkstra algorithm).
 					return null;
 				v = Constants.sumWithOverflowCheck(sValue, eValue);
 				if (nodeQueue.getStatus(d) == NodeStatus.isPresent && nodeQueue.value(d) > v) {
 					if (Debug.ON) {
-						STN.LOG.finer(
-								"Dijkstra updates " + d.getName() + " potential adding edge value " + eValue + ": " + Constants.formatInt(nodeQueue.value(d))
-										+ " --> " + Constants.formatInt(v));
+						STN.LOG.finer("Dijkstra updates " + d.getName() + " potential adding edge value " + eValue
+								+ ": " + Constants.formatInt(nodeQueue.value(d)) + " --> " + Constants.formatInt(v));
 					}
 					nodeQueue.insertOrDecrease(d, v);
 					if (checkStatus1 != null)
@@ -465,14 +665,16 @@ public class STN {
 
 	/**
 	 * AllPairShortestPath(AllPairsShortestPaths)<br>
-	 * Determines the minimal distance between all pair of vertexes modifying the given using the Floyd-Warshall algorithm.
-	 * If the graph contains a negative cycle, it returns false and the graph contains the edges that
-	 * have determined the negative cycle.
+	 * Determines the minimal distance between all pair of vertexes modifying the
+	 * given using the Floyd-Warshall algorithm. If the graph contains a negative
+	 * cycle, it returns false and the graph contains the edges that have determined
+	 * the negative cycle.
 	 * 
 	 * @param graph the graph to complete
-	 * @param checkStatus1 possible status to fill during the computation. It can be null.
-	 * @return true if the graph is consistent, false otherwise.
-	 *         If the response is false, the edges do not represent the minimal distance between nodes.
+	 * @param checkStatus1 possible status to fill during the computation. It can be
+	 *            null.
+	 * @return true if the graph is consistent, false otherwise. If the response is
+	 *         false, the edges do not represent the minimal distance between nodes.
 	 */
 	static boolean apsp(TNGraph<STNEdge> graph, STNCheckStatus checkStatus1) {
 		final EdgeSupplier<STNEdge> edgeFactory = graph.getEdgeFactory();
@@ -502,8 +704,8 @@ public class STN {
 					if (i == j) {
 						if (v < 0) {
 							// check negative cycles
-							STN.LOG.info("Found a negative cycle on node " + iV.getName()
-									+ "\nDetails: ik=" + ik + ", kj=" + kj + ",  v=" + v);
+							STN.LOG.info("Found a negative cycle on node " + iV.getName() + "\nDetails: ik=" + ik
+									+ ", kj=" + kj + ",  v=" + v);
 							if (checkStatus1 != null) {
 								checkStatus1.consistency = false;
 								checkStatus1.finished = true;
@@ -528,8 +730,8 @@ public class STN {
 							checkStatus1.propagationCalls++;
 						}
 						if (Debug.ON) {
-							STN.LOG.fine("Edge " + ij.getName() + ": " + Constants.formatInt(old) + " --> " + Constants.formatInt(v)
-									+ "\n\t\t" + ik + " + " + kj);
+							STN.LOG.fine("Edge " + ij.getName() + ": " + Constants.formatInt(old) + " --> "
+									+ Constants.formatInt(v) + "\n\t\t" + ik + " + " + kj);
 						}
 					}
 				}
@@ -546,13 +748,15 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance between all pairs of nodes using the Johnson algorithm.
-	 * The minimal distance is stored as potential value in each node.
-	 * If the graph contains a negative cycle, it returns false.
+	 * Determines the minimal distance between all pairs of nodes using the Johnson
+	 * algorithm. The minimal distance is stored as potential value in each node. If
+	 * the graph contains a negative cycle, it returns false.
 	 * 
 	 * @param g1 input graph
-	 * @param horizon the maximum edge value present in the graph. It is necessary for guaranteeing that Z reaches any nodes.
-	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
+	 * @param horizon the maximum edge value present in the graph. It is
+	 *            necessary for guaranteeing that Z reaches any nodes.
+	 * @param checkStatus1 status to update with statistics of algorithm. It can be
+	 *            null.
 	 * @return true if the graph is consistent, false otherwise.
 	 */
 	static boolean johnson(TNGraph<STNEdge> g1, int horizon, STNCheckStatus checkStatus1) {
@@ -585,7 +789,8 @@ public class STN {
 		// Determine the distances from each node updating the edge in the finalG
 		for (LabeledNode source : g1.getVertices()) {
 			if (Debug.ON) {
-				LOG.finer("\nDetermining the distances considering node " + source.getName() + " as source node using Dijkstra.");
+				LOG.finer("\nDetermining the distances considering node " + source.getName()
+						+ " as source node using Dijkstra.");
 			}
 			// Dijkstra determines distances from source
 			Object2IntMap<LabeledNode> nodeDistanceFromSource = dijkstraReadOnly(g1, source, checkStatus1);
@@ -601,13 +806,16 @@ public class STN {
 					finalG.addEdge(finalE, source.getName(), d.getName());
 				}
 
-				// new value is the value of the edge in Dijkstra + the original potential difference between destination and source: DijkstraDistance + (d - s)
+				// new value is the value of the edge in Dijkstra + the original potential
+				// difference between destination and source: DijkstraDistance + (d - s)
 				int newEdgeValue = Constants.sumWithOverflowCheck(nodeDistanceFromSource.getInt(d),
 						Constants.sumWithOverflowCheck(d.getPotential(), -source.getPotential()));
 				if (Debug.ON) {
 					LOG.finer("Adjusting value of edge " + finalE + " in final graph " + newEdgeValue
-							+ ".\tDetails: -source potential (" + (-source.getPotential() + ") + distance of destination (" + nodeDistanceFromSource.getInt(d)
-									+ ") + destination potential (" + d.getPotential() + ")"));
+							+ ".\tDetails: -source potential ("
+							+ (-source.getPotential() + ") + distance of destination ("
+									+ nodeDistanceFromSource.getInt(d) + ") + destination potential ("
+									+ d.getPotential() + ")"));
 				}
 				finalE.setValue(newEdgeValue);
 			}
@@ -617,13 +825,14 @@ public class STN {
 	}
 
 	/**
-	 * Determine the reverse-post-order of reachable nodes from the given root node in graph g1.
-	 * All node colors are assumed to be null.
-	 * At the end, all reachable nodes have also color {@link Color#gray}.
+	 * Determine the reverse-post-order of reachable nodes from the given root node
+	 * in graph g1. All node colors are assumed to be null. At the end, all
+	 * reachable nodes have also color {@link Color#gray}.
 	 * 
 	 * @param g1 graph
 	 * @param root root node
-	 * @return the array of node in reverse-post-order if g1 is not null and root is a node of g1, null otherwise.
+	 * @return the array of node in reverse-post-order if g1 is not null and root is
+	 *         a node of g1, null otherwise.
 	 */
 	static LabeledNode[] reversePostOrderVisit(TNGraph<STNEdge> g1, LabeledNode root) {
 		if (g1 == null || !g1.containsVertex(root))
@@ -638,11 +847,14 @@ public class STN {
 	}
 
 	/**
-	 * Re-weights all edge weights using potentials of nodes. If any node potential is undefined or infinite, it returns false.
-	 * This method is usually called after Bellman-Ford algorithm execution in order to make all edge values positive.
+	 * Re-weights all edge weights using potentials of nodes. If any node potential
+	 * is undefined or infinite, it returns false. This method is usually called
+	 * after Bellman-Ford algorithm execution in order to make all edge values
+	 * positive.
 	 * 
 	 * @param graph input graph
-	 * @throws IllegalStateException it is not possible to reweighting because potential value are not corrects.
+	 * @throws IllegalStateException it is not possible to reweighting because
+	 *             potential value are not corrects.
 	 */
 	static void reweight(TNGraph<STNEdge> graph) {
 		final Collection<STNEdge> edges = graph.getEdges();
@@ -654,13 +866,17 @@ public class STN {
 			sV = s.getPotential();
 			dV = d.getPotential();
 			eV = e.getValue();
-			if (sV == Constants.INT_NULL || dV == Constants.INT_NULL || sV == Constants.INT_POS_INFINITE || dV == Constants.INT_POS_INFINITE) {
-				throw new IllegalStateException("At least one of the following nodes contains an no valid value: " + s + " or " + d);
+			if (sV == Constants.INT_NULL || dV == Constants.INT_NULL || sV == Constants.INT_POS_INFINITE
+					|| dV == Constants.INT_POS_INFINITE) {
+				throw new IllegalStateException(
+						"At least one of the following nodes contains an no valid value: " + s + " or " + d);
 			}
-			// new value is the value - the potential difference between destination and source: e - (d - s) = e + s -d
+			// new value is the value - the potential difference between destination and
+			// source: e - (d - s) = e + s -d
 			newV = Constants.sumWithOverflowCheck(eV, Constants.sumWithOverflowCheck(sV, -dV));
-			String log = "Re-weighting " + e.getName() + ": Source potential: " + Constants.formatInt(sV) + ", Dest potential: "
-					+ Constants.formatInt(dV) + ". Edge value: " + Constants.formatInt(eV) + ". New value (source+edge-dest): " + Constants.formatInt(newV);
+			String log = "Re-weighting " + e.getName() + ": Source potential: " + Constants.formatInt(sV)
+					+ ", Dest potential: " + Constants.formatInt(dV) + ". Edge value: " + Constants.formatInt(eV)
+					+ ". New value (source+edge-dest): " + Constants.formatInt(newV);
 			if (newV < 0) {
 				throw new IllegalStateException("Error in re-weighting. " + log);
 			}
@@ -672,8 +888,10 @@ public class STN {
 	}
 
 	/**
-	 * Given the unweighed parent graph (assumed to be a tree) as parent vector, returns true if such a graph contains a negative cycle.
-	 * It is assumed that the root of tree is the node with index 0 and parent[0] == 0, i.e., root ha itself as parent.
+	 * Given the unweighed parent graph (assumed to be a tree) as parent vector,
+	 * returns true if such a graph contains a negative cycle. It is assumed that
+	 * the root of tree is the node with index 0 and parent[0] == 0, i.e., root ha
+	 * itself as parent.
 	 * 
 	 * @param parent
 	 * @return true if there is a cycle.
@@ -711,15 +929,17 @@ public class STN {
 	}
 
 	/**
-	 * Recursive method for determining a depth-first order of nodes.
-	 * It not visits nodes having {@link Color#gray} color.
+	 * Recursive method for determining a depth-first order of nodes. It not visits
+	 * nodes having {@link Color#gray} color.
 	 * 
 	 * @param g1 the graph in which making the visit
 	 * @param node node to visit after his descendants
 	 * @param finalOrder the resulting order
-	 * @param translate true if the order has to be determined in the translated graph.
+	 * @param translate true if the order has to be determined in the translated
+	 *            graph.
 	 */
-	private static void depthFirstOrder(TNGraph<STNEdge> g1, LabeledNode node, ObjectList<LabeledNode> finalOrder, boolean translate) {
+	private static void depthFirstOrder(TNGraph<STNEdge> g1, LabeledNode node, ObjectList<LabeledNode> finalOrder,
+			boolean translate) {
 		node.setColor(Color.gray);
 		Collection<LabeledNode> adjNodes = (translate) ? g1.getPredecessors(node) : g1.getSuccessors(node);
 		for (LabeledNode adjNode : adjNodes) {
@@ -733,9 +953,11 @@ public class STN {
 	/**
 	 * Make each node reachable by source.
 	 * 
-	 * @param graph
-	 * @param source
-	 * @param horizon
+	 * No null check is done. 
+	 * 
+	 * @param graph a non-null graph
+	 * @param source the source node. If it is not in graph, it is added.
+	 * @param horizon the maximum absolute edge weight present in the graph. 
 	 */
 	private static void makeNodesReachableBy(TNGraph<STNEdge> graph, LabeledNode source, int horizon) {
 		if (Debug.ON) {
@@ -743,6 +965,9 @@ public class STN {
 				LOG.log(Level.FINE, "Making all nodes reachable from " + source.getName());
 			}
 		}
+		if (!graph.containsVertex(source))
+			graph.addVertex(source);
+		
 		EdgeSupplier<STNEdge> edgeFact = graph.getEdgeFactory();
 		for (final LabeledNode node : graph.getVertices()) {
 			// 3. Checks that each no-source node has an edge from source
@@ -756,8 +981,8 @@ public class STN {
 				edge.setValue(horizon);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
-						LOG.log(Level.FINER,
-								"Added " + edge.getName() + ": " + source.getName() + "--(" + horizon + ")-->" + node.getName());
+						LOG.log(Level.FINER, "Added " + edge.getName() + ": " + source.getName() + "--(" + horizon
+								+ ")-->" + node.getName());
 					}
 				}
 			}
@@ -775,7 +1000,8 @@ public class STN {
 	boolean cleanCheckedInstance = true;
 
 	/**
-	 * Which algorithm to use for consistency check. Default is AllPairsShortestPaths (AllPairsShortestPaths)
+	 * Which algorithm to use for consistency check. Default is
+	 * AllPairsShortestPaths (AllPairsShortestPaths)
 	 */
 	CheckAlgorithm defaultConsistencyCheckAlg = CheckAlgorithm.AllPairsShortestPaths;
 
@@ -802,12 +1028,14 @@ public class STN {
 	TNGraph<STNEdge> gCheckedCleaned = null;
 
 	/**
-	 * Horizon value. A node that has to be executed after such time means that it has not to be executed!
+	 * Horizon value. A node that has to be executed after such time means that it
+	 * has not to be executed!
 	 */
 	int horizon = Constants.INT_NULL;
 
 	/**
-	 * Absolute value of the max negative weight determined during initialization phase.
+	 * Absolute value of the max negative weight determined during initialization
+	 * phase.
 	 */
 	int maxWeight = Constants.INT_NULL;
 
@@ -824,7 +1052,9 @@ public class STN {
 	boolean versionReq = false;
 
 	/**
-	 * <p>Constructor for STN.</p>
+	 * <p>
+	 * Constructor for STN.
+	 * </p>
 	 *
 	 * @param graph TNGraph to check
 	 */
@@ -853,8 +1083,9 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance in this STN between any node and the sink one (node Z) using the BellmanFord algorithm.
-	 * The minimal distance is stored as potential value in each node.
+	 * Determines the minimal distance in this STN between any node and the source/sink one
+	 * (node Z) using the BellmanFord algorithm.<br>
+	 * The minimal distance is stored as potential value in each node.<br>
 	 * If the graph contains a negative cycle, it returns false.
 	 *
 	 * @param backward true if the search has to be backward.
@@ -865,15 +1096,39 @@ public class STN {
 	}
 
 	/**
-	 * Checks the consistency of a STN instance within timeout seconds.
-	 * During the execution of this method, the given graph is modified. <br>
-	 * If the check is successful, all constraints to node Z in g are minimized; otherwise, g contains a negative cycle at least.
-	 * <br>
-	 * After a check, {@link #getGChecked} returns the graph resulting after the check.
+	 * Determines the minimal distance in this STN between the node Z and any other node
+	 * using the Bellman-Ford-Tarjan (BFCT) algorithm.<br>
+	 * The minimal distance is stored as potential value in each node.
+	 * 
+	 * If the STN graph is not consistent and the checkStatus parameter is not null, then the negative cycle is stored in the field
+	 * {@link STNCheckStatus#negativeCycle}
+	 * 
+	 * @see #BFCT(TNGraph, LabeledNode, int, STNCheckStatus)
+	 * @return true if the network is consistent, false otherwise.
+	 */
+	public boolean BFCT() {
+		if (!this.checkStatus.initialized) {
+			try {
+				initAndCheck();
+			} catch (final IllegalArgumentException e) {
+				throw new IllegalArgumentException(
+						"The STN graph has a problem and it cannot be initialize: " + e.getMessage());
+			}
+		}
+		return STN.BFCT(this.g, this.g.getZ(), this.horizon, this.checkStatus);
+	}
+
+	/**
+	 * Checks the consistency of a STN instance within timeout seconds. During the
+	 * execution of this method, the given graph is modified. <br>
+	 * If the check is successful, all constraints to node Z in g are minimized;
+	 * otherwise, g contains a negative cycle at least. <br>
+	 * After a check, {@link #getGChecked} returns the graph resulting after the
+	 * check.
 	 *
 	 * @return the final status of the checking with some statistics.
 	 */
-	public STNCheckStatus consistencyCheck()  {
+	public STNCheckStatus consistencyCheck() {
 		return consistencyCheck(this.defaultConsistencyCheckAlg);
 	}
 
@@ -885,7 +1140,8 @@ public class STN {
 		try {
 			initAndCheck();
 		} catch (final IllegalArgumentException e) {
-			throw new IllegalArgumentException("The STN graph has a problem and it cannot be initialize: " + e.getMessage());
+			throw new IllegalArgumentException(
+					"The STN graph has a problem and it cannot be initialize: " + e.getMessage());
 		}
 		Instant startInstant = Instant.now();
 
@@ -904,6 +1160,9 @@ public class STN {
 			break;
 		case BellmanFordSingleSink:
 			this.checkStatus.consistency = bellmanFord(true);
+			break;
+		case BFCT:
+			this.checkStatus.consistency = BFCT();
 			break;
 		case Yen:
 			this.checkStatus.consistency = yenAlgorithm(false, false);
@@ -947,9 +1206,9 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance in this STN between source node and any node using the Dijkstra algorithm.
-	 * The minimal distance is stored as potential value in each node.
-	 * If the graph contains a negative edge, it returns false.
+	 * Determines the minimal distance in this STN between source node and any node
+	 * using the Dijkstra algorithm. The minimal distance is stored as potential
+	 * value in each node. If the graph contains a negative edge, it returns false.
 	 *
 	 * @return true if the graph contains only positive edges, false otherwise.
 	 */
@@ -958,19 +1217,18 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance between all pair of vertexes modifying the current STN.
+	 * Determines the minimal distance between all pair of vertexes modifying the
+	 * current STN.
 	 *
-	 * @return true if the STN is consistent, false otherwise.
-	 *         If the response is false, the edges do not represent the minimal distance between nodes.
+	 * @return true if the STN is consistent, false otherwise. If the response is
+	 *         false, the edges do not represent the minimal distance between nodes.
 	 */
 	public boolean allPairsShortestPaths() {
 		return STN.apsp(this.g, this.checkStatus);
 	}
 
 	/**
-	 * <p>
 	 * Getter for the field <code>checkStatus</code>.
-	 * </p>
 	 *
 	 * @return the checkStatus
 	 */
@@ -1016,8 +1274,9 @@ public class STN {
 	 * getGChecked.
 	 * </p>
 	 *
-	 * @return the resulting graph of a check. It is up to the called to be sure the the returned graph is the result of a check.
-	 *         It can be used also by subclasses with a proper cast.
+	 * @return the resulting graph of a check. It is up to the called to be sure the
+	 *         the returned graph is the result of a check. It can be used also by
+	 *         subclasses with a proper cast.
 	 * @see #setOutputCleaned(boolean)
 	 */
 	public TNGraph<STNEdge> getGChecked() {
@@ -1038,12 +1297,14 @@ public class STN {
 	}
 
 	/**
-	 * Returns the Muscettola predecessor graph of source in the current STN.
-	 * Be aware that Muscettola predecessor graph is made by ALL shortest paths having source as origin node.
-	 * The returned graph is an independent graph with respect to the graph of this object.
+	 * Returns the Muscettola predecessor graph of source in the current STN. Be
+	 * aware that Muscettola predecessor graph is made by ALL shortest paths having
+	 * source as origin node. The returned graph is an independent graph with
+	 * respect to the graph of this object.
 	 *
 	 * @param source a node of this STN
-	 * @return the predecessor graph of node X, if X belongs (object identity) to this STN, null otherwise.
+	 * @return the predecessor graph of node X, if X belongs (object identity) to
+	 *         this STN, null otherwise.
 	 */
 	public TNGraph<STNEdge> getSTNPredecessorSubGraph(LabeledNode source) {
 		if (!this.g.containsVertex(source)) {
@@ -1083,7 +1344,8 @@ public class STN {
 					STNEdge e1 = this.g.findEdge(source, d);
 					if (e1 != null) {
 						if (e1.getValue() < d.getPotential())
-							throw new IllegalStateException("Something wrong occured: Bellman-Ford determined a non-minimal distance.");
+							throw new IllegalStateException(
+									"Something wrong occured: Bellman-Ford determined a non-minimal distance.");
 						if (e1.getValue() == d.getPotential()) {
 							e1.setColor(Color.white);
 							if (Debug.ON) {
@@ -1107,15 +1369,17 @@ public class STN {
 	}
 
 	/**
-	 * Determines all the Rigid Components (RC) using the linear time algorithm (w.r.t. the |edges|) proposed by Cormen et al. for Strongly Connected Components
-	 * of Z predecessor graphs.<br>
+	 * Determines all the Rigid Components (RC) using the linear time algorithm
+	 * (w.r.t. the |edges|) proposed by Cormen et al. for Strongly Connected
+	 * Components of Z predecessor graphs.<br>
 	 * Be aware that Z must reach all nodes before calling this method.
 	 *
-	 * @return the list of possible RCs as a list of original nodes. If there is no RCs, the list is empty.
+	 * @return the list of possible RCs as a list of original nodes. If there is no
+	 *         RCs, the list is empty.
 	 */
 	public ObjectList<ObjectList<LabeledNode>> getSTNRigidComponents() {
 		if (this.checkStatus == null || !this.checkStatus.initialized) {
-				initAndCheck();
+			initAndCheck();
 			makeNodesReachableBy(this.g, this.g.getZ(), this.horizon);
 		}
 
@@ -1156,12 +1420,11 @@ public class STN {
 	 * @return version and copyright string
 	 */
 	public String getVersionAndCopyright() {
-		// I use a non-static method for having a general method that prints the right name for each derived class.
-		String s = "\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2017-2019, Roberto Posenato.\n";
+		// I use a non-static method for having a general method that prints the right
+		// name for each derived class.
+		String s = "\nAcademic and non-commercial use only.\n" + "Copyright © 2017-2019, Roberto Posenato.\n";
 		try {
-			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
-					+ s;
+			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this) + s;
 		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 			//
 		}
@@ -1169,8 +1432,8 @@ public class STN {
 	}
 
 	/**
-	 * Initializes the STN instance represented by graph g.
-	 * It calls {@link #coreSTNInitAndCheck()}.
+	 * Initializes the STN instance represented by graph g. It calls
+	 * {@link #coreSTNInitAndCheck()}.
 	 *
 	 * @return true if the graph is a well formed
 	 */
@@ -1190,14 +1453,15 @@ public class STN {
 	}
 
 	/**
-	 * Determines the minimal distance between all pair of vertexes modifying the current STN using Johnson's algorithm.
+	 * Determines the minimal distance between all pair of vertexes modifying the
+	 * current STN using Johnson's algorithm.
 	 *
-	 * @return true if the STN is consistent, false otherwise.
-	 *         If the response is false, the edges do not represent the minimal distance between nodes.
+	 * @return true if the STN is consistent, false otherwise. If the response is
+	 *         false, the edges do not represent the minimal distance between nodes.
 	 */
 	public boolean johnson() {
 		if (this.horizon == Constants.INT_NULL) {
-				this.initAndCheck();
+			this.initAndCheck();
 		}
 		return STN.johnson(this.g, this.horizon, this.checkStatus);
 	}
@@ -1205,7 +1469,8 @@ public class STN {
 	/**
 	 * Makes the graph dispatchable applying Muscettola et al. 1998 algorithm.
 	 *
-	 * @return true if it was possible to make the graph dispatchable (i.e., the graph was consistent).
+	 * @return true if it was possible to make the graph dispatchable (i.e., the
+	 *         graph was consistent).
 	 */
 	public boolean makeDispatchable() {
 
@@ -1251,7 +1516,8 @@ public class STN {
 							edge23.setColor(Color.gray);
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
-									LOG.log(Level.FINER, "Edge " + edge23 + " dominated by " + edge13 + " and " + edge21);
+									LOG.log(Level.FINER,
+											"Edge " + edge23 + " dominated by " + edge13 + " and " + edge21);
 								}
 							}
 
@@ -1296,7 +1562,8 @@ public class STN {
 							edge31.setColor(Color.gray);
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
-									LOG.log(Level.FINER, "Edge " + edge31 + " dominated by " + edge32 + " and " + edge21);
+									LOG.log(Level.FINER,
+											"Edge " + edge31 + " dominated by " + edge32 + " and " + edge21);
 								}
 							}
 
@@ -1322,7 +1589,8 @@ public class STN {
 	public void saveGraphToFile() {
 		if (this.fOutput == null) {
 			if (this.fInput == null) {
-				LOG.info("Input file and output file are null. It is not possible to save the result in automatic way.");
+				LOG.info(
+						"Input file and output file are null. It is not possible to save the result in automatic way.");
 				return;
 			}
 			String outputName;
@@ -1330,7 +1598,8 @@ public class STN {
 				outputName = this.fInput.getCanonicalPath().replaceFirst(FILE_NAME_SUFFIX + "$", "");
 			} catch (IOException e) {
 				System.err.println(
-						"It is not possible to save the result. Field fOutput is null and no the standard output file can be created: " + e.getMessage());
+						"It is not possible to save the result. Field fOutput is null and no the standard output file can be created: "
+								+ e.getMessage());
 				return;
 			}
 			if (!this.getCheckStatus().finished) {
@@ -1357,8 +1626,8 @@ public class STN {
 		try {
 			graphWriter.save(g1, this.fOutput);
 		} catch (IOException e) {
-			System.err.println(
-					"It is not possible to save the result. File " + this.fOutput + " cannot be created: " + e.getMessage());
+			System.err.println("It is not possible to save the result. File " + this.fOutput + " cannot be created: "
+					+ e.getMessage());
 			return;
 		}
 
@@ -1401,7 +1670,8 @@ public class STN {
 	}
 
 	/**
-	 * Set to true for having the result graph cleaned of empty edges and labeled values having unknown literals.
+	 * Set to true for having the result graph cleaned of empty edges and labeled
+	 * values having unknown literals.
 	 *
 	 * @param clean the resulting graph
 	 */
@@ -1412,21 +1682,24 @@ public class STN {
 	/**
 	 * Algorithm 4 Yen's algorithm (adaptive version with early termination)<br>
 	 * Implements Yen's algorithm presented in<br>
-	 * J. Y. Yen, “An algorithm for finding shortest routes from all source nodes to a given destination in general networks,”<br>
+	 * J. Y. Yen, “An algorithm for finding shortest routes from all source nodes to
+	 * a given destination in general networks,”<br>
 	 * Q. Appl. Math., vol. 27, no. 4, pp. 526–530, Jan. 1970.<br>
 	 *
-	 * @param randomOrder true if nodes have to be ordered randomly. If false, nodes are ordered w.r.t. their name.
-	 *            In the case true, the algorithm is also known as Bannister and Eppstein
+	 * @param randomOrder true if nodes have to be ordered randomly. If false, nodes
+	 *            are ordered w.r.t. their name. In the case true, the
+	 *            algorithm is also known as Bannister and Eppstein
 	 * @param backward true if the search has to be done in backward way.
-	 * @return true if the STN is consistent, false otherwise.
-	 *         It also fills {@link #checkStatus}.
+	 * @return true if the STN is consistent, false otherwise. It also fills
+	 *         {@link #checkStatus}.
 	 */
 	@edu.umd.cs.findbugs.annotations.SuppressFBWarnings(value = "DMI_RANDOM_USED_ONLY_ONCE", justification = "I know what I'm doing")
 	public boolean yenAlgorithm(boolean randomOrder, boolean backward) {
 		/**
-		 * make a random order of nodes, putting Z at the first position.
-		 * The random order is decided setting a random potential and, then, ordering the nodes w.r.t. the potential.
-		 * The order is saved in an array and in a hash map. Potential is then reset.
+		 * make a random order of nodes, putting Z at the first position. The random
+		 * order is decided setting a random potential and, then, ordering the nodes
+		 * w.r.t. the potential. The order is saved in an array and in a hash map.
+		 * Potential is then reset.
 		 */
 		int n = this.g.getVertexCount();
 
@@ -1494,8 +1767,8 @@ public class STN {
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
-											"Subgraph G-. Edge: " + e.toString() + ((backward) ? "(reverse it)" : "") + ". " + d.getName() + " value "
-													+ Constants.formatInt(dOldValue)
+											"Subgraph G-. Edge: " + e.toString() + ((backward) ? "(reverse it)" : "")
+													+ ". " + d.getName() + " value " + Constants.formatInt(dOldValue)
 													+ " new value: " + Constants.formatInt(value));
 								}
 							}
@@ -1524,8 +1797,8 @@ public class STN {
 							if (Debug.ON) {
 								if (LOG.isLoggable(Level.FINER)) {
 									LOG.log(Level.FINER,
-											"Subgraph G+. Edge: " + e.toString() + ((backward) ? "(reverse it)" : "") + ". " + d.getName() + " value "
-													+ Constants.formatInt(dOldValue)
+											"Subgraph G+. Edge: " + e.toString() + ((backward) ? "(reverse it)" : "")
+													+ ". " + d.getName() + " value " + Constants.formatInt(dOldValue)
 													+ " new value: " + Constants.formatInt(value));
 								}
 							}
@@ -1550,7 +1823,8 @@ public class STN {
 				}
 			}
 		}
-		// We maintain negative distance because they are equal to the values presented in distance matrix
+		// We maintain negative distance because they are equal to the values presented
+		// in distance matrix
 		// for (LabeledNode node : orderedNodes) {
 		// node.setPotential(-node.getPotential());
 		// }
@@ -1560,14 +1834,16 @@ public class STN {
 	}
 
 	/**
-	 * Makes the STN check and initialization. The STN instance is represented by graph g.
-	 * If some constraints of the network does not observe well-definition properties AND they can be adjusted, then the method fixes them
-	 * and logs such fixes in log system at WARNING level. 
-	 * <br>
-	 * Since the current DC checking algorithm is complete only if the STN instance contains an upper bound to the distance between Z (the first node) and
-	 * each node, this procedure add such upper bound (= #nodes * max weight value) to each node.<br>
-	 * <b>Note</b>
-	 * This method is necessary for allowing the building of special subclass initAndCheck (in subclasses of subclasses).
+	 * Makes the STN check and initialization. The STN instance is represented by
+	 * graph g. If some constraints of the network does not observe well-definition
+	 * properties AND they can be adjusted, then the method fixes them and logs such
+	 * fixes in log system at WARNING level. <br>
+	 * Since the current DC checking algorithm is complete only if the STN instance
+	 * contains an upper bound to the distance between Z (the first node) and each
+	 * node, this procedure add such upper bound (= #nodes * max weight value) to
+	 * each node.<br>
+	 * <b>Note</b> This method is necessary for allowing the building of special
+	 * subclass initAndCheck (in subclasses of subclasses).
 	 * 
 	 * @return true if the graph is a well formed
 	 */
@@ -1641,7 +1917,8 @@ public class STN {
 		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		// if (product >= Constants.INT_POS_INFINITE) {
 		// throw new ArithmeticException(
-		// "Horizon value is not representable by an integer. maxWeight = " + this.maxWeight + ", #vertices = " + this.g.getVertexCount());
+		// "Horizon value is not representable by an integer. maxWeight = " +
+		// this.maxWeight + ", #vertices = " + this.g.getVertexCount());
 		// }
 		this.horizon = (int) product;
 		if (Debug.ON) {
@@ -1672,8 +1949,8 @@ public class STN {
 			if (Debug.ON) {
 				if (added) {
 					if (LOG.isLoggable(Level.FINE)) {
-						LOG.log(Level.FINE,
-								"Added " + edge.getName() + ": " + node.getName() + "--(0)-->" + this.g.getZ().getName());
+						LOG.log(Level.FINE, "Added " + edge.getName() + ": " + node.getName() + "--(0)-->"
+								+ this.g.getZ().getName());
 					}
 				}
 			}
@@ -1692,8 +1969,9 @@ public class STN {
 	/**
 	 * Create an edge assuring that its name is unique in the graph 'g'.
 	 *
-	 * @param name the proposed name. If an edge with name already exists, then name is modified adding an suitable integer such that the name becomes unique
-	 *            in 'g'.
+	 * @param name the proposed name. If an edge with name already exists, then name
+	 *            is modified adding an suitable integer such that the name becomes
+	 *            unique in 'g'.
 	 * @param type the type of edge to create.
 	 * @return an edge with a unique name.
 	 */
@@ -1712,7 +1990,8 @@ public class STN {
 	 * Simple method to manage command line parameters using args4j library.
 	 *
 	 * @param args none
-	 * @return false if a parameter is missing or it is wrong. True if every parameters are given in a right format.
+	 * @return false if a parameter is missing or it is wrong. True if every
+	 *         parameters are given in a right format.
 	 */
 	@SuppressWarnings("deprecation")
 	boolean manageParameters(final String[] args) {
@@ -1750,7 +2029,8 @@ public class STN {
 				}
 			}
 		} catch (final CmdLineException e) {
-			// if there's a problem in the command line, you'll get this exception. this will report an error message.
+			// if there's a problem in the command line, you'll get this exception. this
+			// will report an error message.
 			System.err.println(e.getMessage());
 			System.err.println("java " + this.getClass().getName() + " [options...] arguments...");
 			// print the list of available options
@@ -1759,8 +2039,7 @@ public class STN {
 
 			// print option sample. This is useful some time
 			System.err.println("Example: java -jar CSTNU-*.jar " + this.getClass().getName() + " "
-					+ parser.printExample(OptionHandlerFilter.REQUIRED)
-					+ " file_name");
+					+ parser.printExample(OptionHandlerFilter.REQUIRED) + " file_name");
 			return false;
 		}
 		return true;
