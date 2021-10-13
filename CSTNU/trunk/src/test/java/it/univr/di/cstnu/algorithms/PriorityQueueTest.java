@@ -16,12 +16,12 @@ import it.univr.di.cstnu.graph.LabeledNode;
 /**
  * @author posenato
  */
-public class NodePriorityHeapTest {
+public class PriorityQueueTest {
 
 	/**
 	 * 
 	 */
-	NodePriorityHeap heap;
+	PriorityQueue<LabeledNode> heap;
 	private LabeledNode A, B, C;
 
 	/**
@@ -29,14 +29,14 @@ public class NodePriorityHeapTest {
 	 */
 	@Before
 	public void setUp() throws Exception {
-		this.heap = new NodePriorityHeap();
+		this.heap = new PriorityQueue<>();
 		this.A = new LabeledNode("A");
 		this.B = new LabeledNode("B");
 		this.C = new LabeledNode("C");
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#insertOrDecrease(it.univr.di.cstnu.graph.LabeledNode, int)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#insertOrDecrease(Object, int)}.
 	 */
 	@Test
 	public void testAdd() {
@@ -51,7 +51,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#clear()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#clear()}.
 	 */
 	@Test
 	public void testClear() {
@@ -74,7 +74,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#extractMin()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#extractMin()}.
 	 */
 	@Test
 	public void testExtractMin() {
@@ -86,7 +86,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#extractMinEntry()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#extractMinEntry()}.
 	 */
 	@Test
 	public void testExtractMinEntry() {
@@ -99,7 +99,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#getPriority(it.univr.di.cstnu.graph.LabeledNode)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#getPriority(Object)}.
 	 */
 	@Test
 	public void testGetPriority() {
@@ -110,7 +110,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#getAllDeterminedPriorities()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#getAllDeterminedPriorities()}.
 	 */
 	@Test
 	public void testGetAllDeterminedPriorities() {
@@ -125,7 +125,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#getStatus(it.univr.di.cstnu.graph.LabeledNode)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#getStatus(Object)}.
 	 */
 	@Test
 	public void testGetStatus() {
@@ -139,7 +139,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#isEmpty()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#isEmpty()}.
 	 */
 	@Test
 	public void testIsEmpty() {
@@ -150,7 +150,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#size()}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#size()}.
 	 */
 	@Test
 	public void testSize() {
@@ -161,7 +161,7 @@ public class NodePriorityHeapTest {
 	}
 
 	/**
-	 * Test method for {@link it.univr.di.cstnu.algorithms.NodePriorityHeap#value(it.univr.di.cstnu.graph.LabeledNode)}.
+	 * Test method for {@link it.univr.di.cstnu.algorithms.PriorityQueue#value(Object)}.
 	 */
 	@Test
 	public void testValue() {

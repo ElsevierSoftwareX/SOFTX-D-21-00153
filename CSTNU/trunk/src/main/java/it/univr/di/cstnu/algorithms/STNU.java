@@ -31,7 +31,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.univr.di.Debug;
-import it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus;
 import it.univr.di.cstnu.algorithms.STN.STNCheckStatus;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
@@ -177,7 +176,8 @@ public class STNU {
 	 * Version of the class
 	 */
 	// static final String VERSIONandDATE = "Version 1.0 - April, 08 2020";
-	static final String VERSIONandDATE = "Version 1.1 - January 19, 2020";// fixed only the nome for the logger.
+//	static final String VERSIONandDATE = "Version 1.1 - January 19, 2020";// fixed only the nome for the logger.
+	static final String VERSIONandDATE = "Version 1.1.1 - October 13, 2021";// Fixed PriorityQueue made generics
 
 	/**
 	 * <p>
@@ -1248,7 +1248,7 @@ public class STNU {
 		distance.defaultReturnValue(Constants.INT_POS_INFINITE);
 		distance.put(X, 0);
 
-		NodePriorityHeap queue = new NodePriorityHeap();
+		PriorityQueue<LabeledNode> queue = new PriorityQueue<>();
 		for (STNUEdge e2Source : this.g.getInEdges(X)) {
 			int v = getUpperOrOrdinaryValue(e2Source);
 			if (v >= 0)
@@ -1329,7 +1329,7 @@ public class STNU {
 	 * @param queue
 	 * @param distance
 	 */
-	private static void morris2014UpdateDistance(LabeledNode V, int valueVU, int distU, NodePriorityHeap queue,
+	private static void morris2014UpdateDistance(LabeledNode V, int valueVU, int distU, PriorityQueue<LabeledNode> queue,
 			Object2IntOpenHashMap<LabeledNode> distance) {
 
 		int newValue = Constants.sumWithOverflowCheck(distU, valueVU);
@@ -1533,7 +1533,7 @@ public class STNU {
 		if (Debug.ON) {
 			LOG.finer("rul2018CloseRelaxLower with " + C.getName() + ", Delta: " + DeltaC);
 		}
-		NodePriorityHeap Q = new NodePriorityHeap();
+		PriorityQueue<LabeledNode> Q = new PriorityQueue<>();
 		LabeledNode W;
 		for (STNUEdge e : this.g.getInEdges(C)) {
 			if (!e.isOrdinaryEdge())
@@ -1681,7 +1681,7 @@ public class STNU {
 	private Object2IntMap<LabeledNode> rul2018UpdatePotential(Object2IntMap<LabeledNode> h, LabeledNode A) {
 
 		Object2IntMap<LabeledNode> newH = new Object2IntOpenHashMap<>(h);
-		NodePriorityHeap newQ = new NodePriorityHeap();
+		PriorityQueue<LabeledNode> newQ = new PriorityQueue<>();
 
 		newQ.insertOrDecrease(A, 0);
 		LabeledNode V;
@@ -1862,7 +1862,7 @@ public class STNU {
 		RULLocalInfo localInfo = new RULLocalInfo(Constants.INT_POS_INFINITE);
 
 		// queue contains the adjusted distance from X to C
-		NodePriorityHeap queue = new NodePriorityHeap();
+		PriorityQueue<LabeledNode> queue = new PriorityQueue<>();
 
 		for (STNUEdge e : this.g.getInEdges(C)) {
 			if (!e.isOrdinaryEdge())
@@ -1949,7 +1949,7 @@ public class STNU {
 	 * @param localInfo the local checking data structure
 	 * @return false iff back-propagation from C reveals STNU to be non-DC.
 	 */
-	private boolean rul2020OneStepBackProp(LabeledNode C, int DeltaC, NodePriorityHeap Q, RULGlobalInfo globalInfo,
+	private boolean rul2020OneStepBackProp(LabeledNode C, int DeltaC, PriorityQueue<LabeledNode> Q, RULGlobalInfo globalInfo,
 			RULLocalInfo localInfo) {
 
 		localInfo.unstartedUCEdges = new Object2ObjectOpenHashMap<>();
@@ -2037,7 +2037,7 @@ public class STNU {
 									+ "\t newKey for " + W + ": " + newKey);
 						}
 						if (Debug.ON) {
-							NodeStatus Wstatus = Q.getStatus(W);
+							PriorityQueue.Status Wstatus = Q.getStatus(W);
 							LOG.finest("OneStepBackProp. queue status of node " + W + ": " + Wstatus);
 						}
 						Q.insertOrDecrease(W, newKey);
@@ -2102,7 +2102,7 @@ public class STNU {
 	 * @return a potential function for G_{lo} (including edges terminating at A); or null if G_{lo} is inconsistent.
 	 *         private Object2IntMap<LabeledNode> rul2020UpdatePotential(LabeledNode A, Object2IntMap<LabeledNode> globalPotential) {
 	 *         Object2IntMap<LabeledNode> newGlobalPotential = new Object2IntOpenHashMap<>(globalPotential);
-	 *         NodePriorityHeap newQ = new NodePriorityHeap();
+	 *         PriorityQueue newQ = new PriorityQueue();
 	 *         newQ.insertOrDecrease(A, 0);
 	 *         LabeledNode U;
 	 *         while (newQ.size() != 0) {
@@ -2143,7 +2143,7 @@ public class STNU {
 	 * @param Q
 	 * @return true iff updating the potential function newH to accommodate the edge (U,deltaUV,V) does not discover a negative loop.
 	 *         private static boolean rul2020UpdateValue(LabeledNode U, int deltaUV, LabeledNode V, Object2IntMap<LabeledNode> newPotential,
-	 *         Object2IntMap<LabeledNode> oldPotential, NodePriorityHeap Q) {
+	 *         Object2IntMap<LabeledNode> oldPotential, PriorityQueue Q) {
 	 *         int newVal = newPotential.getInt(V) - deltaUV;
 	 *         if (newPotential.getInt(U) < newVal) { // newPotential does not satisfy edge: newPotential[V] - newPotential[U] > delta_{UV}
 	 *         newPotential.put(U, newVal);
@@ -2169,7 +2169,7 @@ public class STNU {
 	private boolean rul2020FwdPropNotDC(LabeledNode C, int DeltaC, Object2IntMap<LabeledNode> distanceFrom,
 			Object2IntMap<LabeledNode> globalPotential) {
 
-		NodePriorityHeap queue = new NodePriorityHeap();
+		PriorityQueue<LabeledNode> queue = new PriorityQueue<>();
 		queue.insertOrDecrease(C, -globalPotential.getInt(C));
 
 		if (Debug.ON) {
