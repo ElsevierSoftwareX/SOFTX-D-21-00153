@@ -32,7 +32,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.NodesToCheck;
-import it.univr.di.cstnu.algorithms.NodePriorityHeap.NodeStatus;
 import it.univr.di.cstnu.graph.Component.Color;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
@@ -227,7 +226,8 @@ public class STN {
 	// static final String VERSIONandDATE = "Version 1.1 - January, 19 2021";// made
 	// a distinction between AllPairsShortestPaths and F-W algorithms
 	// static final String VERSIONandDATE = "Version 1.2 - April, 24 2021";// renamed getPredecessorGraph. Now it is getPredecessorSubGraph
-	static final String VERSIONandDATE = "Version 1.2.1 - October, 04 2021";// main fixed
+//	static final String VERSIONandDATE = "Version 1.2.1 - October, 04 2021";// main fixed
+	static final String VERSIONandDATE = "Version 1.2.2 - October, 12 2021";// fixed PriorityQueue made generics
 
 	/**
 	 * @param args an array of {@link java.lang.String} objects.
@@ -618,7 +618,7 @@ public class STN {
 			return null;
 		int v;
 
-		NodePriorityHeap nodeQueue = new NodePriorityHeap();
+		PriorityQueue<LabeledNode> nodeQueue = new PriorityQueue<>();
 
 		for (LabeledNode node : nodes) {
 			nodeQueue.insertOrDecrease(node, Constants.INT_POS_INFINITE);
@@ -645,7 +645,7 @@ public class STN {
 															// particular use od Dijkstra algorithm).
 					return null;
 				v = Constants.sumWithOverflowCheck(sValue, eValue);
-				if (nodeQueue.getStatus(d) == NodeStatus.isPresent && nodeQueue.value(d) > v) {
+				if (nodeQueue.getStatus(d) == PriorityQueue.Status.isPresent && nodeQueue.value(d) > v) {
 					if (Debug.ON) {
 						STN.LOG.finer("Dijkstra updates " + d.getName() + " potential adding edge value " + eValue
 								+ ": " + Constants.formatInt(nodeQueue.value(d)) + " --> " + Constants.formatInt(v));
