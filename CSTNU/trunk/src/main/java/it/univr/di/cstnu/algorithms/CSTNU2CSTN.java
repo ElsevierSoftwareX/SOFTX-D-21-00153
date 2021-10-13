@@ -65,19 +65,21 @@ public class CSTNU2CSTN extends CSTNU {
 	 * @throws org.xml.sax.SAXException if any.
 	 */
 	public static void main(final String[] args) throws IOException, ParserConfigurationException, SAXException {
+		String s = "\nSPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.\n";
 		LOG.finest("Start...");
 		final CSTNU2CSTN cstnu2cstn = new CSTNU2CSTN();
 
+		System.out.print(s);
 		if (!cstnu2cstn.manageParameters(args))
 			return;
-		LOG.finest("Parameters ok!");
+		System.out.println("Parameters ok!");
 
-		LOG.finest("Loading tNGraph...");
+		System.out.println("Loading tNGraph...");
 		TNGraphMLReader<CSTNUEdge> graphMLReader = new TNGraphMLReader<>();
 		cstnu2cstn.setG(graphMLReader.readGraph(cstnu2cstn.fInput, EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS));
-		LOG.finest("TNGraph loaded!");
+		System.out.println("TNGraph loaded!");
 
-		LOG.finest("DC Checking...");
+		System.out.println("DC Checking...");
 		CSTNUCheckStatus status;
 		try {
 			status = cstnu2cstn.dynamicControllabilityCheck();

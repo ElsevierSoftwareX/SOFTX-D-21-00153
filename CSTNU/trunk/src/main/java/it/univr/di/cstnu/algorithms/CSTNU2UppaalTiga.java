@@ -305,8 +305,7 @@ public class CSTNU2UppaalTiga {
 			return;
 		LOG.finest("Parameters ok!");
 		if (translator.versionReq) {
-			System.out.print("CSTNU2UppaalTiga " + VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2014, Roberto Posenato");
+			System.out.print("CSTNU2UppaalTiga " + VERSIONandDATE + "\nSPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.\n");
 			return;
 		}
 

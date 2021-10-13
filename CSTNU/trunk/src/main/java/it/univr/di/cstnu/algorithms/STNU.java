@@ -564,8 +564,7 @@ public class STNU {
 		// I use a non-static method for having a general method that prints the right name for each derived class.
 		try {
 			return this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
-					+ "\nAcademic and non-commercial use only.\n"
-					+ "Copyright © 2020, Roberto Posenato.\n";
+					+ "\nSPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.\n";
 
 		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 			throw new RuntimeException("Not possible exception I think :-)");

@@ -84,8 +84,7 @@ public class CSTNPSU extends AbstractCSTN<CSTNPSUEdge> {
 				LOG.log(Level.FINER, "Parameters ok!");
 		}
 		if (cstnpsu.versionReq) {
-			System.out.println("CSTNPSU " + CSTNPSU.VERSIONandDATE + ". Academic and non-commercial use only.\n"
-					+ "Copyright © 2017--2020, Roberto Posenato");
+			System.out.println("CSTNPSU " + CSTNPSU.VERSIONandDATE + "\nSPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.\n");
 			return;
 		}
 
