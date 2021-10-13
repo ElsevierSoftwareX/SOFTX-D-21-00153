@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>it.univr.di</groupId>
 	<artifactId>CSTNU-Tool</artifactId><!--Aggiornare anche codemeta.json -->
 	<version>4.2</version>
@@ -20,6 +20,7 @@
 		<tex.images.dir>${tex.dir}/images</tex.images.dir>
 		<java.version>11</java.version><!-- to upgrade to 17, maven-shade-plugin 
 			must be upgrade to 3.3.0. -->
+		<debug>false</debug>
 	</properties>
 	<scm>
 		<!-- <connection></connection> -->
@@ -368,9 +369,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.9.1</version>
-				<!-- <configuration>
-					<skip>true</skip>
-				</configuration>-->
+				<!-- <configuration> <skip>true</skip> </configuration> -->
 				<dependencies>
 					<dependency><!-- add support for ssh/scp -->
 						<groupId>org.apache.maven.wagon</groupId>
@@ -406,6 +405,34 @@
 				<version>1.8</version><!--$NO-MVN-MAN-VER$ --><!-- Fondamentale usare la versione 1.8 -->
 				<executions>
 					<execution>
+						<!-- By default, maven compile and maven package disable the debug 
+							code by this process-sources. For having a package with debug code, it is 
+							sufficient to execute 'mvn package -Ddebug or set the environment variable 
+							'debug' to true at the start of this file. -->
+						<id>process-sources-debug</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<exportAntProperties>true</exportAntProperties>
+							<target>
+								<condition property="debugNormalized" value="true" else="false">
+									<or>
+										<equals arg1="${debug}" arg2="True" />
+										<equals arg1="${debug}" arg2="true" />
+										<equals arg1="${debug}" arg2="" />
+									</or>
+								</condition>
+								<echo>Set Debug.java to ${debugNormalized}</echo>
+								<replaceregexp
+									file="${basedir}/src/main/java/it/univr/di/Debug.java"
+									match="ON\s*=\s.*" replace="ON = ${debugNormalized};" />
+							</target>
+						</configuration>
+					</execution>
+
+					<execution>
 						<id>package</id>
 						<phase>package</phase>
 						<goals>
@@ -414,16 +441,8 @@
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
 							<target>
-								<fail
-									message="Non Ti sei ricordato di specificare -P noDebug! "
-									unless="noDebug" />
-								<!-- Non è più così efficiente. <taskdef name="JarOpt" classname="org.cmc.jaroptimizer.JarOptTask" 
-									classpath="/Users/posenato/Documents/workspace/JarOpt/jaropt.jar" /> <JarOpt 
-									src="${project.build.directory}/${project.artifactId}-${project.version}.jar" 
-									dst="${project.build.directory}/${project.artifactId}-${project.version}-opt.jar" 
-									stripNonClassFiles="false" verbose="false" printDependencies="false" > <includePattern>it.univr.di.cstnu.algorithms.CSTNU2UppaalTiga</includePattern> 
-									<includePattern>it.univr.di.cstnu.CSTNUEditor</includePattern> <includePattern>com.ctc.wstx.stax</includePattern> 
-									</JarOpt> -->
+								<!--<fail message="Non Ti sei ricordato di specificare -P noDebug! 
+									" unless="noDebug" /> -->
 								<delete>
 									<fileset dir="${basedir}/CstnuTool/"
 										includes="${project.artifactId}-*.jar" />
@@ -811,42 +830,19 @@
 
 	<profiles>
 		<profile>
-			<id>noDebug</id>
+			<id>Debug</id>
 			<activation>
 				<property>
-					<name>package</name>
+					<name>debug</name>
 					<value>true</value>
 				</property>
 			</activation>
 			<build>
 				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-antrun-plugin</artifactId>
-						<version>3.0.0</version><!-- 1.8 -->
-						<executions>
-							<execution>
-								<id>process-sources</id>
-								<phase>process-sources</phase>
-								<goals>
-									<goal>run</goal>
-								</goals>
-								<configuration>
-									<exportAntProperties>true</exportAntProperties>
-									<target>
-										<property name="noDebug" value="true" />
-										<echo>Copy of Debug.java</echo>
-										<copy overwrite="true"
-											file="${basedir}/src/main/java/it/univr/di/Debug.java.template"
-											tofile="${basedir}/src/main/java/it/univr/di/Debug.java" />
-									</target>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
 				</plugins>
 			</build>
 		</profile>
 	</profiles>
-	
+
+
 </project>
