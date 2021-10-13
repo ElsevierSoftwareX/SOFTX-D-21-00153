@@ -19,7 +19,7 @@ import org.junit.runners.Suite.SuiteClasses;
 		CSTNUTest.class,
 		CSTNwoNodeLabelTest.class,
 		ObjectArrayFifoSetQueueTest.class,
-		NodePriorityHeapTest.class,
+		PriorityQueueTest.class,
 		STNUTest.class
 })
 public class AllTests {
