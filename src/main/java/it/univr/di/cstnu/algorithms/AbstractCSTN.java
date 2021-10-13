@@ -778,8 +778,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	 */
 	public String getVersionAndCopyright() {
 		// I use a non-static method for having a general method that prints the right name for each derived class.
-		String s = "\nAcademic and non-commercial use only.\n"
-				+ "Copyright © 2017-2021, Roberto Posenato.\n";
+		String s = "\nSPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.\n";
 		try {
 			s = this.getClass().getName() + " " + this.getClass().getDeclaredField("VERSIONandDATE").get(this)
 					+ s;

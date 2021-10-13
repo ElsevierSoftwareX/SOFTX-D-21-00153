@@ -104,7 +104,8 @@ public class STNUDensifier {
 	public static void main(String[] args) {
 
 		LOG.finest("STNUDensifier " + VERSIONandDATE + "\nStart...");
-		System.out.println("Checker " + VERSIONandDATE + "\n" + getNow() + ": Start of execution.");
+		System.out.println(
+				"Checker " + VERSIONandDATE + "\n" + "\nSPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.\n" + getNow() + ": Start of execution.");
 		final STNUDensifier densifier = new STNUDensifier();
 
 		if (!densifier.manageParameters(args))
@@ -223,13 +224,15 @@ public class STNUDensifier {
 	 * Date formatter
 	 */
 	private final static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss");
+
 	/**
 	 * @return the current date formatted.
 	 */
 	private static SimpleDateFormat getDateFormatter() {
-		//Define getter for dateFormatter  because, otherwise there is the possibility of error STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE  by findbugs
+		// Define getter for dateFormatter because, otherwise there is the possibility of error STCAL_INVOKE_ON_STATIC_DATE_FORMAT_INSTANCE by findbugs
 		return dateFormatter;
 	}
+
 	/**
 	 * @return current time in {@link #dateFormatter} format
 	 */
@@ -590,7 +593,8 @@ public class STNUDensifier {
 					cstnWriter.save(stnu.getG(), this.tmpNetwork);
 				} catch (IOException e) {
 					System.err.println(
-							"It is not possible to save the result. File "+this.tmpNetwork +" cannot be created: " + e.getMessage()+"\n Computation  continues.");
+							"It is not possible to save the result. File " + this.tmpNetwork + " cannot be created: " + e.getMessage()
+									+ "\n Computation  continues.");
 				}
 				LOG.finer("Current cstn saved as 'current.stnu' before checking.");
 			}
@@ -786,13 +790,13 @@ public class STNUDensifier {
 				stnuWriter.save(pair.getFirst(), outputFile);
 			} catch (IOException e) {
 				System.err.println(
-						"It is not possible to save the result. File "+outputFile +" cannot be created: " + e.getMessage()+". Computation continues.");
+						"It is not possible to save the result. File " + outputFile + " cannot be created: " + e.getMessage() + ". Computation continues.");
 			}
-			
+
 			if (pair.getSecond() != null) {
 				fileName = "NOT" + fileName;
 				outputFile = new File(fileName);
-				
+
 				try {
 					stnuWriter.save(pair.getSecond(), outputFile);
 				} catch (IOException e) {
