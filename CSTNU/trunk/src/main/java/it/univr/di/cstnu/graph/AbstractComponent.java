@@ -10,6 +10,8 @@ package it.univr.di.cstnu.graph;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
+import it.univr.di.cstnu.visualization.TNEditor;
+
 /**
  * <p>
  * Abstract AbstractComponent class.
@@ -36,10 +38,16 @@ public abstract class AbstractComponent implements Component {
 	protected String name;
 
 	/**
-	 * Possible color
+	 * Meta color used by some graph algorithms.<br>
+	 * It is not the color used by the {@link TNEditor}.
 	 */
 	Color color;
-
+	
+	/**
+	 * Both for nodes and edges, some algorithms can set this variable true if the component is in a negative cycle.
+	 */
+	boolean inNegativeCyle;
+	
 	/**
 	 * Since Java 9, Observable is no more supported.
 	 * I decided to replace Observable using java.bean.
@@ -70,6 +78,7 @@ public abstract class AbstractComponent implements Component {
 		}
 		this.name = c.getName();
 		this.color = c.getColor();
+		this.inNegativeCyle = c.inNegativeCycle();
 	}
 
 	/**
@@ -81,6 +90,23 @@ public abstract class AbstractComponent implements Component {
 		this.name = ((n == null) || (n.length() == 0)) ? "c" + AbstractComponent.idSeq++ : n;
 		this.color = null;
 		this.pcs = new  PropertyChangeSupport(this);
+		this.inNegativeCyle = false;
+	}
+
+	/**
+	 * An observer for the property.
+	 *
+	 * @param propertyName a {@link java.lang.String} object.
+	 * @param l a {@link java.beans.PropertyChangeListener} object.
+	 */
+	public void addObserver(String propertyName, PropertyChangeListener l) {
+		this.pcs.addPropertyChangeListener(propertyName, l);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void clear() {
+		this.color = null;
 	}
 
 	/** {@inheritDoc} */
@@ -110,6 +136,12 @@ public abstract class AbstractComponent implements Component {
 
 	/** {@inheritDoc} */
 	@Override
+	public Color getColor() {
+		return this.color;
+	}
+
+	/** {@inheritDoc} */
+	@Override
 	public String getName() {
 		return this.name;
 	}
@@ -120,6 +152,40 @@ public abstract class AbstractComponent implements Component {
 		return super.hashCode();
 	}
 
+	/**
+	 *
+	 * @return true if it is in a negative cycle.
+	 */
+	@Override
+	public boolean inNegativeCycle() {
+		return this.inNegativeCyle;
+	}
+
+	/**
+	 * Removes a specifif listener
+	 *
+	 * @param propertyName a {@link java.lang.String} object.
+	 * @param listener a {@link java.beans.PropertyChangeListener} object.
+	 */
+	public void removeObserver(String propertyName, PropertyChangeListener listener) {
+		this.pcs.removePropertyChangeListener(propertyName, listener);
+	}
+
+	/** {@inheritDoc} */
+	@Override
+	public void setColor(Color c) {
+		this.color = c;
+	}
+	
+	/**
+	 * Sets true if the edge is in a negative cycle
+	 * @param inNegativeCycle the boolean status
+	 */
+	@Override
+	public void setInNegativeCycle(boolean inNegativeCycle) {
+		this.inNegativeCyle= inNegativeCycle;
+	}
+	
 	/**
 	 * {@inheritDoc}
 	 * Set the name of the edge. Cannot be null or empty.
@@ -134,6 +200,17 @@ public abstract class AbstractComponent implements Component {
 		}
 		return old;
 	}
+	
+	
+	/**
+	 * <p>takeIn.</p>
+	 *
+	 * @param c a {@link it.univr.di.cstnu.graph.Component} object.
+	 */
+	public void takeIn(Component c) {
+		this.color = c.getColor();
+		this.setName(c.getName());
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -144,52 +221,5 @@ public abstract class AbstractComponent implements Component {
 		return "〖" + (this.name.length() == 0 ? "<empty>" : this.name) + "〗";
 	}
 
-	/** {@inheritDoc} */
-	@Override
-	public void setColor(Color c) {
-		this.color = c;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public Color getColor() {
-		return this.color;
-	}
-
-	/** {@inheritDoc} */
-	@Override
-	public void clear() {
-		this.color = null;
-	}
-
-	/**
-	 * <p>takeIn.</p>
-	 *
-	 * @param c a {@link it.univr.di.cstnu.graph.Component} object.
-	 */
-	public void takeIn(Component c) {
-		this.color = c.getColor();
-		this.setName(c.getName());
-	}
-	
-	/**
-	 * An observer for the property.
-	 *
-	 * @param propertyName a {@link java.lang.String} object.
-	 * @param l a {@link java.beans.PropertyChangeListener} object.
-	 */
-	public void addObserver(String propertyName, PropertyChangeListener l) {
-		this.pcs.addPropertyChangeListener(propertyName, l);
-	}
-	
-	/**
-	 * Removes a specifif listener
-	 *
-	 * @param propertyName a {@link java.lang.String} object.
-	 * @param listener a {@link java.beans.PropertyChangeListener} object.
-	 */
-	public void removeObserver(String propertyName, PropertyChangeListener listener) {
-		this.pcs.removePropertyChangeListener(propertyName, listener);
-	}
 	
 }

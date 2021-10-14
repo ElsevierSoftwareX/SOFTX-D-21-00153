@@ -1,6 +1,19 @@
 # RELEASE NOTES
 <!-- START SNIPPET: rn -->
 
+## v4.3
+	date:
+	
+	Class `LabeledNode`: extended for Tarjan algorithm.
+	Class `STN`: added BFCT (a.k.a. Tarjan algorithm) algorithm in STN class. Such an algorithm can return the negaive cycle if the network is not consistent.
+	Class `NodePriorityHeap`: renamed as `PriorityQueue` and made generic.
+	Class `LabeledNode`: removed rendering code.
+	Class `NodeRendering`: new class for customize rendering of LabeledNode in `TNEditor`.
+	Class `TNEditor`: GUI cleaned a little bit.
+	Removed the dependency on FreeHep library because FreeHep does not work with JRE > 8.
+	Removed 'normal' and 'constraint' type for `Edge` in favor of `requirement` because in Temporal Networks `requirement` is more appropriate.
+	Improved two README.md
+	 
 ## v4.2 
 	date: 2021-10-07
 	

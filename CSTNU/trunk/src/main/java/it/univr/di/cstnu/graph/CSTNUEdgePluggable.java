@@ -158,7 +158,7 @@ public class CSTNUEdgePluggable extends BasicCSTNUEdgePluggable implements CSTNU
 
 		int i = this.lowerCaseValue.getValue();
 		this.lowerCaseValue = LabeledLowerCaseValue.emptyLabeledLowerCaseValue;
-		this.setConstraintType(ConstraintType.normal);
+		this.setConstraintType(ConstraintType.requirement);
 		this.pcs.firePropertyChange("lowerLabel:remove", null, this.lowerCaseValue );
 		return i;
 	}
