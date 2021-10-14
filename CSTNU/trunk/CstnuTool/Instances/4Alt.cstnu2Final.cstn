@@ -1,0 +1,2046 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="Name" for="graph">
+<desc>LabeledIntGraph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Format: [a-z]</desc>
+<default></default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-z]|[a-z]]+|⊡</desc>
+<default></default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: normal|contingent|constraint.</desc>
+<default>normal</default>
+</key>
+<key id="LowerCaseLabeledValues" for="edge">
+<desc>Lower-Case Labeled Values. Format: {[[\('integer', 'node name (no case modification)', 'label'\) ]+}|{}</desc>
+<default></default>
+</key>
+<key id="UpperCaseLabeledValues" for="edge">
+<desc>Upper-Case Labeled Values. Format: {[[\('integer', 'node name (no case modification)', 'label'\) ]+}|{}</desc>
+<default></default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values. Format: {[[\('integer', 'label'\) ]+}|{}</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="Name">4Alt.cstnu2Final.cstn</data>
+<node id="B?">
+<data key="Obs">b</data>
+<data key="x">451.0</data>
+<data key="Label">⊡</data>
+<data key="y">686.0</data>
+</node>
+<node id="A?">
+<data key="Obs">a</data>
+<data key="x">357.0</data>
+<data key="Label">⊡</data>
+<data key="y">5.0</data>
+</node>
+<node id="n12">
+<data key="x">309.0</data>
+<data key="Label">b</data>
+<data key="y">767.0</data>
+</node>
+<node id="n13">
+<data key="x">173.0</data>
+<data key="Label">b</data>
+<data key="y">855.0</data>
+</node>
+<node id="d?">
+<data key="Obs">d</data>
+<data key="x">319.0</data>
+<data key="Label">b</data>
+<data key="y">767.0</data>
+</node>
+<node id="n5">
+<data key="x">506.0</data>
+<data key="Label">¬a</data>
+<data key="y">208.0</data>
+</node>
+<node id="e?">
+<data key="Obs">e</data>
+<data key="x">622.0</data>
+<data key="Label">¬b</data>
+<data key="y">751.0</data>
+</node>
+<node id="g?">
+<data key="Obs">g</data>
+<data key="x">627.0</data>
+<data key="Label">¬a</data>
+<data key="y">85.0</data>
+</node>
+<node id="Z">
+<data key="x">80.0</data>
+<data key="Label">⊡</data>
+<data key="y">31.0</data>
+</node>
+<node id="f?">
+<data key="Obs">f</data>
+<data key="x">196.0</data>
+<data key="Label">a</data>
+<data key="y">126.0</data>
+</node>
+<node id="n3">
+<data key="x">289.0</data>
+<data key="Label">a</data>
+<data key="y">221.0</data>
+</node>
+<node id="Ω">
+<data key="x">73.0</data>
+<data key="Label">⊡</data>
+<data key="y">987.0</data>
+</node>
+<node id="n6">
+<data key="x">401.0</data>
+<data key="Label">⊡</data>
+<data key="y">300.0</data>
+</node>
+<node id="n2">
+<data key="x">186.0</data>
+<data key="Label">a</data>
+<data key="y">126.0</data>
+</node>
+<node id="n8">
+<data key="x">241.0</data>
+<data key="Label">⊡</data>
+<data key="y">437.0</data>
+</node>
+<node id="n14">
+<data key="x">612.0</data>
+<data key="Label">¬b</data>
+<data key="y">751.0</data>
+</node>
+<node id="n16">
+<data key="x">406.0</data>
+<data key="Label">⊡</data>
+<data key="y">1012.0</data>
+</node>
+<node id="n10">
+<data key="x">564.0</data>
+<data key="Label">⊡</data>
+<data key="y">571.0</data>
+</node>
+<node id="n7">
+<data key="x">242.0</data>
+<data key="Label">⊡</data>
+<data key="y">323.0</data>
+</node>
+<node id="n15">
+<data key="x">621.0</data>
+<data key="Label">¬b</data>
+<data key="y">925.0</data>
+</node>
+<node id="c?">
+<data key="Obs">c</data>
+<data key="x">251.0</data>
+<data key="Label">⊡</data>
+<data key="y">437.0</data>
+</node>
+<node id="n4">
+<data key="x">617.0</data>
+<data key="Label">¬a</data>
+<data key="y">85.0</data>
+</node>
+<node id="n9">
+<data key="x">401.0</data>
+<data key="Label">⊡</data>
+<data key="y">472.0</data>
+</node>
+<edge id="A?_B?" source="A?" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ¬ab) (22, ¬acg) (20, ab) (21, acf) (23, ¬b) (22, b) }</data>
+</edge>
+<edge id="A?_c?" source="A?" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ⊡) (12, ¬a) (11, ¬ag) (10, af) }</data>
+</edge>
+<edge id="A?_d?" source="A?" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬ab) (24, ab) (26, b) }</data>
+</edge>
+<edge id="A?_e?" source="A?" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, ¬a¬bcg) (27, a¬bcf) (29, ¬b) }</data>
+</edge>
+<edge id="A?_f?" source="A?" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(4, a) }</data>
+</edge>
+<edge id="A?_g?" source="A?" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(5, ¬a) }</data>
+</edge>
+<edge id="A?_n10" source="A?" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ⊡) (18, ¬a) (13, ¬ac) (12, ¬acg) (11, acf) (14, c) }</data>
+</edge>
+<edge id="A?_n12" source="A?" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, ¬ab) (21, ab) (23, b) }</data>
+</edge>
+<edge id="A?_n13" source="A?" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, ¬ab) (23, ¬abd) (29, ab) (24, abd) (31, b) (26, bd) }</data>
+</edge>
+<edge id="A?_n14" source="A?" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬a¬bcg) (22, a¬bcf) (24, ¬b) }</data>
+</edge>
+<edge id="A?_n15" source="A?" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, ¬a¬bceg) (27, a¬bcef) (31, ¬b) (29, ¬be) }</data>
+</edge>
+<edge id="A?_n16" source="A?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(32, ⊡) (29, ¬a¬bceg) (29, ¬ab) (24, ¬abd) (28, a¬bcef) (30, ab) (25, abd) (30, ¬be) (27, bd) }</data>
+</edge>
+<edge id="A?_n3" source="A?" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(8, a) (4, af) }</data>
+</edge>
+<edge id="A?_n5" source="A?" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(7, ¬a) (5, ¬ag) }</data>
+</edge>
+<edge id="A?_n6" source="A?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, ⊡) (8, ¬a) (6, ¬ag) (5, af) }</data>
+</edge>
+<edge id="A?_n7" source="A?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(10, ⊡) (9, ¬a) (8, ¬ag) (7, af) }</data>
+</edge>
+<edge id="A?_n8" source="A?" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ⊡) (10, ¬a) (9, ¬ag) (8, af) }</data>
+</edge>
+<edge id="A?_n9" source="A?" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ⊡) (17, ¬a) (12, ¬ac) (11, ¬acg) (10, acf) (13, c) }</data>
+</edge>
+<edge id="A?_Ω" source="A?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(33, ⊡) (31, ¬a¬bceg) (31, ¬ab) (26, ¬abd) (30, a¬bcef) (32, ab) (27, abd) (32, ¬be) (29, bd) }</data>
+</edge>
+<edge id="B?_A?" source="B?" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬a) (-17, ¬a¬c) (-19, ¬a¬c¬g) (-20, a) }</data>
+</edge>
+<edge id="B?_Z" source="B?" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬a) (-18, ¬a¬c) (-20, ¬a¬c¬g) (-21, a) }</data>
+</edge>
+<edge id="B?_c?" source="B?" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ⊡) (-3, ¬ag) (-7, a) (-10, af) (-7, ¬c) }</data>
+</edge>
+<edge id="B?_d?" source="B?" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(4, b) }</data>
+</edge>
+<edge id="B?_e?" source="B?" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(6, ¬b) }</data>
+</edge>
+<edge id="B?_f?" source="B?" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-16, a) }</data>
+</edge>
+<edge id="B?_g?" source="B?" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a) (-12, ¬a¬c) (-14, ¬a¬c¬g) }</data>
+</edge>
+<edge id="B?_n13" source="B?" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, ¬ab) (11, ¬ab¬c) (9, ¬ab¬c¬g) (9, ab) (17, b) (4, bd) }</data>
+</edge>
+<edge id="B?_n15" source="B?" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬a¬b) (14, ¬a¬b¬c) (12, ¬a¬b¬c¬g) (11, a¬b) (26, ¬b) (23, ¬b¬c) (6, ¬be) }</data>
+</edge>
+<edge id="B?_n16" source="B?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬a) (15, ¬ab) (12, ¬ab¬c) (10, ¬ab¬c¬g) (15, ¬a¬c) (13, ¬a¬c¬g) (12, a) (10, ab) (7, ¬be) (5, bd) }</data>
+</edge>
+<edge id="B?_n2" source="B?" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, a) }</data>
+</edge>
+<edge id="B?_n3" source="B?" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, a) (-16, af) }</data>
+</edge>
+<edge id="B?_n4" source="B?" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬a) (-16, ¬a¬c) (-18, ¬a¬c¬g) }</data>
+</edge>
+<edge id="B?_n5" source="B?" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬a) (-12, ¬a¬c) (-9, ¬ag) }</data>
+</edge>
+<edge id="B?_n6" source="B?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ⊡) (-8, ¬ag) (-11, a) (-15, af) (-11, ¬c) }</data>
+</edge>
+<edge id="B?_n7" source="B?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ⊡) (-6, ¬ag) (-10, a) (-13, af) (-10, ¬c) }</data>
+</edge>
+<edge id="B?_n8" source="B?" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ⊡) (-5, ¬ag) (-9, a) (-12, af) (-9, ¬c) }</data>
+</edge>
+<edge id="B?_n9" source="B?" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ⊡) (-3, ¬acg) (-7, ac) (-10, acf) }</data>
+</edge>
+<edge id="B?_Ω" source="B?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ¬a) (17, ¬ab) (14, ¬ab¬c) (12, ¬ab¬c¬g) (16, ¬a¬c) (14, ¬a¬c¬g) (13, a) (12, ab) (9, ¬be) (7, bd) }</data>
+</edge>
+<edge id="Z_B?" source="Z" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(24, ¬b) (23, b) }</data>
+</edge>
+<edge id="Z_c?" source="Z" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ⊡) (15, ¬ag) (13, af) }</data>
+</edge>
+<edge id="Z_d?" source="Z" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, b) }</data>
+</edge>
+<edge id="Z_e?" source="Z" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(30, ¬b) }</data>
+</edge>
+<edge id="Z_f?" source="Z" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(7, a) }</data>
+</edge>
+<edge id="Z_g?" source="Z" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, ¬a) }</data>
+</edge>
+<edge id="Z_n10" source="Z" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ⊡) (16, ¬acg) (14, acf) (17, c) }</data>
+</edge>
+<edge id="Z_n12" source="Z" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(24, b) }</data>
+</edge>
+<edge id="Z_n13" source="Z" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(32, b) (27, bd) }</data>
+</edge>
+<edge id="Z_n14" source="Z" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, ¬b) }</data>
+</edge>
+<edge id="Z_n15" source="Z" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(32, ¬b) (30, ¬be) }</data>
+</edge>
+<edge id="Z_n16" source="Z" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(33, ⊡) (31, ¬be) (28, bd) }</data>
+</edge>
+<edge id="Z_n2" source="Z" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(5, a) }</data>
+</edge>
+<edge id="Z_n3" source="Z" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, a) (7, af) }</data>
+</edge>
+<edge id="Z_n4" source="Z" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(5, ¬a) }</data>
+</edge>
+<edge id="Z_n5" source="Z" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ¬a) (9, ¬ag) }</data>
+</edge>
+<edge id="Z_n6" source="Z" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ⊡) (10, ¬ag) (8, af) }</data>
+</edge>
+<edge id="Z_n7" source="Z" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ⊡) (12, ¬ag) (10, af) }</data>
+</edge>
+<edge id="Z_n8" source="Z" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, ⊡) (13, ¬ag) (11, af) }</data>
+</edge>
+<edge id="Z_n9" source="Z" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, ⊡) (15, ¬acg) (13, acf) (16, c) }</data>
+</edge>
+<edge id="c?-n8" source="c?" target="n8">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-2, ⊡) }</data>
+</edge>
+<edge id="c?-n9" source="c?" target="n9">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(7, ¬a) (5, ¬a¬g) (9, a) (5, a¬f) (0, c) }</data>
+</edge>
+<edge id="c?_A?" source="c?" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬a) (-12, ¬a¬g) (-9, a) (-13, a¬f) }</data>
+</edge>
+<edge id="c?_B?" source="c?" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬a¬b) (11, ¬a¬b¬g) (9, ¬ab) (7, ¬ab¬g) (14, a¬b) (10, a¬b¬f) (11, ab) (7, ab¬f) (12, a¬f) (11, c) }</data>
+</edge>
+<edge id="c?_Z" source="c?" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a) (-13, ¬a¬g) (-10, a) (-14, a¬f) }</data>
+</edge>
+<edge id="c?_d?" source="c?" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬ab) (11, ¬ab¬g) (15, ab) (11, ab¬f) (16, b) (15, bc) }</data>
+</edge>
+<edge id="c?_e?" source="c?" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ¬a¬b) (17, ¬a¬b¬g) (20, a¬b) (16, a¬b¬f) (28, ¬b) (17, ¬bc) }</data>
+</edge>
+<edge id="c?_f?" source="c?" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) (-9, a¬f) }</data>
+</edge>
+<edge id="c?_g?" source="c?" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) (-7, ¬a¬g) }</data>
+</edge>
+<edge id="c?_n10" source="c?" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(8, ¬a) (6, ¬a¬g) (10, a) (6, a¬f) (1, c) }</data>
+</edge>
+<edge id="c?_n12" source="c?" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(10, ¬ab) (8, ¬ab¬g) (12, ab) (8, ab¬f) (13, b) (12, bc) }</data>
+</edge>
+<edge id="c?_n13" source="c?" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬ab) (13, ¬abd) (11, ¬abd¬g) (16, ¬ab¬g) (20, ab) (15, abd) (11, abd¬f) (16, ab¬f) (29, b) (28, bc) (15, bcd) (16, bd) }</data>
+</edge>
+<edge id="c?_n14" source="c?" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, ¬a¬b) (12, ¬a¬b¬g) (15, a¬b) (11, a¬b¬f) (23, ¬b) (12, ¬bc) }</data>
+</edge>
+<edge id="c?_n15" source="c?" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, ¬a¬b) (19, ¬a¬be) (17, ¬a¬be¬g) (19, ¬a¬b¬g) (22, a¬b) (20, a¬be) (16, a¬be¬f) (18, a¬b¬f) (30, ¬b) (17, ¬bce) (28, ¬be) }</data>
+</edge>
+<edge id="c?_n16" source="c?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬a) (20, ¬a¬be) (18, ¬a¬be¬g) (19, ¬ab) (14, ¬abd) (12, ¬abd¬g) (17, ¬ab¬g) (20, ¬a¬g) (23, a) (21, a¬be) (17, a¬be¬f) (21, ab) (16, abd) (12, abd¬f) (17, ab¬f) (19, a¬f) (18, ¬bce) (16, bcd) (17, bd) }</data>
+</edge>
+<edge id="c?_n2" source="c?" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, a) (-11, a¬f) }</data>
+</edge>
+<edge id="c?_n3" source="c?" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) }</data>
+</edge>
+<edge id="c?_n4" source="c?" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a) (-11, ¬a¬g) }</data>
+</edge>
+<edge id="c?_n5" source="c?" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) }</data>
+</edge>
+<edge id="c?_n6" source="c?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ⊡) }</data>
+</edge>
+<edge id="c?_n7" source="c?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ⊡) }</data>
+</edge>
+<edge id="c?_Ω" source="c?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬a) (22, ¬a¬be) (20, ¬a¬be¬g) (21, ¬ab) (16, ¬abd) (14, ¬abd¬g) (19, ¬ab¬g) (21, ¬a¬g) (24, a) (23, a¬be) (19, a¬be¬f) (23, ab) (18, abd) (14, abd¬f) (19, ab¬f) (20, a¬f) (20, ¬bce) (18, bcd) (19, bd) }</data>
+</edge>
+<edge id="d?-n12" source="d?" target="n12">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-3, b) }</data>
+</edge>
+<edge id="d?-n13" source="d?" target="n13">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(10, ¬ab) (7, ¬ab¬c) (5, ¬ab¬c¬g) (5, ab) (13, b) (0, bd) }</data>
+</edge>
+<edge id="d?_A?" source="d?" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, ¬ab) (-21, ¬ab¬c) (-23, ¬ab¬c¬g) (-24, ab) (-14, b) }</data>
+</edge>
+<edge id="d?_B?" source="d?" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, b) }</data>
+</edge>
+<edge id="d?_Z" source="d?" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-22, ¬ab¬c) (-24, ¬ab¬c¬g) (-25, ab) (-19, b) }</data>
+</edge>
+<edge id="d?_c?" source="d?" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬abg) (-11, ab) (-14, abf) (-6, b) (-11, b¬c) }</data>
+</edge>
+<edge id="d?_f?" source="d?" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-20, ab) }</data>
+</edge>
+<edge id="d?_g?" source="d?" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬ab) (-16, ¬ab¬c) (-18, ¬ab¬c¬g) }</data>
+</edge>
+<edge id="d?_n10" source="d?" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬abcg) (-10, abc) (-13, abcf) (-5, b) }</data>
+</edge>
+<edge id="d?_n16" source="d?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ¬ab) (8, ¬ab¬c) (6, ¬ab¬c¬g) (6, ab) (14, b) (1, bd) }</data>
+</edge>
+<edge id="d?_n2" source="d?" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-22, ab) }</data>
+</edge>
+<edge id="d?_n3" source="d?" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-16, ab) (-20, abf) }</data>
+</edge>
+<edge id="d?_n4" source="d?" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-17, ¬ab) (-20, ¬ab¬c) (-22, ¬ab¬c¬g) }</data>
+</edge>
+<edge id="d?_n5" source="d?" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬ab) (-16, ¬ab¬c) (-13, ¬abg) }</data>
+</edge>
+<edge id="d?_n6" source="d?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬abg) (-15, ab) (-19, abf) (-10, b) (-15, b¬c) }</data>
+</edge>
+<edge id="d?_n7" source="d?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬abg) (-14, ab) (-17, abf) (-9, b) (-14, b¬c) }</data>
+</edge>
+<edge id="d?_n8" source="d?" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬abg) (-13, ab) (-16, abf) (-8, b) (-13, b¬c) }</data>
+</edge>
+<edge id="d?_n9" source="d?" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬abcg) (-11, abc) (-14, abcf) (-6, b) }</data>
+</edge>
+<edge id="d?_Ω" source="d?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬ab) (10, ¬ab¬c) (8, ¬ab¬c¬g) (8, ab) (15, b) (3, bd) }</data>
+</edge>
+<edge id="e0" source="A?" target="Z">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ⊡) }</data>
+</edge>
+<edge id="e1" source="A?" target="n2">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(2, a) }</data>
+</edge>
+<edge id="e10" source="n6" target="n3">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, a) }</data>
+</edge>
+<edge id="e11" source="n5" target="n6">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, ¬a) }</data>
+</edge>
+<edge id="e12" source="n6" target="n5">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ¬a) }</data>
+</edge>
+<edge id="e13" source="n6" target="n7">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(2, ⊡) (1, ¬a¬g) (1, a¬f) }</data>
+</edge>
+<edge id="e14" source="n7" target="n6">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ⊡) }</data>
+</edge>
+<edge id="e15" source="n7" target="n8">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, ⊡) }</data>
+</edge>
+<edge id="e16" source="n8" target="n7">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ⊡) }</data>
+</edge>
+<edge id="e19" source="n9" target="n10">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, ⊡) }</data>
+</edge>
+<edge id="e2" source="n2" target="A?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-2, a) }</data>
+</edge>
+<edge id="e20" source="n10" target="n9">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ⊡) }</data>
+</edge>
+<edge id="e21" source="B?" target="n10">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ⊡) (-2, ¬acg) (-6, ac) (-9, acf) }</data>
+</edge>
+<edge id="e22" source="B?" target="n12">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, b) }</data>
+</edge>
+<edge id="e23" source="n12" target="B?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, b) }</data>
+</edge>
+<edge id="e26" source="B?" target="n14">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, ¬b) }</data>
+</edge>
+<edge id="e27" source="n14" target="B?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ¬b) }</data>
+</edge>
+<edge id="e30" source="n13" target="n16">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, b) }</data>
+</edge>
+<edge id="e31" source="n16" target="n13">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, b) }</data>
+</edge>
+<edge id="e32" source="n15" target="n16">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, ¬b) }</data>
+</edge>
+<edge id="e33" source="n16" target="n15">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ¬b) }</data>
+</edge>
+<edge id="e34" source="n16" target="Ω">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(2, ⊡) }</data>
+</edge>
+<edge id="e35" source="Ω" target="n16">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ⊡) }</data>
+</edge>
+<edge id="e36" source="n2" target="n13">
+<data key="Type">constraint</data>
+<data key="LabeledValues">{(27, ab) (22, abd) }</data>
+</edge>
+<edge id="e37" source="n13" target="n2">
+<data key="Type">constraint</data>
+<data key="LabeledValues">{(-22, ab) (-27, ab¬d) }</data>
+</edge>
+<edge id="e38" source="Z" target="Ω">
+<data key="Type">constraint</data>
+<data key="LabeledValues">{(34, ⊡) (33, ¬be) (30, bd) }</data>
+</edge>
+<edge id="e39" source="Ω" target="Z">
+<data key="Type">constraint</data>
+<data key="LabeledValues">{(-21, ¬a) (-23, ¬a¬b) (-26, ¬a¬b¬c) (-28, ¬a¬b¬c¬e) (-30, ¬a¬b¬c¬e¬g) (-28, ¬a¬b¬c¬g) (-25, ¬a¬b¬e) (-29, ¬ab¬c¬d) (-31, ¬ab¬c¬d¬g) (-24, ¬a¬c) (-26, ¬a¬c¬g) (-27, a) (-29, a¬b) (-31, a¬b¬e) (-32, ab¬d) (-26, b¬d) }</data>
+</edge>
+<edge id="e40" source="n13" target="n4">
+<data key="Type">constraint</data>
+<data key="LabeledValues">{(-17, ¬ab) (-20, ¬ab¬c) (-25, ¬ab¬c¬d) (-27, ¬ab¬c¬d¬g) (-22, ¬ab¬c¬g) (-22, ¬ab¬d) }</data>
+</edge>
+<edge id="e41" source="n4" target="n13">
+<data key="Type">constraint</data>
+<data key="LabeledValues">{(27, ¬ab) (22, ¬abd) }</data>
+</edge>
+<edge id="e42" source="n10" target="B?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(10, ⊡) (7, ¬a¬b¬c) (5, ¬a¬b¬c¬g) (8, ¬ab) (3, ¬ab¬c) (1, ¬ab¬c¬g) (6, ¬ab¬g) (9, ¬a¬c¬g) (8, a¬b¬c) (4, a¬b¬c¬f) (9, a¬b¬f) (5, ab¬c) (1, ab¬c¬f) (6, ab¬f) (6, a¬c¬f) (6, b¬c) }</data>
+</edge>
+<edge id="e43" source="Z" target="A?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(4, ¬a) (3, a) }</data>
+</edge>
+<edge id="e5" source="A?" target="n4">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, ¬a) }</data>
+</edge>
+<edge id="e6" source="n4" target="A?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-1, ¬a) }</data>
+</edge>
+<edge id="e9" source="n3" target="n6">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(1, a) }</data>
+</edge>
+<edge id="e?-n14" source="e?" target="n14">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-5, ¬b) }</data>
+</edge>
+<edge id="e?-n15" source="e?" target="n15">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(11, ¬a¬b) (8, ¬a¬b¬c) (6, ¬a¬b¬c¬g) (5, a¬b) (20, ¬b) (17, ¬b¬c) (0, ¬be) }</data>
+</edge>
+<edge id="e?_A?" source="e?" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-20, ¬a¬b) (-23, ¬a¬b¬c) (-25, ¬a¬b¬c¬g) (-26, a¬b) (-7, ¬b) (-10, ¬b¬c) }</data>
+</edge>
+<edge id="e?_B?" source="e?" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬b) }</data>
+</edge>
+<edge id="e?_Z" source="e?" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-21, ¬a¬b) (-24, ¬a¬b¬c) (-26, ¬a¬b¬c¬g) (-27, a¬b) (-12, ¬b) (-15, ¬b¬c) }</data>
+</edge>
+<edge id="e?_c?" source="e?" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a¬bg) (-13, a¬b) (-16, a¬bf) (-8, ¬b) (-13, ¬b¬c) }</data>
+</edge>
+<edge id="e?_f?" source="e?" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-22, a¬b) }</data>
+</edge>
+<edge id="e?_g?" source="e?" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬a¬b) (-18, ¬a¬b¬c) (-20, ¬a¬b¬c¬g) }</data>
+</edge>
+<edge id="e?_n10" source="e?" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ¬a¬bcg) (-12, a¬bc) (-15, a¬bcf) (-7, ¬b) }</data>
+</edge>
+<edge id="e?_n16" source="e?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ¬a¬b) (9, ¬a¬b¬c) (7, ¬a¬b¬c¬g) (6, a¬b) (21, ¬b) (18, ¬b¬c) (1, ¬be) }</data>
+</edge>
+<edge id="e?_n2" source="e?" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-24, a¬b) }</data>
+</edge>
+<edge id="e?_n3" source="e?" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, a¬b) (-22, a¬bf) }</data>
+</edge>
+<edge id="e?_n4" source="e?" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, ¬a¬b) (-22, ¬a¬b¬c) (-24, ¬a¬b¬c¬g) }</data>
+</edge>
+<edge id="e?_n5" source="e?" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬a¬b) (-18, ¬a¬b¬c) (-15, ¬a¬bg) }</data>
+</edge>
+<edge id="e?_n6" source="e?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬a¬bg) (-17, a¬b) (-21, a¬bf) (-12, ¬b) (-17, ¬b¬c) }</data>
+</edge>
+<edge id="e?_n7" source="e?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬a¬bg) (-16, a¬b) (-19, a¬bf) (-11, ¬b) (-16, ¬b¬c) }</data>
+</edge>
+<edge id="e?_n8" source="e?" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a¬bg) (-15, a¬b) (-18, a¬bf) (-10, ¬b) (-15, ¬b¬c) }</data>
+</edge>
+<edge id="e?_n9" source="e?" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a¬bcg) (-13, a¬bc) (-16, a¬bcf) (-8, ¬b) }</data>
+</edge>
+<edge id="e?_Ω" source="e?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬a¬b) (10, ¬a¬b¬c) (8, ¬a¬b¬c¬g) (7, a¬b) (22, ¬b) (19, ¬b¬c) (3, ¬be) }</data>
+</edge>
+<edge id="f?-n2" source="f?" target="n2">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-2, a) }</data>
+</edge>
+<edge id="f?-n3" source="f?" target="n3">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(4, a) (0, af) }</data>
+</edge>
+<edge id="f?_A?" source="f?" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, a) }</data>
+</edge>
+<edge id="f?_B?" source="f?" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, a) (19, a¬b) (16, ab) (20, ac) (17, acf) }</data>
+</edge>
+<edge id="f?_Z" source="f?" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) }</data>
+</edge>
+<edge id="f?_c?" source="f?" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, a) (6, af) }</data>
+</edge>
+<edge id="f?_d?" source="f?" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, ab) }</data>
+</edge>
+<edge id="f?_e?" source="f?" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, a¬b) (23, a¬bcf) }</data>
+</edge>
+<edge id="f?_n10" source="f?" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(15, a) (10, ac) (7, acf) }</data>
+</edge>
+<edge id="f?_n12" source="f?" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ab) }</data>
+</edge>
+<edge id="f?_n13" source="f?" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, ab) (20, abd) }</data>
+</edge>
+<edge id="f?_n14" source="f?" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, a¬b) (18, a¬bcf) }</data>
+</edge>
+<edge id="f?_n15" source="f?" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, a¬b) (23, a¬bcef) (25, a¬be) }</data>
+</edge>
+<edge id="f?_n16" source="f?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, a) (24, a¬bcef) (26, a¬be) (26, ab) (21, abd) }</data>
+</edge>
+<edge id="f?_n6" source="f?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(5, a) (1, af) }</data>
+</edge>
+<edge id="f?_n7" source="f?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(6, a) (3, af) }</data>
+</edge>
+<edge id="f?_n8" source="f?" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(7, a) (4, af) }</data>
+</edge>
+<edge id="f?_n9" source="f?" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, a) (9, ac) (6, acf) }</data>
+</edge>
+<edge id="f?_Ω" source="f?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(29, a) (26, a¬bcef) (28, a¬be) (28, ab) (23, abd) }</data>
+</edge>
+<edge id="g?-n4" source="g?" target="n4">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-4, ¬a) }</data>
+</edge>
+<edge id="g?-n5" source="g?" target="n5">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(2, ¬a) (0, ¬ag) }</data>
+</edge>
+<edge id="g?_A?" source="g?" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) }</data>
+</edge>
+<edge id="g?_B?" source="g?" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬a) (18, ¬a¬b) (14, ¬ab) (18, ¬ac) (17, ¬acg) }</data>
+</edge>
+<edge id="g?_Z" source="g?" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a) }</data>
+</edge>
+<edge id="g?_c?" source="g?" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(7, ¬a) (6, ¬ag) }</data>
+</edge>
+<edge id="g?_d?" source="g?" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬ab) }</data>
+</edge>
+<edge id="g?_e?" source="g?" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(24, ¬a¬b) (23, ¬a¬bcg) }</data>
+</edge>
+<edge id="g?_n10" source="g?" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬a) (8, ¬ac) (7, ¬acg) }</data>
+</edge>
+<edge id="g?_n12" source="g?" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(15, ¬ab) }</data>
+</edge>
+<edge id="g?_n13" source="g?" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬ab) (18, ¬abd) }</data>
+</edge>
+<edge id="g?_n14" source="g?" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ¬a¬b) (18, ¬a¬bcg) }</data>
+</edge>
+<edge id="g?_n15" source="g?" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(26, ¬a¬b) (23, ¬a¬bceg) (24, ¬a¬be) }</data>
+</edge>
+<edge id="g?_n16" source="g?" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, ¬a) (24, ¬a¬bceg) (25, ¬a¬be) (24, ¬ab) (19, ¬abd) }</data>
+</edge>
+<edge id="g?_n6" source="g?" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, ¬a) (1, ¬ag) }</data>
+</edge>
+<edge id="g?_n7" source="g?" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(4, ¬a) (3, ¬ag) }</data>
+</edge>
+<edge id="g?_n8" source="g?" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(5, ¬a) (4, ¬ag) }</data>
+</edge>
+<edge id="g?_n9" source="g?" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ¬a) (7, ¬ac) (6, ¬acg) }</data>
+</edge>
+<edge id="g?_Ω" source="g?" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, ¬a) (26, ¬a¬bceg) (27, ¬a¬be) (26, ¬ab) (21, ¬abd) }</data>
+</edge>
+<edge id="n10_A?" source="n10" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a) (-16, ¬a¬c) (-18, ¬a¬c¬g) (-13, ¬a¬g) (-10, a) (-15, a¬c) (-19, a¬c¬f) (-14, a¬f) }</data>
+</edge>
+<edge id="n10_Z" source="n10" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬a) (-17, ¬a¬c) (-19, ¬a¬c¬g) (-14, ¬a¬g) (-11, a) (-16, a¬c) (-20, a¬c¬f) (-15, a¬f) }</data>
+</edge>
+<edge id="n10_c?" source="n10" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-1, ⊡) (-6, ¬c) }</data>
+</edge>
+<edge id="n10_d?" source="n10" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ¬ab) (7, ¬ab¬c) (5, ¬ab¬c¬g) (10, ¬ab¬g) (9, ab¬c) (5, ab¬c¬f) (10, ab¬f) (14, b) (10, b¬c) }</data>
+</edge>
+<edge id="n10_e?" source="n10" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬a¬b¬c) (11, ¬a¬b¬c¬g) (14, a¬b¬c) (10, a¬b¬c¬f) (15, a¬b¬f) (16, ¬b) }</data>
+</edge>
+<edge id="n10_f?" source="n10" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, a) (-11, a¬c) (-15, a¬c¬f) (-10, a¬f) }</data>
+</edge>
+<edge id="n10_g?" source="n10" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a) (-11, ¬a¬c) (-13, ¬a¬c¬g) (-8, ¬a¬g) }</data>
+</edge>
+<edge id="n10_n12" source="n10" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, ¬ab) (4, ¬ab¬c) (2, ¬ab¬c¬g) (7, ¬ab¬g) (6, ab¬c) (2, ab¬c¬f) (7, ab¬f) (11, b) (7, b¬c) }</data>
+</edge>
+<edge id="n10_n13" source="n10" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬ab) (12, ¬ab¬c) (7, ¬ab¬cd) (5, ¬ab¬cd¬g) (10, ¬ab¬c¬g) (12, ¬abd) (10, ¬abd¬g) (15, ¬ab¬g) (19, ab) (14, ab¬c) (9, ab¬cd) (5, ab¬cd¬f) (10, ab¬c¬f) (10, abd¬f) (15, ab¬f) (27, b) (23, b¬c) (10, b¬cd) (14, bd) }</data>
+</edge>
+<edge id="n10_n14" source="n10" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(8, ¬a¬b¬c) (6, ¬a¬b¬c¬g) (9, a¬b¬c) (5, a¬b¬c¬f) (10, a¬b¬f) (11, ¬b) }</data>
+</edge>
+<edge id="n10_n15" source="n10" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, ¬a¬b) (15, ¬a¬b¬c) (13, ¬a¬b¬ce) (11, ¬a¬b¬ce¬g) (13, ¬a¬b¬c¬g) (18, ¬a¬b¬g) (21, a¬b) (16, a¬b¬c) (14, a¬b¬ce) (10, a¬b¬ce¬f) (12, a¬b¬c¬f) (15, a¬be¬f) (17, a¬b¬f) (29, ¬b) (24, ¬b¬c) (16, ¬be) }</data>
+</edge>
+<edge id="n10_n16" source="n10" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, ¬a) (14, ¬a¬b¬ce) (12, ¬a¬b¬ce¬g) (18, ¬ab) (13, ¬ab¬c) (8, ¬ab¬cd) (6, ¬ab¬cd¬g) (11, ¬ab¬c¬g) (13, ¬abd) (11, ¬abd¬g) (16, ¬ab¬g) (16, ¬a¬c) (14, ¬a¬c¬g) (19, ¬a¬g) (22, a) (15, a¬b¬ce) (11, a¬b¬ce¬f) (16, a¬be¬f) (20, ab) (15, ab¬c) (10, ab¬cd) (6, ab¬cd¬f) (11, ab¬c¬f) (11, abd¬f) (16, ab¬f) (17, a¬c) (13, a¬c¬f) (18, a¬f) (17, ¬be) (11, b¬cd) (15, bd) }</data>
+</edge>
+<edge id="n10_n2" source="n10" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, a) (-13, a¬c) (-17, a¬c¬f) (-12, a¬f) }</data>
+</edge>
+<edge id="n10_n3" source="n10" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, a) (-11, a¬c) }</data>
+</edge>
+<edge id="n10_n4" source="n10" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬a) (-15, ¬a¬c) (-17, ¬a¬c¬g) (-12, ¬a¬g) }</data>
+</edge>
+<edge id="n10_n5" source="n10" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a) (-11, ¬a¬c) }</data>
+</edge>
+<edge id="n10_n6" source="n10" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ⊡) (-10, ¬c) }</data>
+</edge>
+<edge id="n10_n7" source="n10" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ⊡) (-9, ¬c) }</data>
+</edge>
+<edge id="n10_n8" source="n10" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ⊡) (-8, ¬c) }</data>
+</edge>
+<edge id="n10_Ω" source="n10" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬a) (16, ¬a¬b¬ce) (14, ¬a¬b¬ce¬g) (20, ¬ab) (15, ¬ab¬c) (10, ¬ab¬cd) (8, ¬ab¬cd¬g) (13, ¬ab¬c¬g) (15, ¬abd) (13, ¬abd¬g) (18, ¬ab¬g) (17, ¬a¬c) (15, ¬a¬c¬g) (20, ¬a¬g) (23, a) (17, a¬b¬ce) (13, a¬b¬ce¬f) (18, a¬be¬f) (22, ab) (17, ab¬c) (12, ab¬cd) (8, ab¬cd¬f) (13, ab¬c¬f) (13, abd¬f) (18, ab¬f) (18, a¬c) (14, a¬c¬f) (19, a¬f) (19, ¬be) (13, b¬cd) (17, bd) }</data>
+</edge>
+<edge id="n12-d?" source="n12" target="d?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(3, b) }</data>
+</edge>
+<edge id="n12_A?" source="n12" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬ab) (-18, ¬ab¬c) (-20, ¬ab¬c¬g) (-21, ab) (-11, b) }</data>
+</edge>
+<edge id="n12_Z" source="n12" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, ¬ab¬c) (-21, ¬ab¬c¬g) (-22, ab) (-16, b) }</data>
+</edge>
+<edge id="n12_c?" source="n12" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ¬abg) (-8, ab) (-11, abf) (-3, b) (-8, b¬c) }</data>
+</edge>
+<edge id="n12_f?" source="n12" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-17, ab) }</data>
+</edge>
+<edge id="n12_g?" source="n12" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬ab) (-13, ¬ab¬c) (-15, ¬ab¬c¬g) }</data>
+</edge>
+<edge id="n12_n10" source="n12" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ¬abcg) (-7, abc) (-10, abcf) (-2, b) }</data>
+</edge>
+<edge id="n12_n13" source="n12" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬ab) (10, ¬ab¬c) (8, ¬ab¬c¬g) (8, ab) (16, b) (3, bd) }</data>
+</edge>
+<edge id="n12_n16" source="n12" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, ¬ab) (11, ¬ab¬c) (9, ¬ab¬c¬g) (9, ab) (17, b) (4, bd) }</data>
+</edge>
+<edge id="n12_n2" source="n12" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, ab) }</data>
+</edge>
+<edge id="n12_n3" source="n12" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ab) (-17, abf) }</data>
+</edge>
+<edge id="n12_n4" source="n12" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬ab) (-17, ¬ab¬c) (-19, ¬ab¬c¬g) }</data>
+</edge>
+<edge id="n12_n5" source="n12" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ¬ab) (-13, ¬ab¬c) (-10, ¬abg) }</data>
+</edge>
+<edge id="n12_n6" source="n12" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬abg) (-12, ab) (-16, abf) (-7, b) (-12, b¬c) }</data>
+</edge>
+<edge id="n12_n7" source="n12" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬abg) (-11, ab) (-14, abf) (-6, b) (-11, b¬c) }</data>
+</edge>
+<edge id="n12_n8" source="n12" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬abg) (-10, ab) (-13, abf) (-5, b) (-10, b¬c) }</data>
+</edge>
+<edge id="n12_n9" source="n12" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ¬abcg) (-8, abc) (-11, abcf) (-3, b) }</data>
+</edge>
+<edge id="n12_Ω" source="n12" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ¬ab) (13, ¬ab¬c) (11, ¬ab¬c¬g) (11, ab) (18, b) (6, bd) }</data>
+</edge>
+<edge id="n13-d?" source="n13" target="d?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, b) (-5, b¬d) }</data>
+</edge>
+<edge id="n13_A?" source="n13" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, ¬ab) (-21, ¬ab¬c) (-26, ¬ab¬c¬d) (-28, ¬ab¬c¬d¬g) (-23, ¬ab¬c¬g) (-23, ¬ab¬d) (-24, ab) (-29, ab¬d) (-14, b) (-19, b¬d) }</data>
+</edge>
+<edge id="n13_B?" source="n13" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, b) (-9, b¬d) }</data>
+</edge>
+<edge id="n13_Z" source="n13" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-22, ¬ab¬c) (-27, ¬ab¬c¬d) (-29, ¬ab¬c¬d¬g) (-24, ¬ab¬c¬g) (-25, ab) (-30, ab¬d) (-19, b) (-24, b¬d) }</data>
+</edge>
+<edge id="n13_c?" source="n13" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬ab¬dg) (-7, ¬abg) (-11, ab) (-16, ab¬d) (-19, ab¬df) (-14, abf) (-6, b) (-11, b¬c) (-16, b¬c¬d) (-11, b¬d) }</data>
+</edge>
+<edge id="n13_f?" source="n13" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-20, ab) (-25, ab¬d) }</data>
+</edge>
+<edge id="n13_g?" source="n13" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬ab) (-16, ¬ab¬c) (-21, ¬ab¬c¬d) (-23, ¬ab¬c¬d¬g) (-18, ¬ab¬c¬g) (-18, ¬ab¬d) }</data>
+</edge>
+<edge id="n13_n10" source="n13" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬abc¬dg) (-6, ¬abcg) (-10, abc) (-15, abc¬d) (-18, abc¬df) (-13, abcf) (-5, b) (-10, b¬d) }</data>
+</edge>
+<edge id="n13_n12" source="n13" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, b) (-8, b¬d) }</data>
+</edge>
+<edge id="n13_n3" source="n13" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-16, ab) (-21, ab¬d) (-25, ab¬df) (-20, abf) }</data>
+</edge>
+<edge id="n13_n5" source="n13" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬ab) (-16, ¬ab¬c) (-21, ¬ab¬c¬d) (-16, ¬ab¬d) (-18, ¬ab¬dg) (-13, ¬abg) }</data>
+</edge>
+<edge id="n13_n6" source="n13" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-17, ¬ab¬dg) (-12, ¬abg) (-15, ab) (-20, ab¬d) (-24, ab¬df) (-19, abf) (-10, b) (-15, b¬c) (-20, b¬c¬d) (-15, b¬d) }</data>
+</edge>
+<edge id="n13_n7" source="n13" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬ab¬dg) (-10, ¬abg) (-14, ab) (-19, ab¬d) (-22, ab¬df) (-17, abf) (-9, b) (-14, b¬c) (-19, b¬c¬d) (-14, b¬d) }</data>
+</edge>
+<edge id="n13_n8" source="n13" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬ab¬dg) (-9, ¬abg) (-13, ab) (-18, ab¬d) (-21, ab¬df) (-16, abf) (-8, b) (-13, b¬c) (-18, b¬c¬d) (-13, b¬d) }</data>
+</edge>
+<edge id="n13_n9" source="n13" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬abc¬dg) (-7, ¬abcg) (-11, abc) (-16, abc¬d) (-19, abc¬df) (-14, abcf) (-6, b) (-11, b¬d) }</data>
+</edge>
+<edge id="n13_Ω" source="n13" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, b) }</data>
+</edge>
+<edge id="n14-e?" source="n14" target="e?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(5, ¬b) }</data>
+</edge>
+<edge id="n14_A?" source="n14" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬a¬b) (-18, ¬a¬b¬c) (-20, ¬a¬b¬c¬g) (-21, a¬b) (-2, ¬b) (-5, ¬b¬c) }</data>
+</edge>
+<edge id="n14_Z" source="n14" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-16, ¬a¬b) (-19, ¬a¬b¬c) (-21, ¬a¬b¬c¬g) (-22, a¬b) (-7, ¬b) (-10, ¬b¬c) }</data>
+</edge>
+<edge id="n14_c?" source="n14" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ¬a¬bg) (-8, a¬b) (-11, a¬bf) (-3, ¬b) (-8, ¬b¬c) }</data>
+</edge>
+<edge id="n14_f?" source="n14" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-17, a¬b) }</data>
+</edge>
+<edge id="n14_g?" source="n14" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬a¬b) (-13, ¬a¬b¬c) (-15, ¬a¬b¬c¬g) }</data>
+</edge>
+<edge id="n14_n10" source="n14" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ¬a¬bcg) (-7, a¬bc) (-10, a¬bcf) (-2, ¬b) }</data>
+</edge>
+<edge id="n14_n15" source="n14" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ¬a¬b) (13, ¬a¬b¬c) (11, ¬a¬b¬c¬g) (10, a¬b) (25, ¬b) (22, ¬b¬c) (5, ¬be) }</data>
+</edge>
+<edge id="n14_n16" source="n14" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬a¬b) (14, ¬a¬b¬c) (12, ¬a¬b¬c¬g) (11, a¬b) (26, ¬b) (23, ¬b¬c) (6, ¬be) }</data>
+</edge>
+<edge id="n14_n2" source="n14" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, a¬b) }</data>
+</edge>
+<edge id="n14_n3" source="n14" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, a¬b) (-17, a¬bf) }</data>
+</edge>
+<edge id="n14_n4" source="n14" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬a¬b) (-17, ¬a¬b¬c) (-19, ¬a¬b¬c¬g) }</data>
+</edge>
+<edge id="n14_n5" source="n14" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ¬a¬b) (-13, ¬a¬b¬c) (-10, ¬a¬bg) }</data>
+</edge>
+<edge id="n14_n6" source="n14" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a¬bg) (-12, a¬b) (-16, a¬bf) (-7, ¬b) (-12, ¬b¬c) }</data>
+</edge>
+<edge id="n14_n7" source="n14" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬a¬bg) (-11, a¬b) (-14, a¬bf) (-6, ¬b) (-11, ¬b¬c) }</data>
+</edge>
+<edge id="n14_n8" source="n14" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a¬bg) (-10, a¬b) (-13, a¬bf) (-5, ¬b) (-10, ¬b¬c) }</data>
+</edge>
+<edge id="n14_n9" source="n14" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ¬a¬bcg) (-8, a¬bc) (-11, a¬bcf) (-3, ¬b) }</data>
+</edge>
+<edge id="n14_Ω" source="n14" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬a¬b) (15, ¬a¬b¬c) (13, ¬a¬b¬c¬g) (12, a¬b) (27, ¬b) (24, ¬b¬c) (8, ¬be) }</data>
+</edge>
+<edge id="n15-e?" source="n15" target="e?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ¬b) (-2, ¬b¬e) }</data>
+</edge>
+<edge id="n15_A?" source="n15" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-20, ¬a¬b) (-23, ¬a¬b¬c) (-25, ¬a¬b¬c¬e) (-27, ¬a¬b¬c¬e¬g) (-25, ¬a¬b¬c¬g) (-22, ¬a¬b¬e) (-26, a¬b) (-28, a¬b¬e) (-7, ¬b) (-10, ¬b¬c) (-12, ¬b¬c¬e) (-9, ¬b¬e) }</data>
+</edge>
+<edge id="n15_B?" source="n15" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬b) (-8, ¬b¬e) }</data>
+</edge>
+<edge id="n15_Z" source="n15" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-21, ¬a¬b) (-24, ¬a¬b¬c) (-26, ¬a¬b¬c¬e) (-28, ¬a¬b¬c¬e¬g) (-26, ¬a¬b¬c¬g) (-23, ¬a¬b¬e) (-27, a¬b) (-29, a¬b¬e) (-12, ¬b) (-15, ¬b¬c) (-17, ¬b¬c¬e) (-14, ¬b¬e) }</data>
+</edge>
+<edge id="n15_c?" source="n15" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a¬b¬eg) (-9, ¬a¬bg) (-13, a¬b) (-15, a¬b¬e) (-18, a¬b¬ef) (-16, a¬bf) (-8, ¬b) (-13, ¬b¬c) (-15, ¬b¬c¬e) (-10, ¬b¬e) }</data>
+</edge>
+<edge id="n15_f?" source="n15" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-22, a¬b) (-24, a¬b¬e) }</data>
+</edge>
+<edge id="n15_g?" source="n15" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬a¬b) (-18, ¬a¬b¬c) (-20, ¬a¬b¬c¬e) (-22, ¬a¬b¬c¬e¬g) (-20, ¬a¬b¬c¬g) (-17, ¬a¬b¬e) }</data>
+</edge>
+<edge id="n15_n10" source="n15" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬a¬bc¬eg) (-8, ¬a¬bcg) (-12, a¬bc) (-14, a¬bc¬e) (-17, a¬bc¬ef) (-15, a¬bcf) (-7, ¬b) (-9, ¬b¬e) }</data>
+</edge>
+<edge id="n15_n14" source="n15" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬b) (-7, ¬b¬e) }</data>
+</edge>
+<edge id="n15_n2" source="n15" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-24, a¬b) (-26, a¬b¬e) }</data>
+</edge>
+<edge id="n15_n3" source="n15" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, a¬b) (-20, a¬b¬e) (-24, a¬b¬ef) (-22, a¬bf) }</data>
+</edge>
+<edge id="n15_n4" source="n15" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, ¬a¬b) (-22, ¬a¬b¬c) (-24, ¬a¬b¬c¬e) (-26, ¬a¬b¬c¬e¬g) (-24, ¬a¬b¬c¬g) (-21, ¬a¬b¬e) }</data>
+</edge>
+<edge id="n15_n5" source="n15" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬a¬b) (-18, ¬a¬b¬c) (-20, ¬a¬b¬c¬e) (-15, ¬a¬b¬e) (-17, ¬a¬b¬eg) (-15, ¬a¬bg) }</data>
+</edge>
+<edge id="n15_n6" source="n15" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-16, ¬a¬b¬eg) (-14, ¬a¬bg) (-17, a¬b) (-19, a¬b¬e) (-23, a¬b¬ef) (-21, a¬bf) (-12, ¬b) (-17, ¬b¬c) (-19, ¬b¬c¬e) (-14, ¬b¬e) }</data>
+</edge>
+<edge id="n15_n7" source="n15" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬a¬b¬eg) (-12, ¬a¬bg) (-16, a¬b) (-18, a¬b¬e) (-21, a¬b¬ef) (-19, a¬bf) (-11, ¬b) (-16, ¬b¬c) (-18, ¬b¬c¬e) (-13, ¬b¬e) }</data>
+</edge>
+<edge id="n15_n8" source="n15" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬a¬b¬eg) (-11, ¬a¬bg) (-15, a¬b) (-17, a¬b¬e) (-20, a¬b¬ef) (-18, a¬bf) (-10, ¬b) (-15, ¬b¬c) (-17, ¬b¬c¬e) (-12, ¬b¬e) }</data>
+</edge>
+<edge id="n15_n9" source="n15" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a¬bc¬eg) (-9, ¬a¬bcg) (-13, a¬bc) (-15, a¬bc¬e) (-18, a¬bc¬ef) (-16, a¬bcf) (-8, ¬b) (-10, ¬b¬e) }</data>
+</edge>
+<edge id="n15_Ω" source="n15" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, ¬b) }</data>
+</edge>
+<edge id="n16_A?" source="n16" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, ¬a) (-21, ¬a¬b) (-24, ¬a¬b¬c) (-26, ¬a¬b¬c¬e) (-28, ¬a¬b¬c¬e¬g) (-26, ¬a¬b¬c¬g) (-23, ¬a¬b¬e) (-22, ¬ab¬c) (-27, ¬ab¬c¬d) (-29, ¬ab¬c¬d¬g) (-24, ¬ab¬c¬g) (-24, ¬ab¬d) (-21, ¬a¬c) (-23, ¬a¬c¬g) (-25, a) (-27, a¬b) (-29, a¬b¬e) (-30, ab¬d) (-20, b¬d) }</data>
+</edge>
+<edge id="n16_B?" source="n16" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬b) (-9, ¬b¬e) (-5, b) (-10, b¬d) }</data>
+</edge>
+<edge id="n16_Z" source="n16" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-20, ¬a) (-22, ¬a¬b) (-25, ¬a¬b¬c) (-27, ¬a¬b¬c¬e) (-29, ¬a¬b¬c¬e¬g) (-27, ¬a¬b¬c¬g) (-24, ¬a¬b¬e) (-23, ¬ab¬c) (-28, ¬ab¬c¬d) (-30, ¬ab¬c¬d¬g) (-25, ¬ab¬c¬g) (-22, ¬a¬c) (-24, ¬a¬c¬g) (-26, a) (-28, a¬b) (-30, a¬b¬e) (-31, ab¬d) (-25, b¬d) }</data>
+</edge>
+<edge id="n16_c?" source="n16" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬a¬b¬eg) (-10, ¬a¬bg) (-13, ¬ab¬dg) (-8, ¬ag) (-12, a) (-14, a¬b) (-16, a¬b¬e) (-19, a¬b¬ef) (-17, a¬bf) (-17, ab¬d) (-20, ab¬df) (-15, af) (-9, ¬b) (-14, ¬b¬c) (-16, ¬b¬c¬e) (-11, ¬b¬e) (-7, b) (-12, b¬c) (-17, b¬c¬d) (-12, b¬d) (-11, ¬c) }</data>
+</edge>
+<edge id="n16_d?" source="n16" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-1, b) (-6, b¬d) }</data>
+</edge>
+<edge id="n16_e?" source="n16" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-1, ¬b) (-3, ¬b¬e) }</data>
+</edge>
+<edge id="n16_f?" source="n16" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-21, a) (-23, a¬b) (-25, a¬b¬e) (-26, ab¬d) }</data>
+</edge>
+<edge id="n16_g?" source="n16" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬a) (-16, ¬a¬b) (-19, ¬a¬b¬c) (-21, ¬a¬b¬c¬e) (-23, ¬a¬b¬c¬e¬g) (-21, ¬a¬b¬c¬g) (-18, ¬a¬b¬e) (-17, ¬ab¬c) (-22, ¬ab¬c¬d) (-24, ¬ab¬c¬d¬g) (-19, ¬ab¬c¬g) (-19, ¬ab¬d) (-16, ¬a¬c) (-18, ¬a¬c¬g) }</data>
+</edge>
+<edge id="n16_n10" source="n16" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a¬bc¬eg) (-9, ¬a¬bcg) (-12, ¬abc¬dg) (-7, ¬acg) (-13, a¬bc) (-15, a¬bc¬e) (-18, a¬bc¬ef) (-16, a¬bcf) (-16, abc¬d) (-19, abc¬df) (-11, ac) (-14, acf) (-8, ¬b) (-10, ¬b¬e) (-6, b) (-11, b¬d) }</data>
+</edge>
+<edge id="n16_n12" source="n16" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, b) (-9, b¬d) }</data>
+</edge>
+<edge id="n16_n14" source="n16" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬b) (-8, ¬b¬e) }</data>
+</edge>
+<edge id="n16_n2" source="n16" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-23, a) (-25, a¬b) (-27, a¬b¬e) (-28, ab¬d) }</data>
+</edge>
+<edge id="n16_n3" source="n16" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-17, a) (-19, a¬b) (-21, a¬b¬e) (-25, a¬b¬ef) (-23, a¬bf) (-22, ab¬d) (-26, ab¬df) (-21, af) }</data>
+</edge>
+<edge id="n16_n4" source="n16" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, ¬a) (-20, ¬a¬b) (-23, ¬a¬b¬c) (-25, ¬a¬b¬c¬e) (-27, ¬a¬b¬c¬e¬g) (-25, ¬a¬b¬c¬g) (-22, ¬a¬b¬e) (-21, ¬ab¬c) (-26, ¬ab¬c¬d) (-28, ¬ab¬c¬d¬g) (-23, ¬ab¬c¬g) (-23, ¬ab¬d) (-20, ¬a¬c) (-22, ¬a¬c¬g) }</data>
+</edge>
+<edge id="n16_n5" source="n16" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬a) (-14, ¬a¬b) (-19, ¬a¬b¬c) (-21, ¬a¬b¬c¬e) (-16, ¬a¬b¬e) (-18, ¬a¬b¬eg) (-16, ¬a¬bg) (-17, ¬ab¬c) (-22, ¬ab¬c¬d) (-17, ¬ab¬d) (-19, ¬ab¬dg) (-16, ¬a¬c) (-14, ¬ag) }</data>
+</edge>
+<edge id="n16_n6" source="n16" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-17, ¬a¬b¬eg) (-15, ¬a¬bg) (-18, ¬ab¬dg) (-13, ¬ag) (-16, a) (-18, a¬b) (-20, a¬b¬e) (-24, a¬b¬ef) (-22, a¬bf) (-21, ab¬d) (-25, ab¬df) (-20, af) (-13, ¬b) (-18, ¬b¬c) (-20, ¬b¬c¬e) (-15, ¬b¬e) (-11, b) (-16, b¬c) (-21, b¬c¬d) (-16, b¬d) (-15, ¬c) }</data>
+</edge>
+<edge id="n16_n7" source="n16" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬a¬b¬eg) (-13, ¬a¬bg) (-16, ¬ab¬dg) (-11, ¬ag) (-15, a) (-17, a¬b) (-19, a¬b¬e) (-22, a¬b¬ef) (-20, a¬bf) (-20, ab¬d) (-23, ab¬df) (-18, af) (-12, ¬b) (-17, ¬b¬c) (-19, ¬b¬c¬e) (-14, ¬b¬e) (-10, b) (-15, b¬c) (-20, b¬c¬d) (-15, b¬d) (-14, ¬c) }</data>
+</edge>
+<edge id="n16_n8" source="n16" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-14, ¬a¬b¬eg) (-12, ¬a¬bg) (-15, ¬ab¬dg) (-10, ¬ag) (-14, a) (-16, a¬b) (-18, a¬b¬e) (-21, a¬b¬ef) (-19, a¬bf) (-19, ab¬d) (-22, ab¬df) (-17, af) (-11, ¬b) (-16, ¬b¬c) (-18, ¬b¬c¬e) (-13, ¬b¬e) (-9, b) (-14, b¬c) (-19, b¬c¬d) (-14, b¬d) (-13, ¬c) }</data>
+</edge>
+<edge id="n16_n9" source="n16" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ¬a¬bc¬eg) (-10, ¬a¬bcg) (-13, ¬abc¬dg) (-8, ¬acg) (-14, a¬bc) (-16, a¬bc¬e) (-19, a¬bc¬ef) (-17, a¬bcf) (-17, abc¬d) (-20, abc¬df) (-12, ac) (-15, acf) (-9, ¬b) (-11, ¬b¬e) (-7, b) (-12, b¬d) }</data>
+</edge>
+<edge id="n2-f?" source="n2" target="f?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(2, a) }</data>
+</edge>
+<edge id="n2_B?" source="n2" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, a) (21, a¬b) (18, ab) (22, ac) (19, acf) }</data>
+</edge>
+<edge id="n2_Z" source="n2" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, a) }</data>
+</edge>
+<edge id="n2_c?" source="n2" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, a) (8, af) }</data>
+</edge>
+<edge id="n2_d?" source="n2" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ab) }</data>
+</edge>
+<edge id="n2_e?" source="n2" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, a¬b) (25, a¬bcf) }</data>
+</edge>
+<edge id="n2_n10" source="n2" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, a) (12, ac) (9, acf) }</data>
+</edge>
+<edge id="n2_n12" source="n2" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ab) }</data>
+</edge>
+<edge id="n2_n14" source="n2" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, a¬b) (20, a¬bcf) }</data>
+</edge>
+<edge id="n2_n15" source="n2" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(29, a¬b) (25, a¬bcef) (27, a¬be) }</data>
+</edge>
+<edge id="n2_n16" source="n2" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(30, a) (26, a¬bcef) (28, a¬be) (28, ab) (23, abd) }</data>
+</edge>
+<edge id="n2_n3" source="n2" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(6, a) (2, af) }</data>
+</edge>
+<edge id="n2_n6" source="n2" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(7, a) (3, af) }</data>
+</edge>
+<edge id="n2_n7" source="n2" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(8, a) (5, af) }</data>
+</edge>
+<edge id="n2_n8" source="n2" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, a) (6, af) }</data>
+</edge>
+<edge id="n2_n9" source="n2" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, a) (11, ac) (8, acf) }</data>
+</edge>
+<edge id="n2_Ω" source="n2" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(31, a) (28, a¬bcef) (30, a¬be) (30, ab) (25, abd) }</data>
+</edge>
+<edge id="n3-f?" source="n3" target="f?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, a) (-4, a¬f) }</data>
+</edge>
+<edge id="n3_A?" source="n3" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, a) (-8, a¬f) }</data>
+</edge>
+<edge id="n3_B?" source="n3" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, a) (19, a¬b) (15, a¬b¬f) (16, ab) (12, ab¬f) (17, ac) (16, ac¬f) (17, a¬f) }</data>
+</edge>
+<edge id="n3_Z" source="n3" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) (-9, a¬f) }</data>
+</edge>
+<edge id="n3_c?" source="n3" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(6, a) (5, a¬f) }</data>
+</edge>
+<edge id="n3_d?" source="n3" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, ab) (16, ab¬f) }</data>
+</edge>
+<edge id="n3_e?" source="n3" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, a¬b) (23, a¬bc) (21, a¬b¬f) }</data>
+</edge>
+<edge id="n3_n10" source="n3" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(15, a) (7, ac) (6, ac¬f) (11, a¬f) }</data>
+</edge>
+<edge id="n3_n12" source="n3" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ab) (13, ab¬f) }</data>
+</edge>
+<edge id="n3_n13" source="n3" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, ab) (20, abd) (16, abd¬f) (21, ab¬f) }</data>
+</edge>
+<edge id="n3_n14" source="n3" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, a¬b) (18, a¬bc) (16, a¬b¬f) }</data>
+</edge>
+<edge id="n3_n15" source="n3" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, a¬b) (23, a¬bce) (25, a¬be) (21, a¬be¬f) (23, a¬b¬f) }</data>
+</edge>
+<edge id="n3_n16" source="n3" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, a) (24, a¬bce) (26, a¬be) (22, a¬be¬f) (26, ab) (21, abd) (17, abd¬f) (22, ab¬f) (24, a¬f) }</data>
+</edge>
+<edge id="n3_n2" source="n3" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, a) (-6, a¬f) }</data>
+</edge>
+<edge id="n3_n7" source="n3" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, a) (2, a¬f) }</data>
+</edge>
+<edge id="n3_n8" source="n3" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(4, a) (3, a¬f) }</data>
+</edge>
+<edge id="n3_n9" source="n3" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, a) (6, ac) (5, ac¬f) (10, a¬f) }</data>
+</edge>
+<edge id="n3_Ω" source="n3" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(29, a) (26, a¬bce) (28, a¬be) (24, a¬be¬f) (28, ab) (23, abd) (19, abd¬f) (24, ab¬f) (25, a¬f) }</data>
+</edge>
+<edge id="n4-g?" source="n4" target="g?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(4, ¬a) }</data>
+</edge>
+<edge id="n4_B?" source="n4" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(26, ¬a) (22, ¬a¬b) (18, ¬ab) (22, ¬ac) (21, ¬acg) }</data>
+</edge>
+<edge id="n4_Z" source="n4" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ¬a) }</data>
+</edge>
+<edge id="n4_c?" source="n4" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ¬a) (10, ¬ag) }</data>
+</edge>
+<edge id="n4_d?" source="n4" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬ab) }</data>
+</edge>
+<edge id="n4_e?" source="n4" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, ¬a¬b) (27, ¬a¬bcg) }</data>
+</edge>
+<edge id="n4_n10" source="n4" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬a) (12, ¬ac) (11, ¬acg) }</data>
+</edge>
+<edge id="n4_n12" source="n4" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ¬ab) }</data>
+</edge>
+<edge id="n4_n14" source="n4" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬a¬b) (22, ¬a¬bcg) }</data>
+</edge>
+<edge id="n4_n15" source="n4" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(30, ¬a¬b) (27, ¬a¬bceg) (28, ¬a¬be) }</data>
+</edge>
+<edge id="n4_n16" source="n4" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(31, ¬a) (28, ¬a¬bceg) (29, ¬a¬be) (28, ¬ab) (23, ¬abd) }</data>
+</edge>
+<edge id="n4_n5" source="n4" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(6, ¬a) (4, ¬ag) }</data>
+</edge>
+<edge id="n4_n6" source="n4" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(7, ¬a) (5, ¬ag) }</data>
+</edge>
+<edge id="n4_n7" source="n4" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(8, ¬a) (7, ¬ag) }</data>
+</edge>
+<edge id="n4_n8" source="n4" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, ¬a) (8, ¬ag) }</data>
+</edge>
+<edge id="n4_n9" source="n4" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ¬a) (11, ¬ac) (10, ¬acg) }</data>
+</edge>
+<edge id="n4_Ω" source="n4" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(32, ¬a) (30, ¬a¬bceg) (31, ¬a¬be) (30, ¬ab) (25, ¬abd) }</data>
+</edge>
+<edge id="n5-g?" source="n5" target="g?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ¬a) (-2, ¬a¬g) }</data>
+</edge>
+<edge id="n5_A?" source="n5" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) (-7, ¬a¬g) }</data>
+</edge>
+<edge id="n5_B?" source="n5" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬a) (18, ¬a¬b) (16, ¬a¬b¬g) (14, ¬ab) (12, ¬ab¬g) (17, ¬ac) (16, ¬ac¬g) (20, ¬a¬g) }</data>
+</edge>
+<edge id="n5_Z" source="n5" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a) (-8, ¬a¬g) }</data>
+</edge>
+<edge id="n5_c?" source="n5" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(6, ¬a) (5, ¬a¬g) }</data>
+</edge>
+<edge id="n5_d?" source="n5" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬ab) (16, ¬ab¬g) }</data>
+</edge>
+<edge id="n5_e?" source="n5" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(24, ¬a¬b) (23, ¬a¬bc) (22, ¬a¬b¬g) }</data>
+</edge>
+<edge id="n5_n10" source="n5" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬a) (7, ¬ac) (6, ¬ac¬g) (11, ¬a¬g) }</data>
+</edge>
+<edge id="n5_n12" source="n5" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(15, ¬ab) (13, ¬ab¬g) }</data>
+</edge>
+<edge id="n5_n13" source="n5" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬ab) (18, ¬abd) (16, ¬abd¬g) (21, ¬ab¬g) }</data>
+</edge>
+<edge id="n5_n14" source="n5" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(19, ¬a¬b) (18, ¬a¬bc) (17, ¬a¬b¬g) }</data>
+</edge>
+<edge id="n5_n15" source="n5" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(26, ¬a¬b) (23, ¬a¬bce) (24, ¬a¬be) (22, ¬a¬be¬g) (24, ¬a¬b¬g) }</data>
+</edge>
+<edge id="n5_n16" source="n5" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, ¬a) (24, ¬a¬bce) (25, ¬a¬be) (23, ¬a¬be¬g) (24, ¬ab) (19, ¬abd) (17, ¬abd¬g) (22, ¬ab¬g) (25, ¬a¬g) }</data>
+</edge>
+<edge id="n5_n4" source="n5" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ¬a) (-6, ¬a¬g) }</data>
+</edge>
+<edge id="n5_n7" source="n5" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, ¬a) (2, ¬a¬g) }</data>
+</edge>
+<edge id="n5_n8" source="n5" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(4, ¬a) (3, ¬a¬g) }</data>
+</edge>
+<edge id="n5_n9" source="n5" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ¬a) (6, ¬ac) (5, ¬ac¬g) (10, ¬a¬g) }</data>
+</edge>
+<edge id="n5_Ω" source="n5" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(28, ¬a) (26, ¬a¬bce) (27, ¬a¬be) (25, ¬a¬be¬g) (26, ¬ab) (21, ¬abd) (19, ¬abd¬g) (24, ¬ab¬g) (26, ¬a¬g) }</data>
+</edge>
+<edge id="n6_A?" source="n6" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a) (-8, ¬a¬g) (-5, a) (-9, a¬f) }</data>
+</edge>
+<edge id="n6_B?" source="n6" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬a¬b) (15, ¬a¬b¬g) (13, ¬ab) (11, ¬ab¬g) (15, ¬ac¬g) (18, a¬b) (14, a¬b¬f) (15, ab) (11, ab¬f) (15, ac¬f) (16, a¬f) (16, c) }</data>
+</edge>
+<edge id="n6_Z" source="n6" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬a) (-9, ¬a¬g) (-6, a) (-10, a¬f) }</data>
+</edge>
+<edge id="n6_c?" source="n6" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(5, ⊡) (4, ¬a¬g) (4, a¬f) }</data>
+</edge>
+<edge id="n6_d?" source="n6" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬ab) (15, ¬ab¬g) (19, ab) (15, ab¬f) (21, b) (20, bc) }</data>
+</edge>
+<edge id="n6_e?" source="n6" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬a¬b) (21, ¬a¬b¬g) (24, a¬b) (20, a¬b¬f) (33, ¬b) (22, ¬bc) }</data>
+</edge>
+<edge id="n6_f?" source="n6" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-1, a) (-5, a¬f) }</data>
+</edge>
+<edge id="n6_g?" source="n6" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-1, ¬a) (-3, ¬a¬g) }</data>
+</edge>
+<edge id="n6_n10" source="n6" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ¬a) (5, ¬ac¬g) (10, ¬a¬g) (14, a) (5, ac¬f) (10, a¬f) (6, c) }</data>
+</edge>
+<edge id="n6_n12" source="n6" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, ¬ab) (12, ¬ab¬g) (16, ab) (12, ab¬f) (18, b) (17, bc) }</data>
+</edge>
+<edge id="n6_n13" source="n6" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬ab) (17, ¬abd) (15, ¬abd¬g) (20, ¬ab¬g) (24, ab) (19, abd) (15, abd¬f) (20, ab¬f) (34, b) (33, bc) (20, bcd) (21, bd) }</data>
+</edge>
+<edge id="n6_n14" source="n6" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬a¬b) (16, ¬a¬b¬g) (19, a¬b) (15, a¬b¬f) (28, ¬b) (17, ¬bc) }</data>
+</edge>
+<edge id="n6_n15" source="n6" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, ¬a¬b) (23, ¬a¬be) (21, ¬a¬be¬g) (23, ¬a¬b¬g) (26, a¬b) (24, a¬be) (20, a¬be¬f) (22, a¬b¬f) (35, ¬b) (22, ¬bce) (33, ¬be) }</data>
+</edge>
+<edge id="n6_n16" source="n6" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(26, ¬a) (24, ¬a¬be) (22, ¬a¬be¬g) (23, ¬ab) (18, ¬abd) (16, ¬abd¬g) (21, ¬ab¬g) (24, ¬a¬g) (27, a) (25, a¬be) (21, a¬be¬f) (25, ab) (20, abd) (16, abd¬f) (21, ab¬f) (23, a¬f) (23, ¬bce) (21, bcd) (22, bd) }</data>
+</edge>
+<edge id="n6_n2" source="n6" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, a) (-7, a¬f) }</data>
+</edge>
+<edge id="n6_n4" source="n6" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) (-7, ¬a¬g) }</data>
+</edge>
+<edge id="n6_n8" source="n6" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, ⊡) (2, ¬a¬g) (2, a¬f) }</data>
+</edge>
+<edge id="n6_n9" source="n6" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ¬a) (4, ¬ac¬g) (9, ¬a¬g) (13, a) (4, ac¬f) (9, a¬f) (5, c) }</data>
+</edge>
+<edge id="n6_Ω" source="n6" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(27, ¬a) (26, ¬a¬be) (24, ¬a¬be¬g) (25, ¬ab) (20, ¬abd) (18, ¬abd¬g) (23, ¬ab¬g) (25, ¬a¬g) (28, a) (27, a¬be) (23, a¬be¬f) (27, ab) (22, abd) (18, abd¬f) (23, ab¬f) (24, a¬f) (25, ¬bce) (23, bcd) (24, bd) }</data>
+</edge>
+<edge id="n7_A?" source="n7" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬a) (-9, ¬a¬g) (-6, a) (-10, a¬f) }</data>
+</edge>
+<edge id="n7_B?" source="n7" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ¬a¬b) (14, ¬a¬b¬g) (12, ¬ab) (10, ¬ab¬g) (17, a¬b) (13, a¬b¬f) (14, ab) (10, ab¬f) (15, a¬f) (14, c) }</data>
+</edge>
+<edge id="n7_Z" source="n7" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ¬a) (-10, ¬a¬g) (-7, a) (-11, a¬f) }</data>
+</edge>
+<edge id="n7_c?" source="n7" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(3, ⊡) }</data>
+</edge>
+<edge id="n7_d?" source="n7" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ¬ab) (14, ¬ab¬g) (18, ab) (14, ab¬f) (19, b) (18, bc) }</data>
+</edge>
+<edge id="n7_e?" source="n7" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬a¬b) (20, ¬a¬b¬g) (23, a¬b) (19, a¬b¬f) (31, ¬b) (20, ¬bc) }</data>
+</edge>
+<edge id="n7_f?" source="n7" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, a) (-6, a¬f) }</data>
+</edge>
+<edge id="n7_g?" source="n7" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ¬a) (-4, ¬a¬g) }</data>
+</edge>
+<edge id="n7_n10" source="n7" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ¬a) (9, ¬a¬g) (13, a) (9, a¬f) (4, c) }</data>
+</edge>
+<edge id="n7_n12" source="n7" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬ab) (11, ¬ab¬g) (15, ab) (11, ab¬f) (16, b) (15, bc) }</data>
+</edge>
+<edge id="n7_n13" source="n7" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, ¬ab) (16, ¬abd) (14, ¬abd¬g) (19, ¬ab¬g) (23, ab) (18, abd) (14, abd¬f) (19, ab¬f) (32, b) (31, bc) (18, bcd) (19, bd) }</data>
+</edge>
+<edge id="n7_n14" source="n7" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(17, ¬a¬b) (15, ¬a¬b¬g) (18, a¬b) (14, a¬b¬f) (26, ¬b) (15, ¬bc) }</data>
+</edge>
+<edge id="n7_n15" source="n7" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(24, ¬a¬b) (22, ¬a¬be) (20, ¬a¬be¬g) (22, ¬a¬b¬g) (25, a¬b) (23, a¬be) (19, a¬be¬f) (21, a¬b¬f) (33, ¬b) (20, ¬bce) (31, ¬be) }</data>
+</edge>
+<edge id="n7_n16" source="n7" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, ¬a) (23, ¬a¬be) (21, ¬a¬be¬g) (22, ¬ab) (17, ¬abd) (15, ¬abd¬g) (20, ¬ab¬g) (23, ¬a¬g) (26, a) (24, a¬be) (20, a¬be¬f) (24, ab) (19, abd) (15, abd¬f) (20, ab¬f) (22, a¬f) (21, ¬bce) (19, bcd) (20, bd) }</data>
+</edge>
+<edge id="n7_n2" source="n7" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, a) (-8, a¬f) }</data>
+</edge>
+<edge id="n7_n3" source="n7" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, a) }</data>
+</edge>
+<edge id="n7_n4" source="n7" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ¬a) (-8, ¬a¬g) }</data>
+</edge>
+<edge id="n7_n5" source="n7" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ¬a) }</data>
+</edge>
+<edge id="n7_n9" source="n7" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(10, ¬a) (8, ¬a¬g) (12, a) (8, a¬f) (3, c) }</data>
+</edge>
+<edge id="n7_Ω" source="n7" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(26, ¬a) (25, ¬a¬be) (23, ¬a¬be¬g) (24, ¬ab) (19, ¬abd) (17, ¬abd¬g) (22, ¬ab¬g) (24, ¬a¬g) (27, a) (26, a¬be) (22, a¬be¬f) (26, ab) (21, abd) (17, abd¬f) (22, ab¬f) (23, a¬f) (23, ¬bce) (21, bcd) (22, bd) }</data>
+</edge>
+<edge id="n8-c?" source="n8" target="c?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(2, ⊡) }</data>
+</edge>
+<edge id="n8_A?" source="n8" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ¬a) (-10, ¬a¬g) (-7, a) (-11, a¬f) }</data>
+</edge>
+<edge id="n8_B?" source="n8" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(15, ¬a¬b) (13, ¬a¬b¬g) (11, ¬ab) (9, ¬ab¬g) (16, a¬b) (12, a¬b¬f) (13, ab) (9, ab¬f) (14, a¬f) (13, c) }</data>
+</edge>
+<edge id="n8_Z" source="n8" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a) (-11, ¬a¬g) (-8, a) (-12, a¬f) }</data>
+</edge>
+<edge id="n8_d?" source="n8" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(15, ¬ab) (13, ¬ab¬g) (17, ab) (13, ab¬f) (18, b) (17, bc) }</data>
+</edge>
+<edge id="n8_e?" source="n8" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, ¬a¬b) (19, ¬a¬b¬g) (22, a¬b) (18, a¬b¬f) (30, ¬b) (19, ¬bc) }</data>
+</edge>
+<edge id="n8_f?" source="n8" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, a) (-7, a¬f) }</data>
+</edge>
+<edge id="n8_g?" source="n8" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ¬a) (-5, ¬a¬g) }</data>
+</edge>
+<edge id="n8_n10" source="n8" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(10, ¬a) (8, ¬a¬g) (12, a) (8, a¬f) (3, c) }</data>
+</edge>
+<edge id="n8_n12" source="n8" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(12, ¬ab) (10, ¬ab¬g) (14, ab) (10, ab¬f) (15, b) (14, bc) }</data>
+</edge>
+<edge id="n8_n13" source="n8" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(20, ¬ab) (15, ¬abd) (13, ¬abd¬g) (18, ¬ab¬g) (22, ab) (17, abd) (13, abd¬f) (18, ab¬f) (31, b) (30, bc) (17, bcd) (18, bd) }</data>
+</edge>
+<edge id="n8_n14" source="n8" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(16, ¬a¬b) (14, ¬a¬b¬g) (17, a¬b) (13, a¬b¬f) (25, ¬b) (14, ¬bc) }</data>
+</edge>
+<edge id="n8_n15" source="n8" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬a¬b) (21, ¬a¬be) (19, ¬a¬be¬g) (21, ¬a¬b¬g) (24, a¬b) (22, a¬be) (18, a¬be¬f) (20, a¬b¬f) (32, ¬b) (19, ¬bce) (30, ¬be) }</data>
+</edge>
+<edge id="n8_n16" source="n8" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(24, ¬a) (22, ¬a¬be) (20, ¬a¬be¬g) (21, ¬ab) (16, ¬abd) (14, ¬abd¬g) (19, ¬ab¬g) (22, ¬a¬g) (25, a) (23, a¬be) (19, a¬be¬f) (23, ab) (18, abd) (14, abd¬f) (19, ab¬f) (21, a¬f) (20, ¬bce) (18, bcd) (19, bd) }</data>
+</edge>
+<edge id="n8_n2" source="n8" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) (-9, a¬f) }</data>
+</edge>
+<edge id="n8_n3" source="n8" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, a) }</data>
+</edge>
+<edge id="n8_n4" source="n8" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬a) (-9, ¬a¬g) }</data>
+</edge>
+<edge id="n8_n5" source="n8" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ¬a) }</data>
+</edge>
+<edge id="n8_n6" source="n8" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ⊡) }</data>
+</edge>
+<edge id="n8_n9" source="n8" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, ¬a) (7, ¬a¬g) (11, a) (7, a¬f) (2, c) }</data>
+</edge>
+<edge id="n8_Ω" source="n8" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(25, ¬a) (24, ¬a¬be) (22, ¬a¬be¬g) (23, ¬ab) (18, ¬abd) (16, ¬abd¬g) (21, ¬ab¬g) (23, ¬a¬g) (26, a) (25, a¬be) (21, a¬be¬f) (25, ab) (20, abd) (16, abd¬f) (21, ab¬f) (22, a¬f) (22, ¬bce) (20, bcd) (21, bd) }</data>
+</edge>
+<edge id="n9-c?" source="n9" target="c?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ⊡) (-5, ¬c) }</data>
+</edge>
+<edge id="n9_A?" source="n9" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ¬a) (-15, ¬a¬c) (-17, ¬a¬c¬g) (-12, ¬a¬g) (-9, a) (-14, a¬c) (-18, a¬c¬f) (-13, a¬f) }</data>
+</edge>
+<edge id="n9_B?" source="n9" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(11, ⊡) (8, ¬a¬b¬c) (6, ¬a¬b¬c¬g) (9, ¬ab) (4, ¬ab¬c) (2, ¬ab¬c¬g) (7, ¬ab¬g) (10, ¬a¬c¬g) (9, a¬b¬c) (5, a¬b¬c¬f) (10, a¬b¬f) (6, ab¬c) (2, ab¬c¬f) (7, ab¬f) (7, a¬c¬f) (7, b¬c) }</data>
+</edge>
+<edge id="n9_Z" source="n9" target="Z">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ¬a) (-16, ¬a¬c) (-18, ¬a¬c¬g) (-13, ¬a¬g) (-10, a) (-15, a¬c) (-19, a¬c¬f) (-14, a¬f) }</data>
+</edge>
+<edge id="n9_d?" source="n9" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(13, ¬ab) (8, ¬ab¬c) (6, ¬ab¬c¬g) (11, ¬ab¬g) (10, ab¬c) (6, ab¬c¬f) (11, ab¬f) (15, b) (11, b¬c) }</data>
+</edge>
+<edge id="n9_e?" source="n9" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(14, ¬a¬b¬c) (12, ¬a¬b¬c¬g) (15, a¬b¬c) (11, a¬b¬c¬f) (16, a¬b¬f) (17, ¬b) }</data>
+</edge>
+<edge id="n9_f?" source="n9" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) (-10, a¬c) (-14, a¬c¬f) (-9, a¬f) }</data>
+</edge>
+<edge id="n9_g?" source="n9" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) (-10, ¬a¬c) (-12, ¬a¬c¬g) (-7, ¬a¬g) }</data>
+</edge>
+<edge id="n9_n12" source="n9" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(10, ¬ab) (5, ¬ab¬c) (3, ¬ab¬c¬g) (8, ¬ab¬g) (7, ab¬c) (3, ab¬c¬f) (8, ab¬f) (12, b) (8, b¬c) }</data>
+</edge>
+<edge id="n9_n13" source="n9" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(18, ¬ab) (13, ¬ab¬c) (8, ¬ab¬cd) (6, ¬ab¬cd¬g) (11, ¬ab¬c¬g) (13, ¬abd) (11, ¬abd¬g) (16, ¬ab¬g) (20, ab) (15, ab¬c) (10, ab¬cd) (6, ab¬cd¬f) (11, ab¬c¬f) (11, abd¬f) (16, ab¬f) (28, b) (24, b¬c) (11, b¬cd) (15, bd) }</data>
+</edge>
+<edge id="n9_n14" source="n9" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(9, ¬a¬b¬c) (7, ¬a¬b¬c¬g) (10, a¬b¬c) (6, a¬b¬c¬f) (11, a¬b¬f) (12, ¬b) }</data>
+</edge>
+<edge id="n9_n15" source="n9" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(21, ¬a¬b) (16, ¬a¬b¬c) (14, ¬a¬b¬ce) (12, ¬a¬b¬ce¬g) (14, ¬a¬b¬c¬g) (19, ¬a¬b¬g) (22, a¬b) (17, a¬b¬c) (15, a¬b¬ce) (11, a¬b¬ce¬f) (13, a¬b¬c¬f) (16, a¬be¬f) (18, a¬b¬f) (30, ¬b) (25, ¬b¬c) (17, ¬be) }</data>
+</edge>
+<edge id="n9_n16" source="n9" target="n16">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(22, ¬a) (15, ¬a¬b¬ce) (13, ¬a¬b¬ce¬g) (19, ¬ab) (14, ¬ab¬c) (9, ¬ab¬cd) (7, ¬ab¬cd¬g) (12, ¬ab¬c¬g) (14, ¬abd) (12, ¬abd¬g) (17, ¬ab¬g) (17, ¬a¬c) (15, ¬a¬c¬g) (20, ¬a¬g) (23, a) (16, a¬b¬ce) (12, a¬b¬ce¬f) (17, a¬be¬f) (21, ab) (16, ab¬c) (11, ab¬cd) (7, ab¬cd¬f) (12, ab¬c¬f) (12, abd¬f) (17, ab¬f) (18, a¬c) (14, a¬c¬f) (19, a¬f) (18, ¬be) (12, b¬cd) (16, bd) }</data>
+</edge>
+<edge id="n9_n2" source="n9" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, a) (-12, a¬c) (-16, a¬c¬f) (-11, a¬f) }</data>
+</edge>
+<edge id="n9_n3" source="n9" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, a) (-10, a¬c) }</data>
+</edge>
+<edge id="n9_n4" source="n9" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-9, ¬a) (-14, ¬a¬c) (-16, ¬a¬c¬g) (-11, ¬a¬g) }</data>
+</edge>
+<edge id="n9_n5" source="n9" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, ¬a) (-10, ¬a¬c) }</data>
+</edge>
+<edge id="n9_n6" source="n9" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-4, ⊡) (-9, ¬c) }</data>
+</edge>
+<edge id="n9_n7" source="n9" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-3, ⊡) (-8, ¬c) }</data>
+</edge>
+<edge id="n9_n8" source="n9" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ⊡) (-7, ¬c) }</data>
+</edge>
+<edge id="n9_Ω" source="n9" target="Ω">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(23, ¬a) (17, ¬a¬b¬ce) (15, ¬a¬b¬ce¬g) (21, ¬ab) (16, ¬ab¬c) (11, ¬ab¬cd) (9, ¬ab¬cd¬g) (14, ¬ab¬c¬g) (16, ¬abd) (14, ¬abd¬g) (19, ¬ab¬g) (18, ¬a¬c) (16, ¬a¬c¬g) (21, ¬a¬g) (24, a) (18, a¬b¬ce) (14, a¬b¬ce¬f) (19, a¬be¬f) (23, ab) (18, ab¬c) (13, ab¬cd) (9, ab¬cd¬f) (14, ab¬c¬f) (14, abd¬f) (19, ab¬f) (19, a¬c) (15, a¬c¬f) (20, a¬f) (20, ¬be) (14, b¬cd) (18, bd) }</data>
+</edge>
+<edge id="Ω_A?" source="Ω" target="A?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-20, ¬a) (-22, ¬a¬b) (-25, ¬a¬b¬c) (-27, ¬a¬b¬c¬e) (-29, ¬a¬b¬c¬e¬g) (-27, ¬a¬b¬c¬g) (-24, ¬a¬b¬e) (-28, ¬ab¬c¬d) (-30, ¬ab¬c¬d¬g) (-25, ¬ab¬d) (-23, ¬a¬c) (-25, ¬a¬c¬g) (-26, a) (-28, a¬b) (-30, a¬b¬e) (-31, ab¬d) (-21, b¬d) }</data>
+</edge>
+<edge id="Ω_B?" source="Ω" target="B?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-6, ⊡) (-8, ¬b) (-10, ¬b¬e) (-11, b¬d) }</data>
+</edge>
+<edge id="Ω_c?" source="Ω" target="c?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ⊡) (-13, ¬a¬b¬eg) (-11, ¬a¬bg) (-14, ¬ab¬dg) (-9, ¬ag) (-13, a) (-15, a¬b) (-17, a¬b¬e) (-20, a¬b¬ef) (-18, a¬bf) (-18, ab¬d) (-21, ab¬df) (-16, af) (-10, ¬b) (-15, ¬b¬c) (-17, ¬b¬c¬e) (-12, ¬b¬e) (-18, b¬c¬d) (-13, b¬d) (-13, ¬c) }</data>
+</edge>
+<edge id="Ω_d?" source="Ω" target="d?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, b) (-7, b¬d) }</data>
+</edge>
+<edge id="Ω_e?" source="Ω" target="e?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ¬b) (-4, ¬b¬e) }</data>
+</edge>
+<edge id="Ω_f?" source="Ω" target="f?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-22, a) (-24, a¬b) (-26, a¬b¬e) (-27, ab¬d) }</data>
+</edge>
+<edge id="Ω_g?" source="Ω" target="g?">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-15, ¬a) (-17, ¬a¬b) (-20, ¬a¬b¬c) (-22, ¬a¬b¬c¬e) (-24, ¬a¬b¬c¬e¬g) (-22, ¬a¬b¬c¬g) (-19, ¬a¬b¬e) (-23, ¬ab¬c¬d) (-25, ¬ab¬c¬d¬g) (-20, ¬ab¬d) (-18, ¬a¬c) (-20, ¬a¬c¬g) }</data>
+</edge>
+<edge id="Ω_n10" source="Ω" target="n10">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ⊡) (-12, ¬a¬bc¬eg) (-10, ¬a¬bcg) (-13, ¬abc¬dg) (-8, ¬acg) (-14, a¬bc) (-16, a¬bc¬e) (-19, a¬bc¬ef) (-17, a¬bcf) (-17, abc¬d) (-20, abc¬df) (-12, ac) (-15, acf) (-9, ¬b) (-11, ¬b¬e) (-12, b¬d) }</data>
+</edge>
+<edge id="Ω_n12" source="Ω" target="n12">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-5, b) (-10, b¬d) }</data>
+</edge>
+<edge id="Ω_n13" source="Ω" target="n13">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, b) }</data>
+</edge>
+<edge id="Ω_n14" source="Ω" target="n14">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-7, ¬b) (-9, ¬b¬e) }</data>
+</edge>
+<edge id="Ω_n15" source="Ω" target="n15">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-2, ¬b) }</data>
+</edge>
+<edge id="Ω_n2" source="Ω" target="n2">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-24, a) (-26, a¬b) (-28, a¬b¬e) (-29, ab¬d) }</data>
+</edge>
+<edge id="Ω_n3" source="Ω" target="n3">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-18, a) (-20, a¬b) (-22, a¬b¬e) (-26, a¬b¬ef) (-24, a¬bf) (-23, ab¬d) (-27, ab¬df) (-22, af) }</data>
+</edge>
+<edge id="Ω_n4" source="Ω" target="n4">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-19, ¬a) (-21, ¬a¬b) (-24, ¬a¬b¬c) (-26, ¬a¬b¬c¬e) (-28, ¬a¬b¬c¬e¬g) (-26, ¬a¬b¬c¬g) (-23, ¬a¬b¬e) (-27, ¬ab¬c¬d) (-29, ¬ab¬c¬d¬g) (-24, ¬ab¬d) (-22, ¬a¬c) (-24, ¬a¬c¬g) }</data>
+</edge>
+<edge id="Ω_n5" source="Ω" target="n5">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-13, ¬a) (-15, ¬a¬b) (-20, ¬a¬b¬c) (-22, ¬a¬b¬c¬e) (-17, ¬a¬b¬e) (-19, ¬a¬b¬eg) (-17, ¬a¬bg) (-23, ¬ab¬c¬d) (-18, ¬ab¬d) (-20, ¬ab¬dg) (-18, ¬a¬c) (-15, ¬ag) }</data>
+</edge>
+<edge id="Ω_n6" source="Ω" target="n6">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-12, ⊡) (-18, ¬a¬b¬eg) (-16, ¬a¬bg) (-19, ¬ab¬dg) (-14, ¬ag) (-17, a) (-19, a¬b) (-21, a¬b¬e) (-25, a¬b¬ef) (-23, a¬bf) (-22, ab¬d) (-26, ab¬df) (-21, af) (-14, ¬b) (-19, ¬b¬c) (-21, ¬b¬c¬e) (-16, ¬b¬e) (-22, b¬c¬d) (-17, b¬d) (-17, ¬c) }</data>
+</edge>
+<edge id="Ω_n7" source="Ω" target="n7">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-11, ⊡) (-16, ¬a¬b¬eg) (-14, ¬a¬bg) (-17, ¬ab¬dg) (-12, ¬ag) (-16, a) (-18, a¬b) (-20, a¬b¬e) (-23, a¬b¬ef) (-21, a¬bf) (-21, ab¬d) (-24, ab¬df) (-19, af) (-13, ¬b) (-18, ¬b¬c) (-20, ¬b¬c¬e) (-15, ¬b¬e) (-21, b¬c¬d) (-16, b¬d) (-16, ¬c) }</data>
+</edge>
+<edge id="Ω_n8" source="Ω" target="n8">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-10, ⊡) (-15, ¬a¬b¬eg) (-13, ¬a¬bg) (-16, ¬ab¬dg) (-11, ¬ag) (-15, a) (-17, a¬b) (-19, a¬b¬e) (-22, a¬b¬ef) (-20, a¬bf) (-20, ab¬d) (-23, ab¬df) (-18, af) (-12, ¬b) (-17, ¬b¬c) (-19, ¬b¬c¬e) (-14, ¬b¬e) (-20, b¬c¬d) (-15, b¬d) (-15, ¬c) }</data>
+</edge>
+<edge id="Ω_n9" source="Ω" target="n9">
+<data key="Type">derived</data>
+<data key="LabeledValues">{(-8, ⊡) (-13, ¬a¬bc¬eg) (-11, ¬a¬bcg) (-14, ¬abc¬dg) (-9, ¬acg) (-15, a¬bc) (-17, a¬bc¬e) (-20, a¬bc¬ef) (-18, a¬bcf) (-18, abc¬d) (-21, abc¬df) (-13, ac) (-16, acf) (-10, ¬b) (-12, ¬b¬e) (-13, b¬d) }</data>
+</edge>
+</graph>
+</graphml>
