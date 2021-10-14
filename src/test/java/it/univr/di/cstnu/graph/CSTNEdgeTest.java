@@ -44,7 +44,7 @@ public class CSTNEdgeTest {
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
 		assertFalse(this.e.isEmpty());
 		this.e.clear();
-		assertEquals("❮e; normal; ❯", this.e.toString());
+		assertEquals("❮e; requirement; ❯", this.e.toString());
 		assertTrue(this.e.isEmpty());
 		assertFalse(this.e.isContingentEdge());
 		this.e.setConstraintType(ConstraintType.contingent);
@@ -52,7 +52,7 @@ public class CSTNEdgeTest {
 		assertTrue(this.e.isCSTNEdge());
 		assertFalse(this.e.isCSTNUEdge());
 		assertFalse(this.e.isRequirementEdge());
-		this.e.setConstraintType(ConstraintType.constraint);
+		this.e.setConstraintType(ConstraintType.requirement);
 		assertTrue(this.e.isRequirementEdge());
 		assertFalse(this.e.isSTNEdge());
 	}
@@ -63,12 +63,12 @@ public class CSTNEdgeTest {
 	@Test
 	public final void testMergeLabeledValueLabelInt() {
 		this.e.setName("e");
-		this.e.setConstraintType(ConstraintType.normal);
+		this.e.setConstraintType(ConstraintType.requirement);
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
 
-		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 		this.e.mergeLabeledValue(Label.parse("a"), 1);
-		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 	}
 
 	/**
@@ -78,12 +78,12 @@ public class CSTNEdgeTest {
 	public final void testMergeLabeledValueLabelInt1() {
 		this.e.setName("e");
 
-		this.e.setConstraintType(ConstraintType.normal);
+		this.e.setConstraintType(ConstraintType.requirement);
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
 
-		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 		this.e.mergeLabeledValue(Label.parse("a"), 1);
-		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 	}
 
 	/**
@@ -106,8 +106,8 @@ public class CSTNEdgeTest {
 	@Test
 	public final void testToString() {
 		this.e.setName("e");
-		this.e.setConstraintType(ConstraintType.constraint);
+		this.e.setConstraintType(ConstraintType.requirement);
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
-		assertEquals("❮e; constraint; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 	}
 }

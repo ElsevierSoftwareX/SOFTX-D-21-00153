@@ -138,7 +138,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 		// this.annotatingPlugin = new AnnotatingGraphMousePlugin<>(this.rc);
 		this.popupEditingPlugin = new EditingPopupGraphMousePlugin<>(this.vertexFactory, this.edgeFactory);
 		add(this.scalingPlugin);// for zooming
-		setMode(Mode.TRANSFORMING);
+		setMode(Mode.EDITING);
 	}
 
 	/**
@@ -243,7 +243,7 @@ public class EditingModalGraphMouse<V extends LabeledNode, E extends Edge> exten
 	@Override
 	public JComboBox<Mode> getModeComboBox() {
 		if (this.modeBox == null) {
-			this.modeBox = new JComboBox<>(new Mode[] { Mode.TRANSFORMING, Mode.EDITING });// , Mode.PICKING, Mode.ANNOTATING
+			this.modeBox = new JComboBox<>(new Mode[] {  Mode.EDITING, Mode.TRANSFORMING });// , Mode.PICKING, Mode.ANNOTATING
 			this.modeBox.addItemListener(getModeListener());
 		}
 		this.modeBox.setSelectedItem(this.mode);

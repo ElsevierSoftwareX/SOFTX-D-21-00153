@@ -47,8 +47,8 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 <default></default>
 </key>
 <key id="Type" for="edge">
-<desc>Type: Possible values: normal|contingent|constraint|derived|internal.</desc>
-<default>normal</default>
+<desc>Type: Possible values: contingent|requirement|derived|internal.</desc>
+<default>requirement</default>
 </key>
 <key id="Value" for="edge">
 <desc>Value for STN edge. Format: 'integer'</desc>

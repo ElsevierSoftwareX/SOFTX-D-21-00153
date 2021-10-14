@@ -306,7 +306,7 @@ public class TNGraphMLWriter extends edu.uci.ics.jung.io.GraphMLWriter<LabeledNo
 				return e.getName();
 			}
 		});
-		this.addEdgeData(EDGE_TYPE_KEY, "Type: Possible values: normal|contingent|constraint|derived|internal.", "normal",
+		this.addEdgeData(EDGE_TYPE_KEY, "Type: Possible values: contingent|requirement|derived|internal.", "requirement",
 				new Function<Edge, String>() {
 					@Override
 					public String apply(final Edge e) {

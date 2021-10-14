@@ -282,7 +282,10 @@ public class TNGraphMLReader<E extends Edge> {
 				|| tnGraph.getType() == NetworkType.STNU;
 		for (E e : tnGraph.getEdges()) {
 			// Type
-			e.setConstraintType(ConstraintType.valueOf(edgeTypeF.apply(e)));
+			String t = edgeTypeF.apply(e);
+			if (t.equals("normal")|| t.equals("constraint")) //20211014 I removed normal and constraint type because they are not clear.
+				t="requirement";
+			e.setConstraintType(ConstraintType.valueOf(t));
 			// Labeled Value
 			data = "";
 			LabeledNode s = tnGraph.getSource(e);
