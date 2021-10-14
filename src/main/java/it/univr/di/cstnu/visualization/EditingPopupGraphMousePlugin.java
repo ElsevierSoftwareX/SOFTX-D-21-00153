@@ -13,16 +13,12 @@ import javax.swing.AbstractAction;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import org.freehep.graphicsbase.util.export.ExportDialog;
-
 import com.google.common.base.Supplier;
 
 import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
 import edu.uci.ics.jung.algorithms.layout.Layout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.BasicVisualizationServer;
-import edu.uci.ics.jung.visualization.VisualizationImageServer;
 import edu.uci.ics.jung.visualization.VisualizationViewer;
 import edu.uci.ics.jung.visualization.control.AbstractPopupGraphMousePlugin;
 import edu.uci.ics.jung.visualization.picking.PickedState;
@@ -144,15 +140,16 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 						vv.repaint();
 					}
 				});
-				popup.add(new AbstractAction("Export graph to vector image...") {
-					@Override
-					public void actionPerformed(ActionEvent a) {
-						ExportDialog export = new ExportDialog("Roberto Posenato");
-						VisualizationImageServer<V, E> vis = new VisualizationImageServer<>(vv.getGraphLayout(), vv.getGraphLayout().getSize());
-						TNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, Edge>) vis, false);
-						export.showExportDialog(vv.getParent(), "Export view as ...", vis, "cstnExported.pdf");
-					}
-				});
+				//Unfortunately, FREEHEP 2.4 library is not more JDK11 compatible... I have to disable till a new version or workaround is found! 
+//				popup.add(new AbstractAction("Export graph to vector image...") {
+//					@Override
+//					public void actionPerformed(ActionEvent a) {
+//						ExportDialog export = new ExportDialog("Roberto Posenato");
+//						VisualizationImageServer<V, E> vis = new VisualizationImageServer<>(vv.getGraphLayout(), vv.getGraphLayout().getSize());
+//						TNEditor.setNodeEdgeRenders((BasicVisualizationServer<LabeledNode, Edge>) vis, false);
+//						export.showExportDialog(vv.getParent(), "Export view as ...", vis, "cstnExported.pdf");
+//					}
+//				});
 			}
 			if (popup.getComponentCount() > 0) {
 				popup.show(vv, e.getX(), e.getY());
