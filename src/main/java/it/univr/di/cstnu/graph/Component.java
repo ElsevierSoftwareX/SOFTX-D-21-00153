@@ -10,6 +10,8 @@ package it.univr.di.cstnu.graph;
 import java.io.Serializable;
 import java.util.HashMap;
 
+import it.univr.di.cstnu.visualization.TNEditor;
+
 /**
  * Component interface.
  *
@@ -37,6 +39,11 @@ public interface Component extends Serializable, Comparable<Object> {
 	}
 
 	/**
+	 * Clear all component but name.
+	 */
+	public void clear();
+
+	/**
 	 * {@inheritDoc}
 	 * In general, we assume that a component is equal to another if it has the same name and that a user can modify a name even after the creation of the
 	 * component.
@@ -62,10 +69,9 @@ public interface Component extends Serializable, Comparable<Object> {
 	public boolean equalsByName(final Component c);
 
 	/**
-	 * <p>
-	 * getColor.
-	 * </p>
-	 *
+	 * Meta color used by some graph algorithms.<br>
+	 * It is not the color used by the {@link TNEditor}.
+	 * 
 	 * @return the color of the edge
 	 */
 	public Color getColor();
@@ -79,18 +85,32 @@ public interface Component extends Serializable, Comparable<Object> {
 
 	/**
 	 * {@inheritDoc}
+	 * 
 	 * @see #equals(Object)
 	 */
 	@Override
 	public int hashCode();
 
 	/**
-	 * set color
 	 *
+	 * @return true if it is in a negative cycle.
+	 */
+	public boolean inNegativeCycle();
+
+	/**
+	 * Meta color used by some graph algorithms.<br>
+	 * It is not the color used by the {@link TNEditor}.
+	 * 
 	 * @param c the new color
 	 */
 	public void setColor(Color c);
 
+	/**
+	 * Sets true if the edge is in a negative cycle
+	 * @param inNegativeCycle the boolean status
+	 */
+	public void setInNegativeCycle(boolean inNegativeCycle);
+	
 	/**
 	 * Set the name of the component. Cannot be null or empty.
 	 *
@@ -106,8 +126,4 @@ public interface Component extends Serializable, Comparable<Object> {
 	@Override
 	public String toString();
 
-	/**
-	 * Clear all component but name.
-	 */
-	public void clear();
 }

@@ -17,6 +17,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -43,6 +44,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
@@ -50,6 +52,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.plaf.metal.MetalMenuBarUI;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.OptionHandlerFilter;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.swing.ValidationPanel;
@@ -66,6 +72,7 @@ import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
 import edu.uci.ics.jung.visualization.decorators.ConstantDirectionalEdgeValueTransformer;
 import edu.uci.ics.jung.visualization.renderers.DefaultEdgeLabelRenderer;
 import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.univr.di.Debug;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.CheckAlgorithm;
@@ -894,50 +901,7 @@ public class TNEditor extends JFrame {
 				+ "The resulting graph is presented on the right window.</p>"
 				+ "</html>";
 
-		private static final String genericHelp = "<html>"
-				+ "<h2>Simple CSTNU Editor " + TNEditor.VERSION + "</h2>"
-				+ "<p>It is possibile to create (File->New)/load (File->Open) and save the following kind of temporal networks: STN, CSTN, CSTNU, CSTPSU/FTNU.</p>"
-				+ "<p>The left side of the window is the editor where it is possible to manage the network. The right side is the window where the result of an automatica operation is shown.</p>"
-				+ "<p>Once a network is created, the tool bar is exended to offer all possible operations.<br>A network can be modified when the programma in <i>Editing Mode.</i> "
-				+ "The <i>transforming mode</i> is just for moving/zooming the current graph.</p>"
-				+ "<p>Button 'Layout input graph' redraws the network in the editor. It works only when the network represents a business schema transformation with a proper grammar.<br>"
-				+ "Button 'Input/Derived Graph big viewer' opens a wider windows for showing the input/derived graph.</p>"
-				+ "<h3>Editing Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Right-click an empty area to create a new Vertex o to export the graph"
-				+ "<li>Left-click+Shift on a Vertex adds/removes Vertex selection"
-				+ "<li>Left-click an empty area unselects all Vertices"
-				+ "<li>Left+drag on a Vertex moves all selected Vertices"
-				+ "<li>Left+drag elsewhere selects Vertices in a region"
-				+ "<li>Left+Shift+drag adds selection of Vertices in a new region"
-				+ "<li>Left+CTRL on a Vertex selects the vertex and centers the display on it"
-				+ "<li>Left double-click on a vertex or edge allows you to edit the label"
-				+ "<li>Right-click on a Vertex for <b>Delete Vertex</b> popup"
-				+ "<li>Right-click on a Vertex for <b>Add Edge</b> menus <br>(if there are selected Vertices)"
-				+ "<li>Right-click on an Edge for <b>Delete Edge</b> popup"
-				+ "<li>Mousewheel scales with a crossover value of 1.0.<br>"
-				+ "     - scales the graph layout when the combined scale is greater than 1<br>"
-				+ "     - scales the graph view when the combined scale is less than 1"
-				+ "</ul>"
-				+ "<h3>Transforming Mode:</h3>"
-				+ "<ul>"
-				+ "<li>Left+drag pans the graph"
-				+ "<li>Left+Shift+drag rotates the graph"
-				+ "<li>Left+Command+drag shears the graph"
-				+ "<li>Left double-click on a vertex or edge allows you to edit the label"
-				+ "</ul>"
-				// + "<h3>Annotation Mode:</h3>"
-				// + "<ul>"
-				// + "<li>Mouse1 begins drawing of a Rectangle"
-				// + "<li>Mouse1+drag defines the Rectangle shape"
-				// + "<li>Mouse1 release adds the Rectangle as an annotation"
-				// + "<li>Mouse1+Shift begins drawing of an Ellipse"
-				// + "<li>Mouse1+Shift+drag defines the Ellipse shape"
-				// + "<li>Mouse1+Shift release adds the Ellipse as an annotation"
-				// + "<li>Mouse3 shows a popup to input text, which will become"
-				// + "<li>a text annotation on the graph at the mouse location"
-				// + "</ul>"
-				+ "</html>";
+		private String genericHelp;
 		private static final String stnHelp = "<html>"
 				+ "<h2>Simple Temporal Network</h2>"
 				+ "<h4>Checking algorithm</h4>"
@@ -971,11 +935,59 @@ public class TNEditor extends JFrame {
 
 		public HelpListener(TNEditor ed) {
 			this.editor = ed;
+
+			// Generic help depends on this.editor.extraButtons;
+			this.genericHelp = "<html>"
+					+ "<h2>TNEditor " + TNEditor.VERSION + "</h2>"
+					+ "<p>It is possibile to create (File->New)/load (File->Open) and save the following kind of temporal networks: STN, CSTN, CSTNU, CSTPSU/FTNU.</p>"
+					+ "<p>The left side of the window is the editor where it is possible to manage the network. The right side is the window where the result of an automatica operation is shown.</p>"
+					+ "<p>Once a network is created, the tool bar is exended to offer all possible operations.<br>A network can be modified when the programma in <i>Editing Mode.</i> "
+					+ "The <i>transforming mode</i> is just for moving/zooming the current graph.</p>"
+					+ ((this.editor.extraButtons)
+							? "<p>Button 'Layout input graph' redraws the network in the editor. It works only when the network represents a business schema transformation with a proper grammar.<br>"
+							: "")
+					+ "Button 'Input/Derived Graph big viewer' opens a wider window for showing the input/derived graph.</p>"
+					+ "<h3>Editing Mode:</h3>"
+					+ "<ul>"
+					+ "<li>Right-click an empty area to create a new Vertex o to export the graph"
+					+ "<li>Left-click+Shift on a Vertex adds/removes Vertex selection"
+					+ "<li>Left-click an empty area unselects all Vertices"
+					+ "<li>Left+drag on a Vertex moves all selected Vertices"
+					+ "<li>Left+drag elsewhere selects Vertices in a region"
+					+ "<li>Left+Shift+drag adds selection of Vertices in a new region"
+					+ "<li>Left+CTRL on a Vertex selects the vertex and centers the display on it"
+					+ "<li>Left double-click on a vertex or edge allows you to edit the label"
+					+ "<li>Right-click on a Vertex for <b>Delete Vertex</b> popup"
+					+ "<li>Right-click on a Vertex for <b>Add Edge</b> menus <br>(if there are selected Vertices)"
+					+ "<li>Right-click on an Edge for <b>Delete Edge</b> popup"
+					+ "<li>Mousewheel scales with a crossover value of 1.0.<br>"
+					+ "     - scales the graph layout when the combined scale is greater than 1<br>"
+					+ "     - scales the graph view when the combined scale is less than 1"
+					+ "</ul>"
+					+ "<h3>Transforming Mode:</h3>"
+					+ "<ul>"
+					+ "<li>Left+drag pans the graph"
+					+ "<li>Left+Shift+drag rotates the graph"
+					+ "<li>Left+Command+drag shears the graph"
+					+ "<li>Left double-click on a vertex or edge allows you to edit the label"
+					+ "</ul>"
+					// + "<h3>Annotation Mode:</h3>"
+					// + "<ul>"
+					// + "<li>Mouse1 begins drawing of a Rectangle"
+					// + "<li>Mouse1+drag defines the Rectangle shape"
+					// + "<li>Mouse1 release adds the Rectangle as an annotation"
+					// + "<li>Mouse1+Shift begins drawing of an Ellipse"
+					// + "<li>Mouse1+Shift+drag defines the Ellipse shape"
+					// + "<li>Mouse1+Shift release adds the Ellipse as an annotation"
+					// + "<li>Mouse3 shows a popup to input text, which will become"
+					// + "<li>a text annotation on the graph at the mouse location"
+					// + "</ul>"
+					+ "</html>";
 		}
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			String message = genericHelp;
+			String message = this.genericHelp;
 			switch (e.getActionCommand()) {
 			case "STNHelp":
 				message = stnHelp;
@@ -1263,12 +1275,30 @@ public class TNEditor extends JFrame {
 				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is STN consistent.");
 				jl.setBackground(Color.green);
 				if (Debug.ON) {
-					if (LOG.isLoggable(Level.FINER)) {
-						TNEditor.LOG.finer("Final controllable graph: " + TNEditor.this.stn.getGChecked());
+					if (LOG.isLoggable(Level.FINEST)) {
+						TNEditor.LOG.finest("Final controllable graph: " + TNEditor.this.stn.getGChecked());
 					}
 				}
 			} else {
 				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
+				ObjectList<LabeledNode> negativeCycle = TNEditor.this.stnStatus.negativeCycle;
+				if (negativeCycle != null) {
+					jl.setText("<img align='middle' src='" + WARN_ICON_FILE
+							+ "'>&nbsp;<b>The graph is not consistent. The found negative cycle is in red color.</b>");
+					// draw edge in negative cycle by red
+					for (int i = 0; i < negativeCycle.size() - 1; i++) {
+						LabeledNode s = negativeCycle.get(i);
+						LabeledNode d = negativeCycle.get(i + 1);
+						s.setInNegativeCycle(true);
+						d.setInNegativeCycle(true);
+
+						STNEdge edge = (STNEdge) TNEditor.this.checkedGraph.findEdge(s, d);
+						edge.setInNegativeCycle(true);
+					}
+				}
+				if (TNEditor.this.stnStatus.negativeLoopNode!=null) {
+					TNEditor.this.stnStatus.negativeLoopNode.setInNegativeCycle(true);
+				}
 			}
 			jl.setOpaque(true);
 			updateNodePositions();
@@ -1579,28 +1609,27 @@ public class TNEditor extends JFrame {
 	 * Standard serial number
 	 */
 	@SuppressWarnings("unused")
-	private static final long SERIAL_VERSION_UID = 647420826043015777L;
+	private static final long SERIAL_VERSION_UID = 647420826043015778L;
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
 	/**
 	 * Version
 	 */
-	private static final String VERSION = "Version  $Rev$";
+	// Till version is update by SVN ($REV$), I put replace to avoid $Rev: string$
+	private static final String VERSION = "Version  $Rev$".replace("$Rev: ", "").replace("$", "");
 
 	/**
-	 * <p>
-	 * main.
-	 * </p>
-	 *
 	 * @param args an array of {@link java.lang.String} objects.
 	 */
-	@SuppressWarnings("unused")
 	public static void main(final String[] args) {
-		new TNEditor();
+		TNEditor editor = new TNEditor();
+		if (!editor.manageParameters(args))
+			return;
+		editor.init();
 	}
 
 	/**
@@ -1640,18 +1669,22 @@ public class TNEditor extends JFrame {
 		// VERTEX setting
 		// vv.getRenderContext().setVertexFillPaintTransformer(vertexPaint);
 		viewer.getRenderer().getVertexLabelRenderer().setPosition(Position.CNTR);
-		renderCon.setVertexLabelTransformer(LabeledNode.vertexLabelTransformer);
+		renderCon.setVertexLabelTransformer(NodeRendering.vertexLabelFunction);
+		renderCon.setVertexDrawPaintTransformer(NodeRendering.nodeDrawPaintTransformer(viewer.getPickedVertexState(), Color.yellow, Color.green, Color.red));
+		renderCon.setVertexFillPaintTransformer(NodeRendering.nodeDrawPaintTransformer(viewer.getPickedVertexState(), Color.yellow, Color.green, Color.red));
+		((VisualizationViewer<LabeledNode, E>) viewer).setVertexToolTipTransformer(NodeRendering.vertexToolTipFunction);
+
 		// EDGE setting
 		renderCon.setEdgeDrawPaintTransformer(
-				EdgeRendering.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+				EdgeRendering.edgeDrawPaintFunction(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray, Color.red));
 		renderCon.setEdgeLabelTransformer(EdgeRendering.edgeLabelFunction);
 		renderCon.setEdgeLabelRenderer(new DefaultEdgeLabelRenderer(Color.blue));
-		renderCon.setEdgeStrokeTransformer(EdgeRendering.edgeStrokeTransformer);
+		renderCon.setEdgeStrokeTransformer(EdgeRendering.edgeStrokeFunction);
 		renderCon.setEdgeLabelClosenessTransformer(new ConstantDirectionalEdgeValueTransformer<LabeledNode, E>(0.65, 0.5));
 		renderCon.setArrowDrawPaintTransformer(
-				EdgeRendering.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+				EdgeRendering.edgeDrawPaintFunction(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray, Color.red));
 		renderCon.setArrowFillPaintTransformer(
-				EdgeRendering.edgeDrawPaintTransformer(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray));
+				EdgeRendering.edgeDrawPaintFunction(viewer.getPickedEdgeState(), Color.blue, Color.black, Color.orange, Color.gray, Color.red));
 		if (firstViewer) {
 			renderCon.setEdgeFontTransformer(EdgeRendering.edgeFontFunction);
 		}
@@ -1671,11 +1704,13 @@ public class TNEditor extends JFrame {
 	/**
 	 * Cleaned result. True to store a cleaned result
 	 */
-	final boolean cleanResult = false;
+	@Option(required = false, name = "-cleaned", usage = "Show a cleaned result. A cleaned graph does not contain empty edges or labeled values containing unknown literals.")
+	boolean cleanResult = false;
 
 	/**
 	 * True if contingent link as to be represented also as ordinary constraints.
 	 */
+	@Option(required = false, name = "-ctgAsOrdinary", usage = "Manage contingent link also as ordinary constraints. It is not necessary but it helps to find some stricter upper bounds.")
 	boolean contingentAlsoAsOrdinary = true;
 
 	/**
@@ -1741,7 +1776,7 @@ public class TNEditor extends JFrame {
 	/**
 	 * Default load/save directory
 	 */
-	String defaultDir = "/Dropbox/_CSTNU";
+	String defaultDir = "";
 
 	/**
 	 * Edges to check in CSTN(U) check step-by-step
@@ -1784,12 +1819,12 @@ public class TNEditor extends JFrame {
 	JLabel mapInfoLabel;
 
 	/**
-	 * Mode box for the editor and the viewer
+	 * Position of the mode box for the main editor
 	 */
 	int modeBoxIndex;
 
 	/**
-	 * 
+	 * Position of the mode box for the the viewer
 	 */
 	int modeBoxViewerIndex;
 
@@ -1893,12 +1928,19 @@ public class TNEditor extends JFrame {
 	 */
 
 	/**
-	 * Default constructor
+	 * Some buttons have meaning only for some contexts.
+	 * The default is not to show.
+	 */
+	@Option(required = false, name = "-extraButtons", usage = "To see some extra buttons for some special feature (development mode).")
+	boolean extraButtons = false;
+
+	/**
+	 * Initiliazes the fundamental fields.
+	 * The initilization of the rest of fields and the starting of GUI is made by {@link #init()} method, after that possible input parameter are read.
 	 */
 	public TNEditor() {
-		super("Simple (C)STN(U) Editor. CSTN " + CSTN.VERSIONandDATE + ". CSTNU " + CSTNU.VERSIONandDATE);
+		super("TNEditor " + VERSION);
 		this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
 		GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
 		Rectangle bounds = env.getMaximumWindowBounds();
 		if (Debug.ON) {
@@ -1906,19 +1948,25 @@ public class TNEditor extends JFrame {
 				LOG.finest("Screen Bounds: " + bounds);
 			}
 		}
-		this.preferredSize = new Dimension((bounds.width - 30) / 2, bounds.height - 260);
 
 		// Using a null input TNGraph for setting all graphical aspects.
 		// When the graph will be load, inputGraph will be updated copying all the graph inside it (takeIn method).
 		this.inputGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
 		this.checkedGraph = new TNGraph<>(EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
+
+		this.preferredSize = new Dimension((bounds.width - 30) / 2, bounds.height - 260);
 		this.layoutEditor = new CSTNUStaticLayout<>(this.inputGraph, this.preferredSize);
 		this.layoutViewer = new CSTNUStaticLayout<>(this.checkedGraph, this.preferredSize);
 		this.vvEditor = new VisualizationViewer<>(this.layoutEditor, this.preferredSize);
 		this.vvEditor.setName(TNEditor.EDITOR_NAME);
 		this.vvViewer = new VisualizationViewer<>(this.layoutViewer, this.preferredSize);
 		this.vvViewer.setName(TNEditor.DISTANCE_VIEWER_NAME);
+	}
 
+	/**
+	 * Initialize all others component of the GUI using the parameter values passed by
+	 */
+	public void init() {
 		// buildRenderContext(this.vvEditor, true);
 		// buildRenderContext(this.vvViewer, false);
 		// CONTENT
@@ -1987,13 +2035,15 @@ public class TNEditor extends JFrame {
 
 		// FIRST ROW OF COMMANDS
 		// mode box for the editor
-		this.rowForAppButtons.add(new JComboBox<>());
+		this.rowForAppButtons.add(new JComboBox<>());// the real ComboBox is added after the initialization.
 		this.modeBoxIndex = 0;
 
 		this.layoutToggleButton = new JToggleButton("Layout input graph");
 		this.layoutToggleButton.addActionListener(new LayoutListener());
-		this.rowForAppButtons.add(this.layoutToggleButton);
-
+		if (this.extraButtons) {
+			// I create this.layoutToggleButton in any case because it is manipulated in many places...
+			this.rowForAppButtons.add(this.layoutToggleButton);
+		}
 		buttonCheck = new JButton("Input Graph big viewer");
 		buttonCheck.addActionListener(new BigViewerListener(true));
 		this.rowForAppButtons.add(buttonCheck);
@@ -2215,6 +2265,18 @@ public class TNEditor extends JFrame {
 		final JMenu menu = new JMenu("File");
 		menu.setOpaque(false);
 
+		JMenuItem aboutItem = new JMenuItem("About TNEditor");
+		aboutItem.setMnemonic('A');
+		aboutItem.addActionListener(event -> {
+			JOptionPane.showMessageDialog(this,
+					"TNEditor: Temporal Network Editor\n" + VERSION + "\nby Roberto Posenato (roberto.posenato@univr.it)",
+					"About",
+					JOptionPane.INFORMATION_MESSAGE);
+		} // end method actionPerformed
+		); // end call to addActionListener
+		menu.add(aboutItem); // add about item to file menu
+		menu.addSeparator();
+
 		final JMenu newFile = new JMenu("New network");
 		final JMenuItem newStn = new JMenuItem("STN");
 		newStn.setActionCommand("STN");
@@ -2245,6 +2307,14 @@ public class TNEditor extends JFrame {
 		final JMenuItem saveItem = new JMenuItem("Save...");
 		saveItem.addActionListener(new SaveFileListener());
 		menu.add(saveItem);
+
+		final JMenuItem quitItem = new JMenuItem("Quit TNEditor");
+		quitItem.setMnemonic(KeyEvent.VK_Q);
+		quitItem.setAccelerator(KeyStroke.getKeyStroke(
+				KeyEvent.VK_Q, ActionEvent.META_MASK));
+		quitItem.setToolTipText("Exit application");
+		quitItem.addActionListener(event -> System.exit(0));
+		menu.add(quitItem);
 
 		menuBar.add(menu);
 		this.setJMenuBar(menuBar);
@@ -2278,8 +2348,8 @@ public class TNEditor extends JFrame {
 		// graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
 		viewer.setGraphMouse(graphMouse);
 		viewer.addKeyListener(graphMouse.getModeKeyListener());
-		// TOOLTIPS setting
-		viewer.setVertexToolTipTransformer(LabeledNode.vertexToolTipTransformer);
+
+		// set the operation mode
 		if (firstViewer) {
 			TNEditor.this.rowForAppButtons.remove(this.modeBoxIndex);
 			TNEditor.this.rowForAppButtons.add(graphMouse.getModeComboBox(), this.modeBoxIndex);
@@ -2484,6 +2554,35 @@ public class TNEditor extends JFrame {
 				TNEditor.this.layoutViewer.setLocation(v, v.getX(), v.getY());
 			}
 		}
+	}
+
+	/**
+	 * Simple method to manage command line parameters using args4j library.
+	 *
+	 * @param args none
+	 * @return false if a parameter is missing or it is wrong. True if every
+	 *         parameters are given in a right format.
+	 */
+	boolean manageParameters(final String[] args) {
+		final CmdLineParser parser = new CmdLineParser(this);
+
+		try {
+			parser.parseArgument(args);
+		} catch (final CmdLineException e) {
+			// if there's a problem in the command line, you'll get this exception. this
+			// will report an error message.
+			System.err.println(e.getMessage());
+			System.err.println("java " + this.getClass().getName() + " [options...] arguments...");
+			// print the list of available options
+			parser.printUsage(System.err);
+			System.err.println();
+
+			// print option sample. This is useful some time
+			System.err.println("Example: java -jar CSTNU-*.jar " + this.getClass().getName() + " "
+					+ parser.printExample(OptionHandlerFilter.REQUIRED) + " file_name");
+			return false;
+		}
+		return true;
 	}
 
 }// end_of_file
