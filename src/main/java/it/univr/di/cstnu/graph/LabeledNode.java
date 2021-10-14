@@ -8,8 +8,6 @@ import java.util.logging.Logger;
 
 import org.jetbrains.annotations.Nullable;
 
-import com.google.common.base.Function;
-
 import it.univr.di.cstnu.algorithms.STN;
 import it.univr.di.labeledvalue.ALabel;
 import it.univr.di.labeledvalue.Constants;
@@ -47,28 +45,6 @@ public class LabeledNode extends AbstractComponent {
 		UNREACHED
 	}
 
-	/**
-	 * Used to show the node name.
-	 */
-	public final static Function<LabeledNode, String> vertexLabelTransformer = new Function<>() {
-		/**
-		 * Returns a label for the node
-		 */
-		@Override
-		public String apply(final LabeledNode v) {
-			return v.getName() + (v.getLabel().isEmpty() ? "" : "_[" + v.getLabel() + "]");
-		}
-	};
-
-	/**
-	 * Transformer object to show the tooltip of node: the label is print.
-	 */
-	public static final Function<LabeledNode, String> vertexToolTipTransformer = new Function<>() {
-		@Override
-		public String apply(final LabeledNode v) {
-			return "Label: " + v.getLabel().toString();
-		}
-	};
 
 	/**
 	 * 
