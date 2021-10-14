@@ -130,8 +130,8 @@ public class STNUGraphMLWriterTest {
 			"<default></default>\n" +
 			"</key>\n" +
 			"<key id=\"Type\" for=\"edge\">\n" +
-			"<desc>Type: Possible values: normal|contingent|constraint|derived|internal.</desc>\n" +
-			"<default>normal</default>\n" +
+			"<desc>Type: Possible values: contingent|requirement|derived|internal.</desc>\n" +
+			"<default>requirement</default>\n" +
 			"</key>\n" +
 			"<key id=\"Value\" for=\"edge\">\n" +
 			"<desc>Value for STN edge. Format: 'integer'</desc>\n" +

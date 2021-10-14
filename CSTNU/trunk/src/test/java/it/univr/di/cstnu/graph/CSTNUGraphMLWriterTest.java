@@ -123,8 +123,8 @@ public class CSTNUGraphMLWriterTest {
 			"<default></default>\n" +
 			"</key>\n" +
 			"<key id=\"Type\" for=\"edge\">\n" +
-			"<desc>Type: Possible values: normal|contingent|constraint|derived|internal.</desc>\n" +
-			"<default>normal</default>\n" +
+			"<desc>Type: Possible values: contingent|requirement|derived|internal.</desc>\n" +
+			"<default>requirement</default>\n" +
 			"</key>\n" +
 			"<key id=\"LowerCaseLabeledValues\" for=\"edge\">\n" +
 			"<desc>Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>\n" +

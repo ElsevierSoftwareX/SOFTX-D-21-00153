@@ -27,7 +27,7 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 <default></default> 
 </key> 
 <key id="Type" for="edge"> 
-<desc>Type: Possible values: normal|contingent|constraint.</desc> 
+<desc>Type: Possible values: contingent|requirement|internal|derived.</desc> 
 <default></default> 
 </key> 
 <key id="Value" for="edge"> 

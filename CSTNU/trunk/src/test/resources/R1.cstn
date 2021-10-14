@@ -97,52 +97,52 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 </node>
 <edge id="A?_p?" source="A?" target="p?">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{}</data>
 </edge>
 <edge id="G?_p?" source="G?" target="p?">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{}</data>
 </edge>
 <edge id="p?_X1" source="p?" target="X1">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{(A, 10) }</data>
 </edge>
 <edge id="D?_p?" source="D?" target="p?">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{}</data>
 </edge>
 <edge id="p?_X" source="p?" target="X">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{(AB, -10) (ABD, -15) (D, -15) }</data>
 </edge>
 <edge id="X1_Y1" source="X1" target="Y1">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{(AG¬P, 9) (AGP, 7) }</data>
 </edge>
 <edge id="B?_p?" source="B?" target="p?">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{}</data>
 </edge>
 <edge id="p?_X2" source="p?" target="X2">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{(AB, -5) }</data>
 </edge>
 <edge id="X2_Y2" source="X2" target="Y2">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{(AG¬P, 9) (AGP, 7) }</data>
 </edge>
 <edge id="X_Y" source="X" target="Y">
 <data key="Value">1</data>
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="LabeledValues">{(AG¬P, 9) (AGP, 7) }</data>
 </edge>
 </graph>

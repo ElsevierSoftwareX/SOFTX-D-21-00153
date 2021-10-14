@@ -24,7 +24,9 @@ import it.univr.di.cstnu.graph.STNUEdge;
 import it.univr.di.labeledvalue.Constants;
 
 /**
- * <p>EdgeRendering class.</p>
+ * <p>
+ * EdgeRendering class.
+ * </p>
  *
  * @author posenato
  * @version $Id: $Id
@@ -34,7 +36,7 @@ public class EdgeRendering {
 	/**
 	 * Simple stroke object to draw a 'standard' type edge.
 	 */
-	static final Stroke constraintEdgeStroke = RenderContext.DASHED;
+	static final Stroke constraintEdgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	// GRAPHICS & VISUALIZATION STUFF
 	// Set up a new stroke Transformer for the edges
@@ -43,11 +45,6 @@ public class EdgeRendering {
 	 */
 	static final Stroke derivedEdgeStroke = RenderContext.DOTTED;
 	// new BasicStroke(0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
-
-	/**
-	 * Simple stroke object to draw a 'standard' type edge.
-	 */
-	static final Stroke normalEdgeStroke = new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f);
 
 	/**
 	 * Simple stroke object to draw a 'standard' type edge.
@@ -80,10 +77,10 @@ public class EdgeRendering {
 
 		/**
 		 * @param bold1 true if it must be rendered in bold
-		@SuppressWarnings("unused")
-		public void setBold(boolean bold1) {
-			this.bold = bold1;
-		}
+		 *            @SuppressWarnings("unused")
+		 *            public void setBold(boolean bold1) {
+		 *            this.bold = bold1;
+		 *            }
 		 */
 	};
 
@@ -137,13 +134,11 @@ public class EdgeRendering {
 	/**
 	 * Select how to draw an edge given its type.
 	 */
-	public final static Function<Edge, Stroke> edgeStrokeTransformer = new Function<>() {
+	public final static Function<Edge, Stroke> edgeStrokeFunction = new Function<>() {
 		@Override
 		public Stroke apply(final Edge s) {
 			switch (s.getConstraintType()) {
-			case normal:
-				return normalEdgeStroke;
-			case constraint:
+			case requirement:
 				return constraintEdgeStroke;
 			case derived:
 			case internal:
@@ -164,15 +159,18 @@ public class EdgeRendering {
 	 * @param normalPaint a {@link java.awt.Paint} object.
 	 * @param contingentPaint a {@link java.awt.Paint} object.
 	 * @param derivedPaint a {@link java.awt.Paint} object.
-	 * @return a transformer object to draw an edge with a different color when it is picked.
+	 * @param inNegativeCycle a {@link java.awt.Paint} object for rendering edge in a negative cycle.
 	 * @param <K> a K object.
+	 * @return a transformer object to draw an edge with a different color when it is picked.
 	 */
-	public static final <K extends Edge> Function<K, Paint> edgeDrawPaintTransformer(final PickedInfo<K> pi,
+	public static final <K extends Edge> Function<K, Paint> edgeDrawPaintFunction(final PickedInfo<K> pi,
 			final Paint pickedPaint,
 			final Paint normalPaint,
-			final Paint contingentPaint, final Paint derivedPaint) {
+			final Paint contingentPaint,
+			final Paint derivedPaint,
+			final Paint inNegativeCycle) {
 
-		final Paint[] paintMap = new Paint[] { normalPaint, contingentPaint, derivedPaint, derivedPaint, normalPaint };
+		final Paint[] paintMap = new Paint[] { normalPaint, contingentPaint, derivedPaint, normalPaint, derivedPaint };
 
 		return new Function<>() {
 			@Override
@@ -182,21 +180,24 @@ public class EdgeRendering {
 				// LabeledIntEdge.LOG.finer("LabeledIntEdge: " + e + ", picked: " + pi.isPicked(e));
 				if (pi.isPicked(e))
 					return pickedPaint;
+				if (e.inNegativeCycle())
+					return inNegativeCycle;
 				return paintMap[e.getConstraintType().ordinal()];
 			}
 		};
 	}
 
 	/**
-	 * An edge is usually draw as an arc between two points. The area delimited by the arc and the straight line connecting the two edge points can be filled by
+	 * An edge is usually draw as an arc between two points.<br>
+	 * The area delimited by the arc and the straight line connecting the two edge points can be filled by
 	 * a color.
 	 *
 	 * @param normalPaint for normale edge
-	 * @param contingentPaint for contingent edge 
+	 * @param contingentPaint for contingent edge
 	 * @param derivedPaint for derived edge
 	 * @return a transformer object to fill an edge 'area' with a color depending on edge type.
 	 */
-	static final Function<Edge, Paint> edgeFillPaintTransformer(final Paint normalPaint, final Paint contingentPaint, final Paint derivedPaint) {
+	static final Function<Edge, Paint> edgeFillPaintFunction(final Paint normalPaint, final Paint contingentPaint, final Paint derivedPaint) {
 		return new Function<>() {
 			final Paint[] paintMap = { normalPaint, contingentPaint, derivedPaint, normalPaint, normalPaint };
 

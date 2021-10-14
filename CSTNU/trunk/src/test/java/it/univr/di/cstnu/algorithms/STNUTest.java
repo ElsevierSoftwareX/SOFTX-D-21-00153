@@ -106,12 +106,12 @@ public class STNUTest {
 				"❮X❯--❮XY; contingent; LC(Y):0❯-->❮Y❯\n" +
 				"❮X❯--❮X_-____X; internal; -2; ❯-->❮____X❯\n" +
 				"❮Y❯--❮YX; contingent; UC(Y):-3❯-->❮X❯\n" +
-				"❮Z❯--❮ZΩ; normal; 11; ❯-->❮Ω❯\n" +
-				"❮____X❯--❮____X--Z; normal; -4; ❯-->❮Z❯\n" +
-				"❮____X❯--❮____X--Ω; normal; 10; ❯-->❮Ω❯\n" +
+				"❮Z❯--❮ZΩ; requirement; 11; ❯-->❮Ω❯\n" +
+				"❮____X❯--❮____X--Z; requirement; -4; ❯-->❮Z❯\n" +
+				"❮____X❯--❮____X--Ω; requirement; 10; ❯-->❮Ω❯\n" +
 				"❮____X❯--❮____X_-X; internal; 2; ❯-->❮X❯\n" +
-				"❮Ω❯--❮Ω--____X; normal; -1; ❯-->❮____X❯\n" +
-				"❮Ω❯--❮ΩY; normal; -4; ❯-->❮Y❯\n";
+				"❮Ω❯--❮Ω--____X; requirement; -1; ❯-->❮____X❯\n" +
+				"❮Ω❯--❮ΩY; requirement; -4; ❯-->❮Y❯\n";
 		assertEquals(graph, this.stnuGraph.toString());
 	}
 
@@ -161,11 +161,11 @@ public class STNUTest {
 				"❮Y❯\n" +
 				"%Edges:\n" +
 				"❮X❯--❮XY; contingent; LC(Y):2❯-->❮Y❯\n" +
-				"❮X❯--❮XZ; normal; -4; ❯-->❮Z❯\n" +
-				"❮X❯--❮XΩ; normal; 10; ❯-->❮Ω❯\n" +
+				"❮X❯--❮XZ; requirement; -4; ❯-->❮Z❯\n" +
+				"❮X❯--❮XΩ; requirement; 10; ❯-->❮Ω❯\n" +
 				"❮Y❯--❮YX; contingent; UC(Y):-5❯-->❮X❯\n" +
-				"❮Z❯--❮ZΩ; normal; 11; ❯-->❮Ω❯\n" +
-				"❮Ω❯--❮ΩY; normal; -4; ❯-->❮Y❯\n";
+				"❮Z❯--❮ZΩ; requirement; 11; ❯-->❮Ω❯\n" +
+				"❮Ω❯--❮ΩY; requirement; -4; ❯-->❮Y❯\n";
 		assertEquals(graph, this.stnuGraph.toString());
 	}
 

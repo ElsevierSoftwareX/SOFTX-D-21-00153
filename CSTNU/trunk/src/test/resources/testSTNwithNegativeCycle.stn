@@ -47,7 +47,7 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 <default></default>
 </key>
 <key id="Type" for="edge">
-<desc>Type: Possible values: normal|contingent|constraint|derived|internal.</desc>
+<desc>Type: Possible values: contingent|requirement|derived|internal.</desc>
 <default>normal</default>
 </key>
 <key id="Value" for="edge">
@@ -77,44 +77,44 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 </node>
 
 <edge id="e_0_2" source="Z" target="2">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">4</data>
 </edge>
 <edge id="e_0_3" source="Z" target="3">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">2</data>
 </edge>
 <edge id="e_0_1" source="Z" target="1">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">6</data>
 </edge>
 
 <edge id="e_1_0" source="1" target="Z">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">-6</data>
 </edge>
 <edge id="e_1_3" source="1" target="3">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">-2</data>
 </edge>
 <edge id="e_2_0" source="2" target="Z">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">-3</data>
 </edge>
 <edge id="e_2_3" source="2" target="3">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">-4</data>
 </edge>
 <edge id="e_3_0" source="3" target="Z">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">-2</data>
 </edge>
 <edge id="e_3_1" source="3" target="1">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">3</data>
 </edge>
 <edge id="e_3_2" source="3" target="2">
-<data key="Type">normal</data>
+<data key="Type">requirement</data>
 <data key="Value">5</data>
 </edge>
 </graph>

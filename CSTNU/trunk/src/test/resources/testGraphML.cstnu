@@ -47,8 +47,8 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 <default></default>
 </key>
 <key id="Type" for="edge">
-<desc>Type: Possible values: normal|contingent|constraint|derived|internal.</desc>
-<default>normal</default>
+<desc>Type: Possible values: contingent|requirement|derived|internal.</desc>
+<default>requirement</default>
 </key>
 <key id="LowerCaseLabeledValues" for="edge">
 <desc>Labeled Lower-Case Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>

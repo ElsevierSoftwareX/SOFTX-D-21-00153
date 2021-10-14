@@ -126,32 +126,25 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 		// Group the radio buttons.
 		final ButtonGroup buttonGroup = new ButtonGroup();
 		jp.add(new JLabel("Edge type: "));
-		final JRadioButton normalButton = new JRadioButton(Edge.ConstraintType.normal.toString());
-		normalButton.setActionCommand(Edge.ConstraintType.normal.toString());
-		normalButton.setSelected(e.getConstraintType() == Edge.ConstraintType.normal);
-		setConditionToEnable(normalButton, viewerName, false);
-		jp.add(normalButton);
-		buttonGroup.add(normalButton);
 
+		final JRadioButton constraintButton = new JRadioButton(Edge.ConstraintType.requirement.toString());
+		constraintButton.setActionCommand(Edge.ConstraintType.requirement.toString());
+		constraintButton.setSelected(e.getConstraintType() == Edge.ConstraintType.requirement);
+		setConditionToEnable(constraintButton, viewerName, false);
+		jp.add(constraintButton);
+		buttonGroup.add(constraintButton);
+
+		boolean ctgAdded = false;
 		final JRadioButton contingentButton = new JRadioButton(Edge.ConstraintType.contingent.toString());
 		if (g.getType() == NetworkType.CSTNU || g.getType() == NetworkType.CSTNPSU || g.getType() == NetworkType.STNU) {
 			contingentButton.setActionCommand(Edge.ConstraintType.contingent.toString());
 			contingentButton.setSelected(e.isContingentEdge());
 			setConditionToEnable(contingentButton, viewerName, false);
 			jp.add(contingentButton);
-			jp.add(new JLabel(""));// in order to jump a cell
 			buttonGroup.add(contingentButton);
-		}
-
-		final JRadioButton constraintButton = new JRadioButton(Edge.ConstraintType.constraint.toString());
-		constraintButton.setActionCommand(Edge.ConstraintType.constraint.toString());
-		constraintButton.setSelected(e.getConstraintType() == Edge.ConstraintType.constraint);
-		setConditionToEnable(constraintButton, viewerName, false);
-		jp.add(constraintButton);
-		if (g.getType() == NetworkType.STN) {
 			jp.add(new JLabel(""));// in order to jump a cell
+			ctgAdded = true;
 		}
-		buttonGroup.add(constraintButton);
 
 		final JRadioButton derivedButton = new JRadioButton(Edge.ConstraintType.derived.toString());
 		derivedButton.setActionCommand(Edge.ConstraintType.derived.toString());
@@ -161,6 +154,9 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 		jp.add(derivedButton);
 		buttonGroup.add(derivedButton);
 
+		if (ctgAdded)
+			jp.add(new JLabel(""));// in order to jump a cell
+		
 		JTextField jt;
 		int i = 0;
 		JTextField jtLabel, jtValue;
@@ -407,8 +403,8 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 			// modified = true;
 			// }
 
-			final Edge.ConstraintType t = (normalButton.isSelected()) ? Edge.ConstraintType.normal
-					: (contingentButton.isSelected()) ? Edge.ConstraintType.contingent : Edge.ConstraintType.constraint;
+			final Edge.ConstraintType t = (constraintButton.isSelected()) ? Edge.ConstraintType.requirement
+					: (contingentButton.isSelected()) ? Edge.ConstraintType.contingent : Edge.ConstraintType.requirement;
 
 			// manage edge type
 			if (e.getConstraintType() != t) {
@@ -816,8 +812,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 		setConditionToEnable(name, viewerName, false);
 		if (editorPanel) {
 			jp.add(new JLabel("Syntax: [" + ALabelAlphabet.ALETTER + "?]+"));
-			group.add(name, StringValidators.regexp("[" + ALabelAlphabet.ALETTER + "?]+", "Must be a well format name", false),
-					new ObservableValidator(g, node));
+			group.add(name, StringValidators.regexp("[" + ALabelAlphabet.ALETTER + "?]+", "Must be a well format name", false));
 		}
 
 		// Potential
@@ -889,7 +884,7 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 				modified = true;
 			}
 
-			if (BasicCSTNUEdge.class.isAssignableFrom(g.getEdgeImplClass())) {
+			if (CSTNEdge.class.isAssignableFrom(g.getEdgeImplClass())) {
 				// Observable
 				newValue = observedProposition.getText();
 				if (newValue != null) {
@@ -900,9 +895,11 @@ public class CSTNULabelEditingGraphMousePlugin<V extends LabeledNode, E extends 
 							node.setObservable(p);
 							modified = true;
 						}
-					} else if (oldP != Constants.UNKNOWN) {
+					} else {
 						node.setObservable(Constants.UNKNOWN);
-						modified = true;
+						if (oldP != Constants.UNKNOWN) {
+							modified = true;
+						}
 					}
 				}
 				// Label

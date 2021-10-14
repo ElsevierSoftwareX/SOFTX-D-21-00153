@@ -46,7 +46,7 @@ public class STNUEdgeTest {
 		assertFalse(this.e.isEmpty());
 		this.e.clear();
 		assertTrue(this.e.isEmpty());
-		assertEquals("❮e; normal; ❯", this.e.toString());
+		assertEquals("❮e; requirement; ❯", this.e.toString());
 		assertTrue(this.e.isEmpty());
 		assertFalse(this.e.isContingentEdge());
 		this.e.setConstraintType(ConstraintType.contingent);
@@ -54,7 +54,7 @@ public class STNUEdgeTest {
 		assertTrue(this.e.isSTNUEdge());
 		assertFalse(this.e.isCSTNUEdge());
 		assertFalse(this.e.isRequirementEdge());
-		this.e.setConstraintType(ConstraintType.constraint);
+		this.e.setConstraintType(ConstraintType.requirement);
 		assertTrue(this.e.isRequirementEdge());
 		assertFalse(this.e.isSTNEdge());
 		assertFalse(this.e.isUpperCase());

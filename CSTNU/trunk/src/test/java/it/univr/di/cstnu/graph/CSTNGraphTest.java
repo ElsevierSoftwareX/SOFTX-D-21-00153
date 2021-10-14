@@ -404,14 +404,14 @@ public class CSTNGraphTest {
 				"❮A8❯\n" +
 				"❮A6❯\n" +
 				"%Edges:\n" +
-				"❮A3❯--❮A11_3new; normal; ❯-->❮A11❯\n" +
-				"❮A4❯--❮A11_4new; normal; ❯-->❮A11❯\n" +
-				"❮A5❯--❮A11_5new; normal; ❯-->❮A11❯\n" +
-				"❮A11❯--❮A3_11new; normal; ❯-->❮A3❯\n" +
-				"❮A11❯--❮A4_11new; normal; ❯-->❮A4❯\n" +
-				"❮A3❯--❮Z3new; normal; ❯-->❮Z❯\n" +
-				"❮A4❯--❮Z4new; normal; ❯-->❮Z❯\n" +
-				"❮X❯--❮ZXnew; normal; ❯-->❮Z❯\n";
+				"❮A3❯--❮A11_3new; requirement; ❯-->❮A11❯\n" +
+				"❮A4❯--❮A11_4new; requirement; ❯-->❮A11❯\n" +
+				"❮A5❯--❮A11_5new; requirement; ❯-->❮A11❯\n" +
+				"❮A11❯--❮A3_11new; requirement; ❯-->❮A3❯\n" +
+				"❮A11❯--❮A4_11new; requirement; ❯-->❮A4❯\n" +
+				"❮A3❯--❮Z3new; requirement; ❯-->❮Z❯\n" +
+				"❮A4❯--❮Z4new; requirement; ❯-->❮Z❯\n" +
+				"❮X❯--❮ZXnew; requirement; ❯-->❮Z❯\n";
 		assertEquals("Reversed tNGraph:", expected, g.toString());
 	}
 }

@@ -22,9 +22,9 @@ public interface Edge extends Component {
 	 */
 	public static enum ConstraintType {
 		/**
-		 * The edge represents a user constraint
+		 * The edge represents a user requirement
 		 */
-		constraint,
+		requirement,
 
 		/**
 		 * The edge represent a contingent constraint.
@@ -40,10 +40,7 @@ public interface Edge extends Component {
 		 * The edge represents an internal one used to represent high level construct as a WORKFLOW OR JOIN.
 		 */
 		internal,
-		/**
-		 * The edge represents an execution precedence between two nodes one.
-		 */
-		normal,
+		
 		/**
 		 * The edge represents an internal one used by qloop finder
 		 */
@@ -51,9 +48,8 @@ public interface Edge extends Component {
 	}
 
 	/**
-	 * <p>getConstraintType.</p>
-	 *
-	 * @return the type
+	 * @return the type of the edge with respect to the classification used inside the CSTNU Tool.
+	 * @see ConstraintType 
 	 */
 	public ConstraintType getConstraintType();
 
@@ -98,7 +94,7 @@ public interface Edge extends Component {
 	/**
 	 * <p>isEmpty.</p>
 	 *
-	 * @return true is it does not contain any values
+	 * @return true if it does not contain any values
 	 */
 	public boolean isEmpty();
 

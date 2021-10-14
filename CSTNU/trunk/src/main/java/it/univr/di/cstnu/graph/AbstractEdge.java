@@ -37,6 +37,7 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	 */
 	ConstraintType constraintType;
 
+	
 	/**
 	 * Minimal constructor. the name will be 'e&lt;id&gt;'.
 	 */
@@ -64,7 +65,7 @@ public abstract class AbstractEdge extends AbstractComponent implements Edge {
 	AbstractEdge(final String n) {
 		super(n);
 		this.name = ((n == null) || (n.length() == 0)) ? "e" + idSeq++ : n;
-		this.setConstraintType(ConstraintType.normal);
+		this.setConstraintType(ConstraintType.requirement);
 	}
 
 	/** {@inheritDoc} */

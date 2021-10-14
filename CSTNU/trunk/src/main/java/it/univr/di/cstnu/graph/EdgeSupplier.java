@@ -80,7 +80,7 @@ public class EdgeSupplier<E extends Edge> implements Supplier<E> {
 			// }
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
 				| SecurityException e) {
-			throw new RuntimeException("Problem construccting an edge supplier: " + e.getMessage());
+			throw new RuntimeException("Problem constructing an edge supplier: " + e.getMessage());
 		}
 	}
 

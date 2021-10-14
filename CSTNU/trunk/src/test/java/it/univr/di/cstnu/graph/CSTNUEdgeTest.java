@@ -63,7 +63,7 @@ public class CSTNUEdgeTest {
 		assertEquals("❮e; contingent; {(1, ⊡) }; LL: {(A, 1, ⊡) }; ❯", this.e.toString());
 
 		this.e.clearLowerCaseValues();
-		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 	}
 
 	/**
@@ -114,11 +114,11 @@ public class CSTNUEdgeTest {
 	public void testIsEmptyAndClear() {
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
 		this.e.mergeUpperCaseValue(Label.emptyLabel, new ALabel("A", this.alphabet), 0);
-		assertEquals("❮e; normal; {(1, ⊡) }; UL: {(A, 0, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; UL: {(A, 0, ⊡) }; ❯", this.e.toString());
 
 		assertFalse(this.e.isEmpty());
 		this.e.clear();
-		assertEquals("❮e; normal; ❯", this.e.toString());
+		assertEquals("❮e; requirement; ❯", this.e.toString());
 		assertTrue(this.e.isEmpty());
 		assertFalse(this.e.isContingentEdge());
 		this.e.setConstraintType(ConstraintType.contingent);
@@ -126,7 +126,7 @@ public class CSTNUEdgeTest {
 		assertTrue(this.e.isCSTNEdge());
 		assertTrue(this.e.isCSTNUEdge());
 		assertFalse(this.e.isRequirementEdge());
-		this.e.setConstraintType(ConstraintType.constraint);
+		this.e.setConstraintType(ConstraintType.requirement);
 		assertTrue(this.e.isRequirementEdge());
 		assertFalse(this.e.isSTNEdge());
 	}
@@ -172,11 +172,11 @@ public class CSTNUEdgeTest {
 		this.e.setUpperCaseValueMap(map1);
 
 		// assertEquals(
-		// "❮e; normal; {(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b)
+		// "❮e; requirement; {(-17, b) (-8, ¬b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b)
 		// (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
 		// e.toString());
 		assertEquals(
-				"❮e; normal; {(-8, ⊡) (-17, b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
+				"❮e; requirement; {(-8, ⊡) (-17, b) (-20, ab) (-∞, ¿ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
 				this.e.toString());
 
 		CSTNUEdge e1 = edgeFactory.get(this.e);
@@ -197,52 +197,52 @@ public class CSTNUEdgeTest {
 		this.e.mergeLabeledValue(Label.parse("¬a"), -20);
 
 		this.e.mergeUpperCaseValue(Label.parse("ab"), ALabel.parse("D", this.alphabet), -30);
-		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) }; ❯", this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("a¿b"), ALabel.parse("D", this.alphabet), Constants.INT_NEG_INFINITE);
-		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) }; ❯", this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¿ab"), ALabel.parse("D", this.alphabet), Constants.INT_NEG_INFINITE);
-		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¿b"), ALabel.parse("I", this.alphabet), -9);
-		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) }; ❯", this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¬b"), ALabel.parse("I", this.alphabet), -30);
-		assertEquals("❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) }; ❯", this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¬b"), ALabel.parse("I" + ALabel.ALABEL_SEPARATORstring + "D", this.alphabet), -60);
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring + "I, -60, ¬b) }; ❯",
+				"❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring + "I, -60, ¬b) }; ❯",
 				this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¬b"),
 				ALabel.parse("I" + ALabel.ALABEL_SEPARATORstring + "D" + ALabel.ALABEL_SEPARATORstring + "F", this.alphabet),
 				-60);
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring + "I, -60, ¬b) }; ❯",
+				"❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring + "I, -60, ¬b) }; ❯",
 				this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¬ba"),
 				ALabel.parse("I" + ALabel.ALABEL_SEPARATORstring + "D" + ALabel.ALABEL_SEPARATORstring + "F", this.alphabet),
 				-60);
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring + "I, -60, ¬b) }; ❯",
+				"❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring + "I, -60, ¬b) }; ❯",
 				this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("b"), ALabel.parse("I", this.alphabet), -60);
 		// assertEquals(
-		// "❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -60, b) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring
+		// "❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -60, b) (I, -30, ¬b) (D" + ALabel.ALABEL_SEPARATORstring
 		// + "I, -60, ¬b) }; ❯",
 		// e.toString());
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ⊡) (I, -60, b) (D" + ALabel.ALABEL_SEPARATORstring
+				"❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -30, ⊡) (I, -60, b) (D" + ALabel.ALABEL_SEPARATORstring
 						+ "I, -60, ¬b) }; ❯",
 				this.e.toString());
 
 		this.e.mergeUpperCaseValue(Label.parse("¬b"), ALabel.parse("I", this.alphabet), -60);
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -60, ⊡) }; ❯",
+				"❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -60, ⊡) }; ❯",
 				this.e.toString());
 
 	}
@@ -262,30 +262,30 @@ public class CSTNUEdgeTest {
 		this.e.setUpperCaseValueMap(mapUC);
 
 		assertEquals(
-				"❮e; normal; {(0, ⊡) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
+				"❮e; requirement; {(0, ⊡) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -19, ¬ab) (F, -∞, ¿ab) }; ❯",
 				this.e.toString());
 
 		this.e.mergeLabeledValue(Label.parse("¬ab"), -20);
 		assertEquals(
-				"❮e; normal; {(0, ⊡) (-20, ¬ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; requirement; {(0, ⊡) (-20, ¬ab) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				this.e.toString());
 
 		this.e.mergeLabeledValue(Label.parse("ab"), -20);
 
 		assertEquals(
-				"❮e; normal; {(0, ⊡) (-20, b) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; requirement; {(0, ⊡) (-20, b) }; UL: {(D, -4, ¿b) (D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -9, ¬b) (I, -11, ¿b) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				this.e.toString());
 
 		this.e.mergeLabeledValue(Label.parse("¬b"), -20);
 
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; requirement; {(-20, ⊡) }; UL: {(D, -30, ab) (D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				this.e.toString());
 
 		this.e.mergeLabeledValue(Label.parse("a"), -30);
 
 		assertEquals(
-				"❮e; normal; {(-20, ⊡) (-30, a) }; UL: {(D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
+				"❮e; requirement; {(-20, ⊡) (-30, a) }; UL: {(D, -∞, a¿b) (D, -∞, ¿ab) (I, -∞, ¿a¿b) (F, -∞, ¿ab) }; ❯",
 				this.e.toString());
 
 	}
@@ -296,9 +296,9 @@ public class CSTNUEdgeTest {
 	@Test
 	public final void testToString() {
 		this.e.mergeLabeledValue(Label.emptyLabel, 1);
-		assertEquals("❮e; normal; {(1, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; ❯", this.e.toString());
 		this.e.mergeUpperCaseValue(Label.emptyLabel, new ALabel("A", this.alphabet), 0);
-		assertEquals("❮e; normal; {(1, ⊡) }; UL: {(A, 0, ⊡) }; ❯", this.e.toString());
+		assertEquals("❮e; requirement; {(1, ⊡) }; UL: {(A, 0, ⊡) }; ❯", this.e.toString());
 	}
 
 }

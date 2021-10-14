@@ -207,7 +207,6 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 			while (eIte.hasNext()) {
 				CSTNEdge e = eIte.next();
 				if (e.getMinValue() > 0
-						|| (e.getConstraintType() != Edge.ConstraintType.contingent && e.getConstraintType() != Edge.ConstraintType.normal)
 						|| (e.getConstraintType() == Edge.ConstraintType.contingent && ((CSTNUEdge) e).lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
@@ -328,8 +327,7 @@ public class CSTNLayout extends edu.uci.ics.jung.algorithms.layout.StaticLayout<
 			ObjectIterator<CSTNEdge> eIte = inEdge.iterator();
 			while (eIte.hasNext()) {
 				CSTNEdge e = eIte.next();
-				if ((e.getConstraintType() != Edge.ConstraintType.contingent && e.getConstraintType() != Edge.ConstraintType.normal)
-						|| e.getMinValue() > 0 || (e.getConstraintType() == Edge.ConstraintType.contingent && ((CSTNUEdge) e).lowerCaseValueSize() > 0)) {
+				if (e.getMinValue() > 0 || (e.getConstraintType() == Edge.ConstraintType.contingent && ((CSTNUEdge) e).lowerCaseValueSize() > 0)) {
 					eIte.remove();
 				}
 			}

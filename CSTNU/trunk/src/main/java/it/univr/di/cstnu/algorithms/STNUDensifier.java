@@ -522,8 +522,8 @@ public class STNUDensifier {
 				s.setContingent(false);
 				STNUEdge invertedE = newInstance.findEdge(d, s);
 				// make links normal
-				e.setConstraintType(ConstraintType.normal);
-				invertedE.setConstraintType(ConstraintType.normal);
+				e.setConstraintType(ConstraintType.requirement);
+				invertedE.setConstraintType(ConstraintType.requirement);
 				s.setName("n_" + (nodeC++));
 				d.setName("n_" + (nodeC++));
 				LabeledNode[] list = { s, d };
