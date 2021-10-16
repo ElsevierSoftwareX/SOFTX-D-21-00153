@@ -39,10 +39,9 @@ The implemented algorithms are:
 ## Documentation
 
 The main web site is https://profs.scienze.univr.it/~posenato/software/cstnu/
-The archived copy of the repository is at https://archive.softwareheritage.org/browse/origin/?origin_url=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU
-
-## Support
-Author and contact: Roberto Posenato <roberto.posenato@univr.it>
+The main source repository is at https://profs.scienze.univr.it/posenato/svn/sw/CSTNU
+The archived copy of the source repository is at https://archive.softwareheritage.org/browse/origin/?origin_url=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU
+In `Docs` directory there are some technical documents about the project.
 
 ## Requirements
 
@@ -53,35 +52,80 @@ Such a feature requires to use the `uppaal-tiga-0.18` library that must download
 
 ## Installation
 
-Please, refer to `README.md` file in `CstnuTool` subdirectory
+The CSTNU Tool library is a fat library that can be used alone.
+It is present in the current directory as JAR package with name `CSTNU-Tool-X.Y.jar`, where `X.Y` are two integers representing the version of the package.
+(If the JAR package is built from the sources, it will be present in the `CstnuTool` directory).
 
-## Directory summary
-* `CstnuTool`
-  Contains some CSTNU instances (**Instances** subdirectory), the CSTNU-Tool-\*.\*.jar, and some shell scripts for 
-  1) starting the graphical editor, 2) making some bunch of analysis, and 3) executing CSTNU-->TIGA translator.
-* `LICENSES`  
-The licenses source files used in this project.
+It is sufficient to add the library to the JRE classpath for using any class or method of the library
+(let us assume that the current JAR is `CSTNU-Tool-4.2.jar`):
 
-* `src` 
-Contains all the source files of the project and the source file of the distribution site.
-Moreover, in the main directory there are the following files:
+```bash
+$ java -cp CSTNU-Tool-4.2.jar ...
+```
 
-* `README.md` 
-This file
+### Usage
 
-* `dependency-reduced-pom.xml`
+The main goal of CSTNU Tool library is to be a support library for representing and checking temporal constraint networks
+inside other software.
 
-  Maven configuration files.
+As side feature, all classes (`STN, STNU, CSTN*, CSTNU, CSTNPUS`) relative to the different kinds of temporal networks have the `main` method 
+that allows the execution of the `dynamicCheck` method on a given input file directly.
 
-* `pom.xml`
-Maven configuration files.
+#### Example of execution of CSTN class
 
-## To use maven
-* `mvn clean`   //Fundamental!!! Before doing anything regarding site
-* `mvn compile` //for compiling
-* `mvn test`    //for executing JUNIT4 test
-* `mvn package` //for building the jar package `CSTNU-Tool-*.*.jar,`
-* `mvn package -Ddebug` //for bulding the jar package with all debug messages
+```bash 
+$ java -cp CSTNU-Tool-4.2.jar it.univr.di.cstnu.algorithms.CSTN
+it.univr.di.cstnu.algorithms.CSTN Version 7.0 - November, 07 2019
+SPDX-License-Identifier: LGPL-3.0-or-later, Roberto Posenato.
+
+Starting execution...
+Checking finished!
+The given CSTN is Dynamic consistent!
+Details: The check is finished after 2 cycle(s).
+The consistency check has determined that given network is consistent.
+Some statistics:
+Rule R0 has been applied 0 times.
+Rule R3 has been applied 0 times.
+Rule Labeled Propagation has been applied 3 times.
+Potentials updated 0 times.
+The global execution time has been 10918000 ns (~0.010918 s.)
+```
+
+Input file must be in GraphML format.
+See `Docs/graphFileFormat.md` for details about the accepted GraphML format.
+
+
+### GUI Editor
+The library contains also a graphical editor for editing temporal networks and checking them using the different algorithms present in the library.
+
+To execute the GUI editor (class `TNEditor`) it is sufficient invoke the package 
+
+```bash
+$java -jar CSTNU-Tool-4.2.jar
+```
+
+The script `tnEditor.sh` is a `bash` script that finds the library in the directory, checks if the installed JRE version is compatible,
+and runs the `TNEditor` class.
+
+### Script `CSTNRunningTime.sh`
+
+This `bash` tool is intended for a subproject in which we are experimenting a new algorithm for checking the dynamic consistency of CSTNs.
+In particular, this tool determines the average execution time of Dynamic Consistency Check Algorithm given a set of CSTN instances.
+
+### Script `CSTNURunningTime.sh`
+
+This `bash` tool is intended for a subproject in which we are experimenting a new algorithm for checking the dynamic consistency of CSTNU.
+In particular, this tool determines the average execution time of Dynamic Consistency Check Algorithm given a set of CSTNU instances.
+
+### Script`CSTNUTranslator.sh`
+
+This `bash` tool executes a Java program of the library to translate a CSTNU instance to the corresponding TIGA instance.
+The source file is the GraphML representation of a CSTNU graph.
+The output is the XML description of the corresponding TIGA instance.
+
+You have to install `uppaal-tiga-0.18` () software in order to run `cstnuTranslator.sh`.
+Please, adjust the location of `verifytga` program inside `cstnuTranslator.sh` according to the location where you installed `uppaal-tiga-0.18`.
+
 
 ## Licenses
 For full licenses text, please check files in `LICENSES` subdirectory.
@@ -98,3 +142,6 @@ For other file is
 //
 // SPDX-License-Identifier: CC0-1.0
 ```
+
+## Support
+Author and contact: Roberto Posenato <roberto.posenato@univr.it>

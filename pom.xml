@@ -106,50 +106,20 @@
 			<artifactId>simplevalidation-standalone</artifactId>
 			<version>1.14</version>
 		</dependency>
-<!-- 		
-	org.freehep is a nice library that allows the exporting of GUI windows in different format.
-	I used it To export an instance in a PDF file.
-	Unfortunately, version 2.4 is not compatbile with JDK > 8.
-	So, for now, I disable it and the function in EditingPopupGraphMousePlugin.java
-	
-		<dependency>
-			<groupId>org.freehep</groupId>
-			
-			<artifactId>freehep-graphicsbase</artifactId>
-			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-io</artifactId>
-			<version>2.2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-vectorgraphics</artifactId>
-			<version>2.4</version>
-			<type>pom</type>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-graphics2d</artifactId>
-			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-graphicsio</artifactId>
-			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-graphicsio-svg</artifactId>
-			<version>2.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.freehep</groupId>
-			<artifactId>freehep-graphicsio-pdf</artifactId>
-			<version>2.4</version>
-		</dependency>
--->
+		<!-- org.freehep is a nice library that allows the exporting of GUI windows 
+			in different format. I used it To export an instance in a PDF file. Unfortunately, 
+			version 2.4 is not compatbile with JDK > 8. So, for now, I disable it and 
+			the function in EditingPopupGraphMousePlugin.java <dependency> <groupId>org.freehep</groupId> 
+			<artifactId>freehep-graphicsbase</artifactId> <version>2.4</version> </dependency> 
+			<dependency> <groupId>org.freehep</groupId> <artifactId>freehep-io</artifactId> 
+			<version>2.2.2</version> </dependency> <dependency> <groupId>org.freehep</groupId> 
+			<artifactId>freehep-vectorgraphics</artifactId> <version>2.4</version> <type>pom</type> 
+			</dependency> <dependency> <groupId>org.freehep</groupId> <artifactId>freehep-graphics2d</artifactId> 
+			<version>2.4</version> </dependency> <dependency> <groupId>org.freehep</groupId> 
+			<artifactId>freehep-graphicsio</artifactId> <version>2.4</version> </dependency> 
+			<dependency> <groupId>org.freehep</groupId> <artifactId>freehep-graphicsio-svg</artifactId> 
+			<version>2.4</version> </dependency> <dependency> <groupId>org.freehep</groupId> 
+			<artifactId>freehep-graphicsio-pdf</artifactId> <version>2.4</version> </dependency> -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
@@ -424,7 +394,8 @@
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
 							<target>
-								<condition property="debugNormalized" value="true" else="false">
+								<condition property="debugNormalized" value="true"
+									else="false">
 									<or>
 										<equals arg1="${debug}" arg2="True" />
 										<equals arg1="${debug}" arg2="true" />
@@ -448,8 +419,6 @@
 						<configuration>
 							<exportAntProperties>true</exportAntProperties>
 							<target>
-								<!--<fail message="Non Ti sei ricordato di specificare -P noDebug! 
-									" unless="noDebug" /> -->
 								<delete>
 									<fileset dir="${basedir}/CstnuTool/"
 										includes="${project.artifactId}-*.jar" />
@@ -461,6 +430,16 @@
 									tofile="${basedir}/CstnuTool/${project.sourcejar.filename}" /> <copy preservelastmodified="true" 
 									file="${project.build.directory}/${project.javadocjar.filename}" tofile="${basedir}/CstnuTool/${project.javadocjar.filename}" 
 									/> -->
+								<copy preservelastmodified="true"
+									file="${basedir}/README.md"
+									tofile="${basedir}/CstnuTool/README.md" />
+								<copy preservelastmodified="true"
+									file="${basedir}/RELEASE_NOTES.md"
+									tofile="${basedir}/CstnuTool/RELEASE_NOTES.md" />
+								<copy preservelastmodified="true"
+									todir="${basedir}/CstnuTool/Docs">
+									<fileset dir="${basedir}/Docs" />
+								</copy>
 								<tar compression="gzip"
 									destfile="${basedir}/${project.tool.filename}.tgz">
 									<tarfileset dir="${basedir}/CstnuTool/"
