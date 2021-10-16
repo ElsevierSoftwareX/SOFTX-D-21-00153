@@ -71,36 +71,43 @@
 			<artifactId>jung-visualization</artifactId>
 			<version>2.1.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>net.sf.jung</groupId>
 			<artifactId>jung-graph-impl</artifactId>
 			<version>2.1.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>net.sf.jung</groupId>
 			<artifactId>jung-io</artifactId>
 			<version>2.1.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>args4j</groupId>
 			<artifactId>args4j</artifactId>
 			<version>2.33</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.bpodgursky</groupId>
 			<artifactId>jbool_expressions</artifactId>
 			<version>1.16</version>
 		</dependency>
+
 		<dependency>
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>fastutil</artifactId>
 			<version>8.4.4</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
 			<version>3.6.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.mastfrog</groupId>
 			<artifactId>simplevalidation-standalone</artifactId>
@@ -125,22 +132,26 @@
 			<artifactId>slf4j-nop</artifactId>
 			<version>1.7.25</version>
 		</dependency>
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>org.teneighty</groupId>
 			<artifactId>java-heaps</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.netbeans.external</groupId>
 			<artifactId>ValidationAPI</artifactId>
 			<version>RELEASE124</version>
 		</dependency>
+
 		<!-- <dependency> <groupId>org.codehaus.mojo</groupId> <artifactId>findbugs-maven-plugin</artifactId> 
 			<version>3.0.5</version> <exclusions> <exclusion> <groupId>xml-apis</groupId> 
 			<artifactId>xml-apis</artifactId> </exclusion> <exclusion> <groupId>jaxen</groupId> 
@@ -150,11 +161,13 @@
 			<artifactId>maven-surefire-plugin</artifactId>
 			<version>3.0.0-M5</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-report-plugin</artifactId>
 			<version>3.0.0-M5</version>
 		</dependency>
+
 		<dependency>
 			<groupId>net.openhft</groupId>
 			<artifactId>affinity</artifactId>
@@ -166,6 +179,7 @@
 			<artifactId>spotbugs-maven-plugin</artifactId>
 			<version>4.2.3</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-report-plugin</artifactId>
@@ -681,6 +695,15 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>checkJavadoc</id>
+						<phase>test</phase>
+						<goals>
+							<goal>javadoc</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<show>package</show>
 					<doclint>all,-html</doclint><!-- stuff to check. I removed HTML because 
@@ -708,6 +731,7 @@
 			</plugin>
 
 			<plugin>
+				<!-- execute Junit tests -->
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.0.0-M5</version>
@@ -716,6 +740,30 @@
 						<exclude>**/*Lazy*.java</exclude>
 						<exclude>**/lazy/*.java</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>com.github.spotbugs</groupId>
+				<artifactId>spotbugs-maven-plugin</artifactId>
+				<version>4.2.3</version>
+				<executions>
+					<!-- This execution guarantees that the static analysis is done before 
+						packaging. -->
+					<execution>
+						<id>check</id>
+						<phase>test</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<effort>Max</effort>
+					<threshold>Medium</threshold>
+					<xmlOutput>true</xmlOutput>
+					<xmlOutputDirectory>target/site</xmlOutputDirectory>
+					<excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
 				</configuration>
 			</plugin>
 

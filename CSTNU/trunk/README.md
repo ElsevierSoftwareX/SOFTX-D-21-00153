@@ -41,7 +41,7 @@ The implemented algorithms are:
 The main web site is https://profs.scienze.univr.it/~posenato/software/cstnu/
 The main source repository is at https://profs.scienze.univr.it/posenato/svn/sw/CSTNU
 The archived copy of the source repository is at https://archive.softwareheritage.org/browse/origin/?origin_url=https://profs.scienze.univr.it/posenato/svn/sw/CSTNU
-In `Docs` directory there are some technical documents about the project.
+In `Docs` directory present in the source repository there are some technical documents about the project.
 
 ## Requirements
 
@@ -53,8 +53,8 @@ Such a feature requires to use the `uppaal-tiga-0.18` library that must download
 ## Installation
 
 The CSTNU Tool library is a fat library that can be used alone.
-It is present in the current directory as JAR package with name `CSTNU-Tool-X.Y.jar`, where `X.Y` are two integers representing the version of the package.
-(If the JAR package is built from the sources, it will be present in the `CstnuTool` directory).
+It is present in the main directory of the binary distribution archive as JAR package with name `CSTNU-Tool-X.Y.jar`, where `X.Y` are two integers representing the version of the package.
+(If the JAR package is built from the sources, it will be present in the `CstnuTool` sub directory).
 
 It is sufficient to add the library to the JRE classpath for using any class or method of the library
 (let us assume that the current JAR is `CSTNU-Tool-4.2.jar`):
@@ -63,13 +63,14 @@ It is sufficient to add the library to the JRE classpath for using any class or 
 $ java -cp CSTNU-Tool-4.2.jar ...
 ```
 
+The Jar package is distributed with all debugging code removed. In case that it is necessary to have debugging messages, please refer to `BUILDING.md` document in the source repository where it is explained how to build and use a Jar with debugging messages.
+
 ### Usage
 
 The main goal of CSTNU Tool library is to be a support library for representing and checking temporal constraint networks
 inside other software.
 
-As side feature, all classes (`STN, STNU, CSTN*, CSTNU, CSTNPUS`) relative to the different kinds of temporal networks have the `main` method 
-that allows the execution of the `dynamicCheck` method on a given input file directly.
+As side feature, all classes (`STN, STNU, CSTN*, CSTNU, CSTNPUS`) relative to the different kinds of temporal networks have the `main` method that allows the execution of the `dynamicCheck` method on a given input file directly.
 
 #### Example of execution of CSTN class
 
