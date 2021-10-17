@@ -89,7 +89,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 			if (vertex != null) {
 				Set<V> picked = pickedVertexState.getPicked();
 				if (picked.size() > 0) {
-					JMenu directedMenu = new JMenu("Create Edge");
+					JMenu directedMenu = new JMenu("Add edge");
 					popup.add(directedMenu);
 					for (final V other : picked) {
 						if (other.equalsByName(vertex))
@@ -113,7 +113,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					}
 				}
 
-				popup.add(new AbstractAction("Delete Vertex") {
+				popup.add(new AbstractAction("Delete node") {
 					@Override
 					public void actionPerformed(ActionEvent a) {
 						pickedVertexState.pick(vertex, false);
@@ -122,7 +122,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					}
 				});
 			} else if (edge != null) {
-				popup.add(new AbstractAction("Delete Edge") {
+				popup.add(new AbstractAction("Delete edge") {
 					@Override
 					public void actionPerformed(ActionEvent a) {
 						pickedEdgeState.pick(edge, false);
@@ -131,7 +131,7 @@ public class EditingPopupGraphMousePlugin<V extends LabeledNode, E extends Edge>
 					}
 				});
 			} else {
-				popup.add(new AbstractAction("Create Vertex") {
+				popup.add(new AbstractAction("Add node") {
 					@Override
 					public void actionPerformed(ActionEvent a) {
 						V newVertex = EditingPopupGraphMousePlugin.this.vertexFactory.get();
