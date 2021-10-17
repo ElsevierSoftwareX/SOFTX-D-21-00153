@@ -119,11 +119,16 @@ import it.univr.di.labeledvalue.Constants;
 public class TNEditor extends JFrame {
 
 	/**
+	 * Open a bigger viewer for showing the input or derived network.
+	 * 
 	 * @author posenato
 	 */
 	private class BigViewerListener implements ActionListener {
 
 		boolean isInputGraphLayoutToShow;
+		JDialog frame;
+		AbstractLayout<LabeledNode, ? extends Edge> layout;
+		VisualizationViewer<LabeledNode, ? extends Edge> bvv;
 
 		public BigViewerListener(boolean isInputGraphLayoutToShow1) {
 			this.isInputGraphLayoutToShow = isInputGraphLayoutToShow1;
@@ -131,35 +136,52 @@ public class TNEditor extends JFrame {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			JDialog frame = new JDialog(TNEditor.this,
-					(this.isInputGraphLayoutToShow) ? TNEditor.INPUT_GRAPH_BIG_VIEWER_NAME : TNEditor.DERIVED_GRAPH_BIG_VIEWER_NAME);
-			frame.setBounds(TNEditor.this.getBounds());
-			Dimension bvvDim = new Dimension(frame.getWidth(), frame.getHeight() - 100);
 
-			AbstractLayout<LabeledNode, ? extends Edge> layout = (this.isInputGraphLayoutToShow) ? TNEditor.this.layoutEditor : TNEditor.this.layoutViewer;
-			VisualizationViewer<LabeledNode, ? extends Edge> bvv = new VisualizationViewer<>(layout, bvvDim);
-			bvv.setName(TNEditor.INPUT_GRAPH_BIG_VIEWER_NAME);
-			buildRenderContext(bvv, true);
-			((ModalGraphMouse) bvv.getGraphMouse()).setMode(ModalGraphMouse.Mode.TRANSFORMING);
+			this.frame = new JDialog(TNEditor.this,
+					(this.isInputGraphLayoutToShow) ? TNEditor.INPUT_GRAPH_BIG_VIEWER_NAME : TNEditor.DERIVED_GRAPH_BIG_VIEWER_NAME);
+			this.frame.setBounds(TNEditor.this.getBounds());
+			Dimension bvvDim = new Dimension(this.frame.getWidth(), this.frame.getHeight() - 100);
+
+			this.layout = (this.isInputGraphLayoutToShow) ? TNEditor.this.layoutEditor : TNEditor.this.layoutViewer;
+			this.bvv = new VisualizationViewer<>(this.layout);
+			this.bvv.setPreferredSize(bvvDim);
+			this.bvv.setName((this.isInputGraphLayoutToShow) ? TNEditor.INPUT_GRAPH_BIG_VIEWER_NAME : TNEditor.DERIVED_GRAPH_BIG_VIEWER_NAME);
+
+			// vertex and edge renders
+			setNodeEdgeRenders(this.bvv, this.isInputGraphLayoutToShow);
+
+			// mouse action
+			@SuppressWarnings("unchecked")
+			EditingModalGraphMouse<LabeledNode, Edge> graphMouse = new EditingModalGraphMouse<>(
+					(RenderContext<LabeledNode, Edge>) this.bvv.getRenderContext(),
+					new LabeledNodeSupplier(),
+					(EdgeSupplier<Edge>) new EdgeSupplier<>(TNEditor.this.currentEdgeImpl), // only after graph load it is possible to set edge supplier.
+					TNEditor.this,
+					this.isInputGraphLayoutToShow);
+			// graphMouse.setMode(ModalGraphMouse.Mode.PICKING);
+			this.bvv.setGraphMouse(graphMouse);
+			this.bvv.addKeyListener(graphMouse.getModeKeyListener());
+			((ModalGraphMouse) this.bvv.getGraphMouse()).setMode(ModalGraphMouse.Mode.EDITING);
 			final JPanel rowForAppButtons1 = new JPanel();
 			@SuppressWarnings("unchecked")
-			final JComboBox<Mode> modeBox1 = ((EditingModalGraphMouse<LabeledNode, Edge>) bvv.getGraphMouse()).getModeComboBox();
+			final JComboBox<Mode> modeBox1 = ((EditingModalGraphMouse<LabeledNode, Edge>) this.bvv.getGraphMouse()).getModeComboBox();
 			rowForAppButtons1.add(modeBox1);
 			JButton close = new JButton(new AbstractAction("Close") {
 				private static final long serialVersionUID = 1L;
 
 				@Override
 				public void actionPerformed(ActionEvent event) {
-					frame.dispose();
+					BigViewerListener.this.frame.dispose();
 				}
 			});
 			rowForAppButtons1.add(close);
-			frame.setLayout(new FlowLayout(FlowLayout.CENTER));
-			frame.add(new JLabel(getGraphLabelDescription(((TNGraph<?>) TNEditor.this.layoutEditor.getGraph()))));
-			frame.add(bvv);
-			frame.add(rowForAppButtons1);
-			frame.setVisible(true);
-			frame.validate();
+			this.frame.setLayout(new FlowLayout(FlowLayout.CENTER));
+			this.frame.add(new JLabel(getGraphLabelDescription(((TNGraph<?>) TNEditor.this.layoutEditor.getGraph()))));
+			this.frame.add(this.bvv);
+			this.frame.add(rowForAppButtons1);
+
+			this.frame.setVisible(true);
+			this.frame.validate();
 		}
 	}
 
@@ -347,18 +369,10 @@ public class TNEditor extends JFrame {
 				jl.setText("There is a problem in the code: " + ex.getMessage());
 				// jl.setIcon(TNEditor.warnIcon);
 			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setCursor(Cursor.getDefaultCursor());
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
 
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.saveCSTNResultButton.setEnabled(true);
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -412,15 +426,11 @@ public class TNEditor extends JFrame {
 			}
 			jl.setText("CSTN initialized.");
 			// jl.setIcon(TNEditor.infoIcon);
-			jl.setOpaque(true);
-			jl.setBackground(Color.orange);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
 
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
+			jl.setBackground(Color.orange);
 			TNEditor.this.cycle = 0;
+			TNEditor.this.saveCSTNResultButton.setEnabled(true);
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -513,13 +523,8 @@ public class TNEditor extends JFrame {
 				}
 			}
 
-			jl.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
 			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -562,17 +567,10 @@ public class TNEditor extends JFrame {
 				jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
 				// jl.setIcon(CSTNUEditor.warnIcon);
 			}
-			jl1.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
+
 			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -638,17 +636,54 @@ public class TNEditor extends JFrame {
 				jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
 				// jl.setIcon(CSTNUEditor.warnIcon);
 			}
-			jl1.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
+
 			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
+		}
+	}
+
+	/**
+	 * @author posenato
+	 */
+	private class CSTNUInitListener implements ActionListener {
+
+		public CSTNUInitListener() {
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final JEditorPane jl1 = TNEditor.this.viewerMessageArea;
+			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) TNEditor.this.inputGraph,
+					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
+			((TNGraph<CSTNUEdge>) TNEditor.this.checkedGraph).takeIn(g1);
+
+			TNEditor.this.cstnu = new CSTNU((TNGraph<CSTNUEdge>) TNEditor.this.checkedGraph, 30 * 60, TNEditor.this.onlyToZ);
+			TNEditor.this.cstnu.setContingentAlsoAsOrdinary(TNEditor.this.contingentAlsoAsOrdinary);
+			try {
+				TNEditor.this.cstnu.initAndCheck();
+			} catch (final IllegalArgumentException | WellDefinitionException ec) {
+				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						TNEditor.LOG.warning(msg);
+					}
+				}
+				jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>" + msg + "</b>");
+				// jl.setIcon(CSTNUEditor.warnIcon);
+				jl1.setOpaque(true);
+				jl1.setBackground(Color.orange);
+				TNEditor.this.validate();
+				TNEditor.this.repaint();
+				return;
+			}
+			jl1.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;TNGraph with Lower and Upper Case Labels.");
+			// jl.setIcon(CSTNUEditor.infoIcon);
+			jl1.setBackground(Color.orange);
+			TNEditor.this.saveCSTNResultButton.setEnabled(true);
+			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -691,66 +726,10 @@ public class TNEditor extends JFrame {
 				jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;There is a problem in the code: " + ex.getMessage());
 				// jl.setIcon(CSTNUEditor.warnIcon);
 			}
-			jl1.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
+
 			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
-		}
-	}
-
-	/**
-	 * @author posenato
-	 */
-	private class CSTNUInitListener implements ActionListener {
-
-		public CSTNUInitListener() {
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public void actionPerformed(final ActionEvent e) {
-			final JEditorPane jl1 = TNEditor.this.viewerMessageArea;
-			TNGraph<CSTNUEdge> g1 = new TNGraph<>((TNGraph<CSTNUEdge>) TNEditor.this.inputGraph,
-					(Class<? extends CSTNUEdge>) EdgeSupplier.DEFAULT_CSTNU_EDGE_CLASS);
-			((TNGraph<CSTNUEdge>) TNEditor.this.checkedGraph).takeIn(g1);
-
-			TNEditor.this.cstnu = new CSTNU((TNGraph<CSTNUEdge>) TNEditor.this.checkedGraph, 30 * 60, TNEditor.this.onlyToZ);
-			TNEditor.this.cstnu.setContingentAlsoAsOrdinary(TNEditor.this.contingentAlsoAsOrdinary);
-			try {
-				TNEditor.this.cstnu.initAndCheck();
-			} catch (final IllegalArgumentException | WellDefinitionException ec) {
-				String msg = "The graph has a problem and it cannot be initialize: " + ec.getMessage();
-				if (Debug.ON) {
-					if (LOG.isLoggable(Level.WARNING)) {
-						TNEditor.LOG.warning(msg);
-					}
-				}
-				jl1.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>" + msg + "</b>");
-				// jl.setIcon(CSTNUEditor.warnIcon);
-				jl1.setOpaque(true);
-				jl1.setBackground(Color.orange);
-				TNEditor.this.validate();
-				TNEditor.this.repaint();
-				return;
-			}
-			jl1.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;TNGraph with Lower and Upper Case Labels.");
-			// jl.setIcon(CSTNUEditor.infoIcon);
-			jl1.setOpaque(true);
-			jl1.setBackground(Color.orange);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
-			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -824,13 +803,8 @@ public class TNEditor extends JFrame {
 				}
 			}
 
-			jl1.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
 			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -938,38 +912,41 @@ public class TNEditor extends JFrame {
 
 			// Generic help depends on this.editor.extraButtons;
 			this.genericHelp = "<html>"
-					+ "<h2>TNEditor " + TNEditor.VERSION + "</h2>"
-					+ "<p>It is possibile to create (File->New)/load (File->Open) and save the following kind of temporal networks: STN, CSTN, CSTNU, CSTPSU/FTNU.</p>"
-					+ "<p>The left side of the window is the editor where it is possible to manage the network. The right side of the window shows the results of an automatic operation.</p>"
-					+ "<p>Once a network is created, the tool bar is exended to offer all possible operations.<br>A network can be modified when the programma in <i>Editing mode.</i> "
-					+ "The <i>Transforming mode</i> is just for moving/zooming the current graph.</p>"
+					+ "<h2>TNEditor Help</h2>"
+					+ "<p>It is possibile to create (File->New), load (File->Open), and save the following kind of temporal networks: STN, CSTN, CSTNU, CSTPSU/FTNU.</p>"
+					+ "<p>The application contains two main windows. The left window is the <i>editor window</i> where it is possible to build/edit a network.<br>"
+					+ "The right window is the <i>view window</i> where the result of an operation (like consistency check) is shown. In the view window it is not possible to edit the shown graph.</p>"
+					+ "<p>Once a network is created, the tool bar is exended to offer all possible operations on the network.<br>"
+					+ "A network can be modified or inspected when the window is in <i>EDITING</i> mode.<br>"
+					+ "The <i>TRANSFORMING</i> mode is for moving and zooming the network.</p>"
 					+ ((this.editor.extraButtons)
 							? "<p>Button 'Layout input graph' redraws the network in the editor. It works only when the network represents a business schema transformation with a proper grammar.<br>"
 							: "")
 					+ "Button 'Input/Derived Graph big viewer' opens a wider window for showing the input/derived graph.</p>"
 					+ "<h3>Editing Mode:</h3>"
 					+ "<ul>"
-					+ "<li>Right-click an empty area to create a new Vertex"
-					+ "<li>Left-click+Shift on a Vertex adds/removes Vertex selection"
-					+ "<li>Left-click an empty area unselects all Vertices"
-					+ "<li>Left+drag on a Vertex moves all selected Vertices"
-					+ "<li>Left+drag elsewhere selects Vertices in a region"
-					+ "<li>Left+Shift+drag adds selection of Vertices in a new region"
-					+ "<li>Left+CTRL on a Vertex selects the vertex and centers the display on it"
-					+ "<li>Left double-click on a vertex or edge allows you to edit the label"
-					+ "<li>Right-click on a Vertex for <b>Delete Vertex</b> popup"
-					+ "<li>Right-click on a Vertex for <b>Create Edge</b> menus (if there are selected Vertices)"
-					+ "<li>Right-click on an Edge for <b>Delete Edge</b> popup"
+					+ "<li>Right-click on an empty area for <b>Add node</b> menu."
+					+ "<li>Right-click on a node for <b>Delete node</b> popup."
+					+ "<li>Right-click on a node for <b>Add edge</b> menu (if there are selected nodes)."
+					+ "<li>Right-click on an edge for <b>Delete edge</b> popup"
+					+ "<li>Left-click+Shift on a node adds/removes node selection."
+					+ "<li>Left-click an empty area unselects all nodes."
+					+ "<li>Left+drag on a node moves all selected nodes."
+					+ "<li>Left+drag elsewhere selects nodes in a region."
+					+ "<li>Left+Shift+drag adds selection of nodes in a new region."
+					+ "<li>Left-click+drag on a selected node to another node, add an edge from the first node to the second."
+					+ "<li>Left+Ctrl on a node selects the node and centers the display on it."
+					+ "<li>Left double-click on a node or edge allows you to edit it."
 					+ "<li>Mousewheel scales with a crossover value of 1.0.<br>"
-					+ "     - scales the graph layout when the combined scale is greater than 1<br>"
-					+ "     - scales the graph view when the combined scale is less than 1"
+					+ "     - scales the network layout when the combined scale is greater than 1<br>"
+					+ "     - scales the network view when the combined scale is less than 1"
 					+ "</ul>"
 					+ "<h3>Transforming Mode:</h3>"
 					+ "<ul>"
-					+ "<li>Left+drag pans the graph"
-					+ "<li>Left+Shift+drag rotates the graph"
-					+ "<li>Left+Command+drag shears the graph"
-					+ "<li>Left double-click on a Vertex or Edge allows you to edit the label"
+					+ "<li>Left+drag for moving the network."
+					+ "<li>Left+Shift+drag for rotating the network."
+					+ "<li>Left+Command+drag shears the network."
+					+ "<li>Left double-click on a vertex or edge allows you to edit the label."
 					+ "</ul>"
 					// + "<h3>Annotation Mode:</h3>"
 					// + "<ul>"
@@ -1092,6 +1069,8 @@ public class TNEditor extends JFrame {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
+			if (!askBeforeOverwriteCurrentNetwork())
+				return;
 			switch (e.getActionCommand()) {
 			case "STNU":
 				setDefaultParametersForNetwork(NetworkType.STNU);
@@ -1110,6 +1089,7 @@ public class TNEditor extends JFrame {
 				setDefaultParametersForNetwork(NetworkType.STN);
 				break;
 			}
+			TNEditor.this.inputGraphBiggerViewer.setEnabled(true);
 		}
 	}
 
@@ -1149,6 +1129,8 @@ public class TNEditor extends JFrame {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
+			if (!askBeforeOverwriteCurrentNetwork())
+				return;
 			final int option = this.chooser.showOpenDialog(TNEditor.this);
 			final JEditorPane jl = TNEditor.this.viewerMessageArea;
 			if (option == JFileChooser.APPROVE_OPTION) {
@@ -1296,21 +1278,12 @@ public class TNEditor extends JFrame {
 						edge.setInNegativeCycle(true);
 					}
 				}
-				if (TNEditor.this.stnStatus.negativeLoopNode!=null) {
+				if (TNEditor.this.stnStatus.negativeLoopNode != null) {
 					TNEditor.this.stnStatus.negativeLoopNode.setInNegativeCycle(true);
 				}
 			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -1346,17 +1319,8 @@ public class TNEditor extends JFrame {
 			} else {
 				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
 			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -1399,15 +1363,9 @@ public class TNEditor extends JFrame {
 			}
 			jl.setText("STN initialized.");
 			// jl.setIcon(TNEditor.infoIcon);
-			jl.setOpaque(true);
 			jl.setBackground(Color.orange);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -1450,17 +1408,8 @@ public class TNEditor extends JFrame {
 			} else {
 				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
 			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -1505,17 +1454,8 @@ public class TNEditor extends JFrame {
 			} catch (final WellDefinitionException ex) {
 				jl.setText("There is a problem in the code: " + ex.getMessage());
 			}
-			jl.setOpaque(true);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.vvViewer.validate();
-			TNEditor.this.vvViewer.repaint();
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
@@ -1558,22 +1498,16 @@ public class TNEditor extends JFrame {
 			}
 			jl.setText("STNU initialized.");
 			// jl.setIcon(TNEditor.infoIcon);
-			jl.setOpaque(true);
-			jl.setBackground(Color.orange);
-			updateNodePositions();
-			TNEditor.this.vvViewer.setVisible(true);
-			TNEditor.this.saveCSTNResultButton.setEnabled(true);
-
-			TNEditor.this.validate();
-			TNEditor.this.repaint();
 			TNEditor.this.cycle = 0;
+			jl.setBackground(Color.orange);
+			TNEditor.this.updatevvViewer();
 		}
 	}
 
 	/**
 	 * Name of the derived graph big viewer
 	 */
-	public static final String DERIVED_GRAPH_BIG_VIEWER_NAME = "Derived Graph Big Viewer";
+	public static final String DERIVED_GRAPH_BIG_VIEWER_NAME = "Resulting network bigger viewer";
 
 	/**
 	 * Name of the distance viewer panel
@@ -1588,7 +1522,7 @@ public class TNEditor extends JFrame {
 	/**
 	 * Name of the input graph big viewer
 	 */
-	public static final String INPUT_GRAPH_BIG_VIEWER_NAME = "Input Graph Big Viewer";
+	public static final String INPUT_GRAPH_BIG_VIEWER_NAME = "Bigger viewer";
 
 	/**
 	 *
@@ -1797,6 +1731,16 @@ public class TNEditor extends JFrame {
 	 * TNGraph structures necessary to represent input graph.
 	 */
 	final TNGraph<? extends Edge> inputGraph;
+
+	/**
+	 * Button for input network bigger viewer
+	 */
+	JButton inputGraphBiggerViewer;
+
+	/**
+	 * Button for derived network bigger viewer
+	 */
+	JButton derivedGraphBiggerViewer;
 
 	/**
 	 * Layout for input graph.
@@ -2031,22 +1975,22 @@ public class TNEditor extends JFrame {
 		this.validationPanelCSTNU.setInnerComponent(rowForCSTNUButtons);
 		this.validationPanelCSTNU.setBorder(BorderFactory.createLineBorder(getForeground(), 1));
 
-		JButton buttonCheck;
-
 		// FIRST ROW OF COMMANDS
 		// mode box for the editor
 		this.rowForAppButtons.add(new JComboBox<>());// the real ComboBox is added after the initialization.
 		this.modeBoxIndex = 0;
 
 		this.layoutToggleButton = new JToggleButton("Layout input graph");
+		this.layoutToggleButton.setEnabled(false);
 		this.layoutToggleButton.addActionListener(new LayoutListener());
 		if (this.extraButtons) {
 			// I create this.layoutToggleButton in any case because it is manipulated in many places...
 			this.rowForAppButtons.add(this.layoutToggleButton);
 		}
-		buttonCheck = new JButton("Input Graph big viewer");
-		buttonCheck.addActionListener(new BigViewerListener(true));
-		this.rowForAppButtons.add(buttonCheck);
+		this.inputGraphBiggerViewer = new JButton(INPUT_GRAPH_BIG_VIEWER_NAME);
+		this.inputGraphBiggerViewer.setEnabled(false);
+		this.inputGraphBiggerViewer.addActionListener(new BigViewerListener(true));
+		this.rowForAppButtons.add(this.inputGraphBiggerViewer);
 
 		// AnnotationControls<LabeledNode,Edge> annotationControls =
 		// new AnnotationControls<LabeledNode,Edge>(gm.getAnnotatingPlugin());
@@ -2067,9 +2011,10 @@ public class TNEditor extends JFrame {
 		// });
 		// rowForAppButtons.add(excludeR1R2Button);
 
-		buttonCheck = new JButton("Derived Graph big viewer");
-		buttonCheck.addActionListener(new BigViewerListener(false));
-		this.rowForAppButtons.add(buttonCheck);
+		this.derivedGraphBiggerViewer = new JButton(DERIVED_GRAPH_BIG_VIEWER_NAME);
+		this.derivedGraphBiggerViewer.setEnabled(false);
+		this.derivedGraphBiggerViewer.addActionListener(new BigViewerListener(false));
+		this.rowForAppButtons.add(this.derivedGraphBiggerViewer);
 
 		// mode box for the distance viewer
 		this.rowForAppButtons.add(new JComboBox<>());
@@ -2077,7 +2022,7 @@ public class TNEditor extends JFrame {
 
 		HelpListener help = new HelpListener(this);
 
-		buttonCheck = new JButton("Help");
+		JButton buttonCheck = new JButton("Help");
 		buttonCheck.addActionListener(help);
 		buttonCheck.setActionCommand(HelpListener.AvailableHelp.GenericHelp.toString());
 		this.rowForAppButtons.add(buttonCheck);
@@ -2403,6 +2348,7 @@ public class TNEditor extends JFrame {
 		TNEditor.this.inputGraph.takeIn((new TNGraphMLReader()).readGraph(fileName, this.currentEdgeImpl));
 		TNEditor.this.inputGraph.setInputFile(fileName);
 		TNEditor.this.mapInfoLabel.setText(TNEditor.this.inputGraph.getEdgeFactory().toString());
+		TNEditor.this.inputGraphBiggerViewer.setEnabled(true);
 		// LOG.severe(TNEditor.this.inputGraph.getEdgeFactory().toString());
 		TNEditor.this.validate();
 		TNEditor.this.repaint();
@@ -2534,6 +2480,34 @@ public class TNEditor extends JFrame {
 	 *            EdgeSupplier<>(this.currentEdgeImpl));
 	 *            }
 	 */
+
+	/**
+	 * Update the vvViewer after a check making some common operations.
+	 */
+	void updatevvViewer() {
+		this.viewerMessageArea.setOpaque(true);
+		this.updateNodePositions();
+		this.vvViewer.setCursor(Cursor.getDefaultCursor());
+		this.vvViewer.setVisible(true);
+		this.vvViewer.validate();
+		this.vvViewer.repaint();
+		this.derivedGraphBiggerViewer.setEnabled(true);
+		this.validate();
+		this.repaint();
+	}
+
+	/**
+	 * Shows a ConfirmDialog to ask the permission to overwrite the current input network.
+	 * 
+	 * @return true is the user clicked YES, false for any other action
+	 */
+	boolean askBeforeOverwriteCurrentNetwork() {
+		if (this.inputGraph != null && this.inputGraph.getVertexCount() > 0) {
+			int result = JOptionPane.showConfirmDialog(this, "Overwrite current input network?", "Consent request", JOptionPane.YES_NO_OPTION);
+			return result == JOptionPane.YES_OPTION;
+		}
+		return true;
+	}
 
 	/**
 	 * Update node positions in derived graph.
