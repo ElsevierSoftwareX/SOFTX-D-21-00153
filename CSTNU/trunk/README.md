@@ -70,6 +70,8 @@ The Jar package is distributed with all debugging code removed. In case that it 
 The main goal of CSTNU Tool library is to be a support library for representing and checking temporal constraint networks
 inside other software.
 
+The directory `Instances` constains some CSTN and CSTNU instances.
+
 As side feature, all classes (`STN, STNU, CSTN*, CSTNU, CSTNPUS`) relative to the different kinds of temporal networks have the `main` method that allows the execution of the `dynamicCheck` method on a given input file directly.
 
 #### Example of execution of CSTN class
