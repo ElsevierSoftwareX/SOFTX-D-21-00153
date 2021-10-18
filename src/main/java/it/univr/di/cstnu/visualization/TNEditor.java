@@ -78,6 +78,7 @@ import it.univr.di.cstnu.algorithms.AbstractCSTN.CSTNCheckStatus;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.CheckAlgorithm;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.DCSemantics;
 import it.univr.di.cstnu.algorithms.AbstractCSTN.EdgesToCheck;
+import it.univr.di.cstnu.algorithms.AbstractCSTN;
 import it.univr.di.cstnu.algorithms.CSTN;
 import it.univr.di.cstnu.algorithms.CSTNEpsilon;
 import it.univr.di.cstnu.algorithms.CSTNEpsilon3R;
@@ -210,11 +211,16 @@ public class TNEditor extends JFrame {
 			}
 			if (selected instanceof CSTN.CheckAlgorithm) {
 				TNEditor.this.cstnCheckAlg = (CSTN.CheckAlgorithm) this.comboBox.getSelectedItem();
-				if (TNEditor.this.cstnCheckAlg != CheckAlgorithm.HunsbergerPosenato19) {
-					TNEditor.this.cstnDCSemmanticsCombo.setSelectedItem(DCSemantics.IR);
-					TNEditor.this.cstnDCSemmanticsCombo.validate();
-					TNEditor.this.cstnDCSemmanticsCombo.repaint();
+				if (TNEditor.this.cstnCheckAlg != CheckAlgorithm.HunsbergerPosenato18) {
+					if (TNEditor.this.cstnDCSemmanticsComboBox.getSelectedItem()==DCSemantics.Std) {
+						TNEditor.this.cstnDCSemmanticsComboBox.setSelectedItem(DCSemantics.IR);
+					}
 				}
+				if (TNEditor.this.cstnCheckAlg == CheckAlgorithm.HunsbergerPosenato20) {
+					TNEditor.this.cstnDCSemmanticsComboBox.setSelectedItem(DCSemantics.IR);
+				}
+				TNEditor.this.cstnDCSemmanticsComboBox.validate();
+				TNEditor.this.cstnDCSemmanticsComboBox.repaint();
 				return;
 			}
 		}
@@ -342,7 +348,7 @@ public class TNEditor extends JFrame {
 			default:
 			case HunsbergerPosenato20:
 				TNEditor.this.cstn = new CSTNPotential((TNGraph<CSTNEdge>) TNEditor.this.checkedGraph);
-				TNEditor.this.cstnDCSemmanticsCombo.setSelectedItem(DCSemantics.IR);
+				TNEditor.this.cstnDCSemmanticsComboBox.setSelectedItem(DCSemantics.IR);
 				break;
 			}
 
@@ -447,6 +453,7 @@ public class TNEditor extends JFrame {
 		public void actionPerformed(final ActionEvent e) {
 			final JEditorPane jl = TNEditor.this.viewerMessageArea;
 
+			TNEditor.this.checkingAlgCSTNComboBox.setSelectedItem(AbstractCSTN.CheckAlgorithm.HunsbergerPosenato19);
 			if (TNEditor.this.cycle == -1)
 				return;
 			if (TNEditor.this.cycle == 0) {
@@ -847,7 +854,7 @@ public class TNEditor extends JFrame {
 				+ "<p>Executes the controllability check using the selected algorithm in the drop-down list.<br>"
 				+ "The resulting graph is presented on the right window.</p>"
 				+ "<h4>One Step CSTN Check</h4>"
-				+ "<p>Executes only one pass of Hunsberger Posenato 19 algorithm at each buttom press. Useful for viewing the execution of the algorihm step-by-step.</p>"
+				+ "<p>Executes only one pass of HunsbergerPosenato19 algorithm at each buttom press. Useful for viewing the execution of the algorihm step-by-step.</p>"
 				+ "<h4>Saved Checked CSTN</h4>"
 				+ "<p>Saves the network obtained by a check.</p>"
 				+ "</html>";
@@ -1693,10 +1700,16 @@ public class TNEditor extends JFrame {
 	 */
 	CSTN.CheckAlgorithm cstnCheckAlg = CSTN.CheckAlgorithm.HunsbergerPosenato20;
 
+	
+	/**
+	 * Drop-down list for selecting CSTN CheckingAlgorithm
+	 */
+	JComboBox<CSTN.CheckAlgorithm> checkingAlgCSTNComboBox;
+	
 	/**
 	 * semantic combo for CSTN
 	 */
-	JComboBox<DCSemantics> cstnDCSemmanticsCombo;
+	JComboBox<DCSemantics> cstnDCSemmanticsComboBox;
 
 	/**
 	 * CSTNPSU checker
@@ -2117,19 +2130,19 @@ public class TNEditor extends JFrame {
 		// }
 		// });
 		// rowForCSTNButtons.add(withUnkwon);
-		this.cstnDCSemmanticsCombo = new JComboBox<>(DCSemantics.values());// this panel must be declared here because used by cAlgComboCSTN
+		this.cstnDCSemmanticsComboBox = new JComboBox<>(DCSemantics.values());// this panel must be declared here because used by cAlgComboCSTN
 		this.epsilonPanel = new JPanel(new FlowLayout());// this panel must be declared here because is used inside DCSemanticsListener
 
 		rowForCSTNButtons.add(new JLabel("Checking Algorithm: "));
-		JComboBox<CSTN.CheckAlgorithm> cAlgComboCSTN = new JComboBox<>(CSTN.CheckAlgorithm.values());
-		cAlgComboCSTN.addActionListener(new CheckAlgListener<>(cAlgComboCSTN));
-		cAlgComboCSTN.setSelectedItem(this.cstnCheckAlg);
-		rowForCSTNButtons.add(cAlgComboCSTN);
+		this.checkingAlgCSTNComboBox = new JComboBox<>(CSTN.CheckAlgorithm.values());
+		this.checkingAlgCSTNComboBox.addActionListener(new CheckAlgListener<>(this.checkingAlgCSTNComboBox));
+		this.checkingAlgCSTNComboBox.setSelectedItem(this.cstnCheckAlg);
+		rowForCSTNButtons.add(this.checkingAlgCSTNComboBox);
 
 		rowForCSTNButtons.add(new JLabel("DC Semantics: "));
-		this.cstnDCSemmanticsCombo.addActionListener(new DCSemanticsListener(this.cstnDCSemmanticsCombo));
+		this.cstnDCSemmanticsComboBox.addActionListener(new DCSemanticsListener(this.cstnDCSemmanticsComboBox));
 		// this.cstnDCSemmanticsCombo.setSelectedItem(this.dcCurrentSem); set by cascade from cAlgComboCSTN.setSelectedItem(this.cstnCheckAlg);
-		rowForCSTNButtons.add(this.cstnDCSemmanticsCombo);
+		rowForCSTNButtons.add(this.cstnDCSemmanticsComboBox);
 
 		//
 		// epsilon panel
