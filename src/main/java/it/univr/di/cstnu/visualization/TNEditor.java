@@ -879,18 +879,17 @@ public class TNEditor extends JFrame {
 		private static final String stnHelp = "<html>"
 				+ "<h2>Simple Temporal Network</h2>"
 				+ "<h4>Checking algorithm</h4>"
-				+ "<p>Select which algorithm will be used for checking the consistency.<br>Some algorithms, like BellmanFord or Dijkstra, are not complete but just sound with respect to "
-				+ "the STN consistency: if they say <b>no</b>, the given network is surely not consistent.<br>"
-				+ "The algorithm single-source-shortest-paths consider the node <b>Z</b> as source node."
+				+ "<p>Select which algorithm will be used for checking the consistency.<br>"
+				+ "Single-source-shortest-paths algoirithms like Bellman-Ford consider the node <b>Z</b> as source node."
 				+ "<h4>Init</h4>"
 				+ "<p>Checks that node <b>Z</b> is present and adds all necessary constraints to make it as the first node to execute.</p>"
 				+ "<h4>Consistency</h4>"
 				+ "<p>Executes the consistency check using the selected algorithm in the drop-down list.<br>"
 				+ "The resulting graph is presented on the right window.</p>"
 				+ "<h4>Dispatchable</h4>"
-				+ "<p>Transforms a consistent network in a dispatchable form using the Muscettola et al. 1998 algorithm.</p>"
+				+ "<p>Transforms a <b>consistent</b> network in a dispatchable form using the Muscettola et al. 1998 algorithm.</p>"
 				+ "<h4>PredecessorSubGraph</h4>"
-				+ "<p>Determine a predecessor graph of a given node using Muscettola algorithm. The predecessor graph consists in all shortest paths from the given node to all other nodes.</p>"
+				+ "<p>Determine a predecessor graph of a given node in a <b>consistent</b> network using Muscettola algorithm. The predecessor graph consists in all shortest paths from the given node to all other nodes.</p>"
 				+ "</html>";
 
 		private static final String stnuHelp = "<html>"
@@ -1250,6 +1249,39 @@ public class TNEditor extends JFrame {
 			TNEditor.this.stn.setDefaultConsistencyCheckAlg(TNEditor.this.stnCheckAlg);
 			TNEditor.this.stn.setOutputCleaned(TNEditor.this.cleanResult);
 
+			
+			try {
+				TNEditor.this.stn.initAndCheck();
+			} catch (final Exception ec) {
+				String msg = "The network has a problem and it cannot be initialize: " + ec.getMessage();
+				if (Debug.ON) {
+					if (LOG.isLoggable(Level.WARNING)) {
+						TNEditor.LOG.warning(msg);
+					}
+				}
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>" + msg + "</b>");
+				// jl.setIcon(TNEditor.warnIcon);
+				jl.setOpaque(true);
+				jl.setBackground(Color.orange);
+				// TNEditor.this.vv2.validate();
+				// TNEditor.this.vv2.repaint();
+				TNEditor.this.validate();
+				TNEditor.this.repaint();
+				return;
+			}
+			
+			if (TNEditor.this.stnCheckAlg== STN.CheckAlgorithm.Dijkstra && TNEditor.this.stn.getMinNegativeWeight()<0) {
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>Dijkstra algorithm cannot be applied to a network having edges with negative values.</b>");
+				// jl.setIcon(TNEditor.warnIcon);
+				jl.setOpaque(true);
+				jl.setBackground(Color.orange);
+				// TNEditor.this.vv2.validate();
+				// TNEditor.this.vv2.repaint();
+				TNEditor.this.validate();
+				TNEditor.this.repaint();
+				return;
+			}
+				
 			jl.setBackground(Color.orange);
 			TNEditor.this.stnStatus = TNEditor.this.stn.consistencyCheck();
 			if (TNEditor.this.stnStatus.consistency) {
@@ -1313,11 +1345,10 @@ public class TNEditor extends JFrame {
 			jl.setBackground(Color.orange);
 			boolean status = TNEditor.this.stn.makeDispatchable();
 			if (status) {
-
 				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>The graph is dispatchable.");
 				jl.setBackground(Color.green);
 			} else {
-				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent and, therefore, it cannot be made dispatchable.</b>");
 			}
 			TNEditor.this.cycle = 0;
 			TNEditor.this.updatevvViewer();
@@ -1406,7 +1437,7 @@ public class TNEditor extends JFrame {
 				jl.setText("<img align='middle' src='" + INFO_ICON_FILE + "'>&nbsp;<b>Predecessor subgraph of " + node.getName() + ".");
 				jl.setBackground(Color.green);
 			} else {
-				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent.</b>");
+				jl.setText("<img align='middle' src='" + WARN_ICON_FILE + "'>&nbsp;<b>The graph is not consistent and, therefore, it is not possible to find the predecessor subgraph.</b>");
 			}
 			TNEditor.this.cycle = 0;
 			TNEditor.this.updatevvViewer();
