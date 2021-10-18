@@ -72,36 +72,35 @@ xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
 <data key="NetworkType">CSTNU</data>
 <data key="nEdges">2</data>
 <data key="nVertices">4</data>
+<data key="Name">testGraphML.cstnu</data>
 <node id="Z">
-<data key="x">0.0</data>
+<data key="x">30.0</data>
 <data key="Label">⊡</data>
-<data key="y">0.0</data>
-</node>
-<node id="X">
-<data key="x">0.0</data>
-<data key="Label">¬p</data>
-<data key="y">0.0</data>
-</node>
-<node id="Ω">
-<data key="x">0.0</data>
-<data key="Label">⊡</data>
-<data key="y">0.0</data>
+<data key="y">30.0</data>
 </node>
 <node id="Y">
-<data key="Obs">p</data>
-<data key="x">0.0</data>
-<data key="Label">⊡</data>
-<data key="y">0.0</data>
+<data key="x">260.0</data>
+<data key="Label">¬p</data>
+<data key="y">150.0</data>
 </node>
-<edge id="XY" source="X" target="Y">
+<node id="Ω">
+<data key="x">260.0</data>
+<data key="Label">⊡</data>
+<data key="y">30.0</data>
+</node>
+<node id="X">
+<data key="Obs">p</data>
+<data key="x">30.0</data>
+<data key="Label">⊡</data>
+<data key="y">150.0</data>
+</node>
+<edge id="XY" source="Y" target="X">
 <data key="Type">contingent</data>
-<data key="LowerCaseLabeledValues">{(X, 2, ¬p) }</data>
-<data key="LabeledValues">{}</data>
+<data key="LabeledValues">{(-2, ⊡) }</data>
 </edge>
-<edge id="YX" source="Y" target="X">
+<edge id="YX" source="X" target="Y">
 <data key="Type">contingent</data>
-<data key="UpperCaseLabeledValues">{(X, -5, ¬p) }</data>
-<data key="LabeledValues">{}</data>
+<data key="LabeledValues">{(5, ⊡) }</data>
 </edge>
 </graph>
 </graphml>
