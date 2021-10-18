@@ -857,7 +857,7 @@ public class STN {
 			y.setPotential(y.getPotential() - delta);
 			y.setBefore(null);
 			y.setStatus(LabeledNode.Status.UNREACHED);
-			//Once the y is update with its after, its after must be nullify!
+			// Once the y is update with its after, its after must be nullify!
 			LabeledNode tmp = y.getAfter();
 			y.setAfter(null);
 			y = tmp;
@@ -1092,7 +1092,7 @@ public class STN {
 	 * Absolute value of the max negative weight determined during initialization
 	 * phase.
 	 */
-	int maxWeight = Constants.INT_NULL;
+	int minNegativeWeight = Constants.INT_NULL;
 
 	/**
 	 * Timeout in seconds for the check.
@@ -1352,10 +1352,10 @@ public class STN {
 	}
 
 	/**
-	 * @return the maxWeight
+	 * @return the min negative weight of the network
 	 */
-	final public int getMaxWeight() {
-		return this.maxWeight;
+	final public int getMinNegativeWeight() {
+		return this.minNegativeWeight;
 	}
 
 	/**
@@ -1715,7 +1715,7 @@ public class STN {
 
 	/**
 	 * Considers the given graph as the graph to check (graph will be modified).
-	 * Clear all {@link #maxWeight}, {@link #horizon} and {@link #checkStatus}.
+	 * Clear all {@link #minNegativeWeight}, {@link #horizon} and {@link #checkStatus}.
 	 *
 	 * @param graph set internal TNGraph to g. It cannot be null.
 	 */
@@ -1969,14 +1969,12 @@ public class STN {
 		}
 
 		// manage maxWeight value
-		this.maxWeight = -minNegWeight;
+		this.minNegativeWeight = minNegWeight;
 		// Determine horizon value
-		long product = ((long) this.maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
-		// if (product >= Constants.INT_POS_INFINITE) {
-		// throw new ArithmeticException(
-		// "Horizon value is not representable by an integer. maxWeight = " +
-		// this.maxWeight + ", #vertices = " + this.g.getVertexCount());
-		// }
+		long product = (-(long) minNegWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
+		if (product > Constants.INT_POS_INFINITE) {
+			product = Constants.INT_POS_INFINITE;
+		}
 		this.horizon = (int) product;
 		if (Debug.ON) {
 			if (LOG.isLoggable(Level.FINE))
@@ -2107,7 +2105,7 @@ public class STN {
 	 */
 	void reset() {
 		this.g = null;
-		this.maxWeight = 0;
+		this.minNegativeWeight = 0;
 		this.horizon = 0;
 		this.checkStatus.reset();
 	}
