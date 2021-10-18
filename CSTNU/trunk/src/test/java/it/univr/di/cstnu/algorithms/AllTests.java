@@ -15,11 +15,14 @@ import org.junit.runners.Suite.SuiteClasses;
 		CSTNirR3Test.class,
 		CSTNirTest.class,
 		CSTNirwoNodeLabelTest.class,
+		CSTNPSUTest.class,
 		CSTNTest.class,
+		CSTNU2CSTNTest.class,
 		CSTNUTest.class,
 		CSTNwoNodeLabelTest.class,
 		ObjectArrayFifoSetQueueTest.class,
 		PriorityQueueTest.class,
+		STNTest.class,
 		STNUTest.class
 })
 public class AllTests {
