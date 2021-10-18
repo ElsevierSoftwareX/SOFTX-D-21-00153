@@ -56,7 +56,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 	
 
 	/**
-	 * Only for state which kind of DC checking algorithms have been implemented so far.
+	 * Only for stating which kind of DC checking algorithms have been implemented so far.
 	 *  
 	 * @author posenato
 	 */
@@ -73,7 +73,7 @@ public abstract class AbstractCSTN<E extends CSTNEdge> {
 		HunsbergerPosenato19,
 		/**
 		 * Hunsberger Posenato 2020. 
-		 * It is implemented by method {@link CSTNPotential#dynamicConsistencyCheck()}
+		 * It is implemented by method {@link CSTNPotential#dynamicConsistencyCheck()} and it is limited to instantaneous reaction semantic.
 		 */
 		HunsbergerPosenato20
 	}
