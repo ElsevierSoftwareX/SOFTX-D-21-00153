@@ -688,8 +688,7 @@ public class STN {
 			LOG.finer("Horizon value: " + horizon + ". Adding edges for guaranteeing that Z reaches each node.");
 		}
 		LabeledNode Z = g1.getZ();
-		SecureRandom rnd = new SecureRandom();
-		String prefix = "P" + rnd.nextInt();
+		String prefix = "";
 		makeNodesReachableBy(g1, Z, horizon, prefix);
 		if (Debug.ON) {
 			LOG.finer("Determining shortest-paths from Z by Bellman-Ford.");
@@ -738,7 +737,7 @@ public class STN {
 				edgeSD.setValue(newS_D_EdgeValue);
 			}
 		}
-		removeInternalEdgesWithPrefix(finalG, finalG.getZ(), prefix);
+//		removeInternalEdgesWithPrefix(finalG, finalG.getZ(), prefix);
 		g1.takeIn(finalG);
 		return true;
 	}
