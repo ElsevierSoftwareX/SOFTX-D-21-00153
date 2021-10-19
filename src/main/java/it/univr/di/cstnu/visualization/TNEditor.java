@@ -211,7 +211,7 @@ public class TNEditor extends JFrame {
 			}
 			if (selected instanceof CSTN.CheckAlgorithm) {
 				TNEditor.this.cstnCheckAlg = (CSTN.CheckAlgorithm) this.comboBox.getSelectedItem();
-				if (TNEditor.this.cstnCheckAlg != CheckAlgorithm.HunsbergerPosenato18) {
+				if (TNEditor.this.cstnCheckAlg == CheckAlgorithm.HunsbergerPosenato18) {
 					if (TNEditor.this.cstnDCSemmanticsComboBox.getSelectedItem()==DCSemantics.Std) {
 						TNEditor.this.cstnDCSemmanticsComboBox.setSelectedItem(DCSemantics.IR);
 					}
@@ -2130,7 +2130,7 @@ public class TNEditor extends JFrame {
 		// }
 		// });
 		// rowForCSTNButtons.add(withUnkwon);
-		this.cstnDCSemmanticsComboBox = new JComboBox<>(DCSemantics.values());// this panel must be declared here because used by cAlgComboCSTN
+		this.cstnDCSemmanticsComboBox = new JComboBox<>(DCSemantics.values());// this panel must be declared here because used by checkingAlgCSTNComboBox
 		this.epsilonPanel = new JPanel(new FlowLayout());// this panel must be declared here because is used inside DCSemanticsListener
 
 		rowForCSTNButtons.add(new JLabel("Checking Algorithm: "));
@@ -2141,7 +2141,7 @@ public class TNEditor extends JFrame {
 
 		rowForCSTNButtons.add(new JLabel("DC Semantics: "));
 		this.cstnDCSemmanticsComboBox.addActionListener(new DCSemanticsListener(this.cstnDCSemmanticsComboBox));
-		// this.cstnDCSemmanticsCombo.setSelectedItem(this.dcCurrentSem); set by cascade from cAlgComboCSTN.setSelectedItem(this.cstnCheckAlg);
+		this.cstnDCSemmanticsComboBox.setSelectedItem(this.dcCurrentSem); //set by cascade from checkingAlgCSTNComboBox.setSelectedItem(this.cstnCheckAlg);
 		rowForCSTNButtons.add(this.cstnDCSemmanticsComboBox);
 
 		//
