@@ -14,7 +14,7 @@
 	Removed 'normal' and 'constraint' type for `Edge` in favor of `requirement` because in Temporal Networks `requirement` is more appropriate.
 	Improved all documentation (now, there is only one README.md). Added BUILDING.md document that explains how to build a package and 
 	the preliminary steps to do before a commit (only for developers). 
-	 
+	
 ## v4.2 
 	date: 2021-10-07
 	
