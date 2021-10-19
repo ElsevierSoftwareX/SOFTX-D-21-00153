@@ -605,8 +605,7 @@ public class STN {
 	 * @see #dijkstra(TNGraph, LabeledNode, STNCheckStatus)
 	 * @param graph input graph. Each edge must have a positive weight but the edges outgoing from source, that can have a negative weight.
 	 * @param source the source node for the algorithm
-	 * @param checkStatus1 status to update with statistics of algorithm. It can be
-	 *            null.
+	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
 	 * @return null or a non empty map (node, integer) representing the distances of all
 	 *         nodes from the given source. Null is returned if graph is empty or source not in graph or negative edge beyond source edges has been
 	 *         found.
@@ -644,8 +643,8 @@ public class STN {
 				d = graph.getDest(e);
 				eValue = e.getValue();
 				if (!s.equalsByName(source) && eValue < 0) // s != source is for allowing the use of Dijkstra when the
-															// edges from source are negative (it is a
-															// particular use od Dijkstra algorithm).
+														// edges from source are negative (it is a
+														// particular use od Dijkstra algorithm).
 					return null;
 				v = Constants.sumWithOverflowCheck(sValue, eValue);
 				if (nodeQueue.getStatus(d) == PriorityQueue.Status.isPresent && nodeQueue.value(d) > v) {
@@ -679,15 +678,14 @@ public class STN {
 	 * @param g1 input graph
 	 * @param horizon the maximum edge value present in the graph. It is
 	 *            necessary for guaranteeing that Z reaches any nodes.
-	 * @param checkStatus1 status to update with statistics of algorithm. It can be
-	 *            null.
+	 * @param checkStatus1 status to update with statistics of algorithm. It can be null.
 	 * @return true if the graph is consistent, false otherwise.
 	 */
 	static boolean johnson(TNGraph<STNEdge> g1, int horizon, STNCheckStatus checkStatus1) {
 		// I cannot trust that Z can reach any node
 		// I add an edge Z-->node for each node with horizon value.
 		if (Debug.ON) {
-			LOG.finer("Horizon value: " + horizon + "\nAdding edges for guaranteeing that Z reaches each node.");
+			LOG.finer("Horizon value: " + horizon + ". Adding edges for guaranteeing that Z reaches each node.");
 		}
 		LabeledNode Z = g1.getZ();
 		SecureRandom rnd = new SecureRandom();
@@ -696,6 +694,8 @@ public class STN {
 		if (Debug.ON) {
 			LOG.finer("Determining shortest-paths from Z by Bellman-Ford.");
 		}
+		TNGraph<STNEdge> finalG = new TNGraph<>(g1, g1.getEdgeImplClass());
+
 		if (!bellmanFord(g1, Z, false, checkStatus1)) {
 			if (Debug.ON) {
 				LOG.finer("The STN is not consistent.");
@@ -713,10 +713,8 @@ public class STN {
 			LOG.finer("Re-weighted graph: " + g1);
 		}
 
-		TNGraph<STNEdge> finalG = new TNGraph<>(g1, g1.getEdgeImplClass());
-
 		// Determine the distances from each node updating the edge in the finalG
-		for (LabeledNode source : finalG.getVertices()) {
+		for (LabeledNode source : g1.getVertices()) {
 			if (Debug.ON) {
 				LOG.finer("\nDetermining the distances considering node " + source.getName()
 						+ " as source node using Dijkstra.");
@@ -725,22 +723,22 @@ public class STN {
 			Object2IntMap<LabeledNode> nodeDistanceFromSource = dijkstraReadOnly(g1, source, checkStatus1);
 
 			// for each other node, adjust the distance from source in finalG
-			for (LabeledNode d : finalG.getVertices()) {
+			for (LabeledNode d : g1.getVertices()) {
 				if (d == source)
 					continue;
 
 				// new potential value is the value of the edge in Dijkstra + the original potential
 				// difference between destination and source: DijkstraDistance + (d - s)
-				int newPotentialValue = Constants.sumWithOverflowCheck(nodeDistanceFromSource.getInt(d),
+				int newS_D_EdgeValue = Constants.sumWithOverflowCheck(nodeDistanceFromSource.getInt(d),
 						Constants.sumWithOverflowCheck(d.getPotential(), -source.getPotential()));
+				STNEdge edgeSD = finalG.findEdge(source.getName(), d.getName());
 				if (Debug.ON) {
-					LOG.finer("Adjusting potential value for " + d.getName() + " from " + d.getPotential()
-							+ " to " + newPotentialValue);
+					LOG.finer("Adjusting edge value for edge" + edgeSD + " from " + edgeSD.getValue() + " to " + newS_D_EdgeValue);
 				}
-				d.setPotential(newPotentialValue);
+				edgeSD.setValue(newS_D_EdgeValue);
 			}
 		}
-		removeInternalEdgesWithPrefix(finalG, Z, prefix);
+		removeInternalEdgesWithPrefix(finalG, finalG.getZ(), prefix);
 		g1.takeIn(finalG);
 		return true;
 	}
@@ -1940,6 +1938,7 @@ public class STN {
 
 		// Checks well definiteness of edges and determine maxWeight
 		int minNegWeight = 0;
+		int maxWeight = 0;
 		for (final STNEdge e : this.g.getEdges()) {
 			if (Debug.ON) {
 				if (LOG.isLoggable(Level.FINER)) {
@@ -1964,14 +1963,20 @@ public class STN {
 				continue;
 			}
 			int ev = e.getValue();
-			if (ev != Constants.INT_NULL && ev < minNegWeight)
-				minNegWeight = ev;
+			if (ev != Constants.INT_NULL) {
+				if (ev < minNegWeight) minNegWeight = ev;
+				if (ev > maxWeight) maxWeight = ev;
+			}
 		}
 
 		// manage maxWeight value
 		this.minNegativeWeight = minNegWeight;
 		// Determine horizon value
-		long product = (-(long) minNegWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
+		if (-minNegWeight > 	maxWeight) {
+			maxWeight=-minNegWeight;
+		}
+		
+		long product = ((long) maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product > Constants.INT_POS_INFINITE) {
 			product = Constants.INT_POS_INFINITE;
 		}
