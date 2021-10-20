@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="nContingent" for="graph">
+<desc>Number of contingents in the graph</desc>
+<default>0</default>
+</key>
+<key id="nObservedProposition" for="graph">
+<desc>Number of observed propositions in the graph</desc>
+<default>0</default>
+</key>
+<key id="NetworkType" for="graph">
+<desc>Network Type</desc>
+<default>CSTNU</default>
+</key>
+<key id="nEdges" for="graph">
+<desc>Number of edges in the graph</desc>
+<default>0</default>
+</key>
+<key id="nVertices" for="graph">
+<desc>Number of vertices in the graph</desc>
+<default>0</default>
+</key>
+<key id="Name" for="graph">
+<desc>Graph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Value specification: [a-zA-F]</desc>
+<default></default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-zA-F]|[a-zA-F]]+|⊡</desc>
+<default>⊡</default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Potential" for="node">
+<desc>Labeled Potential Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>
+<default></default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: contingent|requirement|derived|internal.</desc>
+<default>normal</default>
+</key>
+<key id="Value" for="edge">
+<desc>Value for STN edge. Format: 'integer'</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="NetworkType">STN</data>
+<data key="nEdges">10</data>
+<data key="nVertices">4</data>
+<data key="Name">testSTNwithNegativeCycle.stn</data>
+<node id="Z">
+<data key="x">447.4087829589844</data>
+<data key="y">496.5274353027344</data>
+</node>
+<node id="2">
+<data key="x">712.9266357421875</data>
+<data key="y">357.07257080078125</data>
+</node>
+<node id="1">
+<data key="x">300.242919921875</data>
+<data key="y">294.581787109375</data>
+</node>
+<node id="3">
+<data key="x">547.6780700683594</data>
+<data key="y">164.6132049560547</data>
+</node>
+
+<edge id="e_0_2" source="Z" target="2">
+<data key="Type">requirement</data>
+<data key="Value">4</data>
+</edge>
+<edge id="e_0_3" source="Z" target="3">
+<data key="Type">requirement</data>
+<data key="Value">2</data>
+</edge>
+<edge id="e_0_1" source="Z" target="1">
+<data key="Type">requirement</data>
+<data key="Value">6</data>
+</edge>
+
+<edge id="e_1_0" source="1" target="Z">
+<data key="Type">requirement</data>
+<data key="Value">-6</data>
+</edge>
+<edge id="e_1_3" source="1" target="3">
+<data key="Type">requirement</data>
+<data key="Value">-2</data>
+</edge>
+<edge id="e_2_0" source="2" target="Z">
+<data key="Type">requirement</data>
+<data key="Value">-3</data>
+</edge>
+<edge id="e_2_3" source="2" target="3">
+<data key="Type">requirement</data>
+<data key="Value">-4</data>
+</edge>
+<edge id="e_3_0" source="3" target="Z">
+<data key="Type">requirement</data>
+<data key="Value">-2</data>
+</edge>
+<edge id="e_3_1" source="3" target="1">
+<data key="Type">requirement</data>
+<data key="Value">3</data>
+</edge>
+<edge id="e_3_2" source="3" target="2">
+<data key="Type">requirement</data>
+<data key="Value">5</data>
+</edge>
+</graph>
+</graphml>
