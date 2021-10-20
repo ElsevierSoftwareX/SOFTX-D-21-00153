@@ -2,7 +2,7 @@
 <!-- START SNIPPET: rn -->
 
 ## v4.3
-	date:
+	date: 2021-10-20
 	
 	Class `LabeledNode`: extended for Tarjan algorithm.
 	Class `STN`: added BFCT (a.k.a. Tarjan algorithm) algorithm in STN class. Such an algorithm can return the negaive cycle if the network is not consistent.
