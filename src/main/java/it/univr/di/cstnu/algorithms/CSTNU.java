@@ -557,7 +557,7 @@ public class CSTNU extends AbstractCSTN<CSTNUEdge> {
 				}
 			}
 			if (initialValue == 0) {
-				if (d.isObserver() && e.lowerCaseValueSize() > 0) {
+				if (d.isObserver() && e.upperCaseValueSize() > 0) {
 					e.removeLabeledValue(conjunctedLabel);
 					initialValue = Constants.INT_NULL;
 				} else {
