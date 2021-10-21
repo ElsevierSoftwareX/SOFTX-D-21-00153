@@ -469,8 +469,7 @@ public class STN {
 		if (Debug.ON) {
 			LOG.finest("Horizon value: " + horizon + "\nAdding edges for guaranteeing that source node reaches each node.");
 		}
-		SecureRandom rnd = new SecureRandom();
-		String prefix = "P" + rnd.nextInt();
+		String prefix = "P" + System.currentTimeMillis();
 		makeNodesReachableBy(g1, source, horizon, prefix);
 
 		final Collection<LabeledNode> nodes = g1.getVertices();
@@ -1440,8 +1439,7 @@ public class STN {
 		if (this.checkStatus == null || !this.checkStatus.initialized) {
 			initAndCheck();
 		}
-		SecureRandom rnd = new SecureRandom();
-		String prefix = "P" + rnd.nextInt();
+		String prefix = "P" + System.currentTimeMillis();
 		makeNodesReachableBy(this.g, this.g.getZ(), this.horizon, prefix);
 
 		TNGraph<STNEdge> g1 = getSTNPredecessorSubGraph(this.g.getZ());
