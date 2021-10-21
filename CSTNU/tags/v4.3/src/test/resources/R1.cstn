@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="Obs" for="node">
+<desc>Proposition Observed</desc>
+<default></default>
+</key>
+<key id="Label" for="node">
+<desc>Label</desc>
+<default></default>
+</key>
+<key id="y" for="node">
+<default>0</default>
+</key>
+<key id="x" for="node">
+<default>0</default>
+</key>
+<key id="Value" for="edge">
+<desc>Value</desc>
+<default>1</default>
+</key>
+<key id="Type" for="edge">
+<desc>Type</desc>
+<default>normal</default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<node id="B?">
+<data key="Obs">B</data>
+<data key="Label">⊡</data>
+<data key="y">163.0</data>
+<data key="x">22.0</data>
+</node>
+<node id="X2">
+<data key="Obs"></data>
+<data key="Label">⊡</data>
+<data key="y">574.0</data>
+<data key="x">305.0</data>
+</node>
+<node id="X1">
+<data key="Obs"></data>
+<data key="Label">⊡</data>
+<data key="y">472.0</data>
+<data key="x">314.0</data>
+</node>
+<node id="Y">
+<data key="Obs">Y</data>
+<data key="Label">⊡</data>
+<data key="y">102.0</data>
+<data key="x">649.0</data>
+</node>
+<node id="D?">
+<data key="Obs">D</data>
+<data key="Label">⊡</data>
+<data key="y">22.0</data>
+<data key="x">155.0</data>
+</node>
+<node id="Y2">
+<data key="Obs"></data>
+<data key="Label">⊡</data>
+<data key="y">524.0</data>
+<data key="x">544.0</data>
+</node>
+<node id="X">
+<data key="Obs"></data>
+<data key="Label">⊡</data>
+<data key="y">262.0</data>
+<data key="x">347.0</data>
+</node>
+<node id="p?">
+<data key="Obs">P</data>
+<data key="Label">⊡</data>
+<data key="y">160.0</data>
+<data key="x">144.0</data>
+</node>
+<node id="Y1">
+<data key="Obs"></data>
+<data key="Label">⊡</data>
+<data key="y">363.0</data>
+<data key="x">544.0</data>
+</node>
+<node id="G?">
+<data key="Obs">G</data>
+<data key="Label">⊡</data>
+<data key="y">317.0</data>
+<data key="x">103.0</data>
+</node>
+<node id="A?">
+<data key="Obs">A</data>
+<data key="Label">⊡</data>
+<data key="y">271.0</data>
+<data key="x">44.0</data>
+</node>
+<edge id="A?_p?" source="A?" target="p?">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="G?_p?" source="G?" target="p?">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="p?_X1" source="p?" target="X1">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{(A, 10) }</data>
+</edge>
+<edge id="D?_p?" source="D?" target="p?">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="p?_X" source="p?" target="X">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{(AB, -10) (ABD, -15) (D, -15) }</data>
+</edge>
+<edge id="X1_Y1" source="X1" target="Y1">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{(AG¬P, 9) (AGP, 7) }</data>
+</edge>
+<edge id="B?_p?" source="B?" target="p?">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{}</data>
+</edge>
+<edge id="p?_X2" source="p?" target="X2">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{(AB, -5) }</data>
+</edge>
+<edge id="X2_Y2" source="X2" target="Y2">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{(AG¬P, 9) (AGP, 7) }</data>
+</edge>
+<edge id="X_Y" source="X" target="Y">
+<data key="Value">1</data>
+<data key="Type">requirement</data>
+<data key="LabeledValues">{(AG¬P, 9) (AGP, 7) }</data>
+</edge>
+</graph>
+</graphml>
