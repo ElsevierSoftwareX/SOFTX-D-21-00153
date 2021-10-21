@@ -35,7 +35,6 @@ import it.univr.di.cstnu.algorithms.AbstractCSTN.NodesToCheck;
 import it.univr.di.cstnu.graph.Component.Color;
 import it.univr.di.cstnu.graph.Edge;
 import it.univr.di.cstnu.graph.Edge.ConstraintType;
-import it.univr.di.cstnu.graph.EdgeSupplier;
 import it.univr.di.cstnu.graph.LabeledNode;
 import it.univr.di.cstnu.graph.STNEdge;
 import it.univr.di.cstnu.graph.STNEdgeInt;
@@ -299,7 +298,6 @@ public class STN {
 	 *         false, the edges do not represent the minimal distance between nodes.
 	 */
 	static boolean apsp(TNGraph<STNEdge> graph, STNCheckStatus checkStatus1) {
-		final EdgeSupplier<STNEdge> edgeFactory = graph.getEdgeFactory();
 		final LabeledNode[] node = graph.getVerticesArray();
 		final int n = node.length;
 		LabeledNode iV, jV, kV;
@@ -340,9 +338,11 @@ public class STN {
 					ij = graph.findEdge(iV, jV);
 					int old = Constants.INT_POS_INFINITE;
 					if (ij == null) {
-						ij = edgeFactory.get(node[i].getName() + "__" + node[j].getName());
-						ij.setConstraintType(Edge.ConstraintType.derived);
+						ij = makeNewEdge(graph, node[i].getName() + "_" + node[j].getName(), ConstraintType.derived);
 						graph.addEdge(ij, iV, jV);
+						if (Debug.ON) {
+							STN.LOG.finer("Added edge " + ij.toString());
+						}
 					} else {
 						old = ij.getValue();
 					}
@@ -353,7 +353,7 @@ public class STN {
 						}
 						if (Debug.ON) {
 							STN.LOG.fine("Edge " + ij.getName() + ": " + Constants.formatInt(old) + " --> "
-									+ Constants.formatInt(v) + "\n\t\t" + ik + " + " + kj);
+									+ Constants.formatInt(v) + " because result of " + ik + " + " + kj);
 						}
 					}
 				}
@@ -462,7 +462,7 @@ public class STN {
 	 * @return A list L of nodes forming a negative cycle if there is a negative
 	 *         cycle in g; otherwise an empty list.<br>
 	 *         In case of an empty list, the minimal distances are stored in each node (field 'potential') and the
-	 *         predecessor graph is also implicit store as field 'p' (for parent or predecessor in each node.
+	 *         predecessor graph is also implicit store as field 'p' (for parent or predecessor in each node).
 	 */
 	static boolean BFCT(TNGraph<STNEdge> g1, LabeledNode source, int horizon, STNCheckStatus checkStatus1) {
 
@@ -641,14 +641,19 @@ public class STN {
 			for (STNEdge e : graph.getOutEdges(s)) {
 				d = graph.getDest(e);
 				eValue = e.getValue();
-				if (!s.equalsByName(source) && eValue < 0) // s != source is for allowing the use of Dijkstra when the
-														// edges from source are negative (it is a
-														// particular use od Dijkstra algorithm).
+				if (!s.equalsByName(source) && eValue < 0) {// s != source is for allowing the use of Dijkstra when the
+															// edges from source are negative (it is a
+															// particular use od Dijkstra algorithm).
+					if (Debug.ON) {
+						STN.LOG.finer("Dijkstra edge " + e + " has a negative value but it shouldn't. Source is " + source.getName()
+								+ ". Destination is " + d.getName());
+					}
 					return null;
+				}
 				v = Constants.sumWithOverflowCheck(sValue, eValue);
 				if (nodeQueue.getStatus(d) == PriorityQueue.Status.isPresent && nodeQueue.value(d) > v) {
 					if (Debug.ON) {
-						STN.LOG.finer("Dijkstra updates " + d.getName() + " potential adding edge value " + eValue
+						STN.LOG.finer("Dijkstra updates '" + d.getName() + "' node potential adding edge value " + eValue
 								+ ": " + Constants.formatInt(nodeQueue.value(d)) + " --> " + Constants.formatInt(v));
 					}
 					nodeQueue.insertOrDecrease(d, v);
@@ -687,7 +692,7 @@ public class STN {
 			LOG.finer("Horizon value: " + horizon + ". Adding edges for guaranteeing that Z reaches each node.");
 		}
 		LabeledNode Z = g1.getZ();
-		String prefix = "";
+		String prefix = "_";
 		makeNodesReachableBy(g1, Z, horizon, prefix);
 		if (Debug.ON) {
 			LOG.finer("Determining shortest-paths from Z by Bellman-Ford.");
@@ -701,7 +706,9 @@ public class STN {
 			removeInternalEdgesWithPrefix(g1, Z, prefix);
 			return false;
 		}
-		// g1 is completed with BellmanFord potential values.
+		/*
+		 * g1 contains BellmanFord potential values.
+		 */
 		if (Debug.ON) {
 			LOG.finer("Re-weighting all edges.");
 		}
@@ -717,6 +724,8 @@ public class STN {
 				LOG.finer("\nDetermining the distances considering node " + source.getName()
 						+ " as source node using Dijkstra.");
 			}
+			if (source.getName().equals("3"))
+				System.out.print("Eccoci");
 			// Dijkstra determines distances from source
 			Object2IntMap<LabeledNode> nodeDistanceFromSource = dijkstraReadOnly(g1, source, checkStatus1);
 
@@ -727,16 +736,22 @@ public class STN {
 
 				// new potential value is the value of the edge in Dijkstra + the original potential
 				// difference between destination and source: DijkstraDistance + (d - s)
-				int newS_D_EdgeValue = Constants.sumWithOverflowCheck(nodeDistanceFromSource.getInt(d),
+				int newEdgeSDValue = Constants.sumWithOverflowCheck(nodeDistanceFromSource.getInt(d),
 						Constants.sumWithOverflowCheck(d.getPotential(), -source.getPotential()));
 				STNEdge edgeSD = finalG.findEdge(source.getName(), d.getName());
-				if (Debug.ON) {
-					LOG.finer("Adjusting edge value for edge" + edgeSD + " from " + edgeSD.getValue() + " to " + newS_D_EdgeValue);
+				if (edgeSD == null) {
+					// D is reachable from S, but there is no a direct edge.
+					// Johnson assumes to save the value of the edge... so we add it as internal.
+					edgeSD = makeNewEdge(finalG, source.getName() + "_" + d.getName(), ConstraintType.internal);
+					finalG.addEdge(edgeSD, source, d);
 				}
-				edgeSD.setValue(newS_D_EdgeValue);
+				if (Debug.ON) {
+					LOG.finer("Adjusting edge value for edge" + edgeSD + " from " + edgeSD.getValue() + " to " + newEdgeSDValue);
+				}
+				edgeSD.setValue(newEdgeSDValue);
 			}
 		}
-//		removeInternalEdgesWithPrefix(finalG, finalG.getZ(), prefix);
+		// removeInternalEdgesWithPrefix(finalG, finalG.getZ(), prefix);
 		g1.takeIn(finalG);
 		return true;
 	}
@@ -961,21 +976,19 @@ public class STN {
 					LOG.log(Level.FINER, "Prefix argument cannot be empty.");
 				}
 			}
-			return;
+			throw new IllegalArgumentException("Prefix argument cannot be empty.");
 		}
 		if (!graph.containsVertex(source))
 			graph.addVertex(source);
 
-		EdgeSupplier<STNEdge> edgeFact = graph.getEdgeFactory();
 		for (final LabeledNode node : graph.getVertices()) {
 			// 3. Checks that each no-source node has an edge from source
 			if (node == source)
 				continue;
 			STNEdge edge = graph.findEdge(source, node);
 			if (edge == null) {
-				edge = edgeFact.get(prefix + "__" + source.getName() + "__" + node.getName());
+				edge = makeNewEdge(graph, prefix + "_" + source.getName() + "_" + node.getName(), ConstraintType.internal);
 				graph.addEdge(edge, source, node);
-				edge.setConstraintType(ConstraintType.internal);
 				edge.setValue(horizon);
 				if (Debug.ON) {
 					if (LOG.isLoggable(Level.FINER)) {
@@ -1399,7 +1412,7 @@ public class STN {
 					if (Debug.ON) {
 						STN.LOG.finer("Edge " + e.getName() + " added to predecessor graph.");
 					}
-					STNEdge e1 = this.g.findEdge(source, d);
+					STNEdge e1 = pGraph.findEdge(source, d);
 					if (e1 != null) {
 						if (e1.getValue() < d.getPotential())
 							throw new IllegalStateException(
@@ -1409,7 +1422,7 @@ public class STN {
 							if (Debug.ON) {
 								STN.LOG.finer("Edge " + e1.getName() + " added to predecessor graph.");
 							}
-						}
+						}	
 					}
 				}
 			}
@@ -1556,6 +1569,8 @@ public class STN {
 					if (v23 < 0)
 						continue;
 					STNEdge edge12 = this.g.findEdge(node1, node2);
+					if (edge12 == null)
+						continue;
 					int v12 = edge12.getValue();
 					boolean edge13NotDominated = true;
 					if (edge13.getColor() != Color.gray && v13 == v12 + v23) {
@@ -1570,6 +1585,8 @@ public class STN {
 					}
 					if (edge13NotDominated) {
 						STNEdge edge21 = this.g.findEdge(node2, node1);
+						if (edge21==null)
+							continue;
 						int v21 = edge21.getValue();
 						if (edge23.getColor() != Color.gray && v23 == v21 + v13) {
 							// edge13 dominates
@@ -1601,6 +1618,8 @@ public class STN {
 					if (v32 >= 0)
 						continue;
 					STNEdge edge12 = this.g.findEdge(node1, node2);
+					if (edge12 == null)
+						continue;
 					int v12 = edge12.getValue();
 					boolean edge32NotDominated = true;
 					if (edge32.getColor() != Color.gray && v32 == v31 + v12) {
@@ -1616,6 +1635,8 @@ public class STN {
 					}
 					if (edge32NotDominated) {
 						STNEdge edge21 = this.g.findEdge(node2, node1);
+						if (edge21==null)
+							continue;
 						int v21 = edge21.getValue();
 						if (edge31.getColor() != Color.gray && v31 == v32 + v21) {
 							// edge13 dominates
@@ -1961,18 +1982,20 @@ public class STN {
 			}
 			int ev = e.getValue();
 			if (ev != Constants.INT_NULL) {
-				if (ev < minNegWeight) minNegWeight = ev;
-				if (ev > maxWeight) maxWeight = ev;
+				if (ev < minNegWeight)
+					minNegWeight = ev;
+				if (ev > maxWeight)
+					maxWeight = ev;
 			}
 		}
 
 		// manage maxWeight value
 		this.minNegativeWeight = minNegWeight;
 		// Determine horizon value
-		if (-minNegWeight > 	maxWeight) {
-			maxWeight=-minNegWeight;
+		if (-minNegWeight > maxWeight) {
+			maxWeight = -minNegWeight;
 		}
-		
+
 		long product = ((long) maxWeight) * (this.g.getVertexCount() - 1);// Z doesn't count!
 		if (product > Constants.INT_POS_INFINITE) {
 			product = Constants.INT_POS_INFINITE;
@@ -1994,7 +2017,7 @@ public class STN {
 			boolean added = false;
 			STNEdge edge = this.g.findEdge(node, this.g.getZ());
 			if (edge == null) {
-				edge = makeNewEdge(node.getName() + "_" + this.g.getZ().getName(), ConstraintType.internal);
+				edge = makeNewEdge(this.g, node.getName() + "_" + this.g.getZ().getName(), ConstraintType.internal);
 				this.g.addEdge(edge, node, this.g.getZ());
 				edge.setValue(0);
 				added = true;
@@ -2025,20 +2048,21 @@ public class STN {
 
 	/**
 	 * Create an edge assuring that its name is unique in the graph 'g'.
-	 *
+	 * 
+	 * @param g1 the graph to which add the edge. it must be not null.
 	 * @param name the proposed name. If an edge with name already exists, then name
 	 *            is modified adding an suitable integer such that the name becomes
 	 *            unique in 'g'.
 	 * @param type the type of edge to create.
 	 * @return an edge with a unique name.
 	 */
-	STNEdge makeNewEdge(final String name, final Edge.ConstraintType type) {
-		int i = this.g.getEdgeCount();
+	static STNEdge makeNewEdge(TNGraph<STNEdge> g1, final String name, final Edge.ConstraintType type) {
+		int i = g1.getEdgeCount();
 		String name1 = name;
-		while (this.g.getEdge(name1) != null) {
+		while (g1.getEdge(name1) != null) {
 			name1 = name + "_" + i++;
 		}
-		final STNEdge e = this.g.getEdgeFactory().get(name1);
+		final STNEdge e = g1.getEdgeFactory().get(name1);
 		e.setConstraintType(type);
 		return e;
 	}
