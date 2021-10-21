@@ -1,0 +1,89 @@
+Azioni per rilasciare una nuova versione di CSTNU
+=================================================
+
+1) Aggiornare con il nuovo numero pom.xml
+
+2) Compilare il progetto
+------------------------
+	* mvn clean //Fundamental!!! Before to do anything regarding site
+	* mvn compile //for compiling
+	* mvn test //for executing JUNIT4 test
+	* mvn package -P noDebug //for preparing the jar package	
+
+2) Aggiornare le informazioni del sito
+--------------------------------------
+
+- Aggiornare file ./CstnuTool/RELEASE_NOTES
+- Poi, si compila
+	* mvn site //for building site without deploy
+	* mvn site-deploy //for building site and deploying it on profs.sci.univr.it.
+    * mvn site:deploy //for deploy the site previously built by mvn site.
+   Before a 'mvn site-deploy', make a 'mvn clean && mvn package -P noDebug'.
+
+- Verificare che in http://profs.scienze.univr.it/~posenato/software/cstnu tutto è ok.
+
+3) Fare i commit di tutti i file modificati.
+
+Azioni per un tag
+================
+Se si vuole salvare una particolare versione del repository con un tag, dare il comando
+svn copy https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/trunk \
+		https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/tags/<versione> -m<commento>
+
+dove <versione> ho messo solitamente il numero di versione rilasciato al pubblico
+Esempi di versioni già usati:
+v1.9.0
+v1.10.0
+v1.21.0
+
+Azioni per un branch
+====================
+1) Creare il branch stando nella directory trunk
+
+svn copy . https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome branch> -m'New branch'
+
+2) Fare il checkout del branch su una nuova dir
+
+svn co https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome branch>
+
+
+3) Lavorare...
+Se si vuole importare nel branch modifiche fatte nel trunk
+
+3.0 fare i commit nel trunk
+3.1 andare nella working dir del branch
+3.2 Vedere quali versioni saranno importate
+svn mergeinfo --show-revs eligible ^/CSTNU/trunk
+
+3.3 fare i commit nel branch!
+
+3.4 Vedere il merge senza farlo (se serve)
+svn merge --dry-run  ^/CSTNU/trunk
+
+3.5 fare il merge del trunk
+
+svn merge ^/CSTNU/trunk
+
+4) Quando si vuole riportare dei commit fatti in un branch nel trunk 
+
+4.0 Andare nella directory del branch
+4.1 svn up
+4.2 svn ci #fare i commit nel branch
+4.3 andare nella working dir del trunk
+4.4 svn up
+4.5 fare il merge (questo vale per il client 1.8 o superiore)
+
+svn merge ^/CSTNU/branches/<nome branch>
+
+Il manuale consiglia poi di cancellare il branch nel repository perché non più usabile.
+La storia si può sempre recuperare facendo svn log ../branches/<nome branch>
+
+svn delete https://profs.scienze.univr.it/posenato/svn/sw/CSTNU/branches/<nome branch> \
+             -m "Remove <nome branch>, reintegrated with trunk."
+
+Dalla versione 1.8, se non si cancella il branch, su può continuare a lavorare facendo merge da/per il trunk.
+
+Azioni per latex4ht
+===================
+Il sito di riferimento è http://akquinet.github.io/maven-latex-plugin/
+
