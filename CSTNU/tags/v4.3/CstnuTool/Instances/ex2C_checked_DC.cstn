@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns/graphml"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml">
+<key id="nContingent" for="graph">
+<desc>Number of contingents in the graph</desc>
+<default>0</default>
+</key>
+<key id="nObservedProposition" for="graph">
+<desc>Number of observed propositions in the graph</desc>
+<default>0</default>
+</key>
+<key id="NetworkType" for="graph">
+<desc>Network Type</desc>
+<default>CSTNU</default>
+</key>
+<key id="nEdges" for="graph">
+<desc>Number of edges in the graph</desc>
+<default>0</default>
+</key>
+<key id="nVertices" for="graph">
+<desc>Number of vertices in the graph</desc>
+<default>0</default>
+</key>
+<key id="Name" for="graph">
+<desc>Graph Name</desc>
+<default></default>
+</key>
+<key id="Obs" for="node">
+<desc>Proposition Observed. Value specification: [a-zA-F]</desc>
+<default></default>
+</key>
+<key id="x" for="node">
+<desc>The x coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Label" for="node">
+<desc>Label. Format: [¬[a-zA-F]|[a-zA-F]]+|⊡</desc>
+<default>⊡</default>
+</key>
+<key id="y" for="node">
+<desc>The y coordinate for the visualitation. A positive value.</desc>
+<default>0</default>
+</key>
+<key id="Potential" for="node">
+<desc>Labeled Potential Values. Format: {[('node name (no case modification)', 'integer', 'label') ]+}|{}</desc>
+<default></default>
+</key>
+<key id="Type" for="edge">
+<desc>Type: Possible values: normal|contingent|constraint|derived|internal.</desc>
+<default>normal</default>
+</key>
+<key id="Value" for="edge">
+<desc>Value for STN edge. Format: 'integer'</desc>
+<default></default>
+</key>
+<key id="LabeledValues" for="edge">
+<desc>Labeled Values. Format: {[('integer', 'label') ]+}|{}</desc>
+<default></default>
+</key>
+<graph edgedefault="directed">
+<data key="nObservedProposition">1</data>
+<data key="NetworkType">CSTN</data>
+<data key="nEdges">18</data>
+<data key="nVertices">5</data>
+<data key="Name">ex2C_checked_DC.cstn</data>
+<node id="A?">
+<data key="Obs">a</data>
+<data key="x">183.0</data>
+<data key="Label">⊡</data>
+<data key="y">300.0</data>
+</node>
+<node id="Z">
+<data key="x">10.0</data>
+<data key="Label">⊡</data>
+<data key="y">10.0</data>
+</node>
+<node id="n3">
+<data key="x">492.0</data>
+<data key="Label">⊡</data>
+<data key="y">316.0</data>
+</node>
+<node id="n2">
+<data key="x">329.0</data>
+<data key="Label">a</data>
+<data key="y">401.0</data>
+</node>
+<node id="n1">
+<data key="x">326.0</data>
+<data key="Label">¬a</data>
+<data key="y">208.0</data>
+</node>
+<edge id="A?_Z" source="A?" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(0, ⊡) }</data>
+</edge>
+<edge id="Z_A?" source="Z" target="A?">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(40, ⊡) }</data>
+</edge>
+<edge id="Z_n1" source="Z" target="n1">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(40, ¬a) }</data>
+</edge>
+<edge id="Z_n2" source="Z" target="n2">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(40, a) }</data>
+</edge>
+<edge id="Z_n3" source="Z" target="n3">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(40, ⊡) }</data>
+</edge>
+<edge id="e0" source="A?" target="n1">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(4, ¬a) }</data>
+</edge>
+<edge id="e1" source="n1" target="A?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-3, ¬a) }</data>
+</edge>
+<edge id="e2" source="n1" target="n3">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(4, ¬a) }</data>
+</edge>
+<edge id="e3" source="n3" target="n1">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-3, ¬a) }</data>
+</edge>
+<edge id="e4" source="A?" target="n2">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(10, a) }</data>
+</edge>
+<edge id="e5" source="n2" target="A?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-3, a) }</data>
+</edge>
+<edge id="e6" source="n2" target="n3">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(10, a) }</data>
+</edge>
+<edge id="e7" source="n3" target="n2">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-3, a) }</data>
+</edge>
+<edge id="e8" source="A?" target="n3">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(7, ⊡) }</data>
+</edge>
+<edge id="e9" source="n3" target="A?">
+<data key="Type">normal</data>
+<data key="LabeledValues">{(-7, ⊡) }</data>
+</edge>
+<edge id="n1_Z" source="n1" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-3, ¬a) }</data>
+</edge>
+<edge id="n2_Z" source="n2" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-3, a) }</data>
+</edge>
+<edge id="n3_Z" source="n3" target="Z">
+<data key="Type">internal</data>
+<data key="LabeledValues">{(-7, ⊡) }</data>
+</edge>
+</graph>
+</graphml>
