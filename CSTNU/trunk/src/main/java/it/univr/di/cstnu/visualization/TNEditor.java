@@ -1075,7 +1075,7 @@ public class TNEditor extends JFrame {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			if (!askBeforeOverwriteCurrentNetwork())
+			if (!askBeforeOverwriteCurrentNetworkInEditor())
 				return;
 			switch (e.getActionCommand()) {
 			case "STNU":
@@ -1135,7 +1135,7 @@ public class TNEditor extends JFrame {
 
 		@Override
 		public void actionPerformed(final ActionEvent e) {
-			if (!askBeforeOverwriteCurrentNetwork())
+			if (!askBeforeOverwriteCurrentNetworkInEditor())
 				return;
 			final int option = this.chooser.showOpenDialog(TNEditor.this);
 			final JEditorPane jl = TNEditor.this.viewerMessageArea;
@@ -2545,9 +2545,9 @@ public class TNEditor extends JFrame {
 	 * 
 	 * @return true is the user clicked YES, false for any other action
 	 */
-	boolean askBeforeOverwriteCurrentNetwork() {
+	boolean askBeforeOverwriteCurrentNetworkInEditor() {
 		if (this.inputGraph != null && this.inputGraph.getVertexCount() > 0) {
-			int result = JOptionPane.showConfirmDialog(this, "Overwrite current input network?", "Consent request", JOptionPane.YES_NO_OPTION);
+			int result = JOptionPane.showConfirmDialog(this, "Do you want to leave current network?", "Consent request", JOptionPane.YES_NO_OPTION);
 			return result == JOptionPane.YES_OPTION;
 		}
 		return true;
