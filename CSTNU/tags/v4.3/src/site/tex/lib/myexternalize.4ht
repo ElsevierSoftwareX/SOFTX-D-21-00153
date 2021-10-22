@@ -1,4 +1,0 @@
-\Configure{graphics*}{svg}{
-	{\Configure{Needs}{File: \Gin@base.svg}\Needs{}}%
-    \Picture[\csname a:GraphicsAlt\endcsname]{\csname Gin@base\endcsname.svg \csname a:Gin-dim\endcsname}%  
-}
